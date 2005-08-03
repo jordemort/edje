@@ -3,7 +3,7 @@ dnl expands occurrences of ${prefix} and ${exec_prefix} in the given DIR,
 dnl and assigns the resulting string to VARNAME
 dnl example: AC_DEFINE_DIR(DATADIR, "$datadir")
 dnl by Alexandre Oliva <oliva@dcc.unicamp.br>
-AC_DEFUN(AC_EXPAND_DIR, [
+AC_DEFUN([AC_EXPAND_DIR], [
 	$1=$2
 	$1=`(
 	    test "x$prefix" = xNONE && prefix="$ac_default_prefix"
@@ -38,9 +38,9 @@ dnl At present there is no support for additional "MODULES" (see AM_PATH_GTK)
 dnl (shamelessly stolen from gtk.m4 and then hacked around a fair amount)
 dnl
 dnl @author Angus Lees <gusl@cse.unsw.edu.au>
-dnl @version $Id: acinclude.m4,v 1.1 2004/01/15 00:12:19 xcomputerman Exp $
+dnl @version $Id: acinclude.m4,v 1.2 2005/08/03 00:34:31 vapier Exp $
 
-AC_DEFUN(AC_PATH_GENERIC,
+AC_DEFUN([AC_PATH_GENERIC],
 [dnl
 dnl we're going to need uppercase, lowercase and user-friendly versions of the
 dnl string `LIBRARY'
