@@ -1,0 +1,14 @@
+#!/bin/sh
+cp ./edje.c.in ./edje.c
+cat ./src/lib/Edje.h >> ./edje.c
+for I in `find ./src/lib -name "*.c" -print`; do
+  cat $I >> ./edje.c
+done
+rm -rf ./doc/html ./doc/latex ./doc/man
+mkdir -p ./doc/html ./doc/latex ./doc/man
+doxygen
+cp doc/img/*.png doc/html/
+rm -f edje_docs.tar edje_docs.tar.gz
+tar -cvf edje_docs.tar doc/html doc/man doc/latex
+gzip -9 edje_docs.tar
+exit 0
