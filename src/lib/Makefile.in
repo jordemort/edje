@@ -172,6 +172,7 @@ build_alias = @build_alias@
 build_cpu = @build_cpu@
 build_os = @build_os@
 build_vendor = @build_vendor@
+create_shared_lib = @create_shared_lib@
 datadir = @datadir@
 datarootdir = @datarootdir@
 docdir = @docdir@
@@ -241,7 +242,7 @@ edje_textblock_styles.c
 libedje_la_LIBADD = -lm @EDJE_LIBS@ @fnmatch_libs@
 libedje_la_CPPFLAGS = 
 libedje_la_DEPENDENCIES = $(top_builddir)/config.h
-libedje_la_LDFLAGS = -version-info 5:0:5
+libedje_la_LDFLAGS = @create_shared_lib@ -version-info 5:0:5
 all: all-am
 
 .SUFFIXES:

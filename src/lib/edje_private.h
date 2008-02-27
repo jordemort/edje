@@ -35,7 +35,7 @@
 #ifdef EAPI
 #undef EAPI
 #endif
-#ifdef WIN32
+#ifdef _MSC_VER
 # ifdef BUILDING_DLL
 #  define EAPI __declspec(dllexport)
 # else
@@ -427,7 +427,9 @@ struct _Edje_Part
    unsigned char          effect; /* 0 = plain... */
    unsigned char          mouse_events; /* it will affect/respond to mouse events */
    unsigned char          repeat_events; /* it will repeat events to objects below */
+   unsigned char          precise_is_inside;
    unsigned char          use_alternate_font_metrics;
+   char                   pointer_mode;
 };
 
 struct _Edje_Part_Image_Id

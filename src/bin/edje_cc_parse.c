@@ -2,12 +2,15 @@
  * vim:ts=8:sw=3:sts=8:noexpandtab:cino=>5n-3f0^-2{2
  */
 
+#ifdef _WIN32
+# include <windows.h>
+#endif /* _WIN32 */
+
 #include "edje_cc.h"
 
 static void  new_object(void);
 static void  new_statement(void);
 static char *perform_math (char *input);
-static void  preprocess_params (void);
 static int   isdelim(char c);
 static char *next_token(char *p, char *end, char **new_p, int *delim);
 static char *stack_id(void);
@@ -55,7 +58,7 @@ new_object(void)
    char *id;
    int i;
    int handled = 0;
-   
+
    id = stack_id();
    for (i = 0; i < object_handler_num(); i++)
      {
@@ -96,7 +99,7 @@ new_statement(void)
    char *id;
    int i;
    int handled = 0;
-   
+
    id = stack_id();
    for (i = 0; i < statement_handler_num(); i++)
      {
@@ -118,30 +121,6 @@ new_statement(void)
 	exit(-1);
      }
    free(id);
-}
-
-static void
-preprocess_params (void)
-{
-   Evas_List *l;
-
-   /* a formula will never be spread across multiple params */
-   for (l = params; l; l = l->next) {
-	char *data = l->data;
-	char *replace = NULL;
-
-	/* if the token begins with a opening parens, the user wants us
-	 * to do some math :)
-	 */
-	if (*data == '(')
-	  {
-	     replace = perform_math (data);
-
-	     free (l->data);
-	     l->data = replace;
-	  }
-
-   }
 }
 
 static char *
@@ -169,7 +148,7 @@ isdelim(char c)
 {
    const char *delims = "{},;:";
    char *d;
-		  
+
    d = (char *)delims;
    while (*d)
      {
@@ -190,6 +169,7 @@ next_token(char *p, char *end, char **new_p, int *delim)
    int in_comment_cpp = 0;
    int in_comment_sa  = 0;
    int had_quote = 0;
+   int is_escaped = 0;
    char *cpp_token_line = NULL;
    char *cpp_token_file = NULL;
 
@@ -222,21 +202,21 @@ next_token(char *p, char *end, char **new_p, int *delim)
 	     char *pp, fl[4096];
 	     char *tmpstr = NULL;
 	     int   l, nm;
-	     
+
 	     /* handle cpp comments */
 	     /* their line format is
 	      * # <line no. of next line> <filename from next line on> [??]
 	      */
 	     cpp_token_line = NULL;
 	     cpp_token_file = NULL;
-	     
+
 	     pp = p;
 	     while ((pp < end) && (*pp != '\n'))
 	       {
 		  pp++;
 	       }
 	     l = pp - p;
-	     tmpstr = malloc(l + 1);
+	     tmpstr = alloca(l + 1);
 	     if (!tmpstr)
 	       {
 		  fprintf(stderr, "%s: Error. %s:%i malloc %i bytes failed\n",
@@ -252,7 +232,6 @@ next_token(char *p, char *end, char **new_p, int *delim)
 		  line = nm;
 		  file_in = file_buf;
 	       }
-	     free(tmpstr);
 	  }
 	else if ((!in_comment_ss) && (!in_comment_sa) && (!in_comment_cpp))
 	  {
@@ -280,15 +259,19 @@ next_token(char *p, char *end, char **new_p, int *delim)
 	       {
 		  if (in_quote)
 		    {
-		       if (((*p) == '"') && (*(p - 1) != '\\'))
+		       if ((*p) == '\\')
+			 is_escaped = !is_escaped;
+		       else if (((*p) == '"') && (!is_escaped))
 			 {
 			    in_quote = 0;
 			    had_quote = 1;
 			 }
+		       else if (is_escaped)
+			 is_escaped = 0;
 		    }
 		  else if (in_parens)
 		    {
-		       if (((*p) == ')') && (*(p - 1) != '\\'))
+		       if (((*p) == ')') && (!is_escaped))
 			 in_parens--;
 		    }
 		  else
@@ -325,22 +308,22 @@ next_token(char *p, char *end, char **new_p, int *delim)
      }
    if (!in_tok) return NULL;
    tok_end = p - 1;
-   
+
    done:
    *new_p = p;
-   
+
    tok = mem_alloc(tok_end - tok_start + 2);
    strncpy(tok, tok_start, tok_end - tok_start + 1);
    tok[tok_end - tok_start + 1] = 0;
-   
+
    if (had_quote)
      {
+	is_escaped = 0;
 	p = tok;
-	
+
 	while (*p)
 	  {
-	     if ((*p == '\"') && 
-		 ((p == tok) || ((p > tok) && (*(p - 1) != '\\'))))
+	     if ((*p == '\"') && (!is_escaped))
 	       {
 		  memmove(p, p + 1, strlen(p));
 	       }
@@ -357,13 +340,24 @@ next_token(char *p, char *end, char **new_p, int *delim)
 	     else if (*p == '\\')
 	       {
 		  memmove(p, p + 1, strlen(p));
-		  p++;
 		  if (*p == '\\') p++;
+		  else is_escaped = 1;
 	       }
 	     else
-	       p++;
+	       {
+		  if (is_escaped) is_escaped = 0;
+		  p++;
+	       }
 	  }
      }
+   else if (tok && *tok == '(')
+     {
+	char *tmp;
+	tmp = tok;
+	tok = perform_math(tok);
+	free(tmp);
+     }
+
    return tok;
 }
 
@@ -391,7 +385,7 @@ static void
 stack_chop_top(void)
 {
    char *top;
-   
+
    /* remove top from stack */
    top = evas_list_data(evas_list_last(stack));
    if (top)
@@ -452,7 +446,6 @@ parse(char *data, off_t size)
 		  if (do_params)
 		    {
 		       do_params = 0;
-		       preprocess_params ();
 		       new_statement();
 		       /* clear out params */
 		       while (params)
@@ -470,7 +463,7 @@ parse(char *data, off_t size)
 		    {
 		       fprintf(stderr, "%s: Error. parse error %s:%i. { marker before ; marker\n",
 			       progname, file_in, line - 1);
-		       exit(-1);		       
+		       exit(-1);
 		    }
 	       }
 	     free(token);
@@ -492,7 +485,7 @@ parse(char *data, off_t size)
 		       int l1 = 0, l2 = 0;
 		       char *verbatim_1;
 		       char *verbatim_2;
-		       
+
 		       l1 = line;
 		       while ((p[0] != '{') && (p < end))
 			 {
@@ -542,7 +535,7 @@ parse(char *data, off_t size)
 			 {
 			    int l;
 			    char *v;
-			    
+
 			    l = verbatim_2 - verbatim_1 + 1;
 			    v = malloc(l + 1);
 			    strncpy(v, verbatim_1, l);
@@ -619,22 +612,38 @@ compile(void)
    int fd;
    off_t size;
    char *data, *p;
+#ifdef _WIN32
+   int ret;
+#endif /* _WIN32 */
    char buf[4096];
    char inc[4096];
    static char tmpn[4096];
 
-   strcpy(tmpn, "/tmp/edje_cc.edc-tmp-XXXXXX");
    strncpy(inc, file_in, 4000);
    inc[4001] = 0;
    p = strrchr(inc, '/');
    if (!p) strcpy(inc, "./");
    else *p = 0;
+#ifdef _WIN32
+   ret = GetTempPath(4096, buf);
+   if ((ret > 4096) || (ret == 0))
+     fd = -1;
+   else
+     {
+        if (!GetTempFileName(buf, "edj", 0, tmpn))
+          fd = -1;
+        else
+          fd = open(tmpn, _O_RDWR | _O_BINARY | _O_CREAT, 0444);
+     }
+#else
+   strcpy(tmpn, "/tmp/edje_cc.edc-tmp-XXXXXX");
    fd = mkstemp(tmpn);
+#endif /* _WIN32 */
    if (fd >= 0)
      {
 	int ret;
 	char *def;
-        
+
 	clean_file = tmpn;
 	close(fd);
 	atexit(clean_tmp_file);
@@ -644,7 +653,7 @@ compile(void)
 	  {
 	     Evas_List *l;
 	     int len;
-	     
+
 	     len = 0;
 	     for (l = defines; l; l = l->next)
 	       {
@@ -667,7 +676,7 @@ compile(void)
 	 * If the preprocessor is invoked via gcc -E, it will treat
 	 * file_in as a linker file. The safest route seems to be to
 	 * run cpp with the output as the second non-option argument.
-	 * 
+	 *
 	 * Redirecting the output is required for MacOS 10.3, and works fine
 	 * on other systems.
 	 */
@@ -684,7 +693,7 @@ compile(void)
 	  file_in = tmpn;
 	free(def);
 /* OLD CODE
-	snprintf(buf, sizeof(buf), "cat %s | cpp -I%s %s -E -o %s", 
+	snprintf(buf, sizeof(buf), "cat %s | cpp -I%s %s -E -o %s",
 		 file_in, inc, def, tmpn);
 	ret = system(buf);
 	if (ret < 0)
@@ -709,7 +718,7 @@ compile(void)
 	printf("%s: Opening \"%s\" for input\n",
 	       progname, file_in);
      }
-	
+
    size = lseek(fd, 0, SEEK_END);
    lseek(fd, 0, SEEK_SET);
    data = malloc(size);
@@ -729,7 +738,7 @@ int
 is_param(int n)
 {
    char *str;
-   
+
    str = evas_list_nth(params, n);
    if (str) return 1;
    return 0;
@@ -741,13 +750,13 @@ is_num(int n)
    char *str;
    long int ret;
    char *end;
-   
+
    str = evas_list_nth(params, n);
    if (!str)
      {
 	fprintf(stderr, "%s: Error. %s:%i no parameter supplied as argument %i\n",
 		progname, file_in, line - 1, n + 1);
-	exit(-1);	
+	exit(-1);
      }
    if (str[0] == 0) return 0;
    end = str;
@@ -761,13 +770,13 @@ parse_str(int n)
 {
    char *str;
    char *s;
-   
+
    str = evas_list_nth(params, n);
    if (!str)
      {
 	fprintf(stderr, "%s: Error. %s:%i no parameter supplied as argument %i\n",
 		progname, file_in, line - 1, n + 1);
-	exit(-1);	
+	exit(-1);
      }
    s = mem_strdup(str);
    return s;
@@ -778,20 +787,20 @@ parse_enum(int n, ...)
 {
    char *str;
    va_list va;
-   
-   str = evas_list_nth(params, n);   
+
+   str = evas_list_nth(params, n);
    if (!str)
      {
 	fprintf(stderr, "%s: Error. %s:%i no parameter supplied as argument %i\n",
 		progname, file_in, line - 1, n + 1);
-	exit(-1);	
+	exit(-1);
      }
    va_start(va, n);
    for (;;)
      {
 	char *s;
 	int   v;
-	
+
 	s = va_arg(va, char *);
 	if (!s)
 	  {
@@ -808,7 +817,7 @@ parse_enum(int n, ...)
 	       }
 	     fprintf(stderr, "\n");
 	     va_end(va);
-	     exit(-1);	     
+	     exit(-1);
 	  }
 	v = va_arg(va, int);
 	if (!strcmp(s, str))
@@ -826,13 +835,13 @@ parse_int(int n)
 {
    char *str;
    int i;
-   
+
    str = evas_list_nth(params, n);
    if (!str)
      {
 	fprintf(stderr, "%s: Error. %s:%i no parameter supplied as argument %i\n",
 		progname, file_in, line - 1, n + 1);
-	exit(-1);	
+	exit(-1);
      }
    i = my_atoi(str);
    return i;
@@ -843,13 +852,13 @@ parse_int_range(int n, int f, int t)
 {
    char *str;
    int i;
-   
+
    str = evas_list_nth(params, n);
    if (!str)
      {
 	fprintf(stderr, "%s: Error. %s:%i no parameter supplied as argument %i\n",
 		progname, file_in, line - 1, n + 1);
-	exit(-1);	
+	exit(-1);
      }
    i = my_atoi(str);
    if ((i < f) || (i > t))
@@ -902,13 +911,13 @@ parse_float(int n)
 {
    char *str;
    double i;
-   
+
    str = evas_list_nth(params, n);
    if (!str)
      {
 	fprintf(stderr, "%s: Error. %s:%i no parameter supplied as argument %i\n",
 		progname, file_in, line - 1, n + 1);
-	exit(-1);	
+	exit(-1);
      }
    i = my_atof(str);
    return i;
@@ -919,13 +928,13 @@ parse_float_range(int n, double f, double t)
 {
    char *str;
    double i;
-   
+
    str = evas_list_nth(params, n);
    if (!str)
      {
 	fprintf(stderr, "%s: Error. %s:%i no parameter supplied as argument %i\n",
 		progname, file_in, line - 1, n + 1);
-	exit(-1);	
+	exit(-1);
      }
    i = my_atof(str);
    if ((i < f) || (i > t))
@@ -957,7 +966,7 @@ check_arg_count(int required_args)
  * beta  ::= gamma + gamma || gamma
  * gamma ::= num || delta
  * delta ::= '(' alpha ')'
- * 
+ *
  */
 
 /* int set of function */
@@ -967,17 +976,17 @@ my_atoi(const char * s)
 {
    int res = 0;
    char buf[4096];
-   
+
    if (!s)
      return 0;
-   
+
    if (!strstrip(s, buf, sizeof (buf)))
      {
 	fprintf(stderr, "%s: Error. %s:%i expression is too long\n",
 		progname, file_in, line - 1);
 	return 0;
      }
-   
+
    _alphai(buf, &res);
    return res;
 }
@@ -986,9 +995,9 @@ static char *
 _deltai(char *s, int * val)
 {
    if (!val) return NULL;
-   
+
    if ('(' != s[0])
-     { 
+     {
 	fprintf(stderr, "%s: Error. %s:%i unexpected character at %s\n",
 		progname, file_in, line - 1, s);
 	return s;
@@ -1000,7 +1009,7 @@ _deltai(char *s, int * val)
 	s++;
 	return s;
      }
-   
+
    return s;
 }
 
@@ -1008,7 +1017,7 @@ static char *
 _gammai(char *s, int * val)
 {
    if (!val) return NULL;
-   
+
    if (_is_numi(s[0]))
      {
 	s = _get_numi(s, val);
@@ -1030,12 +1039,12 @@ _betai(char *s, int * val)
 {
    int a1, a2;
    char op;
-   
+
    if (!val)
      return NULL;
-   
+
    s = _gammai(s, &a1);
-   
+
    while (_is_op1i(s[0]))
      {
 	op = s[0];
@@ -1043,9 +1052,9 @@ _betai(char *s, int * val)
 	s = _gammai(s, &a2);
 	a1 = _calci(op, a1, a2);
      }
-   
+
    (*val) = a1;
-   
+
    return s;
 }
 
@@ -1054,12 +1063,12 @@ _alphai(char *s, int * val)
 {
    int a1, a2;
    char op;
-   
+
    if (!val)
      return NULL;
-   
+
    s = _betai(s, &a1);
-   
+
    while (_is_op2i(s[0]))
      {
 	op = s[0];
@@ -1067,7 +1076,7 @@ _alphai(char *s, int * val)
 	s = _betai(s, &a2);
 	a1 = _calci(op, a1, a2);
      }
-   
+
    (*val) = a1;
    return s;
 }
@@ -1077,10 +1086,10 @@ _get_numi(char *s, int * val)
 {
    char buf[4096];
    int pos = 0;
-   
+
    if (!val)
-     return s;   
-   
+     return s;
+
    while (
 	  (('0' <= s[pos]) && ('9' >= s[pos])) ||
 	  ((0 == pos) && ('-' == s[pos]))
@@ -1089,7 +1098,7 @@ _get_numi(char *s, int * val)
 	buf[pos] = s[pos];
 	pos++;
      }
-   
+
    buf[pos] = '\0';
    (*val) = atoi(buf);
    return (s+pos);
@@ -1136,7 +1145,7 @@ _calci(char op, int a, int b)
       case '+':
 	a += b;
 	return a;
-      case '-': 
+      case '-':
 	a -= b;
 	return a;
       case '/':
@@ -1163,17 +1172,17 @@ my_atof(const char * s)
 {
    double res = 0;
    char buf[4096];
-   
+
    if (!s)
      return 0;
-   
+
    if (!strstrip(s, buf, sizeof (buf)))
      {
 	fprintf(stderr, "%s: Error. %s:%i expression is too long\n",
 		progname, file_in, line - 1);
 	return 0;
      }
-   
+
    _alphaf(buf, &res);
    return res;
 }
@@ -1182,7 +1191,7 @@ static char *
 _deltaf(char *s, double * val)
 {
    if (!val) return NULL;
-   
+
    if ('(' != s[0])
      {
 	fprintf(stderr, "%s: Error. %s:%i unexpected character at %s\n",
@@ -1196,7 +1205,7 @@ _deltaf(char *s, double * val)
 	s++;
 	return s;
      }
-   
+
    return s;
 }
 
@@ -1204,7 +1213,7 @@ static char *
 _gammaf(char *s, double * val)
 {
    if (!val) return NULL;
-   
+
    if (_is_numf(s[0]))
      {
 	s = _get_numf(s, val);
@@ -1226,12 +1235,12 @@ _betaf(char *s, double * val)
 {
    double a1=0, a2=0;
    char op;
-   
+
    if (!val)
      return NULL;
-   
+
    s = _gammaf(s, &a1);
-   
+
    while (_is_op1f(s[0]))
      {
 	op = s[0];
@@ -1239,9 +1248,9 @@ _betaf(char *s, double * val)
 	s = _gammaf(s, &a2);
 	a1 = _calcf(op, a1, a2);
      }
-   
+
    (*val) = a1;
-   
+
    return s;
 }
 
@@ -1250,12 +1259,12 @@ _alphaf(char *s, double * val)
 {
    double a1=0, a2=0;
    char op;
-   
+
    if (!val)
      return NULL;
-   
+
    s = _betaf(s, &a1);
-   
+
    while (_is_op2f(s[0]))
      {
 	op = s[0];
@@ -1263,9 +1272,9 @@ _alphaf(char *s, double * val)
 	s = _betaf(s, &a2);
 	a1 = _calcf(op, a1, a2);
      }
-   
+
    (*val) = a1;
-   
+
    return s;
 }
 
@@ -1274,10 +1283,10 @@ _get_numf(char *s, double * val)
 {
    char buf[4096];
    int pos = 0;
-   
+
    if (!val)
-     return s;   
-   
+     return s;
+
    while (
 	  (('0' <= s[pos]) && ('9' >= s[pos])) ||
 	  ('.' == s[pos]) ||
@@ -1287,7 +1296,7 @@ _get_numf(char *s, double * val)
 	buf[pos] = s[pos];
 	pos++;
      }
-   
+
    buf[pos] = '\0';
    (*val) = atof(buf);
    return (s+pos);
@@ -1296,8 +1305,8 @@ _get_numf(char *s, double * val)
 static int
 _is_numf(char c)
 {
-   if (((c >= '0') && (c <= '9')) 
-       || ('-' == c) 
+   if (((c >= '0') && (c <= '9'))
+       || ('-' == c)
        || ('.' == c)
        || ('+' == c))
      return 1;
@@ -1337,7 +1346,7 @@ _calcf(char op, double a, double b)
       case '+':
 	a += b;
 	return a;
-      case '-': 
+      case '-':
 	a -= b;
 	return a;
       case '/':

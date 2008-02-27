@@ -6,7 +6,7 @@
 #ifdef EAPI
 #undef EAPI
 #endif
-#ifdef WIN32
+#ifdef _MSC_VER
 # ifdef BUILDING_DLL
 #  define EAPI __declspec(dllexport)
 # else
@@ -164,7 +164,7 @@ extern "C" {
    /* edje_util.c */
    EAPI void         edje_freeze                     (void);
    EAPI void         edje_thaw                       (void);
-   EAPI void         edje_fontset_append_set         (char *fonts);
+   EAPI void         edje_fontset_append_set         (const char *fonts);
    EAPI const char  *edje_fontset_append_get         (void);
 
    /* edje_load.c */
