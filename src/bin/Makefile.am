@@ -1,13 +1,14 @@
-## Process this file with automake to produce Makefile.in
 
-INCLUDES = \
+MAINTAINERCLEANFILES = Makefile.in
+
+AM_CPPFLAGS = \
 -I$(top_srcdir) \
 -I$(top_srcdir)/bin \
 -I$(top_srcdir)/src/lib \
-@EDJE_CFLAGS@ \
--DPACKAGE_BIN_DIR=\"@PACKAGE_BIN_DIR@\" \
--DPACKAGE_LIB_DIR=\"@PACKAGE_LIB_DIR@\" \
--DPACKAGE_DATA_DIR=\"@PACKAGE_DATA_DIR@\" 
+-DPACKAGE_BIN_DIR=\"$(bindir)\" \
+-DPACKAGE_LIB_DIR=\"$(libdir)\" \
+-DPACKAGE_DATA_DIR=\"$(datadir)/$(PACKAGE)\" \
+@EDJE_CFLAGS@
 
 bin_SCRIPTS = \
 @EDJE_RECC_PRG@
@@ -16,8 +17,8 @@ EXTRA_DIST = @EDJE_RECC_PRG@
 EXTRA_SCRIPTS = edje_recc
 
 bin_PROGRAMS = \
-@EDJE_CC_PRG@ \
-@EDJE_DECC_PRG@
+edje_cc \
+edje_decc
 
 EXTRA_PROGRAMS = \
 edje_cc \
@@ -36,7 +37,7 @@ edje_prefix.h \
 edje_main.h
 
 edje_cc_LDADD = \
-$(top_builddir)/src/lib/libedje.la
+$(top_builddir)/src/lib/libedje.la $(EDJE_LIBS)
 
 edje_cc_DEPENDENCIES = $(top_builddir)/src/lib/libedje.la
 
@@ -48,6 +49,6 @@ edje_cc_mem.c \
 edje_cc_sources.c
 
 edje_decc_LDADD = \
-$(top_builddir)/src/lib/libedje.la
+$(top_builddir)/src/lib/libedje.la @edje_decc_lib@ $(EDJE_LIBS)
 
 edje_decc_DEPENDENCIES = $(top_builddir)/src/lib/libedje.la

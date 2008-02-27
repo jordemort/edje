@@ -706,7 +706,11 @@ compile(void)
 	free(def);
  */
      }
+#ifdef _WIN32
+   fd = open(file_in, _O_RDONLY | _O_BINARY);
+#else
    fd = open(file_in, O_RDONLY);
+#endif /* _WIN32 */
    if (fd < 0)
      {
 	fprintf(stderr, "%s: Error. cannot open file \"%s\" for input. %s\n",
@@ -722,7 +726,7 @@ compile(void)
    size = lseek(fd, 0, SEEK_END);
    lseek(fd, 0, SEEK_SET);
    data = malloc(size);
-   if (data && read(fd, data, size) == size)
+   if (data && (read(fd, data, size) == size))
 	parse(data, size);
    else
      {

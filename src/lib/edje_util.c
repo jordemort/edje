@@ -108,7 +108,7 @@ edje_object_data_get(Evas_Object *obj, const char *key)
    for (l = ed->collection->data; l; l = l->next)
      {
 	Edje_Data *di;
-	
+
 	di = l->data;
 	if ((di->key) && (!strcmp(di->key, key)))
 	  return (const char *)di->value;
@@ -303,7 +303,7 @@ Evas_List *
 edje_color_class_list(void)
 {
    Edje_List_Foreach_Data fdata;
-   
+
    memset(&fdata, 0, sizeof(Edje_List_Foreach_Data));
    evas_hash_foreach(_edje_color_class_member_hash, _edje_color_class_list_foreach, &fdata);
 
@@ -580,7 +580,7 @@ Evas_List *
 edje_text_class_list(void)
 {
    Edje_List_Foreach_Data fdata;
-   
+
    memset(&fdata, 0, sizeof(Edje_List_Foreach_Data));
    evas_hash_foreach(_edje_text_class_member_hash, _edje_text_class_list_foreach, &fdata);
 
@@ -1087,7 +1087,8 @@ edje_object_size_max_get(Evas_Object *obj, Evas_Coord *maxw, Evas_Coord *maxh)
      }
    if (ed->collection->prop.max.w == 0)
      {
-	if (maxw) *maxw = 100000;
+	/* XXX TODO: convert maxw to 0, fix things that break. */
+	if (maxw) *maxw = EDJE_INF_MAX_W;
      }
    else
      {
@@ -1095,7 +1096,8 @@ edje_object_size_max_get(Evas_Object *obj, Evas_Coord *maxw, Evas_Coord *maxh)
      }
    if (ed->collection->prop.max.h == 0)
      {
-	if (maxh) *maxh = 100000;
+	/* XXX TODO: convert maxh to 0, fix things that break. */
+	if (maxh) *maxh = EDJE_INF_MAX_H;
      }
    else
      {
@@ -1164,7 +1166,7 @@ edje_object_size_min_calc(Evas_Object *obj, Evas_Coord *minw, Evas_Coord *minh)
    while (ok)
      {
 	int i;
-	
+
 	ok = 0;
 	ed->dirty = 1;
 	_edje_recalc(ed);
@@ -1179,7 +1181,7 @@ edje_object_size_min_calc(Evas_Object *obj, Evas_Coord *minw, Evas_Coord *minh)
 	     Edje_Real_Part *ep;
 	     int w, h;
 	     int didw;
-	
+
 	     ep = ed->table_parts[i];
 	     w = ep->w - ep->req.w;
 	     h = ep->h - ep->req.h;
@@ -1716,7 +1718,7 @@ _edje_real_part_get(Edje *ed, const char *part)
    for (i = 0; i < ed->table_parts_size; i++)
      {
 	Edje_Real_Part *rp;
-	
+
 	rp = ed->table_parts[i];
 	if ((rp->part->name) && (!strcmp(rp->part->name, part))) return rp;
      }
@@ -1855,7 +1857,7 @@ _edje_text_class_find(Edje *ed, const char *text_class)
    for (l = ed->text_classes; l; l = l->next)
      {
 	Edje_Text_Class *tc;
-	
+
 	tc = l->data;
 	if ((tc->name) && (!strcmp(text_class, tc->name))) return tc;
      }
@@ -1946,20 +1948,6 @@ _edje_fetch(Evas_Object *obj)
    ed = evas_object_smart_data_get(obj);
    if ((ed) && (ed->delete_me)) return NULL;
    return ed;
-}
-
-int
-_edje_glob_match(const char *str, const char *glob)
-{
-   if ((!glob) || (glob[0] == 0))
-     {
-	if ((!str) || (str[0] == 0)) return 1;
-	if ((glob) && (glob[0] == '*')) return 1;
-	return 0;
-     }
-   if (glob[0] == '*') return 1;
-   if ((glob) && (str) && (!fnmatch(glob, str, 0))) return 1;
-   return 0;
 }
 
 int
@@ -2072,7 +2060,7 @@ _edje_real_part_swallow(Edje_Real_Part *rp, Evas_Object *obj_swallow)
    if ((type) && (!strcmp(type, "edje")))
      {
 	Evas_Coord w, h;
-	
+
 	edje_object_size_min_get(obj_swallow, &w, &h);
 	rp->swallow_params.min.w = w;
 	rp->swallow_params.min.h = h;
@@ -2085,7 +2073,7 @@ _edje_real_part_swallow(Edje_Real_Part *rp, Evas_Object *obj_swallow)
 		       (!strcmp(type, "line"))))
      {
 	Evas_Coord w, h;
-	
+
 	evas_object_geometry_get(obj_swallow, NULL, NULL, &w, &h);
 	rp->swallow_params.min.w = w;
 	rp->swallow_params.min.h = h;
@@ -2094,7 +2082,7 @@ _edje_real_part_swallow(Edje_Real_Part *rp, Evas_Object *obj_swallow)
      }
      {
 	int w1, h1, w2, h2, am, aw, ah;
-	
+
 	w1 = (int)evas_object_data_get(obj_swallow, "\377 edje.minw");
 	h1 = (int)evas_object_data_get(obj_swallow, "\377 edje.minh");
 	w2 = (int)evas_object_data_get(obj_swallow, "\377 edje.maxw");
@@ -2119,6 +2107,7 @@ _edje_real_part_swallow(Edje_Real_Part *rp, Evas_Object *obj_swallow)
            evas_object_repeat_events_set(obj_swallow, 1);
 	if (rp->part->pointer_mode != EVAS_OBJECT_POINTER_MODE_AUTOGRAB)
 	  evas_object_pointer_mode_set(obj_swallow, rp->part->pointer_mode);
+	evas_object_pass_events_set(obj_swallow, 0);
      }
    else
      evas_object_pass_events_set(obj_swallow, 1);
@@ -2129,4 +2118,3 @@ _edje_real_part_swallow(Edje_Real_Part *rp, Evas_Object *obj_swallow)
    rp->edje->dirty = 1;
    _edje_recalc(rp->edje);
 }
-

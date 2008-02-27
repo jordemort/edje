@@ -5,14 +5,9 @@
 #include <config.h>
 #endif
 
+#include <sys/mman.h>
 #include <Evas.h>
 #include <Ecore.h>
-#ifdef HAVE_ECORE_X_H
-#include <Ecore_X.h>
-#endif
-#ifdef HAVE_ECORE_FB_H
-#include <Ecore_Fb.h>
-#endif
 #include <Ecore_Evas.h>
 #include <Eet.h>
 #include "Edje.h"

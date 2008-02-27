@@ -2,6 +2,45 @@
  * vim:ts=8:sw=3:sts=8:noexpandtab:cino=>5n-3f0^-2{2
  */
 
+/*
+    Concerning the EDC reference:
+
+    The formatting for blocks and properties has been implemented as a table
+    which is filled using ALIASES.
+    For maximum flexibility I implemented them in the \@code/\@encode style,
+    this means that missing one or changing the order most certainly cause
+    formatting errors.
+
+    \@block
+        block name
+    \@context
+        code sample of the block
+    \@description
+        the block's description
+    \@endblock
+
+    \@property
+        property name
+    \@parameters
+        property's parameter list
+    \@effect
+        the property description (lol)
+    \@endproperty
+*/
+
+/**
+ * @page edcref Edje Data Collection reference
+ * An Edje Data Collection, it's a plain text file (normally identified with the
+ * .edc extension),consisting of instructions for the Edje Compiler.
+ *
+ * The syntax for the edje data collection files follows a simple structure of
+ * "blocks { .. }" that can contain "properties: ..", more blocks, or both.
+ *
+ * @author Andres Blanc (dresb) andresblanc@gmail.com
+ *
+ * <table class="edcref" border="0">
+ */
+
 #include "edje_cc.h"
 
 static void st_images_image(void);
@@ -9,6 +48,7 @@ static void st_images_image(void);
 static void st_fonts_font(void);
 
 static void st_data_item(void);
+static void st_data_file(void);
 
 static void ob_styles_style(void);
 static void st_styles_style_name(void);
@@ -128,6 +168,7 @@ New_Statement_Handler statement_handlers[] =
      {"images.image", st_images_image},
      {"fonts.font", st_fonts_font},
      {"data.item", st_data_item},
+     {"data.file", st_data_file},
      {"styles.style.name", st_styles_style_name},
      {"styles.style.base", st_styles_style_base},
      {"styles.style.tag", st_styles_style_tag},
@@ -462,6 +503,39 @@ statement_handler_num(void)
 
 /*****/
 
+/**
+    @page edcref
+
+    @block
+        images
+    @context
+        images {
+            image: "filename1.ext" COMP;
+            image: "filename2.ext" LOSSY 99;
+            ..
+        }
+    @description
+        The "images" block is used to list each image file that will be used in
+        the theme along with its compression method (if any).
+        Besides the domcument's root, additional "images" blocks can be
+        included inside other blocks, normally "collections", "group" and
+        "part", easing mantienance of the file list when the theme is split
+        among multiple files.
+    @endblock
+
+    @property
+        image
+    @parameters
+        [image file] [compression method] (compression level)
+    @effect
+        Used to include each image file. The full path to the directory holding
+        the images can be defined later with edje_cc's "-id" option.
+        Compression methods:
+        @li RAW: Uncompressed.
+        @li COMP: Lossless compression.
+        @li LOSSY [0-100]: Lossy comression with quality from 0 to 100.
+    @endproperty
+ */
 static void
 st_images_image(void)
 {
@@ -525,6 +599,32 @@ st_images_image(void)
      }
 }
 
+/**
+    @page edcref
+
+    @block
+        fonts
+    @context
+        fonts {
+            font: "filename1.ext" "fontname";
+            font: "filename2.ext" "otherfontname";
+            ..
+        }
+    @description
+        The "fonts" block is used to list each font file with an alias used later
+        in the theme. As with the "images" block, additional "fonts" blocks can
+        be included inside other blocks.
+    @endblock
+
+    @property
+        font
+    @parameters
+        [font filename] [font alias]
+    @effect
+        Defines each font "file" and "alias", the full path to the directory
+        holding the font files can be defined with edje_cc's "-fd" option.
+    @endproperty
+ */
 static void
 st_fonts_font(void)
 {
@@ -566,6 +666,30 @@ st_fonts_font(void)
      }
 }
 
+/**
+    @page edcref
+    @block
+        data
+    @context
+        data {
+            item: "arbitraryname" "arbitraryvalue";
+            item: "othername" "othervalue";
+            ..
+        }
+    @description
+        The "data" block is used to pass arbitrary parameters from the theme to
+        the application. Unlike the "images" and "fonts" blocks, additional
+        "data" blocks can only be included inside the "group" block.
+    @endblock
+
+    @property
+        item
+    @parameters
+        [parameter name] [parameter value]
+    @effect
+        Defines each additional parameter.
+    @endproperty
+ */
 static void
 st_data_item(void)
 {
@@ -579,7 +703,113 @@ st_data_item(void)
    edje_file->data = evas_list_append(edje_file->data, di);
 }
 
+/**
+    @page edcref
+    @block
+        data
+    @context
+        data {
+            file: "arbitraryname" "filename";
+            file: "othername" "otherfilename";
+            ..
+        }
+    @description
+        The "data" block is used to pass arbitrary parameters from the theme to
+        the application. Unlike the "images" and "fonts" blocks, additional
+        "data" blocks can only be included inside the "group" block.
+    @endblock
 
+    @property
+        file
+    @parameters
+        [parameter name] [parameter filename]
+    @effect
+        Defines each additional parameter.
+    @endproperty
+ */
+static void
+st_data_file(void)
+{
+   const char *data;
+   const char *over;
+   Edje_Data *di;
+   char *filename;
+   char *value;
+   int fd;
+   int i;
+   struct stat buf;
+
+   check_arg_count(2);
+
+   di = mem_alloc(SZ(Edje_Data));
+   di->key = parse_str(0);
+   filename = parse_str(1);
+
+   fd = open(filename, O_RDONLY);
+   if (fd < 0)
+     {
+        fprintf(stderr, "%s: Error. %s:%i when opening file \"%s\": \"%s\"\n",
+                progname, file_in, line, filename, strerror(errno));
+        exit(-1);
+     }
+
+   if (fstat(fd, &buf))
+     {
+        fprintf(stderr, "%s: Error. %s:%i when stating file \"%s\": \"%s\"\n",
+                progname, file_in, line, filename, strerror(errno));
+        exit(-1);
+     }
+
+   data = mmap(NULL, buf.st_size, PROT_READ, MAP_SHARED, fd, 0);
+   if (!data)
+     {
+        fprintf(stderr, "%s: Error. %s:%i when mapping file \"%s\": \"%s\"\n",
+                progname, file_in, line, filename, strerror(errno));
+        exit(-1);
+     }
+
+   over = data;
+   for (i = 0; i < buf.st_size; ++i, ++over)
+     if (*over == '\0')
+       {
+          fprintf(stderr, "%s: Error. %s:%i file \"%s\" is a binary file.\n",
+                  progname, file_in, line, filename);
+          exit(-1);
+       }
+
+   value = malloc(sizeof (char) * buf.st_size + 1);
+   snprintf(value, buf.st_size + 1, "%s", data);
+
+   munmap((void*)data, buf.st_size);
+   close(fd);
+
+   di->value = value;
+   edje_file->data = evas_list_append(edje_file->data, di);
+
+   free(filename);
+}
+
+/**
+    @page edcref
+    @block
+        color_classes
+    @context
+        color_classes {
+            color_class {
+                name:  "colorclassname";
+                color:  [0-255] [0-255] [0-255] [0-255];
+                color2: [0-255] [0-255] [0-255] [0-255];
+                color3: [0-255] [0-255] [0-255] [0-255]
+            }
+            ..
+        }
+    @description
+        The "color_classes" block contains a list of one or more "color_class"
+        blocks. Each "color_class" allows the designer to name an arbitrary
+        group of colors to be used in the theme, the application can use that
+        name to alter the color values at runtime.
+    @endblock
+*/
 static void
 ob_color_class(void)
 {
@@ -602,6 +832,18 @@ ob_color_class(void)
    cc->a3 = 0;
 }
 
+/**
+    @page edcref
+
+    @property
+        name
+    @parameters
+        [color class name]
+    @effect
+        Sets the name for the color class, used as reference by both the theme
+        and the application.
+    @endproperty
+*/
 static void
 st_color_class_name(void)
 {
@@ -622,6 +864,16 @@ st_color_class_name(void)
      }
 }
 
+/**
+    @page edcref
+    @property
+        color
+    @parameters
+        [red] [green] [blue] [alpha]
+    @effect
+        The main color.
+    @endproperty
+*/
 static void
 st_color_class_color(void)
 {
@@ -636,6 +888,16 @@ st_color_class_color(void)
    cc->a = parse_int_range(3, 0, 255);
 }
 
+/**
+    @page edcref
+    @property
+        color2
+    @parameters
+        [red] [green] [blue] [alpha]
+    @effect
+        Used as shadow in text and textblock parts.
+    @endproperty
+*/
 static void
 st_color_class_color2(void)
 {
@@ -650,7 +912,16 @@ st_color_class_color2(void)
    cc->a2 = parse_int_range(3, 0, 255);
 }
 
-
+/**
+    @page edcref
+    @property
+        color3
+    @parameters
+        [red] [green] [blue] [alpha]
+    @effect
+        Used as outline in text and textblock parts.
+    @endproperty
+*/
 static void
 st_color_class_color3(void)
 {
@@ -665,6 +936,27 @@ st_color_class_color3(void)
    cc->a3 = parse_int_range(3, 0, 255);
 }
 
+/**
+    @page edcref
+    @block
+        spectra
+    @context
+        spectra {
+            spectrum {
+                name: "colorspectrumname";
+                color: [0-255] [0-255] [0-255] [0-255] [0-?]
+                color: [0-255] [0-255] [0-255] [0-255] [0-?]
+                ..
+            }
+            ..
+        }
+    @description
+        The "spectra" block contains a list of one or more "spectrum" blocks.
+        Each "spectrum" block defines a color range used to fill GRADIENT
+        parts. The colors are defined with the red, green, blue, alpha, delta
+        format.
+    @endblock
+*/
 static void
 ob_spectrum(void)
 {
@@ -680,6 +972,16 @@ ob_spectrum(void)
    se->color_list = NULL;
 }
 
+/**
+    @page edcref
+    @property
+        name
+    @parameters
+        [spectrum name]
+    @effect
+        The name of the spectrum used as reference later in the theme.
+    @endproperty
+*/
 static void
 st_spectrum_name(void)
 {
@@ -689,6 +991,18 @@ st_spectrum_name(void)
    se->entry = parse_str(0);
 }
 
+/**
+    @page edcref
+    @property
+        color
+    @parameters
+        [red] [green] [blue] [alpha] [delta]
+    @effect
+        Each color declaration represents a stop point in the color range. The
+        last parameter (delta) is used to set the proportion of a given stop
+        point higher or lower in contrast with the other color's delta value.
+    @endproperty
+*/
 static void
 st_spectrum_color(void)
 {
@@ -706,6 +1020,27 @@ st_spectrum_color(void)
    sc->d = parse_int(4);
 }
 
+/**
+    @page edcref
+    @block
+        styles
+    @context
+        styles {
+            style {
+                name: "stylename";
+                base: "..default style properties..";
+
+                tag:  "tagname" "..style properties..";
+                ..
+            }
+            ..
+        }
+    @description
+        The "styles" block contains a list of one or more "style" blocks. A
+        "style" block is used to create style \<tags\> for advanced TEXTBLOCK
+        formatting.
+    @endblock
+*/
 static void
 ob_styles_style(void)
 {
@@ -715,6 +1050,16 @@ ob_styles_style(void)
    edje_file->styles = evas_list_append(edje_file->styles, stl);
 }
 
+/**
+    @page edcref
+    @property
+        name
+    @parameters
+        [style name]
+    @effect
+        The name of  the style to be used as reference later in the theme.
+    @endproperty
+*/
 static void
 st_styles_style_name(void)
 {
@@ -735,7 +1080,17 @@ st_styles_style_name(void)
      }
 }
 
-
+/**
+    @page edcref
+    @property
+        base
+    @parameters
+        [style properties string]
+    @effect
+        The default style properties that will be applied to the complete
+        text.
+    @endproperty
+*/
 static void
 st_styles_style_base(void)
 {
@@ -755,6 +1110,16 @@ st_styles_style_base(void)
    stl->tags = evas_list_append(stl->tags, tag);
 }
 
+/**
+    @page edcref
+    @property
+        tag
+    @parameters
+        [tag name] [style properties string]
+    @effect
+        Style to be applied only to text between style \<tags\>..\</tags\>.
+    @endproperty  
+*/
 static void
 st_styles_style_tag(void)
 {
@@ -768,6 +1133,23 @@ st_styles_style_tag(void)
    stl->tags = evas_list_append(stl->tags, tag);
 }
 
+/**
+    @page edcref
+    @block
+        collections
+    @context
+        collections {
+            ..
+            group { }
+            group { }
+            ..
+        }
+    @description
+        The "collections" block is used to list the groups that compose the
+        theme. Additional "collections" blocks do not prevent overriding group
+        names.
+    @endblock
+*/
 static void
 ob_collections(void)
 {
@@ -775,6 +1157,31 @@ ob_collections(void)
      edje_file->collection_dir = mem_alloc(SZ(Edje_Part_Collection_Directory));
 }
 
+/**
+    @page edcref
+    @block
+        group
+    @context
+        collections {
+            ..
+            group {
+                name: "nameusedbytheapplication";
+                alias: "anothername";
+                min: width height;
+                max: width height;
+
+                data { }
+                script { }
+                parts { }
+                programs { }
+            }
+            ..
+        }
+    @description
+        A "group" block contains the list of parts and programs that compose a
+        given Edje Object.
+    @endblock
+*/
 static void
 ob_collections_group(void)
 {
@@ -794,6 +1201,17 @@ ob_collections_group(void)
    codes = evas_list_append(codes, cd);
 }
 
+/**
+    @page edcref
+    @property
+        name
+    @parameters
+        [group name]
+    @effect
+        The name that will be used by the application to load the resulting
+        Edje object, must be unique within the theme.
+    @endproperty
+*/
 static void
 st_collections_group_name(void)
 {
@@ -805,6 +1223,17 @@ st_collections_group_name(void)
    de->entry = parse_str(0);
 }
 
+/**
+    @page edcref
+    @property
+        alias
+    @parameters
+        [aditional group name]
+    @effect
+        Additional name to serve as identifier. Defining multiple aliases is
+        supported.
+    @endproperty
+*/
 static void
 st_collections_group_alias(void)
 {
@@ -820,6 +1249,17 @@ st_collections_group_alias(void)
    aliases = evas_list_append(aliases, alias);
 }
 
+/**
+    @page edcref
+    @property
+        min
+    @parameters
+        [width] [height]
+    @effect
+        The minimum size for the container defined by the composition of the
+        parts.
+    @endproperty
+*/
 static void
 st_collections_group_min(void)
 {
@@ -832,6 +1272,17 @@ st_collections_group_min(void)
    pc->prop.min.h = parse_int_range(1, 0, 0x7fffffff);
 }
 
+/**
+    @page edcref
+    @property
+        max
+    @parameters
+        [width] [height]
+    @effect
+        The maximum size for the container defined by the totality of the
+        parts.
+    @endproperty
+*/
 static void
 st_collections_group_max(void)
 {
@@ -844,6 +1295,34 @@ st_collections_group_max(void)
    pc->prop.max.h = parse_int_range(1, 0, 0x7fffffff);
 }
 
+/**
+    @page edcref
+    @block
+        script
+    @context
+        ..
+        group {
+            script {
+                //embryo script
+            }
+            ..
+            program {
+                script {
+                    //embryo script
+                }
+            }
+            ..
+        }
+        ..
+    @description
+        This block is used to "inject" embryo scripts to a given Edje theme and
+        it functions in two modalities. When it's included inside a "program"
+        block, the script will be executed every time the program is run, on
+        the other hand, when included directly into a "group", "part" or
+        "description" block, it will be executed once at load time, in the
+        load order.
+    @endblock
+*/
 static void
 ob_collections_group_script(void)
 {
@@ -890,6 +1369,36 @@ st_collections_group_data_item(void)
    pc->data = evas_list_append(pc->data, di);
 }
 
+/**
+    @page edcref
+    @block
+        part
+    @context
+        group {
+            parts {
+                ..
+                part {
+                    name: "partname";
+                    type: IMAGE;
+                    mouse_events:  1;
+                    repeat_events: 0;
+                    clip_to: "anotherpart";
+                    source:  "groupname";
+                    pointer_mode: AUTOGRAB;
+                    use_alternate_font_metrics: 0;
+
+                    description { }
+                    dragable { }
+                }
+                ..
+            }
+        }
+    @description
+        Parts are used to represent the most basic design elements of the
+        theme, for example, a part can represent a line in a border or a label
+        on a button.
+    @endblock
+*/
 static void
 ob_collections_group_parts_part(void)
 {   
@@ -911,6 +1420,18 @@ ob_collections_group_parts_part(void)
    ep->dragable.events_id = -1;
 }
 
+/**
+    @page edcref
+    @property
+        name
+    @parameters
+        [part name]
+    @effect
+        The part's name will be used as reference in the theme's relative
+        positioning system, by programs and in some cases by the application.
+        It must be unique within the group.
+    @endproperty
+*/
 static void
 st_collections_group_parts_part_name(void)
 {
@@ -941,6 +1462,24 @@ st_collections_group_parts_part_name(void)
    }
 }
 
+/**
+    @page edcref
+    @property
+        type
+    @parameters
+        [TYPE]
+    @effect
+        Set the type (all caps) from among the available types, it's set to
+        IMAGE by default. Valid types:
+            @li RECT
+            @li TEXT
+            @li IMAGE
+            @li SWALLOW
+            @li TEXTBLOCK
+            @li GRADIENT
+            @li GROUP
+    @endproperty
+*/
 static void
 st_collections_group_parts_part_type(void)
 {
@@ -963,6 +1502,18 @@ st_collections_group_parts_part_type(void)
 			 NULL);
 }
 
+/**
+    @page edcref
+    @property
+        mouse_events
+    @parameters
+        [1 or 0]
+    @effect
+        Specifies whether the part will emit signals, altought is named
+        "mouse_events", disabling it (0) will prevent the part from emitting
+        any type of signal at all. Its set to 1 by default.
+    @endproperty
+*/
 static void
 st_collections_group_parts_part_mouse_events(void)
 {
@@ -976,6 +1527,17 @@ st_collections_group_parts_part_mouse_events(void)
    ep->mouse_events = parse_bool(0);
 }
 
+/**
+    @page edcref
+    @property
+        repeat_events
+    @parameters
+        [1 or 0]
+    @effect
+        Specifies whether a part echoes a mouse event to other parts below the
+        pointer (1), or not (0). Its set to 0 by default.
+    @endproperty
+*/
 static void
 st_collections_group_parts_part_repeat_events(void)
 {
@@ -989,6 +1551,23 @@ st_collections_group_parts_part_repeat_events(void)
    ep->repeat_events = parse_bool(0);
 }
 
+/**
+    @page edcref
+    @property
+        pointer_mode
+    @parameters
+        [MODE]
+    @effect
+        Sets the mouse pointer behavior for a given part. The default value is
+        AUTOGRAB. Aviable modes:
+            @li AUTOGRAB, when the part is clicked and the button remains
+                pressed, the part will be the source of all future mouse
+                signals emitted, even outside the object, until the button is
+                released.
+            @li NOGRAB, the effect will be limited to the part's container.
+        container. 
+    @endproperty
+*/
 static void
 st_collections_group_parts_part_pointer_mode(void)
 {
@@ -1005,6 +1584,17 @@ st_collections_group_parts_part_pointer_mode(void)
 				 NULL);
 }
 
+/**
+    @page edcref
+    @property
+        precise_is_inside
+    @parameters
+        [1 or 0]
+    @effect
+        Enables precise point collision detection for the part, which is more
+        resource intensive. Disabled by default.
+    @endproperty
+*/
 static void
 st_collections_group_parts_part_precise_is_inside(void)
 {
@@ -1018,6 +1608,18 @@ st_collections_group_parts_part_precise_is_inside(void)
    ep->precise_is_inside = parse_bool(0);
 }
 
+/**
+    @page edcref
+    @property
+        use_alternate_font_metrics
+    @parameters
+        [1 or 0]
+    @effect
+        Only affects text and textblock parts, when enabled Edje will use
+        different size measurement functions. Disabled by default. (note from
+        the author: I don't know what this is exactlu useful for?)
+    @endproperty
+*/
 static void
 st_collections_group_parts_part_use_alternate_font_metrics(void)
 {
@@ -1031,6 +1633,17 @@ st_collections_group_parts_part_use_alternate_font_metrics(void)
    ep->use_alternate_font_metrics = parse_bool(0);
 }
 
+/**
+    @page edcref
+    @property
+        clip_to
+    @parameters
+        [another part's name]
+    @effect
+        Only renders the area of part that coincides with another part's
+        container. Overflowing content will not be displayed.
+    @endproperty
+*/
 static void
 st_collections_group_parts_part_clip_to_id(void)
 {
@@ -1050,6 +1663,17 @@ st_collections_group_parts_part_clip_to_id(void)
      }
 }
 
+/**
+    @page edcref
+    @property
+        source
+    @parameters
+        [another group's name]
+    @effect
+        Only available to GROUP parts. Swallows the specified group into the
+        part's container.
+    @endproperty
+*/
 static void
 st_collections_group_parts_part_source(void)
 {
@@ -1073,6 +1697,85 @@ st_collections_group_parts_part_source(void)
    ep->source = parse_str(0);
 }
 
+/**
+    @page edcref
+
+    @property
+        effect
+    @parameters
+        [EFFECT]
+    @effect
+        Causes Edje to draw the selected effect among:
+        @li PLAIN
+        @li OUTLINE
+        @li SOFT_OUTLINE
+        @li SHADOW
+        @li SOFT_SHADOW
+        @li OUTLINE_SHADOW
+        @li OUTLINE_SOFT_SHADOW
+        @li FAR_SHADOW
+        @li FAR_SOFT_SHADOW
+        @li GLOW
+    @endproperty
+*/
+static void
+st_collections_group_parts_part_effect(void)
+{
+   Edje_Part_Collection *pc;
+   Edje_Part *ep;
+
+   check_arg_count(1);
+
+   pc = evas_list_data(evas_list_last(edje_collections));
+   ep = evas_list_data(evas_list_last(pc->parts));
+   ep->effect = parse_enum(0, 
+               "NONE", EDJE_TEXT_EFFECT_NONE,
+               "PLAIN", EDJE_TEXT_EFFECT_PLAIN,
+               "OUTLINE", EDJE_TEXT_EFFECT_OUTLINE,
+               "SOFT_OUTLINE", EDJE_TEXT_EFFECT_SOFT_OUTLINE,
+               "SHADOW", EDJE_TEXT_EFFECT_SHADOW,
+               "SOFT_SHADOW", EDJE_TEXT_EFFECT_SOFT_SHADOW,
+               "OUTLINE_SHADOW", EDJE_TEXT_EFFECT_OUTLINE_SHADOW,
+               "OUTLINE_SOFT_SHADOW", EDJE_TEXT_EFFECT_OUTLINE_SOFT_SHADOW,
+               "FAR_SHADOW", EDJE_TEXT_EFFECT_FAR_SHADOW,
+               "FAR_SOFT_SHADOW", EDJE_TEXT_EFFECT_FAR_SOFT_SHADOW,
+               "GLOW", EDJE_TEXT_EFFECT_GLOW,
+               NULL);
+}
+
+/**
+    @page edcref
+    @block
+        dragable
+    @context
+        part {
+            ..
+            dragable {
+                confine: "anotherpart";
+                events: "anotherdragablepart";
+                x: 0 0 0;
+                y: 0 0 0;
+            }
+            ..
+        }
+    @description
+        This block is used to set the properties for parts that will be dragged
+        around the interface (not external drag & drop).
+    @endblock
+
+    @property
+        x
+    @parameters
+        [enable/disable] [step] [count]
+    @effect
+        Used to setup dragging events for the X axis. The first parameter is
+        used to enable (1 or -1) and disable (0) dragging along the axis, in
+        the first case, 1 sets the starting point at 0.0 and -1 at 1.0. The
+        second parameter takes any integer and will limit movement to values
+        divisibles by it, causing the part to jump from position to position.
+        The third parameter, (question from the author: What is count for?).
+    @endproperty
+*/
 static void
 st_collections_group_parts_part_dragable_x(void)
 {
@@ -1088,6 +1791,21 @@ st_collections_group_parts_part_dragable_x(void)
    ep->dragable.count_x = parse_int_range(2, 0, 0x7fffffff);
 }
 
+/**
+    @page edcref
+    @property
+        y
+    @parameters
+        [enable/disable] [step] [count]
+    @effect
+        Used to setup dragging events for the Y axis. The first parameter is
+        used to enable (1 or -1) and disable (0) dragging along the axis, in
+        the first case, 1 sets the starting point at 0.0 and -1 at 1.0. The
+        second parameter takes any integer and will limit movement to values
+        divisibles by it, causing the part to jump from position to position.
+        The third parame, (question from the author: What is count for?).
+    @endproperty
+*/
 static void
 st_collections_group_parts_part_dragable_y(void)
 {
@@ -1103,6 +1821,19 @@ st_collections_group_parts_part_dragable_y(void)
    ep->dragable.count_y = parse_int_range(2, 0, 0x7fffffff);
 }
 
+/**
+    @page edcref
+    @property
+        confine
+    @parameters
+        [another part's name]
+    @effect
+        When set, limits the movement of the dragged part to another part's
+        container. Since the size of dragable object will be setup by the
+        application, the "min" property of "description" should be an accesible
+        size.
+    @endproperty
+*/
 static void
 st_collections_group_parts_part_dragable_confine(void)
 {
@@ -1122,6 +1853,17 @@ st_collections_group_parts_part_dragable_confine(void)
      }
 }
 
+/**
+    @page edcref
+    @property
+        events
+    @parameters
+        [another dragable part's name]
+    @effect
+        It causes the part to forward the drag events to another part, thus
+        ignoring them for itself.
+    @endproperty
+*/
 static void
 st_collections_group_parts_part_dragable_events(void)
 {
@@ -1141,6 +1883,36 @@ st_collections_group_parts_part_dragable_events(void)
      }
 }
 
+/**
+    @page edcref
+    @block
+        description
+    @context
+        description {
+            inherit: "another_description" INDEX;
+            state: "description_name" INDEX;
+            visible: 1;
+            min: 0 0;
+            max: -1 -1;
+            align: 0.5 0.5;
+            fixed: 0 0;
+            step: 0 0;
+            aspect: 1 1;
+
+            rel1 {
+                ..
+            }
+
+            rel2 {
+                ..
+            }
+        }
+    @description
+        Every part can have one or more description blocks. Each description is
+        used to define style and layout properties of a part in a given
+        "state".
+    @endblock
+*/
 static void
 ob_collections_group_parts_part_description(void)
 {
@@ -1216,6 +1988,19 @@ ob_collections_group_parts_part_description(void)
    ed->gradient.rel2.offset_y = -1;
 }
 
+/**
+    @page edcref
+    @property
+        inherit
+    @parameters
+        [another description's name] [another description's index]
+    @effect
+        When set, the description will inherit all the properties from the
+        named description. The properties defined in this part will override
+        the inherited properties, reducing the amount of necessary code for
+        simple state changes. Note: inheritance in Edje is single level only.
+    @endproperty
+*/
 static void
 st_collections_group_parts_part_description_inherit(void)
 {
@@ -1337,6 +2122,20 @@ st_collections_group_parts_part_description_inherit(void)
    data_queue_part_slave_lookup(&(parent->text.id_text_source), &(ed->text.id_text_source));
 }
 
+/**
+    @page edcref
+    @property
+        state
+    @parameters
+        [a name for the description] [an index]
+    @effect
+        Sets a name used to identify a description inside a given part.
+        Multiple descriptions are used to declare different states of the same
+        part, like "clicked" or "invisible". All states declarations are also
+        coupled with an index number between 0.0 and 1.0. All parts must have
+        at least one description named "default 0.0".
+    @endproperty
+*/
 static void
 st_collections_group_parts_part_description_state(void)
 {
@@ -1365,6 +2164,17 @@ st_collections_group_parts_part_description_state(void)
    ed->state.value = parse_float_range(1, 0.0, 1.0);
 }
 
+/**
+    @page edcref
+    @property
+        visible
+    @parameters
+        [0 or 1]
+    @effect
+        Takes a boolean value specifying whether part is visible (1) or not
+        (0). Non-visible parts do not emit signals. The default value is 1.
+    @endproperty
+*/
 static void
 st_collections_group_parts_part_description_visible(void)
 {
@@ -1381,6 +2191,18 @@ st_collections_group_parts_part_description_visible(void)
    ed->visible = parse_bool(0);
 }
 
+/**
+    @page edcref
+    @property
+        align
+    @parameters
+        [X axis] [Y axis]
+    @effect
+        When the displayed object's size is smaller than its container, this
+        property moves it relatively along both axis inside its container. The
+        default value is "0.5 0.5".
+    @endproperty
+*/
 static void
 st_collections_group_parts_part_description_align(void)
 {
@@ -1398,6 +2220,17 @@ st_collections_group_parts_part_description_align(void)
    ed->align.y = parse_float_range(1, 0.0, 1.0);
 }
 
+/**
+    @page edcref
+    @property
+        fixed
+    @parameters
+        [width, 0 or 1] [height, 0 or 1]
+    @effect
+        When the "min" or "max" properties are set, fixed enables or disables
+        resizing for each dimension. The default value is "0 0"
+    @endproperty
+*/
 static void
 st_collections_group_parts_part_description_fixed(void)
 {
@@ -1415,6 +2248,16 @@ st_collections_group_parts_part_description_fixed(void)
    ed->fixed.h = parse_float_range(1, 0, 1);
 }
 
+/**
+    @page edcref
+    @property
+        min
+    @parameters
+        [width] [height]
+    @effect
+        The minimum size of the state.
+    @endproperty
+*/
 static void
 st_collections_group_parts_part_description_min(void)
 {
@@ -1432,6 +2275,16 @@ st_collections_group_parts_part_description_min(void)
    ed->min.h = parse_float_range(1, 0, 0x7fffffff);
 }
 
+/**
+    @page edcref
+    @property
+        max
+    @parameters
+        [width] [height]
+    @effect
+        The maximum size of the state.
+    @endproperty
+*/
 static void
 st_collections_group_parts_part_description_max(void)
 {
@@ -1449,6 +2302,18 @@ st_collections_group_parts_part_description_max(void)
    ed->max.h = parse_float_range(1, 0, 0x7fffffff);
 }
 
+/**
+    @page edcref
+    @property
+        step
+    @parameters
+        [width] [height]
+    @effect
+        Restricts resizing of each dimension to values divisibles by its value.
+        This causes the part to jump from value to value while resizing. The
+        default value is "0 0" disabling stepping.
+    @endproperty
+*/
 static void
 st_collections_group_parts_part_description_step(void)
 {
@@ -1466,6 +2331,20 @@ st_collections_group_parts_part_description_step(void)
    ed->step.y = parse_float_range(1, 0, 0x7fffffff);
 }
 
+/**
+    @page edcref
+    @property
+        aspect
+    @parameters
+        [min] [max]
+    @effect
+        Normally width and height can be resized to any values independently.
+        The aspect property forces the width to height ratio to be kept between
+        the minimum and maximum set. For example, "1.0 1.0" will increase the
+        width a pixel for every pixel added to heigh. The default value is
+        "0.0 0.0" disabling aspect.
+    @endproperty
+*/
 static void
 st_collections_group_parts_part_description_aspect(void)
 {
@@ -1483,6 +2362,17 @@ st_collections_group_parts_part_description_aspect(void)
    ed->aspect.max = parse_float_range(1, 0.0, 999999999.0);
 }
 
+/**
+    @page edcref
+    @property
+        aspect_preference
+    @parameters
+        [DIMENSION]
+    @effect
+        Sets the scope of the "aspect" property to a given dimension. Available
+        options are BOTH, VERTICAL, HORIZONTAL and NONE
+    @endproperty
+*/
 static void
 st_collections_group_parts_part_description_aspect_preference(void)
 {
@@ -1504,6 +2394,155 @@ st_collections_group_parts_part_description_aspect_preference(void)
 				   NULL);
 }
 
+/**
+    @page edcref
+    @property
+        color_class
+    @parameters
+        [color class name]
+    @effect
+        The part will use the color values of the named color_class, these
+        values can be overrided by the "color", "color2" and "color3"
+        properties set below.
+    @endproperty
+*/
+static void
+st_collections_group_parts_part_description_color_class(void)
+{
+   Edje_Part_Collection *pc;
+   Edje_Part *ep;
+   Edje_Part_Description *ed;
+
+   check_arg_count(1);
+   
+   pc = evas_list_data(evas_list_last(edje_collections));
+   ep = evas_list_data(evas_list_last(pc->parts));
+   ed = ep->default_desc;
+   if (ep->other_desc) ed = evas_list_data(evas_list_last(ep->other_desc));
+   ed->color_class = parse_str(0);
+}
+
+/**
+    @page edcref
+    @property
+        color
+    @parameters
+        [red] [green] [blue] [alpha]
+    @effect
+        Sets the main color to the specified values (between 0 and 255).
+    @endproperty
+*/
+static void
+st_collections_group_parts_part_description_color(void)
+{
+   Edje_Part_Collection *pc;
+   Edje_Part *ep;
+   Edje_Part_Description *ed;
+
+   check_arg_count(4);
+
+   pc = evas_list_data(evas_list_last(edje_collections));
+   ep = evas_list_data(evas_list_last(pc->parts));
+   ed = ep->default_desc;
+   if (ep->other_desc) ed = evas_list_data(evas_list_last(ep->other_desc));
+   ed->color.r = parse_int_range(0, 0, 255);
+   ed->color.g = parse_int_range(1, 0, 255);
+   ed->color.b = parse_int_range(2, 0, 255);
+   ed->color.a = parse_int_range(3, 0, 255);
+}
+
+/**
+    @page edcref
+    @property
+        color2
+    @parameters
+        [red] [green] [blue] [alpha]
+    @effect
+        Sets the text shadow color to the specified values (0 to 255).
+    @endproperty
+*/
+static void
+st_collections_group_parts_part_description_color2(void)
+{
+   Edje_Part_Collection *pc;
+   Edje_Part *ep;
+   Edje_Part_Description *ed;
+
+   check_arg_count(4);
+
+   pc = evas_list_data(evas_list_last(edje_collections));
+   ep = evas_list_data(evas_list_last(pc->parts));
+   ed = ep->default_desc;
+   if (ep->other_desc) ed = evas_list_data(evas_list_last(ep->other_desc));
+   ed->color2.r = parse_int_range(0, 0, 255);
+   ed->color2.g = parse_int_range(1, 0, 255);
+   ed->color2.b = parse_int_range(2, 0, 255);
+   ed->color2.a = parse_int_range(3, 0, 255);
+}
+
+/**
+    @page edcref
+    @property
+        color3
+    @parameters
+        [red] [green] [blue] [alpha]
+    @effect
+        Sets the text outline color to the specified values (0 to 255).
+    @endproperty
+*/
+static void
+st_collections_group_parts_part_description_color3(void)
+{
+   Edje_Part_Collection *pc;
+   Edje_Part *ep;
+   Edje_Part_Description *ed;
+
+   check_arg_count(4);
+
+   pc = evas_list_data(evas_list_last(edje_collections));
+   ep = evas_list_data(evas_list_last(pc->parts));
+   ed = ep->default_desc;
+   if (ep->other_desc) ed = evas_list_data(evas_list_last(ep->other_desc));
+   ed->color3.r = parse_int_range(0, 0, 255);
+   ed->color3.g = parse_int_range(1, 0, 255);
+   ed->color3.b = parse_int_range(2, 0, 255);
+   ed->color3.a = parse_int_range(3, 0, 255);
+}
+
+/**
+    @page edcref
+    @block
+        rel1/rel2
+    @context
+        description {
+            ..
+            rel1 {
+                relative: 0.0 0.0;
+                offset:     0   0;
+            }
+            ..
+            rel2 {
+                relative: 1.0 1.0;
+                offset:    -1  -1;
+            }
+            ..
+        }
+    @description
+        The rel1 and rel2 blocks are used to define the position of each corner
+        of the part's container. With rel1 being the left-up corner and rel2
+        being the right-down corner.
+    @endblock
+
+    @property
+        relative
+    @parameters
+        [X axis] [Y axis]
+    @effect
+        Moves a corner to a relative position inside the container of the
+        relative "to" part. Values from 0.0 (0%, begining) to 1.0 (100%, end)
+        of each axis.
+    @endproperty
+*/
 static void
 st_collections_group_parts_part_description_rel1_relative(void)
 {
@@ -1521,6 +2560,16 @@ st_collections_group_parts_part_description_rel1_relative(void)
    ed->rel1.relative_y = parse_float(1);
 }
 
+/**
+    @page edcref
+    @property
+        offset
+    @parameters
+        [X axis] [Y axis]
+    @effect
+        Affects the corner postion a fixed number of pixels along each axis.
+    @endproperty
+*/
 static void
 st_collections_group_parts_part_description_rel1_offset(void)
 {
@@ -1538,6 +2587,17 @@ st_collections_group_parts_part_description_rel1_offset(void)
    ed->rel1.offset_y = parse_int(1);
 }
 
+/**
+    @page edcref
+    @property
+        to
+    @parameters
+        [another part's name]
+    @effect
+        Causes a corner to be positioned relatively to another part's
+        container.
+    @endproperty
+*/
 static void
 st_collections_group_parts_part_description_rel1_to(void)
 {
@@ -1561,6 +2621,17 @@ st_collections_group_parts_part_description_rel1_to(void)
      }
 }
 
+/**
+    @page edcref
+    @property
+        to_x
+    @parameters
+        [another part's name]
+    @effect
+        Causes a corner to be positioned relatively to the X axis of another
+        part's container. Simply put affects the first parameter of "relative".
+    @endproperty
+*/
 static void
 st_collections_group_parts_part_description_rel1_to_x(void)
 {
@@ -1583,6 +2654,18 @@ st_collections_group_parts_part_description_rel1_to_x(void)
      }
 }
 
+/**
+    @page edcref
+    @property
+        to_y
+    @parameters
+        [another part's name]
+    @effect
+        Causes a corner to be positioned relatively to the Y axis of another
+        part's container. Simply put, affects the second parameter of
+        "relative".
+    @endproperty
+*/
 static void
 st_collections_group_parts_part_description_rel1_to_y(void)
 {
@@ -1706,6 +2789,36 @@ st_collections_group_parts_part_description_rel2_to_y(void)
      }
 }
 
+/**
+    @page edcref
+    @block
+        image
+    @context
+        description {
+            ..
+            image {
+                normal: "filename.ext";
+                tween:  "filename2.ext";
+                ..
+                tween:  "filenameN.ext";
+                border:  left right top bottom;
+                middle:  0-1;
+            }
+            ..
+        }
+    @description
+    @endblock
+
+    @property
+        normal
+    @parameters
+        [image's filename]
+    @effect
+        Name of image to be used as previously declared in the  images block.
+        In an animation, this is the first and last image displayed. It's
+        required in any image part
+    @endproperty
+*/
 static void
 st_collections_group_parts_part_description_image_normal(void)
 {
@@ -1737,6 +2850,18 @@ st_collections_group_parts_part_description_image_normal(void)
      }
 }
 
+/**
+    @page edcref
+    @property
+        tween
+    @parameters
+        [image's filename]
+    @effect
+        Name of an image to be used in an animation loop, an image block can
+        have none, one or multiple tween declarations. Images are displayed in
+        the order they are listed.
+    @endproperty
+*/
 static void
 st_collections_group_parts_part_description_image_tween(void)
 {
@@ -1771,6 +2896,18 @@ st_collections_group_parts_part_description_image_tween(void)
      }
 }
 
+/**
+    @page edcref
+    @property
+        border
+    @parameters
+        [left] [right] [top] [bottom]
+    @effect
+        If set, the area (in pixels) of each side of the image will be
+        displayed as a fixed size border, from the side -> inwards, preventing
+        the corners from being changed on a resize.
+    @endproperty
+*/
 static void
 st_collections_group_parts_part_description_image_border(void)
 {
@@ -1799,6 +2936,18 @@ st_collections_group_parts_part_description_image_border(void)
    ed->border.b = parse_int_range(3, 0, 0x7fffffff);   
 }
 
+/**
+    @page edcref
+    @property
+        middle
+    @parameters
+        [0 or 1]
+    @effect
+        If border is set, this boolean value tells Edje if the rest of the
+        image (not covered by the defined border) will be displayed or not.
+        The default value is 1.
+    @endproperty
+*/
 static void
 st_collections_group_parts_part_description_image_middle(void)
 {
@@ -1824,6 +2973,40 @@ st_collections_group_parts_part_description_image_middle(void)
    ed->border.no_fill = !parse_bool(0);
 }
 
+/**
+    @page edcref
+    @block
+        fill
+    @context
+        description {
+            ..
+            fill {
+                smooth: 0-1;
+                origin {
+                    relative: X-axis Y-axis;
+                    offset:   X-axis Y-axis;
+                }
+                size {
+                    relative: width  height;
+                    offset:   width  height;
+                }
+            }
+            ..
+        }
+    @description
+        The fill method is an optional block that defines the way an IMAGE or
+        GRADIENT part is going to be displayed inside its container.
+    @endblock
+
+    @property
+        smooth
+    @parameters
+        [0 or 1]
+    @effect
+        The smooth property takes a boolean value to decide if the image will
+        be smoothed on scaling (1) or not (0). The default value is 1.
+    @endproperty
+*/
 static void
 st_collections_group_parts_part_description_fill_smooth(void)
 {
@@ -1849,6 +3032,150 @@ st_collections_group_parts_part_description_fill_smooth(void)
    ed->fill.smooth = parse_bool(0);
 }
 
+/**
+    @page edcref
+
+    @property
+        spread
+    @parameters
+        TODO
+    @effect
+        TODO
+    @endproperty
+*/
+static void
+st_collections_group_parts_part_description_fill_spread(void)
+{
+   Edje_Part_Collection *pc;
+   Edje_Part *ep;
+   Edje_Part_Description *ed;
+
+   check_arg_count(1);
+
+   pc = evas_list_data(evas_list_last(edje_collections));
+   ep = evas_list_data(evas_list_last(pc->parts));
+
+   /* XXX this will need to include IMAGES when spread support is added to evas images */
+   if (ep->type != EDJE_PART_TYPE_GRADIENT)
+     {
+	fprintf(stderr, "%s: Error. parse error %s:%i. "
+		"gradient attributes in non-GRADIENT part.\n",
+		progname, file_in, line - 1);
+	exit(-1);
+     }
+
+   ed = ep->default_desc;
+   if (ep->other_desc) ed = evas_list_data(evas_list_last(ep->other_desc));
+   ed->fill.spread = parse_int_range(0, 0, 1);
+}
+
+/**
+    @page edcref
+
+    @property
+        angle
+    @parameters
+        TODO
+    @effect
+        TODO
+    @endproperty
+*/
+static void
+st_collections_group_parts_part_description_fill_angle(void)
+{
+   Edje_Part_Collection *pc;
+   Edje_Part *ep;
+   Edje_Part_Description *ed;
+
+   check_arg_count(1);
+
+   pc = evas_list_data(evas_list_last(edje_collections));
+   ep = evas_list_data(evas_list_last(pc->parts));
+
+   /* XXX this will need to include IMAGES when angle support is added to evas images */
+   if (ep->type != EDJE_PART_TYPE_GRADIENT)
+     {
+	fprintf(stderr, "%s: Error. parse error %s:%i. "
+		"gradient attributes in non-GRADIENT part.\n",
+		progname, file_in, line - 1);
+	exit(-1);
+     }
+
+   ed = ep->default_desc;
+   if (ep->other_desc) ed = evas_list_data(evas_list_last(ep->other_desc));
+   ed->fill.angle = parse_int_range(0, 0, 360);
+}
+
+/**
+    @page edcref
+
+    @property
+        type
+    @parameters
+        TODO
+    @effect
+        TODO
+    @endproperty
+*/
+static void
+st_collections_group_parts_part_description_fill_type(void)
+{
+   Edje_Part_Collection *pc;
+   Edje_Part *ep;
+   Edje_Part_Description *ed;
+
+   check_arg_count(1);
+
+   pc = evas_list_data(evas_list_last(edje_collections));
+   ep = evas_list_data(evas_list_last(pc->parts));
+   ed = ep->default_desc;
+   if (ep->other_desc) ed = evas_list_data(evas_list_last(ep->other_desc));
+
+   if (ep->type != EDJE_PART_TYPE_IMAGE)
+     {
+	fprintf(stderr, "%s: Error. parse error %s:%i. "
+		"fill attributes in non-IMAGE part.\n",
+		progname, file_in, line - 1);
+	exit(-1);
+     }
+
+   ed->fill.type = parse_enum(0,
+                              "SCALE", EDJE_FILL_TYPE_SCALE,
+                              "TILE", EDJE_FILL_TYPE_TILE,
+                              NULL);
+}
+
+/**
+    @page edcref
+    @block
+        origin
+    @context
+        description {
+            ..
+            fill {
+                ..
+                origin {
+                    relative: 0.0 0.0;
+                    offset:   0   0;
+                }
+                ..
+            }
+            ..
+        }
+    @description
+        The origin block is used to place the starting point, inside the
+        displayed element, that will be used to render the tile. By default,
+        the origin is set at the element's left-up corner.
+    @endblock
+
+    @property
+        relative
+    @parameters
+        [X axis] [Y axis]
+    @effect
+        Sets the starting point relatively to displayed element's content.
+    @endproperty
+*/
 static void
 st_collections_group_parts_part_description_fill_origin_relative(void)
 {
@@ -1875,6 +3202,16 @@ st_collections_group_parts_part_description_fill_origin_relative(void)
    ed->fill.pos_rel_y = parse_float_range(1, -999999999.0, 999999999.0);   
 }
 
+/**
+    @page edcref
+    @property
+        offset
+    @parameters
+        [X axis] [Y axis]
+    @effect
+        Affects the starting point a fixed number of pixels along each axis.
+    @endproperty
+*/
 static void
 st_collections_group_parts_part_description_fill_origin_offset(void)
 {
@@ -1901,6 +3238,39 @@ st_collections_group_parts_part_description_fill_origin_offset(void)
    ed->fill.pos_abs_y = parse_int(1);
 }
 
+/**
+    @page edcref
+    @block
+        size
+    @context
+        description {
+            ..
+            fill {
+                ..
+                size {
+                    relative: 1.0 1.0;
+                    offset:  -1  -1;
+                }
+                ..
+            }
+            ..
+        }
+    @description
+        The size block defines the tile size of the content that will be
+        displayed.
+    @endblock
+
+    @property
+        relative
+    @parameters
+        [width] [height]
+    @effect
+        Takes a pair of decimal values that represent the a percentual value
+        of the original size of the element. For example, "0.5 0.5" represents
+        half the size, while "2.0 2.0" represents the double. The default
+        value is "1.0 1.0".
+    @endproperty
+*/
 static void
 st_collections_group_parts_part_description_fill_size_relative(void)
 {
@@ -1927,6 +3297,16 @@ st_collections_group_parts_part_description_fill_size_relative(void)
    ed->fill.rel_y = parse_float_range(1, 0.0, 999999999.0);   
 }
 
+/**
+    @page edcref
+    @property
+        offset
+    @parameters
+        [X axis] [Y axis]
+    @effect
+        Affects the size of the tile a fixed number of pixels along each axis.
+    @endproperty
+*/
 static void
 st_collections_group_parts_part_description_fill_size_offset(void)
 {
@@ -1953,79 +3333,44 @@ st_collections_group_parts_part_description_fill_size_offset(void)
    ed->fill.abs_y = parse_int(1);
 }
 
-static void
-st_collections_group_parts_part_description_color_class(void)
-{
-   Edje_Part_Collection *pc;
-   Edje_Part *ep;
-   Edje_Part_Description *ed;
+/**
+    @page edcref
 
-   check_arg_count(1);
-   
-   pc = evas_list_data(evas_list_last(edje_collections));
-   ep = evas_list_data(evas_list_last(pc->parts));
-   ed = ep->default_desc;
-   if (ep->other_desc) ed = evas_list_data(evas_list_last(ep->other_desc));
-   ed->color_class = parse_str(0);
-}
+    @block
+        text
+    @context
+        part {
+            description {
+                ..
+                text {
+                    text:        "some string of text to display";
+                    font:        "font_name";
+                    size:         SIZE;
+                    text_class:  "class_name";
+                    fit:          horizontal vertical;
+                    min:          horizontal vertical;
+                    max:          horizontal vertical;
+                    align:        X-axis     Y-axis;
+                    source:      "part_name";
+                    text_source: "text_part_name";
+                    elipsis:      0.0-1.0;
+                    style:       "stylename";
+                }
+                ..
+            }
+        }
+    @description
+    @endblock
 
-static void
-st_collections_group_parts_part_description_color(void)
-{
-   Edje_Part_Collection *pc;
-   Edje_Part *ep;
-   Edje_Part_Description *ed;
-
-   check_arg_count(4);
-
-   pc = evas_list_data(evas_list_last(edje_collections));
-   ep = evas_list_data(evas_list_last(pc->parts));
-   ed = ep->default_desc;
-   if (ep->other_desc) ed = evas_list_data(evas_list_last(ep->other_desc));
-   ed->color.r = parse_int_range(0, 0, 255);
-   ed->color.g = parse_int_range(1, 0, 255);
-   ed->color.b = parse_int_range(2, 0, 255);
-   ed->color.a = parse_int_range(3, 0, 255);
-}
-
-static void
-st_collections_group_parts_part_description_color2(void)
-{
-   Edje_Part_Collection *pc;
-   Edje_Part *ep;
-   Edje_Part_Description *ed;
-
-   check_arg_count(4);
-
-   pc = evas_list_data(evas_list_last(edje_collections));
-   ep = evas_list_data(evas_list_last(pc->parts));
-   ed = ep->default_desc;
-   if (ep->other_desc) ed = evas_list_data(evas_list_last(ep->other_desc));
-   ed->color2.r = parse_int_range(0, 0, 255);
-   ed->color2.g = parse_int_range(1, 0, 255);
-   ed->color2.b = parse_int_range(2, 0, 255);
-   ed->color2.a = parse_int_range(3, 0, 255);
-}
-
-static void
-st_collections_group_parts_part_description_color3(void)
-{
-   Edje_Part_Collection *pc;
-   Edje_Part *ep;
-   Edje_Part_Description *ed;
-
-   check_arg_count(4);
-
-   pc = evas_list_data(evas_list_last(edje_collections));
-   ep = evas_list_data(evas_list_last(pc->parts));
-   ed = ep->default_desc;
-   if (ep->other_desc) ed = evas_list_data(evas_list_last(ep->other_desc));
-   ed->color3.r = parse_int_range(0, 0, 255);
-   ed->color3.g = parse_int_range(1, 0, 255);
-   ed->color3.b = parse_int_range(2, 0, 255);
-   ed->color3.a = parse_int_range(3, 0, 255);
-}
-
+    @property
+        text
+    @parameters
+        [a string of text, or nothing]
+    @effect
+        Sets the default content of a text part, normally the application is
+        the one changing its value.
+    @endproperty
+*/
 static void
 st_collections_group_parts_part_description_text_text(void)
 {
@@ -2066,6 +3411,18 @@ st_collections_group_parts_part_description_text_text(void)
    ed->text.text = str;
 }
 
+/**
+    @page edcref
+
+    @property
+        text_class
+    @parameters
+        [text class name]
+    @effect
+        Similar to color_class, this is the name used by the application
+        to alter the font family and size at runtime.
+    @endproperty
+*/
 static void
 st_collections_group_parts_part_description_text_text_class(void)
 {
@@ -2092,6 +3449,18 @@ st_collections_group_parts_part_description_text_text_class(void)
    ed->text.text_class = parse_str(0);
 }
 
+/**
+    @page edcref
+
+    @property
+        font
+    @parameters
+        [font alias]
+    @effect
+        This sets the font family to one of the aliases set up in the "fonts"
+        block. Can be overrided by the application.
+    @endproperty
+*/
 static void
 st_collections_group_parts_part_description_text_font(void)
 {
@@ -2117,6 +3486,18 @@ st_collections_group_parts_part_description_text_font(void)
    ed->text.font = parse_str(0);
 }
 
+/**
+    @page edcref
+
+    @property
+        style
+    @parameters
+        [the style name]
+    @effect
+        Causes the part to use the default style and tags defined in the
+        "style" block with the specified name.
+    @endproperty
+*/
 static void
 st_collections_group_parts_part_description_text_style(void)
 {
@@ -2142,6 +3523,18 @@ st_collections_group_parts_part_description_text_style(void)
    ed->text.style = parse_str(0);
 }
 
+/**
+    @page edcref
+
+    @property
+        size
+    @parameters
+        [font size in points (pt)]
+    @effect
+        Sets the default font size for the text part. Can be overrided by the
+        application.
+    @endproperty
+*/
 static void
 st_collections_group_parts_part_description_text_size(void)
 {
@@ -2167,31 +3560,18 @@ st_collections_group_parts_part_description_text_size(void)
    ed->text.size = parse_int_range(0, 0, 255);
 }
 
-static void
-st_collections_group_parts_part_effect(void)
-{
-   Edje_Part_Collection *pc;
-   Edje_Part *ep;
+/**
+    @page edcref
 
-   check_arg_count(1);
-
-   pc = evas_list_data(evas_list_last(edje_collections));
-   ep = evas_list_data(evas_list_last(pc->parts));
-   ep->effect = parse_enum(0, 
-			   "NONE", EDJE_TEXT_EFFECT_NONE,
-			   "PLAIN", EDJE_TEXT_EFFECT_PLAIN,
-			   "OUTLINE", EDJE_TEXT_EFFECT_OUTLINE,
-			   "SOFT_OUTLINE", EDJE_TEXT_EFFECT_SOFT_OUTLINE,
-			   "SHADOW", EDJE_TEXT_EFFECT_SHADOW,
-			   "SOFT_SHADOW", EDJE_TEXT_EFFECT_SOFT_SHADOW,
-			   "OUTLINE_SHADOW", EDJE_TEXT_EFFECT_OUTLINE_SHADOW,
-			   "OUTLINE_SOFT_SHADOW", EDJE_TEXT_EFFECT_OUTLINE_SOFT_SHADOW,
-			   "FAR_SHADOW", EDJE_TEXT_EFFECT_FAR_SHADOW,
-			   "FAR_SOFT_SHADOW", EDJE_TEXT_EFFECT_FAR_SOFT_SHADOW,
-			   "GLOW", EDJE_TEXT_EFFECT_GLOW,
-			   NULL);
-}
-
+    @property
+        fit
+    @parameters
+        [horizontal] [vertical]
+    @effect
+        When any of the parameters is set to 1 edje will resize the text for it
+        to fit in it's container. Both are disabled by default.
+    @endproperty
+*/
 static void
 st_collections_group_parts_part_description_text_fit(void)
 {
@@ -2218,6 +3598,19 @@ st_collections_group_parts_part_description_text_fit(void)
    ed->text.fit_y = parse_bool(1);
 }
 
+/**
+    @page edcref
+
+    @property
+        min
+    @parameters
+        [horizontal] [vertical]
+    @effect
+        When any of the parameters is enabled (1) it forces the minimum size of
+        the container to be equal to the minimum size of the text. The default
+        value is "0 0".
+    @endproperty
+*/
 static void
 st_collections_group_parts_part_description_text_min(void)
 {
@@ -2245,6 +3638,19 @@ st_collections_group_parts_part_description_text_min(void)
    ed->text.min_y = parse_bool(1);
 }
 
+/**
+    @page edcref
+
+    @property
+        max
+    @parameters
+        [horizontal] [vertical]
+    @effect
+        When any of the parameters is enabled (1) it forces the maximum size of
+        the container to be equal to the maximum size of the text. The default
+        value is "0 0".
+    @endproperty
+*/
 static void
 st_collections_group_parts_part_description_text_max(void)
 {
@@ -2272,6 +3678,18 @@ st_collections_group_parts_part_description_text_max(void)
    ed->text.max_y = parse_bool(1);
 }
 
+/**
+    @page edcref
+
+    @property
+        align
+    @parameters
+        [horizontal] [vertical]
+    @effect
+        Change the position of the point of balance inside the container. The
+        default value is 0.5 0.5.
+    @endproperty
+*/
 static void
 st_collections_group_parts_part_description_text_align(void)
 {
@@ -2298,6 +3716,18 @@ st_collections_group_parts_part_description_text_align(void)
    ed->text.align.y = parse_float_range(1, 0.0, 1.0);
 }
 
+/**
+    @page edcref
+
+    @property
+        source
+    @parameters
+        [another TEXT part's name]
+    @effect
+        Causes the part to use the text properties (like font and size) of
+        another part and update them as they change.
+    @endproperty
+*/
 static void
 st_collections_group_parts_part_description_text_source(void)
 {
@@ -2330,6 +3760,18 @@ st_collections_group_parts_part_description_text_source(void)
      }
 }
 
+/**
+    @page edcref
+
+    @property
+        text_source
+    @parameters
+        [another TEXT part's name]
+    @effect
+        Causes the part to display the text content of another part and update
+        them as they change.
+    @endproperty
+*/
 static void
 st_collections_group_parts_part_description_text_text_source(void)
 {
@@ -2362,58 +3804,19 @@ st_collections_group_parts_part_description_text_text_source(void)
      }
 }
 
-static void
-st_collections_group_parts_part_description_fill_angle(void)
-{
-   Edje_Part_Collection *pc;
-   Edje_Part *ep;
-   Edje_Part_Description *ed;
+/**
+    @page edcref
 
-   check_arg_count(1);
-
-   pc = evas_list_data(evas_list_last(edje_collections));
-   ep = evas_list_data(evas_list_last(pc->parts));
-
-   /* XXX this will need to include IMAGES when angle support is added to evas images */
-   if (ep->type != EDJE_PART_TYPE_GRADIENT)
-     {
-	fprintf(stderr, "%s: Error. parse error %s:%i. "
-		"gradient attributes in non-GRADIENT part.\n",
-		progname, file_in, line - 1);
-	exit(-1);
-     }
-
-   ed = ep->default_desc;
-   if (ep->other_desc) ed = evas_list_data(evas_list_last(ep->other_desc));
-   ed->fill.angle = parse_int_range(0, 0, 360);
-}
-
-static void
-st_collections_group_parts_part_description_fill_spread(void)
-{
-   Edje_Part_Collection *pc;
-   Edje_Part *ep;
-   Edje_Part_Description *ed;
-
-   check_arg_count(1);
-
-   pc = evas_list_data(evas_list_last(edje_collections));
-   ep = evas_list_data(evas_list_last(pc->parts));
-
-   /* XXX this will need to include IMAGES when spread support is added to evas images */
-   if (ep->type != EDJE_PART_TYPE_GRADIENT)
-     {
-	fprintf(stderr, "%s: Error. parse error %s:%i. "
-		"gradient attributes in non-GRADIENT part.\n",
-		progname, file_in, line - 1);
-	exit(-1);
-     }
-
-   ed = ep->default_desc;
-   if (ep->other_desc) ed = evas_list_data(evas_list_last(ep->other_desc));
-   ed->fill.spread = parse_int_range(0, 0, 1);
-}
-
+    @property
+        text_elipsis
+    @parameters
+        [point of balance]
+    @effect
+        Used to balance the text in a relative point from 0.0 to 1.0, this
+        point is the last section of the string to be cut out in case of a
+        resize that is smaller than the text itself. The default value is 0.0.
+    @endproperty
+*/
 static void
 st_collections_group_parts_part_description_text_elipsis(void)
 {
@@ -2700,34 +4103,6 @@ st_collections_group_programs_program_in(void)
 }
 
 static void
-st_collections_group_parts_part_description_fill_type(void)
-{
-   Edje_Part_Collection *pc;
-   Edje_Part *ep;
-   Edje_Part_Description *ed;
-
-   check_arg_count(1);
-
-   pc = evas_list_data(evas_list_last(edje_collections));
-   ep = evas_list_data(evas_list_last(pc->parts));
-   ed = ep->default_desc;
-   if (ep->other_desc) ed = evas_list_data(evas_list_last(ep->other_desc));
-
-   if (ep->type != EDJE_PART_TYPE_IMAGE)
-     {
-	fprintf(stderr, "%s: Error. parse error %s:%i. "
-		"fill attributes in non-IMAGE part.\n",
-		progname, file_in, line - 1);
-	exit(-1);
-     }
-
-   ed->fill.type = parse_enum(0,
-                              "SCALE", EDJE_FILL_TYPE_SCALE,
-                              "TILE", EDJE_FILL_TYPE_TILE,
-                              NULL);
-}
-
-static void
 st_collections_group_programs_program_action(void)
 {
    Edje_Part_Collection *pc;
@@ -2897,3 +4272,7 @@ ob_collections_group_programs_program_script(void)
 	  }
      }
 }
+/**
+    @page edcref
+    </table>
+*/

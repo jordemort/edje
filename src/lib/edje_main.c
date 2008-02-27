@@ -4,6 +4,8 @@
 
 #include <time.h>
 
+#include <Ecore_Job.h>
+
 #include "Edje.h"
 #include "edje_private.h"
 
@@ -21,6 +23,7 @@ edje_init(void)
    initted++;
    if (initted == 1)
      {
+        ecore_job_init();
 	srand(time(NULL));
 	_edje_edd_setup();
 	_edje_text_init();
@@ -40,6 +43,10 @@ edje_shutdown(void)
    initted--;
    if (initted > 0) return initted;
 
+   if (_edje_timer)
+     ecore_animator_del(_edje_timer);
+   _edje_timer = NULL;
+
    _edje_file_cache_shutdown();
    _edje_message_shutdown();
    _edje_edd_free();
@@ -48,6 +55,7 @@ edje_shutdown(void)
    _edje_text_class_members_free();
    _edje_text_class_hash_free();
    embryo_shutdown();
+   ecore_job_shutdown();
    
    return 0;
 }
@@ -58,7 +66,7 @@ Edje *
 _edje_add(Evas_Object *obj)
 {
    Edje *ed;
-   
+
    ed = calloc(1, sizeof(Edje));
    if (!ed) return NULL;
    ed->evas = evas_object_evas_get(obj);
@@ -95,7 +103,7 @@ _edje_del(Edje *ed)
    while (ed->actions)
      {
 	Edje_Running_Program *runp;
-	
+
 	runp = ed->actions->data;
 	ed->actions = evas_list_remove(ed->actions, runp);
 	free(runp);
@@ -103,7 +111,7 @@ _edje_del(Edje *ed)
    while (ed->pending_actions)
      {
 	Edje_Pending_Program *pp;
-	
+
 	pp = ed->pending_actions->data;
 	ed->pending_actions = evas_list_remove(ed->pending_actions, pp);
 	free(pp);
@@ -111,7 +119,7 @@ _edje_del(Edje *ed)
    while (ed->callbacks)
      {
 	Edje_Signal_Callback *escb;
-	
+
 	escb = ed->callbacks->data;
 	ed->callbacks = evas_list_remove(ed->callbacks, escb);
 	if (escb->signal) evas_stringshare_del(escb->signal);
@@ -121,7 +129,7 @@ _edje_del(Edje *ed)
    while (ed->color_classes)
      {
 	Edje_Color_Class *cc;
-	
+
 	cc = ed->color_classes->data;
 	ed->color_classes = evas_list_remove(ed->color_classes, cc);
 	if (cc->name) evas_stringshare_del(cc->name);
@@ -130,7 +138,7 @@ _edje_del(Edje *ed)
    while (ed->text_classes)
      {
 	Edje_Text_Class *tc;
-	
+
 	tc = ed->text_classes->data;
 	ed->text_classes = evas_list_remove(ed->text_classes, tc);
 	if (tc->name) evas_stringshare_del(tc->name);
