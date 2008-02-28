@@ -10,8 +10,8 @@ install/libedje-doc::
 	cp -R $(DEB_SRCDIR)/doc/html debian/libedje-doc/usr/share/doc/libedje-doc/
 	rm $(DEB_SRCDIR)/doc/man/man3/todo.3
 
-clean/libedje-doc::
-	rm -rf $(DEB_SRCDIR)/doc/html $(DEB_SRCDIR)/doc/latex $(DEB_SRCDIR)/doc/
+clean::
+	rm -rf $(DEB_SRCDIR)/doc/html $(DEB_SRCDIR)/doc/latex $(DEB_SRCDIR)/doc/man
 
 DEB_INSTALL_MANPAGES_libedje-doc := $(DEB_SRCDIR)/doc/man/man3/*.3
 DEB_DH_STRIP_ARGS := --dbg-package=libedje-dbg
