@@ -3,7 +3,7 @@
 include /usr/share/cdbs/1/class/autotools.mk
 include /usr/share/cdbs/1/rules/debhelper.mk
 
-configure/libedje-doc::
+build/libedje-doc::
 	cd $(DEB_SRCDIR) && ./gendoc
 
 install/libedje-doc::
