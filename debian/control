@@ -2,12 +2,12 @@ Source: edje
 Section: libs
 Priority: optional
 Maintainer:  Debian Pkg-e Team <pkg-e-devel@lists.alioth.debian.org>
-Uploaders: Albin Tonnerre <albin.tonnerre@gmail.com>
+Uploaders: Albin Tonnerre <albin.tonnerre@gmail.com>, Xavier Oswald <x.oswald@free.fr>
 Build-Depends: debhelper (>= 6), cdbs, libeet-dev, libevas-dev, libecore-dev, libecore-evas-dev, libecore-job-dev, libembryo-dev, doxygen
 Standards-Version: 3.7.3
-Homepage: http://enlightenment.org
 Vcs-Git: git://git.debian.org/pkg-e/libs/edje.git
 Vcs-Browser: http://git.debian.org/?p=pkg-e/libs/edje.git
+Homepage: http://enlightenment.org
 
 Package: libedje-bin
 Architecture: any
