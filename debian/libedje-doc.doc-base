@@ -3,7 +3,7 @@ Title: Edje Guide
 Author: Carsten Haitzler
 Abstract: This document describes Edje API
  and provides sample C code.
-Section: Apps/Programming
+Section: Programming/C
 
 Format: HTML
 Index: /usr/share/doc/libedje-doc/html/index.html
