@@ -1,5 +1,9 @@
 edje (0.5.0.042-1) experimental; urgency=low
 
   * Initial Release (Closes: #468267)
+  * Apply patch from Niv Sardi <xaiki@debian.org> and change it to
+    document the license for data/* and doc/*. Also refer to
+    common-licenses on Debian.
 
- -- Jan Lübbe <jluebbe@debian.org>  Fri, 07 Mar 2008 15:50:27 +0100
+ -- Jan Lübbe <jluebbe@debian.org>  Wed, 19 Mar 2008 14:42:22 +0100
+
