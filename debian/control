@@ -48,7 +48,7 @@ Description: libedje0 development documentation
 Package: libedje-dev
 Architecture: any
 Section: libdevel
-Depends: libedje0 (= ${binary:Version}), libevas-dev, pkg-config
+Depends: libedje0 (= ${binary:Version}), libeet-dev, libevas-dev, libecore-dev, libembryo-dev, pkg-config
 Description: libedje headers and static libraries
  Edje is a graphical layout and animation library for animated resizable,
  compressed and scalable themes. It is the theming engine behind
