@@ -1,11 +1,11 @@
-edje (0.5.0.042-2) UNRELEASED; urgency=low
+edje (0.5.0.042-2) experimental; urgency=low
 
   [ Jan Luebbe ]
   * Add support for keeping patches as git commits and build-depend on quilt
   * Add workaround for libtool option reordering
   * Enable -Wl,--as-needed
 
- -- Jan Lübbe <jluebbe@debian.org>  Sun, 04 May 2008 18:36:43 +0200
+ -- Jan Lübbe <jluebbe@debian.org>  Sun, 04 May 2008 22:33:41 +0200
 
 edje (0.5.0.042-1) experimental; urgency=low
 
