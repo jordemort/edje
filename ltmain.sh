@@ -1794,6 +1794,11 @@ EOF
 	arg=`$echo "X$arg" | $Xsed -e "s/^ //"`
 	;;
 
+      -Wl,--as-needed)
+	deplibs="$deplibs $arg"
+	continue
+	;; 
+
       -Wl,*)
 	args=`$echo "X$arg" | $Xsed -e "$sed_quote_subst" -e 's/^-Wl,//'`
 	arg=
@@ -2137,6 +2142,15 @@ EOF
 	lib=
 	found=no
 	case $deplib in
+	-Wl,--as-needed)
+	  if test "$linkmode,$pass" = "prog,link"; then
+	    compile_deplibs="$deplib $compile_deplibs"
+	    finalize_deplibs="$deplib $finalize_deplibs"
+	  else
+	    deplibs="$deplib $deplibs"
+	  fi
+	  continue
+	  ;;
 	-mt|-mthreads|-kthread|-Kthread|-pthread|-pthreads|--thread-safe|-threads)
 	  if test "$linkmode,$pass" = "prog,link"; then
 	    compile_deplibs="$deplib $compile_deplibs"
