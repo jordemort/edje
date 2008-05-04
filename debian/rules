@@ -2,6 +2,7 @@
 
 include /usr/share/cdbs/1/class/autotools.mk
 include /usr/share/cdbs/1/rules/debhelper.mk
+include /usr/share/cdbs/1/rules/patchsys-quilt.mk
 
 build/libedje-doc::
 	cd $(DEB_SRCDIR) && doxygen
@@ -18,3 +19,13 @@ clean::
 #DEB_INSTALL_MANPAGES_libedje-doc := $(DEB_SRCDIR)/doc/man/man3/*.3
 DEB_DH_STRIP_ARGS := --dbg-package=libedje-dbg
 DEB_CONFIGURE_EXTRA_FLAGS := --disable-rpath
+
+refresh-patches:
+	@dh_testdir
+	@echo 'refreshing debian/patches:'
+	@rm -rf '$(CURDIR)'/debian/patches
+	@mkdir -p '$(CURDIR)'/debian/patches
+	@cd '$(CURDIR)'/debian/patches && git format-patch upstream..upstream+patches | tee series
+	@sed -i s:^debian/patches/:: '$(CURDIR)'/debian/patches/series
+	@echo .
+
