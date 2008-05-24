@@ -1,0 +1,1139 @@
+\hypertarget{edje_8c}{
+\section{edje.c File Reference}
+\label{edje_8c}\index{edje.c@{edje.c}}
+}
+
+
+\subsection{Detailed Description}
+Edje Graphical Design Library. 
+
+These routines are used for Edje. 
+
+\subsection*{Functions}
+\begin{CompactItemize}
+\item 
+EAPI int \hyperlink{edje_8c_18ea124be2b5f786aff0f2c3ba87883e}{edje\_\-init} (void)
+\begin{CompactList}\small\item\em Initialize the EDJE library. \item\end{CompactList}\item 
+EAPI int \hyperlink{edje_8c_f1529d06494668cf647e3160b48a0e2b}{edje\_\-shutdown} (void)
+\begin{CompactList}\small\item\em Shutdown the EDJE library. \item\end{CompactList}\item 
+EAPI void \hyperlink{edje_8c_f0f430696a6e26a5cd0c3c3eeda129c7}{edje\_\-frametime\_\-set} (double t)
+\begin{CompactList}\small\item\em Set the frametime. \item\end{CompactList}\item 
+EAPI double \hyperlink{edje_8c_2ef192918d2add6a84a86186af90332f}{edje\_\-frametime\_\-get} (void)
+\begin{CompactList}\small\item\em Get the frametime. \item\end{CompactList}\item 
+EAPI void \hyperlink{edje_8c_2c8aa4b00235985a3ff93fcd3ce5a4c4}{edje\_\-freeze} (void)
+\begin{CompactList}\small\item\em Freeze all Edje objects in the current process. \item\end{CompactList}\item 
+EAPI void \hyperlink{edje_8c_559a1db557773c41d4c4f8afd4d99b2d}{edje\_\-thaw} (void)
+\begin{CompactList}\small\item\em Thaw all Edje objects in the current process. \item\end{CompactList}\item 
+EAPI Evas\_\-List $\ast$ \hyperlink{edje_8c_a4259a904fe9d67913e31df9d5e4cc03}{edje\_\-file\_\-collection\_\-list} (const char $\ast$file)
+\begin{CompactList}\small\item\em Get a list of groups in an edje file. \item\end{CompactList}\item 
+EAPI void \hyperlink{edje_8c_ed95eee32d4749d9f1f7acadd15d8480}{edje\_\-file\_\-collection\_\-list\_\-free} (Evas\_\-List $\ast$lst)
+\begin{CompactList}\small\item\em Free file collection list. \item\end{CompactList}\item 
+EAPI int \hyperlink{edje_8c_72636e3d68ba3cd27c4e4d63cd367dcb}{edje\_\-file\_\-group\_\-exists} (const char $\ast$file, const char $\ast$glob)
+\begin{CompactList}\small\item\em Determine whether a group matching glob exists in an edje file. \item\end{CompactList}\item 
+EAPI char $\ast$ \hyperlink{edje_8c_a676d8e3e2cd85acd951d4206b3c7959}{edje\_\-file\_\-data\_\-get} (const char $\ast$file, const char $\ast$key)
+\begin{CompactList}\small\item\em Get data from the file level data block of an edje file. \item\end{CompactList}\item 
+EAPI void \hyperlink{edje_8c_3552a01c49cc5b43071903d34439b0e0}{edje\_\-color\_\-class\_\-set} (const char $\ast$color\_\-class, int r, int g, int b, int a, int r2, int g2, int b2, int a2, int r3, int g3, int b3, int a3)
+\begin{CompactList}\small\item\em Set Edje color class. \item\end{CompactList}\item 
+EAPI void \hyperlink{edje_8c_0d30416497554e3f50c893de5c0cccad}{edje\_\-color\_\-class\_\-del} (const char $\ast$color\_\-class)
+\item 
+EAPI Evas\_\-List $\ast$ \hyperlink{edje_8c_0b7af1f29fd39b9c9608eaeba784c860}{edje\_\-color\_\-class\_\-list} (void)
+\begin{CompactList}\small\item\em Lists all color classes known about by the current process. \item\end{CompactList}\item 
+EAPI void \hyperlink{edje_8c_8913b21baad418b111da8b3f7a32d9bf}{edje\_\-text\_\-class\_\-set} (const char $\ast$text\_\-class, const char $\ast$font, Evas\_\-Font\_\-Size size)
+\begin{CompactList}\small\item\em Set the Edje text class. \item\end{CompactList}\item 
+EAPI void \hyperlink{edje_8c_b64222c463060368d279ecdeee726dd6}{edje\_\-text\_\-class\_\-del} (const char $\ast$text\_\-class)
+\item 
+EAPI Evas\_\-List $\ast$ \hyperlink{edje_8c_620b50416b3c0f556c16b18f83a4680f}{edje\_\-text\_\-class\_\-list} (void)
+\begin{CompactList}\small\item\em Lists all text classes known about by the current process. \item\end{CompactList}\item 
+EAPI void \hyperlink{edje_8c_582ecbc68fe849d6113970ba114dedb5}{edje\_\-extern\_\-object\_\-min\_\-size\_\-set} (Evas\_\-Object $\ast$obj, Evas\_\-Coord minw, Evas\_\-Coord minh)
+\begin{CompactList}\small\item\em Set the object minimum size. \item\end{CompactList}\item 
+EAPI void \hyperlink{edje_8c_1d065b6283f42769a57e62a34cf59bcc}{edje\_\-extern\_\-object\_\-max\_\-size\_\-set} (Evas\_\-Object $\ast$obj, Evas\_\-Coord maxw, Evas\_\-Coord maxh)
+\begin{CompactList}\small\item\em Set the object maximum size. \item\end{CompactList}\item 
+EAPI void \hyperlink{edje_8c_68b0dcef7775863fadadf07b8945f42b}{edje\_\-extern\_\-object\_\-aspect\_\-set} (Evas\_\-Object $\ast$obj, Edje\_\-Aspect\_\-Control aspect, Evas\_\-Coord aw, Evas\_\-Coord ah)
+\begin{CompactList}\small\item\em Set the object aspect size. \item\end{CompactList}\item 
+EAPI Evas\_\-Object $\ast$ \hyperlink{edje_8c_aee005c25b8da7ee407942122ccae0c7}{edje\_\-object\_\-add} (Evas $\ast$evas)
+\begin{CompactList}\small\item\em Constructs the Edje object. \item\end{CompactList}\item 
+EAPI const char $\ast$ \hyperlink{edje_8c_0d734122a228b8a9e4e4e9f4e3200c96}{edje\_\-object\_\-data\_\-get} (Evas\_\-Object $\ast$obj, const char $\ast$key)
+\begin{CompactList}\small\item\em Get Edje object data. \item\end{CompactList}\item 
+EAPI int \hyperlink{edje_8c_3709153c22d46631f53f585d6ae4113b}{edje\_\-object\_\-file\_\-set} (Evas\_\-Object $\ast$obj, const char $\ast$file, const char $\ast$part)
+\begin{CompactList}\small\item\em Sets the EET file and group to load {\em obj\/} from. \item\end{CompactList}\item 
+EAPI void \hyperlink{edje_8c_cfed0fd5e5509a53e946b11cf4ce7ff9}{edje\_\-object\_\-file\_\-get} (Evas\_\-Object $\ast$obj, const char $\ast$$\ast$file, const char $\ast$$\ast$part)
+\begin{CompactList}\small\item\em Get the file and group name that {\em obj\/} was loaded from. \item\end{CompactList}\item 
+EAPI int \hyperlink{edje_8c_b1ebd5eb7c55222f5fafdefbba1c515f}{edje\_\-object\_\-load\_\-error\_\-get} (Evas\_\-Object $\ast$obj)
+\begin{CompactList}\small\item\em Gets the Edje load error. \item\end{CompactList}\item 
+EAPI void \hyperlink{edje_8c_700d424448139fa85a09906b67dbd62c}{edje\_\-object\_\-signal\_\-emit} (Evas\_\-Object $\ast$obj, const char $\ast$emission, const char $\ast$source)
+\begin{CompactList}\small\item\em Send a signal to the Edje object. \item\end{CompactList}\item 
+EAPI void \hyperlink{edje_8c_33aad219f49881b046279abca29ace12}{edje\_\-object\_\-play\_\-set} (Evas\_\-Object $\ast$obj, int play)
+\begin{CompactList}\small\item\em Set the Edje to play or pause. \item\end{CompactList}\item 
+EAPI int \hyperlink{edje_8c_65651e53be864ac806c90eb56705656d}{edje\_\-object\_\-play\_\-get} (Evas\_\-Object $\ast$obj)
+\begin{CompactList}\small\item\em Get the Edje play/pause state. \item\end{CompactList}\item 
+EAPI void \hyperlink{edje_8c_616158629343e89a3ed333d87100f95b}{edje\_\-object\_\-animation\_\-set} (Evas\_\-Object $\ast$obj, int on)
+\begin{CompactList}\small\item\em Set Animation state. \item\end{CompactList}\item 
+EAPI int \hyperlink{edje_8c_3f165b957c4ce7789bab0f96b83ab85c}{edje\_\-object\_\-animation\_\-get} (Evas\_\-Object $\ast$obj)
+\begin{CompactList}\small\item\em Get the animation state. \item\end{CompactList}\item 
+EAPI int \hyperlink{edje_8c_d5a18a94f5d960ec048344405c427e66}{edje\_\-object\_\-freeze} (Evas\_\-Object $\ast$obj)
+\begin{CompactList}\small\item\em Freeze object. \item\end{CompactList}\item 
+EAPI int \hyperlink{edje_8c_aacbe9411555a39261a7fe883b502149}{edje\_\-object\_\-thaw} (Evas\_\-Object $\ast$obj)
+\begin{CompactList}\small\item\em Thaw object. \item\end{CompactList}\item 
+EAPI void \hyperlink{edje_8c_f7ab2c66bb1793bf26d56d322abb9fee}{edje\_\-object\_\-color\_\-class\_\-set} (Evas\_\-Object $\ast$obj, const char $\ast$color\_\-class, int r, int g, int b, int a, int r2, int g2, int b2, int a2, int r3, int g3, int b3, int a3)
+\begin{CompactList}\small\item\em Sets the object color class. \item\end{CompactList}\item 
+EAPI void \hyperlink{edje_8c_88a517de928e71069ef64316bde6b392}{edje\_\-object\_\-color\_\-class\_\-del} (Evas\_\-Object $\ast$obj, const char $\ast$color\_\-class)
+\item 
+EAPI void \hyperlink{edje_8c_ab2beb131b3faf5a3b687ab7d16ec10d}{edje\_\-object\_\-text\_\-class\_\-set} (Evas\_\-Object $\ast$obj, const char $\ast$text\_\-class, const char $\ast$font, Evas\_\-Font\_\-Size size)
+\begin{CompactList}\small\item\em Sets Edje text class. \item\end{CompactList}\item 
+EAPI void \hyperlink{edje_8c_5aa26bbe4846410db16f053ce8e0c834}{edje\_\-object\_\-size\_\-min\_\-get} (Evas\_\-Object $\ast$obj, Evas\_\-Coord $\ast$minw, Evas\_\-Coord $\ast$minh)
+\begin{CompactList}\small\item\em Get the minimum size for an object. \item\end{CompactList}\item 
+EAPI void \hyperlink{edje_8c_19cb732b87093408ff1bbe58fe7b7241}{edje\_\-object\_\-size\_\-max\_\-get} (Evas\_\-Object $\ast$obj, Evas\_\-Coord $\ast$maxw, Evas\_\-Coord $\ast$maxh)
+\begin{CompactList}\small\item\em Get the maximum size for an object. \item\end{CompactList}\item 
+EAPI void \hyperlink{edje_8c_f699be7f8a8ea7bbbc24f4d930997449}{edje\_\-object\_\-calc\_\-force} (Evas\_\-Object $\ast$obj)
+\begin{CompactList}\small\item\em Force a Size/Geometry calculation. \item\end{CompactList}\item 
+EAPI void \hyperlink{edje_8c_f0d4d021bd06b39314596366e0f92df7}{edje\_\-object\_\-size\_\-min\_\-calc} (Evas\_\-Object $\ast$obj, Evas\_\-Coord $\ast$minw, Evas\_\-Coord $\ast$minh)
+\begin{CompactList}\small\item\em Calculate minimum size. \item\end{CompactList}\item 
+EAPI void \hyperlink{edje_8c_18bd6fd0f71c23b2d75a7ff3c9c9d52c}{edje\_\-object\_\-size\_\-min\_\-restricted\_\-calc} (Evas\_\-Object $\ast$obj, Evas\_\-Coord $\ast$minw, Evas\_\-Coord $\ast$minh, Evas\_\-Coord restrictedw, Evas\_\-Coord restrictedh)
+\begin{CompactList}\small\item\em Calculate minimum size. \item\end{CompactList}\item 
+EAPI int \hyperlink{edje_8c_64963b6f7ec23963b7b029b5bf5beaa3}{edje\_\-object\_\-part\_\-exists} (Evas\_\-Object $\ast$obj, const char $\ast$part)
+\begin{CompactList}\small\item\em Check if Edje part exists. \item\end{CompactList}\item 
+EAPI Evas\_\-Object $\ast$ \hyperlink{edje_8c_86be1d194d87fefc7e1174062b4cd6dc}{edje\_\-object\_\-part\_\-object\_\-get} (Evas\_\-Object $\ast$obj, const char $\ast$part)
+\begin{CompactList}\small\item\em Gets the Evas\_\-Object corresponding to a given part. \item\end{CompactList}\item 
+EAPI void \hyperlink{edje_8c_696bddc95393a6f087c1d64f655a0547}{edje\_\-object\_\-part\_\-geometry\_\-get} (Evas\_\-Object $\ast$obj, const char $\ast$part, Evas\_\-Coord $\ast$x, Evas\_\-Coord $\ast$y, Evas\_\-Coord $\ast$w, Evas\_\-Coord $\ast$h)
+\begin{CompactList}\small\item\em Get the geometry of an Edje part. \item\end{CompactList}\item 
+EAPI void \hyperlink{edje_8c_a1da7ccccfcf650d09e0f72523481cca}{edje\_\-object\_\-part\_\-text\_\-set} (Evas\_\-Object $\ast$obj, const char $\ast$part, const char $\ast$text)
+\begin{CompactList}\small\item\em Sets the text for an object part. \item\end{CompactList}\item 
+EAPI const char $\ast$ \hyperlink{edje_8c_01cea6fb68ea1f695d49f8b3827a90e5}{edje\_\-object\_\-part\_\-text\_\-get} (Evas\_\-Object $\ast$obj, const char $\ast$part)
+\begin{CompactList}\small\item\em Returns the text of the object part. \item\end{CompactList}\item 
+EAPI void \hyperlink{edje_8c_abb8e70c45e77960e06af627d7e9f553}{edje\_\-object\_\-part\_\-swallow} (Evas\_\-Object $\ast$obj, const char $\ast$part, Evas\_\-Object $\ast$obj\_\-swallow)
+\begin{CompactList}\small\item\em Swallows an object into the edje. \item\end{CompactList}\item 
+EAPI void \hyperlink{edje_8c_da07a85a52034271c85f36ecdd7c441c}{edje\_\-object\_\-part\_\-unswallow} (Evas\_\-Object $\ast$obj, Evas\_\-Object $\ast$obj\_\-swallow)
+\begin{CompactList}\small\item\em Unswallow an object. \item\end{CompactList}\item 
+EAPI Evas\_\-Object $\ast$ \hyperlink{edje_8c_bd8203b0ee5ac1bd00a71d847698518e}{edje\_\-object\_\-part\_\-swallow\_\-get} (Evas\_\-Object $\ast$obj, const char $\ast$part)
+\begin{CompactList}\small\item\em Get the object currently swallowed by a part. \item\end{CompactList}\item 
+EAPI const char $\ast$ \hyperlink{edje_8c_635a1035b99465cbf9c456cb977481b6}{edje\_\-object\_\-part\_\-state\_\-get} (Evas\_\-Object $\ast$obj, const char $\ast$part, double $\ast$val\_\-ret)
+\begin{CompactList}\small\item\em Returns the state of the Edje part. \item\end{CompactList}\item 
+EAPI int \hyperlink{edje_8c_6ef29926ac179b5ce65fefd416db704a}{edje\_\-object\_\-part\_\-drag\_\-dir\_\-get} (Evas\_\-Object $\ast$obj, const char $\ast$part)
+\begin{CompactList}\small\item\em Determine dragable directions. \item\end{CompactList}\item 
+EAPI void \hyperlink{edje_8c_15e856d8fe5132b6ef266fc37188d298}{edje\_\-object\_\-part\_\-drag\_\-value\_\-set} (Evas\_\-Object $\ast$obj, const char $\ast$part, double dx, double dy)
+\begin{CompactList}\small\item\em Set the dragable object location. \item\end{CompactList}\item 
+EAPI void \hyperlink{edje_8c_456e823a1e9455d7f83da9c32bc2228e}{edje\_\-object\_\-part\_\-drag\_\-value\_\-get} (Evas\_\-Object $\ast$obj, const char $\ast$part, double $\ast$dx, double $\ast$dy)
+\begin{CompactList}\small\item\em Get the dragable object location. \item\end{CompactList}\item 
+EAPI void \hyperlink{edje_8c_00dcca126990d2aa56525dda82d193d0}{edje\_\-object\_\-part\_\-drag\_\-size\_\-set} (Evas\_\-Object $\ast$obj, const char $\ast$part, double dw, double dh)
+\begin{CompactList}\small\item\em Set the dragable object size. \item\end{CompactList}\item 
+EAPI void \hyperlink{edje_8c_9d1a711dc57d8fff521ce7a7c53c19bd}{edje\_\-object\_\-part\_\-drag\_\-size\_\-get} (Evas\_\-Object $\ast$obj, const char $\ast$part, double $\ast$dw, double $\ast$dh)
+\begin{CompactList}\small\item\em Get the dragable object size. \item\end{CompactList}\item 
+EAPI void \hyperlink{edje_8c_bdcb3b14acc7735a6669b4f6b17d56af}{edje\_\-object\_\-part\_\-drag\_\-step\_\-set} (Evas\_\-Object $\ast$obj, const char $\ast$part, double dx, double dy)
+\begin{CompactList}\small\item\em Sets the drag step increment. \item\end{CompactList}\item 
+EAPI void \hyperlink{edje_8c_6e90318a0427b3f1b6a035a9fb77109d}{edje\_\-object\_\-part\_\-drag\_\-step\_\-get} (Evas\_\-Object $\ast$obj, const char $\ast$part, double $\ast$dx, double $\ast$dy)
+\begin{CompactList}\small\item\em Gets the drag step increment values. \item\end{CompactList}\item 
+EAPI void \hyperlink{edje_8c_f20c8c7847cf3b0c8337f0568736d412}{edje\_\-object\_\-part\_\-drag\_\-page\_\-set} (Evas\_\-Object $\ast$obj, const char $\ast$part, double dx, double dy)
+\begin{CompactList}\small\item\em Sets the page step increments. \item\end{CompactList}\item 
+EAPI void \hyperlink{edje_8c_512441eb69084c6f8674c30a15e5e687}{edje\_\-object\_\-part\_\-drag\_\-page\_\-get} (Evas\_\-Object $\ast$obj, const char $\ast$part, double $\ast$dx, double $\ast$dy)
+\begin{CompactList}\small\item\em Gets the page step increments. \item\end{CompactList}\item 
+EAPI void \hyperlink{edje_8c_ef0b060a7e024d17bb4354d5e3ec52db}{edje\_\-object\_\-part\_\-drag\_\-step} (Evas\_\-Object $\ast$obj, const char $\ast$part, double dx, double dy)
+\begin{CompactList}\small\item\em Steps the dragable x,y steps. \item\end{CompactList}\item 
+EAPI void \hyperlink{edje_8c_fbfe138382433b3f31b0b62ece0c6434}{edje\_\-object\_\-part\_\-drag\_\-page} (Evas\_\-Object $\ast$obj, const char $\ast$part, double dx, double dy)
+\begin{CompactList}\small\item\em Pages x,y steps. \item\end{CompactList}\item 
+EAPI void \hyperlink{edje_8c_4f440980b12bfda26e0d61738482b061}{edje\_\-object\_\-signal\_\-callback\_\-add} (Evas\_\-Object $\ast$obj, const char $\ast$emission, const char $\ast$source, void($\ast$func)(void $\ast$data, Evas\_\-Object $\ast$o, const char $\ast$emission, const char $\ast$source), void $\ast$data)
+\begin{CompactList}\small\item\em Add a callback for a signal emitted by {\em obj\/}. \item\end{CompactList}\item 
+EAPI void $\ast$ \hyperlink{edje_8c_7f84cd72e6f34f475f69b8946ee31b2b}{edje\_\-object\_\-signal\_\-callback\_\-del} (Evas\_\-Object $\ast$obj, const char $\ast$emission, const char $\ast$source, void($\ast$func)(void $\ast$data, Evas\_\-Object $\ast$o, const char $\ast$emission, const char $\ast$source))
+\begin{CompactList}\small\item\em Remove a callback from an object. \item\end{CompactList}\end{CompactItemize}
+
+
+\subsection{Function Documentation}
+\hypertarget{edje_8c_0d30416497554e3f50c893de5c0cccad}{
+\index{edje.c@{edje.c}!edje\_\-color\_\-class\_\-del@{edje\_\-color\_\-class\_\-del}}
+\index{edje\_\-color\_\-class\_\-del@{edje\_\-color\_\-class\_\-del}!edje.c@{edje.c}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}void edje\_\-color\_\-class\_\-del (const char $\ast$ {\em color\_\-class})}}
+\label{edje_8c_0d30416497554e3f50c893de5c0cccad}
+
+
+\begin{Desc}
+\item[Parameters:]
+\begin{description}
+\item[{\em color\_\-class}]Deletes any values at the process level for the specified color class. \end{description}
+\end{Desc}
+\hypertarget{edje_8c_0b7af1f29fd39b9c9608eaeba784c860}{
+\index{edje.c@{edje.c}!edje\_\-color\_\-class\_\-list@{edje\_\-color\_\-class\_\-list}}
+\index{edje\_\-color\_\-class\_\-list@{edje\_\-color\_\-class\_\-list}!edje.c@{edje.c}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}Evas\_\-List $\ast$ edje\_\-color\_\-class\_\-list (void)}}
+\label{edje_8c_0b7af1f29fd39b9c9608eaeba784c860}
+
+
+Lists all color classes known about by the current process. 
+
+\begin{Desc}
+\item[Returns:]A list of color class names (strings). These strings and the list must be free()'d by the caller. \end{Desc}
+\hypertarget{edje_8c_3552a01c49cc5b43071903d34439b0e0}{
+\index{edje.c@{edje.c}!edje\_\-color\_\-class\_\-set@{edje\_\-color\_\-class\_\-set}}
+\index{edje\_\-color\_\-class\_\-set@{edje\_\-color\_\-class\_\-set}!edje.c@{edje.c}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI void edje\_\-color\_\-class\_\-set (const char $\ast$ {\em color\_\-class}, \/  int {\em r}, \/  int {\em g}, \/  int {\em b}, \/  int {\em a}, \/  int {\em r2}, \/  int {\em g2}, \/  int {\em b2}, \/  int {\em a2}, \/  int {\em r3}, \/  int {\em g3}, \/  int {\em b3}, \/  int {\em a3})}}
+\label{edje_8c_3552a01c49cc5b43071903d34439b0e0}
+
+
+Set Edje color class. 
+
+\begin{Desc}
+\item[Parameters:]
+\begin{description}
+\item[{\em color\_\-class}]\item[{\em r}]Object Red value \item[{\em g}]Object Green value \item[{\em b}]Object Blue value \item[{\em a}]Object Alpha value \item[{\em r2}]Outline Red value \item[{\em g2}]Outline Green value \item[{\em b2}]Outline Blue value \item[{\em a2}]Outline Alpha value \item[{\em r3}]Shadow Red value \item[{\em g3}]Shadow Green value \item[{\em b3}]Shadow Blue value \item[{\em a3}]Shadow Alpha value\end{description}
+\end{Desc}
+Sets the color values for a process level color class. This will cause all edje parts in the current process that have the specified color class to have their colors multiplied by these values. (Object level color classes set by \hyperlink{edje_8c_f7ab2c66bb1793bf26d56d322abb9fee}{edje\_\-object\_\-color\_\-class\_\-set()} will override the values set by this function).
+
+The first color is the object, the second is the text outline, and the third is the text shadow. (Note that the second two only apply to text parts) \hypertarget{edje_8c_68b0dcef7775863fadadf07b8945f42b}{
+\index{edje.c@{edje.c}!edje\_\-extern\_\-object\_\-aspect\_\-set@{edje\_\-extern\_\-object\_\-aspect\_\-set}}
+\index{edje\_\-extern\_\-object\_\-aspect\_\-set@{edje\_\-extern\_\-object\_\-aspect\_\-set}!edje.c@{edje.c}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI void edje\_\-extern\_\-object\_\-aspect\_\-set (Evas\_\-Object $\ast$ {\em obj}, \/  Edje\_\-Aspect\_\-Control {\em aspect}, \/  Evas\_\-Coord {\em aw}, \/  Evas\_\-Coord {\em ah})}}
+\label{edje_8c_68b0dcef7775863fadadf07b8945f42b}
+
+
+Set the object aspect size. 
+
+\begin{Desc}
+\item[Parameters:]
+\begin{description}
+\item[{\em obj}]A valid Evas\_\-Object handle \item[{\em aspect}]The aspect control axes \item[{\em aw}]The aspect radio width \item[{\em ah}]The aspect ratio height\end{description}
+\end{Desc}
+This sets the desired aspect ratio to keep an object that will be swallowed by Edje. The width and height define a preferred size ASPECT and the object may be scaled to be larger or smaller, but retaining the relative scale of both aspect width and height. \hypertarget{edje_8c_1d065b6283f42769a57e62a34cf59bcc}{
+\index{edje.c@{edje.c}!edje\_\-extern\_\-object\_\-max\_\-size\_\-set@{edje\_\-extern\_\-object\_\-max\_\-size\_\-set}}
+\index{edje\_\-extern\_\-object\_\-max\_\-size\_\-set@{edje\_\-extern\_\-object\_\-max\_\-size\_\-set}!edje.c@{edje.c}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI void edje\_\-extern\_\-object\_\-max\_\-size\_\-set (Evas\_\-Object $\ast$ {\em obj}, \/  Evas\_\-Coord {\em maxw}, \/  Evas\_\-Coord {\em maxh})}}
+\label{edje_8c_1d065b6283f42769a57e62a34cf59bcc}
+
+
+Set the object maximum size. 
+
+\begin{Desc}
+\item[Parameters:]
+\begin{description}
+\item[{\em obj}]A valid Evas\_\-Object handle \item[{\em maxw}]The maximum width \item[{\em maxh}]The maximum height\end{description}
+\end{Desc}
+This sets the maximum size restriction for the object. \hypertarget{edje_8c_582ecbc68fe849d6113970ba114dedb5}{
+\index{edje.c@{edje.c}!edje\_\-extern\_\-object\_\-min\_\-size\_\-set@{edje\_\-extern\_\-object\_\-min\_\-size\_\-set}}
+\index{edje\_\-extern\_\-object\_\-min\_\-size\_\-set@{edje\_\-extern\_\-object\_\-min\_\-size\_\-set}!edje.c@{edje.c}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI void edje\_\-extern\_\-object\_\-min\_\-size\_\-set (Evas\_\-Object $\ast$ {\em obj}, \/  Evas\_\-Coord {\em minw}, \/  Evas\_\-Coord {\em minh})}}
+\label{edje_8c_582ecbc68fe849d6113970ba114dedb5}
+
+
+Set the object minimum size. 
+
+\begin{Desc}
+\item[Parameters:]
+\begin{description}
+\item[{\em obj}]A valid Evas\_\-Object handle \item[{\em minw}]The minimum width \item[{\em minh}]The minimum height\end{description}
+\end{Desc}
+This sets the minimum size restriction for the object. \hypertarget{edje_8c_a4259a904fe9d67913e31df9d5e4cc03}{
+\index{edje.c@{edje.c}!edje\_\-file\_\-collection\_\-list@{edje\_\-file\_\-collection\_\-list}}
+\index{edje\_\-file\_\-collection\_\-list@{edje\_\-file\_\-collection\_\-list}!edje.c@{edje.c}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI Evas\_\-List $\ast$ edje\_\-file\_\-collection\_\-list (const char $\ast$ {\em file})}}
+\label{edje_8c_a4259a904fe9d67913e31df9d5e4cc03}
+
+
+Get a list of groups in an edje file. 
+
+\begin{Desc}
+\item[Parameters:]
+\begin{description}
+\item[{\em file}]The path to the edje file\end{description}
+\end{Desc}
+\begin{Desc}
+\item[Returns:]The Evas\_\-List of group names (char $\ast$)\end{Desc}
+Note: the list must be freed using \hyperlink{edje_8c_ed95eee32d4749d9f1f7acadd15d8480}{edje\_\-file\_\-collection\_\-list\_\-free()} when you are done with it. \hypertarget{edje_8c_ed95eee32d4749d9f1f7acadd15d8480}{
+\index{edje.c@{edje.c}!edje\_\-file\_\-collection\_\-list\_\-free@{edje\_\-file\_\-collection\_\-list\_\-free}}
+\index{edje\_\-file\_\-collection\_\-list\_\-free@{edje\_\-file\_\-collection\_\-list\_\-free}!edje.c@{edje.c}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI void edje\_\-file\_\-collection\_\-list\_\-free (Evas\_\-List $\ast$ {\em lst})}}
+\label{edje_8c_ed95eee32d4749d9f1f7acadd15d8480}
+
+
+Free file collection list. 
+
+\begin{Desc}
+\item[Parameters:]
+\begin{description}
+\item[{\em lst}]The Evas\_\-List of groups\end{description}
+\end{Desc}
+Frees the list returned by \hyperlink{edje_8c_a4259a904fe9d67913e31df9d5e4cc03}{edje\_\-file\_\-collection\_\-list()}. \hypertarget{edje_8c_a676d8e3e2cd85acd951d4206b3c7959}{
+\index{edje.c@{edje.c}!edje\_\-file\_\-data\_\-get@{edje\_\-file\_\-data\_\-get}}
+\index{edje\_\-file\_\-data\_\-get@{edje\_\-file\_\-data\_\-get}!edje.c@{edje.c}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI char $\ast$ edje\_\-file\_\-data\_\-get (const char $\ast$ {\em file}, \/  const char $\ast$ {\em key})}}
+\label{edje_8c_a676d8e3e2cd85acd951d4206b3c7959}
+
+
+Get data from the file level data block of an edje file. 
+
+\begin{Desc}
+\item[Parameters:]
+\begin{description}
+\item[{\em file}]The path to the .edj file \item[{\em key}]The data key \end{description}
+\end{Desc}
+\begin{Desc}
+\item[Returns:]The string value of the data\end{Desc}
+If an edje file is built from the following edc:
+
+data \{ item: \char`\"{}key1\char`\"{} \char`\"{}value1\char`\"{}; item: \char`\"{}key2\char`\"{} \char`\"{}value2\char`\"{}; \} collections \{ ... \}
+
+Then, edje\_\-file\_\-data\_\-get(\char`\"{}key1\char`\"{}) will return \char`\"{}value1\char`\"{} \hypertarget{edje_8c_72636e3d68ba3cd27c4e4d63cd367dcb}{
+\index{edje.c@{edje.c}!edje\_\-file\_\-group\_\-exists@{edje\_\-file\_\-group\_\-exists}}
+\index{edje\_\-file\_\-group\_\-exists@{edje\_\-file\_\-group\_\-exists}!edje.c@{edje.c}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI int edje\_\-file\_\-group\_\-exists (const char $\ast$ {\em file}, \/  const char $\ast$ {\em glob})}}
+\label{edje_8c_72636e3d68ba3cd27c4e4d63cd367dcb}
+
+
+Determine whether a group matching glob exists in an edje file. 
+
+\begin{Desc}
+\item[Parameters:]
+\begin{description}
+\item[{\em file}]The file path \item[{\em glob}]A glob to match on\end{description}
+\end{Desc}
+\begin{Desc}
+\item[Returns:]1 if a match is found, 0 otherwise \end{Desc}
+\hypertarget{edje_8c_2ef192918d2add6a84a86186af90332f}{
+\index{edje.c@{edje.c}!edje\_\-frametime\_\-get@{edje\_\-frametime\_\-get}}
+\index{edje\_\-frametime\_\-get@{edje\_\-frametime\_\-get}!edje.c@{edje.c}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI double edje\_\-frametime\_\-get (void)}}
+\label{edje_8c_2ef192918d2add6a84a86186af90332f}
+
+
+Get the frametime. 
+
+\begin{Desc}
+\item[Returns:]The frametime\end{Desc}
+Returns the frametime in seconds, by default this is 1/30. \hypertarget{edje_8c_f0f430696a6e26a5cd0c3c3eeda129c7}{
+\index{edje.c@{edje.c}!edje\_\-frametime\_\-set@{edje\_\-frametime\_\-set}}
+\index{edje\_\-frametime\_\-set@{edje\_\-frametime\_\-set}!edje.c@{edje.c}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI void edje\_\-frametime\_\-set (double {\em t})}}
+\label{edje_8c_f0f430696a6e26a5cd0c3c3eeda129c7}
+
+
+Set the frametime. 
+
+\begin{Desc}
+\item[Parameters:]
+\begin{description}
+\item[{\em t}]The frametime\end{description}
+\end{Desc}
+Sets the global frametime in seconds, by default this is 1/30. \hypertarget{edje_8c_2c8aa4b00235985a3ff93fcd3ce5a4c4}{
+\index{edje.c@{edje.c}!edje\_\-freeze@{edje\_\-freeze}}
+\index{edje\_\-freeze@{edje\_\-freeze}!edje.c@{edje.c}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI void edje\_\-freeze (void)}}
+\label{edje_8c_2c8aa4b00235985a3ff93fcd3ce5a4c4}
+
+
+Freeze all Edje objects in the current process. 
+
+See \hyperlink{edje_8c_d5a18a94f5d960ec048344405c427e66}{edje\_\-object\_\-freeze()} for more. 
+
+References edje\_\-object\_\-freeze().\hypertarget{edje_8c_18ea124be2b5f786aff0f2c3ba87883e}{
+\index{edje.c@{edje.c}!edje\_\-init@{edje\_\-init}}
+\index{edje\_\-init@{edje\_\-init}!edje.c@{edje.c}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI int edje\_\-init (void)}}
+\label{edje_8c_18ea124be2b5f786aff0f2c3ba87883e}
+
+
+Initialize the EDJE library. 
+
+\begin{Desc}
+\item[Returns:]The new init count. \end{Desc}
+\hypertarget{edje_8c_aee005c25b8da7ee407942122ccae0c7}{
+\index{edje.c@{edje.c}!edje\_\-object\_\-add@{edje\_\-object\_\-add}}
+\index{edje\_\-object\_\-add@{edje\_\-object\_\-add}!edje.c@{edje.c}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI Evas\_\-Object $\ast$ edje\_\-object\_\-add (Evas $\ast$ {\em evas})}}
+\label{edje_8c_aee005c25b8da7ee407942122ccae0c7}
+
+
+Constructs the Edje object. 
+
+\begin{Desc}
+\item[Parameters:]
+\begin{description}
+\item[{\em evas}]A valid Evas handle \end{description}
+\end{Desc}
+\begin{Desc}
+\item[Returns:]The Evas\_\-Object pointer.\end{Desc}
+Creates the Edje smart object, returning the Evas\_\-Object handle. \hypertarget{edje_8c_3f165b957c4ce7789bab0f96b83ab85c}{
+\index{edje.c@{edje.c}!edje\_\-object\_\-animation\_\-get@{edje\_\-object\_\-animation\_\-get}}
+\index{edje\_\-object\_\-animation\_\-get@{edje\_\-object\_\-animation\_\-get}!edje.c@{edje.c}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI int edje\_\-object\_\-animation\_\-get (Evas\_\-Object $\ast$ {\em obj})}}
+\label{edje_8c_3f165b957c4ce7789bab0f96b83ab85c}
+
+
+Get the animation state. 
+
+\begin{Desc}
+\item[Parameters:]
+\begin{description}
+\item[{\em obj}]A valid Evas\_\-Object handle \end{description}
+\end{Desc}
+\begin{Desc}
+\item[Returns:]0 on Error or if not animated\par
+ 1 if animated \end{Desc}
+\hypertarget{edje_8c_616158629343e89a3ed333d87100f95b}{
+\index{edje.c@{edje.c}!edje\_\-object\_\-animation\_\-set@{edje\_\-object\_\-animation\_\-set}}
+\index{edje\_\-object\_\-animation\_\-set@{edje\_\-object\_\-animation\_\-set}!edje.c@{edje.c}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI void edje\_\-object\_\-animation\_\-set (Evas\_\-Object $\ast$ {\em obj}, \/  int {\em on})}}
+\label{edje_8c_616158629343e89a3ed333d87100f95b}
+
+
+Set Animation state. 
+
+\begin{Desc}
+\item[Parameters:]
+\begin{description}
+\item[{\em obj}]A valid Evas\_\-Object handle \item[{\em on}]Animation State\end{description}
+\end{Desc}
+Stop or start an Edje animation. \hypertarget{edje_8c_f699be7f8a8ea7bbbc24f4d930997449}{
+\index{edje.c@{edje.c}!edje\_\-object\_\-calc\_\-force@{edje\_\-object\_\-calc\_\-force}}
+\index{edje\_\-object\_\-calc\_\-force@{edje\_\-object\_\-calc\_\-force}!edje.c@{edje.c}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI void edje\_\-object\_\-calc\_\-force (Evas\_\-Object $\ast$ {\em obj})}}
+\label{edje_8c_f699be7f8a8ea7bbbc24f4d930997449}
+
+
+Force a Size/Geometry calculation. 
+
+\begin{Desc}
+\item[Parameters:]
+\begin{description}
+\item[{\em obj}]A valid Evas\_\-Object handle\end{description}
+\end{Desc}
+Forces the object {\tt obj} to recalculation layout regardless of freeze/thaw. \hypertarget{edje_8c_88a517de928e71069ef64316bde6b392}{
+\index{edje.c@{edje.c}!edje\_\-object\_\-color\_\-class\_\-del@{edje\_\-object\_\-color\_\-class\_\-del}}
+\index{edje\_\-object\_\-color\_\-class\_\-del@{edje\_\-object\_\-color\_\-class\_\-del}!edje.c@{edje.c}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}void edje\_\-object\_\-color\_\-class\_\-del (Evas\_\-Object $\ast$ {\em obj}, \/  const char $\ast$ {\em color\_\-class})}}
+\label{edje_8c_88a517de928e71069ef64316bde6b392}
+
+
+\begin{Desc}
+\item[Parameters:]
+\begin{description}
+\item[{\em color\_\-class}]Deletes any values at the object level for the specified object and color class. \end{description}
+\end{Desc}
+\hypertarget{edje_8c_f7ab2c66bb1793bf26d56d322abb9fee}{
+\index{edje.c@{edje.c}!edje\_\-object\_\-color\_\-class\_\-set@{edje\_\-object\_\-color\_\-class\_\-set}}
+\index{edje\_\-object\_\-color\_\-class\_\-set@{edje\_\-object\_\-color\_\-class\_\-set}!edje.c@{edje.c}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI void edje\_\-object\_\-color\_\-class\_\-set (Evas\_\-Object $\ast$ {\em obj}, \/  const char $\ast$ {\em color\_\-class}, \/  int {\em r}, \/  int {\em g}, \/  int {\em b}, \/  int {\em a}, \/  int {\em r2}, \/  int {\em g2}, \/  int {\em b2}, \/  int {\em a2}, \/  int {\em r3}, \/  int {\em g3}, \/  int {\em b3}, \/  int {\em a3})}}
+\label{edje_8c_f7ab2c66bb1793bf26d56d322abb9fee}
+
+
+Sets the object color class. 
+
+\begin{Desc}
+\item[Parameters:]
+\begin{description}
+\item[{\em obj}]A valid Evas\_\-Object handle \item[{\em color\_\-class}]\item[{\em r}]Object Red value \item[{\em g}]Object Green value \item[{\em b}]Object Blue value \item[{\em a}]Object Alpha value \item[{\em r2}]Outline Red value \item[{\em g2}]Outline Green value \item[{\em b2}]Outline Blue value \item[{\em a2}]Outline Alpha value \item[{\em r3}]Shadow Red value \item[{\em g3}]Shadow Green value \item[{\em b3}]Shadow Blue value \item[{\em a3}]Shadow Alpha value\end{description}
+\end{Desc}
+Sets the color values for an object level color class. This will cause all edje parts in the specified object that have the specified color class to have their colors multiplied by these values.
+
+The first color is the object, the second is the text outline, and the third is the text shadow. (Note that the second two only apply to text parts) \hypertarget{edje_8c_0d734122a228b8a9e4e4e9f4e3200c96}{
+\index{edje.c@{edje.c}!edje\_\-object\_\-data\_\-get@{edje\_\-object\_\-data\_\-get}}
+\index{edje\_\-object\_\-data\_\-get@{edje\_\-object\_\-data\_\-get}!edje.c@{edje.c}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI const char $\ast$ edje\_\-object\_\-data\_\-get (Evas\_\-Object $\ast$ {\em obj}, \/  const char $\ast$ {\em key})}}
+\label{edje_8c_0d734122a228b8a9e4e4e9f4e3200c96}
+
+
+Get Edje object data. 
+
+\begin{Desc}
+\item[Parameters:]
+\begin{description}
+\item[{\em obj}]A valid Evas\_\-Object handle \item[{\em key}]The data key \end{description}
+\end{Desc}
+\begin{Desc}
+\item[Returns:]The data string\end{Desc}
+This fetches data specified at the object level.
+
+In EDC this comes from a data block within the group block that {\em obj\/} was loaded from. E.g.
+
+
+
+\begin{Code}\begin{verbatim} collections {
+   group {
+     name: "a_group";
+     data {
+   item: "key1" "value1";
+   item: "key2" "value2";
+     }
+   }
+ }
+\end{verbatim}
+\end{Code}
+
+ \hypertarget{edje_8c_cfed0fd5e5509a53e946b11cf4ce7ff9}{
+\index{edje.c@{edje.c}!edje\_\-object\_\-file\_\-get@{edje\_\-object\_\-file\_\-get}}
+\index{edje\_\-object\_\-file\_\-get@{edje\_\-object\_\-file\_\-get}!edje.c@{edje.c}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI void edje\_\-object\_\-file\_\-get (Evas\_\-Object $\ast$ {\em obj}, \/  const char $\ast$$\ast$ {\em file}, \/  const char $\ast$$\ast$ {\em part})}}
+\label{edje_8c_cfed0fd5e5509a53e946b11cf4ce7ff9}
+
+
+Get the file and group name that {\em obj\/} was loaded from. 
+
+\begin{Desc}
+\item[Parameters:]
+\begin{description}
+\item[{\em obj}]A valid Evas\_\-Object handle \item[{\em file}]A pointer to store a pointer to the filename in \item[{\em part}]A pointer to store a pointer to the group name in\end{description}
+\end{Desc}
+This gets the EET file location and group for the given Evas\_\-Object. If {\em obj\/} is either not an edje file, or has not had its file/group set using \hyperlink{edje_8c_3709153c22d46631f53f585d6ae4113b}{edje\_\-object\_\-file\_\-set()}, then both {\em file\/} and {\em part\/} will be set to NULL.
+
+It is valid to pass in NULL for either {\em file\/} or {\em part\/} if you are not interested in one of the values. \hypertarget{edje_8c_3709153c22d46631f53f585d6ae4113b}{
+\index{edje.c@{edje.c}!edje\_\-object\_\-file\_\-set@{edje\_\-object\_\-file\_\-set}}
+\index{edje\_\-object\_\-file\_\-set@{edje\_\-object\_\-file\_\-set}!edje.c@{edje.c}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI int edje\_\-object\_\-file\_\-set (Evas\_\-Object $\ast$ {\em obj}, \/  const char $\ast$ {\em file}, \/  const char $\ast$ {\em part})}}
+\label{edje_8c_3709153c22d46631f53f585d6ae4113b}
+
+
+Sets the EET file and group to load {\em obj\/} from. 
+
+\begin{Desc}
+\item[Parameters:]
+\begin{description}
+\item[{\em obj}]A valid Evas\_\-Object handle \item[{\em file}]The path to the EET file \item[{\em part}]The group name in the Edje \end{description}
+\end{Desc}
+\begin{Desc}
+\item[Returns:]0 on Error\par
+ 1 on Success and sets EDJE\_\-LOAD\_\-ERROR\_\-NONE\end{Desc}
+Edje uses EET files, conventionally ending in .edj, to store object descriptions. A single file contains multiple named groups. This function specifies the file and group name to load {\em obj\/} from. \hypertarget{edje_8c_d5a18a94f5d960ec048344405c427e66}{
+\index{edje.c@{edje.c}!edje\_\-object\_\-freeze@{edje\_\-object\_\-freeze}}
+\index{edje\_\-object\_\-freeze@{edje\_\-object\_\-freeze}!edje.c@{edje.c}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI int edje\_\-object\_\-freeze (Evas\_\-Object $\ast$ {\em obj})}}
+\label{edje_8c_d5a18a94f5d960ec048344405c427e66}
+
+
+Freeze object. 
+
+\begin{Desc}
+\item[Parameters:]
+\begin{description}
+\item[{\em obj}]A valid Evas\_\-Object handle \end{description}
+\end{Desc}
+\begin{Desc}
+\item[Returns:]The frozen state\par
+ 0 on Error\end{Desc}
+This puts all changes on hold. Successive freezes will nest, requiring an equal number of thaws. 
+
+Referenced by edje\_\-freeze().\hypertarget{edje_8c_b1ebd5eb7c55222f5fafdefbba1c515f}{
+\index{edje.c@{edje.c}!edje\_\-object\_\-load\_\-error\_\-get@{edje\_\-object\_\-load\_\-error\_\-get}}
+\index{edje\_\-object\_\-load\_\-error\_\-get@{edje\_\-object\_\-load\_\-error\_\-get}!edje.c@{edje.c}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI int edje\_\-object\_\-load\_\-error\_\-get (Evas\_\-Object $\ast$ {\em obj})}}
+\label{edje_8c_b1ebd5eb7c55222f5fafdefbba1c515f}
+
+
+Gets the Edje load error. 
+
+\begin{Desc}
+\item[Parameters:]
+\begin{description}
+\item[{\em obj}]A valid Evas\_\-Object handle\end{description}
+\end{Desc}
+\begin{Desc}
+\item[Returns:]The Edje load error:\par
+ 0: No Error\par
+ 1: Generic Error\par
+ 2: Does not Exist\par
+ 3: Permission Denied\par
+ 4: Resource Allocation Failed\par
+ 5: Corrupt File\par
+ 6: Unknown Format\par
+ 7: Incompatible File \end{Desc}
+\hypertarget{edje_8c_6ef29926ac179b5ce65fefd416db704a}{
+\index{edje.c@{edje.c}!edje\_\-object\_\-part\_\-drag\_\-dir\_\-get@{edje\_\-object\_\-part\_\-drag\_\-dir\_\-get}}
+\index{edje\_\-object\_\-part\_\-drag\_\-dir\_\-get@{edje\_\-object\_\-part\_\-drag\_\-dir\_\-get}!edje.c@{edje.c}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI int edje\_\-object\_\-part\_\-drag\_\-dir\_\-get (Evas\_\-Object $\ast$ {\em obj}, \/  const char $\ast$ {\em part})}}
+\label{edje_8c_6ef29926ac179b5ce65fefd416db704a}
+
+
+Determine dragable directions. 
+
+\begin{Desc}
+\item[Parameters:]
+\begin{description}
+\item[{\em obj}]A valid Evas\_\-Object handle \item[{\em part}]The part name\end{description}
+\end{Desc}
+\begin{Desc}
+\item[Returns:]0: Not dragable\par
+ 1: Dragable in X direction\par
+ 2: Dragable in Y direction\par
+ 3: Dragable in X \& Y directions \end{Desc}
+\hypertarget{edje_8c_fbfe138382433b3f31b0b62ece0c6434}{
+\index{edje.c@{edje.c}!edje\_\-object\_\-part\_\-drag\_\-page@{edje\_\-object\_\-part\_\-drag\_\-page}}
+\index{edje\_\-object\_\-part\_\-drag\_\-page@{edje\_\-object\_\-part\_\-drag\_\-page}!edje.c@{edje.c}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI void edje\_\-object\_\-part\_\-drag\_\-page (Evas\_\-Object $\ast$ {\em obj}, \/  const char $\ast$ {\em part}, \/  double {\em dx}, \/  double {\em dy})}}
+\label{edje_8c_fbfe138382433b3f31b0b62ece0c6434}
+
+
+Pages x,y steps. 
+
+\begin{Desc}
+\item[Parameters:]
+\begin{description}
+\item[{\em obj}]A valid Evas\_\-Object handle \item[{\em part}]The part name \item[{\em dx}]The x step \item[{\em dy}]The y step\end{description}
+\end{Desc}
+Pages x,y where the increment is defined by edje\_\-object\_\-part\_\-drag\_\-page\_\-set.\par
+ WARNING: Paging is bugged! \hypertarget{edje_8c_512441eb69084c6f8674c30a15e5e687}{
+\index{edje.c@{edje.c}!edje\_\-object\_\-part\_\-drag\_\-page\_\-get@{edje\_\-object\_\-part\_\-drag\_\-page\_\-get}}
+\index{edje\_\-object\_\-part\_\-drag\_\-page\_\-get@{edje\_\-object\_\-part\_\-drag\_\-page\_\-get}!edje.c@{edje.c}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI void edje\_\-object\_\-part\_\-drag\_\-page\_\-get (Evas\_\-Object $\ast$ {\em obj}, \/  const char $\ast$ {\em part}, \/  double $\ast$ {\em dx}, \/  double $\ast$ {\em dy})}}
+\label{edje_8c_512441eb69084c6f8674c30a15e5e687}
+
+
+Gets the page step increments. 
+
+\begin{Desc}
+\item[Parameters:]
+\begin{description}
+\item[{\em obj}]A valid Evas\_\-Object handle \item[{\em part}]The part name \item[{\em dx}]The dx page increment pointer \item[{\em dy}]The dy page increment pointer\end{description}
+\end{Desc}
+Gets the x,y page step increments for the dragable object. \hypertarget{edje_8c_f20c8c7847cf3b0c8337f0568736d412}{
+\index{edje.c@{edje.c}!edje\_\-object\_\-part\_\-drag\_\-page\_\-set@{edje\_\-object\_\-part\_\-drag\_\-page\_\-set}}
+\index{edje\_\-object\_\-part\_\-drag\_\-page\_\-set@{edje\_\-object\_\-part\_\-drag\_\-page\_\-set}!edje.c@{edje.c}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI void edje\_\-object\_\-part\_\-drag\_\-page\_\-set (Evas\_\-Object $\ast$ {\em obj}, \/  const char $\ast$ {\em part}, \/  double {\em dx}, \/  double {\em dy})}}
+\label{edje_8c_f20c8c7847cf3b0c8337f0568736d412}
+
+
+Sets the page step increments. 
+
+\begin{Desc}
+\item[Parameters:]
+\begin{description}
+\item[{\em obj}]A valid Evas\_\-Object handle \item[{\em part}]The part name \item[{\em dx}]The x page step increment \item[{\em dy}]The y page step increment\end{description}
+\end{Desc}
+Sets the x,y page step increment values. \hypertarget{edje_8c_9d1a711dc57d8fff521ce7a7c53c19bd}{
+\index{edje.c@{edje.c}!edje\_\-object\_\-part\_\-drag\_\-size\_\-get@{edje\_\-object\_\-part\_\-drag\_\-size\_\-get}}
+\index{edje\_\-object\_\-part\_\-drag\_\-size\_\-get@{edje\_\-object\_\-part\_\-drag\_\-size\_\-get}!edje.c@{edje.c}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI void edje\_\-object\_\-part\_\-drag\_\-size\_\-get (Evas\_\-Object $\ast$ {\em obj}, \/  const char $\ast$ {\em part}, \/  double $\ast$ {\em dw}, \/  double $\ast$ {\em dh})}}
+\label{edje_8c_9d1a711dc57d8fff521ce7a7c53c19bd}
+
+
+Get the dragable object size. 
+
+\begin{Desc}
+\item[Parameters:]
+\begin{description}
+\item[{\em obj}]A valid Evas\_\-Object handle \item[{\em part}]The part name \item[{\em dw}]The drag width pointer \item[{\em dh}]The drag height pointer\end{description}
+\end{Desc}
+Gets the dragable object size. \hypertarget{edje_8c_00dcca126990d2aa56525dda82d193d0}{
+\index{edje.c@{edje.c}!edje\_\-object\_\-part\_\-drag\_\-size\_\-set@{edje\_\-object\_\-part\_\-drag\_\-size\_\-set}}
+\index{edje\_\-object\_\-part\_\-drag\_\-size\_\-set@{edje\_\-object\_\-part\_\-drag\_\-size\_\-set}!edje.c@{edje.c}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI void edje\_\-object\_\-part\_\-drag\_\-size\_\-set (Evas\_\-Object $\ast$ {\em obj}, \/  const char $\ast$ {\em part}, \/  double {\em dw}, \/  double {\em dh})}}
+\label{edje_8c_00dcca126990d2aa56525dda82d193d0}
+
+
+Set the dragable object size. 
+
+\begin{Desc}
+\item[Parameters:]
+\begin{description}
+\item[{\em obj}]A valid Evas\_\-Object handle \item[{\em part}]The part name \item[{\em dw}]The drag width \item[{\em dh}]The drag height\end{description}
+\end{Desc}
+Sets the size of the dragable object. \hypertarget{edje_8c_ef0b060a7e024d17bb4354d5e3ec52db}{
+\index{edje.c@{edje.c}!edje\_\-object\_\-part\_\-drag\_\-step@{edje\_\-object\_\-part\_\-drag\_\-step}}
+\index{edje\_\-object\_\-part\_\-drag\_\-step@{edje\_\-object\_\-part\_\-drag\_\-step}!edje.c@{edje.c}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI void edje\_\-object\_\-part\_\-drag\_\-step (Evas\_\-Object $\ast$ {\em obj}, \/  const char $\ast$ {\em part}, \/  double {\em dx}, \/  double {\em dy})}}
+\label{edje_8c_ef0b060a7e024d17bb4354d5e3ec52db}
+
+
+Steps the dragable x,y steps. 
+
+\begin{Desc}
+\item[Parameters:]
+\begin{description}
+\item[{\em obj}]A valid Evas\_\-Object handle \item[{\em part}]The part name \item[{\em dx}]The x step \item[{\em dy}]The y step\end{description}
+\end{Desc}
+Steps x,y where the step increment is the amount set by edje\_\-object\_\-part\_\-drag\_\-step\_\-set. \hypertarget{edje_8c_6e90318a0427b3f1b6a035a9fb77109d}{
+\index{edje.c@{edje.c}!edje\_\-object\_\-part\_\-drag\_\-step\_\-get@{edje\_\-object\_\-part\_\-drag\_\-step\_\-get}}
+\index{edje\_\-object\_\-part\_\-drag\_\-step\_\-get@{edje\_\-object\_\-part\_\-drag\_\-step\_\-get}!edje.c@{edje.c}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI void edje\_\-object\_\-part\_\-drag\_\-step\_\-get (Evas\_\-Object $\ast$ {\em obj}, \/  const char $\ast$ {\em part}, \/  double $\ast$ {\em dx}, \/  double $\ast$ {\em dy})}}
+\label{edje_8c_6e90318a0427b3f1b6a035a9fb77109d}
+
+
+Gets the drag step increment values. 
+
+\begin{Desc}
+\item[Parameters:]
+\begin{description}
+\item[{\em obj}]A valid Evas\_\-Object handle \item[{\em part}]The part \item[{\em dx}]The x step increment pointer \item[{\em dy}]The y step increment pointer\end{description}
+\end{Desc}
+Gets the x and y step increments for the dragable object. \hypertarget{edje_8c_bdcb3b14acc7735a6669b4f6b17d56af}{
+\index{edje.c@{edje.c}!edje\_\-object\_\-part\_\-drag\_\-step\_\-set@{edje\_\-object\_\-part\_\-drag\_\-step\_\-set}}
+\index{edje\_\-object\_\-part\_\-drag\_\-step\_\-set@{edje\_\-object\_\-part\_\-drag\_\-step\_\-set}!edje.c@{edje.c}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI void edje\_\-object\_\-part\_\-drag\_\-step\_\-set (Evas\_\-Object $\ast$ {\em obj}, \/  const char $\ast$ {\em part}, \/  double {\em dx}, \/  double {\em dy})}}
+\label{edje_8c_bdcb3b14acc7735a6669b4f6b17d56af}
+
+
+Sets the drag step increment. 
+
+\begin{Desc}
+\item[Parameters:]
+\begin{description}
+\item[{\em obj}]A valid Evas\_\-Object handle \item[{\em part}]The part name \item[{\em dx}]The x step ammount \item[{\em dy}]The y step ammount\end{description}
+\end{Desc}
+Sets the x,y step increments for a dragable object. \hypertarget{edje_8c_456e823a1e9455d7f83da9c32bc2228e}{
+\index{edje.c@{edje.c}!edje\_\-object\_\-part\_\-drag\_\-value\_\-get@{edje\_\-object\_\-part\_\-drag\_\-value\_\-get}}
+\index{edje\_\-object\_\-part\_\-drag\_\-value\_\-get@{edje\_\-object\_\-part\_\-drag\_\-value\_\-get}!edje.c@{edje.c}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI void edje\_\-object\_\-part\_\-drag\_\-value\_\-get (Evas\_\-Object $\ast$ {\em obj}, \/  const char $\ast$ {\em part}, \/  double $\ast$ {\em dx}, \/  double $\ast$ {\em dy})}}
+\label{edje_8c_456e823a1e9455d7f83da9c32bc2228e}
+
+
+Get the dragable object location. 
+
+\begin{Desc}
+\item[Parameters:]
+\begin{description}
+\item[{\em obj}]A valid Evas\_\-Object handle \item[{\em part}]The part name \item[{\em dx}]The X value pointer \item[{\em dy}]The Y value pointer\end{description}
+\end{Desc}
+Gets the drag location values. \hypertarget{edje_8c_15e856d8fe5132b6ef266fc37188d298}{
+\index{edje.c@{edje.c}!edje\_\-object\_\-part\_\-drag\_\-value\_\-set@{edje\_\-object\_\-part\_\-drag\_\-value\_\-set}}
+\index{edje\_\-object\_\-part\_\-drag\_\-value\_\-set@{edje\_\-object\_\-part\_\-drag\_\-value\_\-set}!edje.c@{edje.c}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI void edje\_\-object\_\-part\_\-drag\_\-value\_\-set (Evas\_\-Object $\ast$ {\em obj}, \/  const char $\ast$ {\em part}, \/  double {\em dx}, \/  double {\em dy})}}
+\label{edje_8c_15e856d8fe5132b6ef266fc37188d298}
+
+
+Set the dragable object location. 
+
+\begin{Desc}
+\item[Parameters:]
+\begin{description}
+\item[{\em obj}]A valid Evas\_\-Object handle \item[{\em part}]The part name \item[{\em dx}]The x value \item[{\em dy}]The y value\end{description}
+\end{Desc}
+Places the dragable object at the given location. \hypertarget{edje_8c_64963b6f7ec23963b7b029b5bf5beaa3}{
+\index{edje.c@{edje.c}!edje\_\-object\_\-part\_\-exists@{edje\_\-object\_\-part\_\-exists}}
+\index{edje\_\-object\_\-part\_\-exists@{edje\_\-object\_\-part\_\-exists}!edje.c@{edje.c}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI int edje\_\-object\_\-part\_\-exists (Evas\_\-Object $\ast$ {\em obj}, \/  const char $\ast$ {\em part})}}
+\label{edje_8c_64963b6f7ec23963b7b029b5bf5beaa3}
+
+
+Check if Edje part exists. 
+
+\begin{Desc}
+\item[Parameters:]
+\begin{description}
+\item[{\em obj}]A valid Evas\_\-Object handle \item[{\em part}]The part name to check \end{description}
+\end{Desc}
+\begin{Desc}
+\item[Returns:]0 on Error\par
+ 1 if Edje part exists \end{Desc}
+\hypertarget{edje_8c_696bddc95393a6f087c1d64f655a0547}{
+\index{edje.c@{edje.c}!edje\_\-object\_\-part\_\-geometry\_\-get@{edje\_\-object\_\-part\_\-geometry\_\-get}}
+\index{edje\_\-object\_\-part\_\-geometry\_\-get@{edje\_\-object\_\-part\_\-geometry\_\-get}!edje.c@{edje.c}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI void edje\_\-object\_\-part\_\-geometry\_\-get (Evas\_\-Object $\ast$ {\em obj}, \/  const char $\ast$ {\em part}, \/  Evas\_\-Coord $\ast$ {\em x}, \/  Evas\_\-Coord $\ast$ {\em y}, \/  Evas\_\-Coord $\ast$ {\em w}, \/  Evas\_\-Coord $\ast$ {\em h})}}
+\label{edje_8c_696bddc95393a6f087c1d64f655a0547}
+
+
+Get the geometry of an Edje part. 
+
+\begin{Desc}
+\item[Parameters:]
+\begin{description}
+\item[{\em obj}]A valid Evas\_\-Object handle \item[{\em part}]The Edje part \item[{\em x}]The x coordinate pointer \item[{\em y}]The y coordinate pointer \item[{\em w}]The width pointer \item[{\em h}]The height pointer\end{description}
+\end{Desc}
+Gets the geometry of an Edje part
+
+It is valid to pass NULL as any of {\em x\/}, {\em y\/}, {\em w\/} or {\em h\/}, whose values you are uninterested in. \hypertarget{edje_8c_86be1d194d87fefc7e1174062b4cd6dc}{
+\index{edje.c@{edje.c}!edje\_\-object\_\-part\_\-object\_\-get@{edje\_\-object\_\-part\_\-object\_\-get}}
+\index{edje\_\-object\_\-part\_\-object\_\-get@{edje\_\-object\_\-part\_\-object\_\-get}!edje.c@{edje.c}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI Evas\_\-Object $\ast$ edje\_\-object\_\-part\_\-object\_\-get (Evas\_\-Object $\ast$ {\em obj}, \/  const char $\ast$ {\em part})}}
+\label{edje_8c_86be1d194d87fefc7e1174062b4cd6dc}
+
+
+Gets the Evas\_\-Object corresponding to a given part. 
+
+You should never modify the state of the returned object (with evas\_\-object\_\-move() or evas\_\-object\_\-hide() for example), but you can safely query info about its current state (with evas\_\-object\_\-visible\_\-get() or evas\_\-object\_\-color\_\-get() for example)
+
+\begin{Desc}
+\item[Parameters:]
+\begin{description}
+\item[{\em obj}]A valid Evas\_\-Object handle \item[{\em part}]The Edje part \end{description}
+\end{Desc}
+\begin{Desc}
+\item[Returns:]Returns the Evas\_\-Object corresponding to the given part, or NULL on failure (if the part doesn't exist) \end{Desc}
+\hypertarget{edje_8c_635a1035b99465cbf9c456cb977481b6}{
+\index{edje.c@{edje.c}!edje\_\-object\_\-part\_\-state\_\-get@{edje\_\-object\_\-part\_\-state\_\-get}}
+\index{edje\_\-object\_\-part\_\-state\_\-get@{edje\_\-object\_\-part\_\-state\_\-get}!edje.c@{edje.c}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI const char $\ast$ edje\_\-object\_\-part\_\-state\_\-get (Evas\_\-Object $\ast$ {\em obj}, \/  const char $\ast$ {\em part}, \/  double $\ast$ {\em val\_\-ret})}}
+\label{edje_8c_635a1035b99465cbf9c456cb977481b6}
+
+
+Returns the state of the Edje part. 
+
+\begin{Desc}
+\item[Parameters:]
+\begin{description}
+\item[{\em obj}]A valid Evas\_\-Object handle \item[{\em part}]The part name \item[{\em val\_\-ret}]\end{description}
+\end{Desc}
+\begin{Desc}
+\item[Returns:]The part state:\par
+ \char`\"{}default\char`\"{} for the default state\par
+ \char`\"{}\char`\"{} for other states \end{Desc}
+\hypertarget{edje_8c_abb8e70c45e77960e06af627d7e9f553}{
+\index{edje.c@{edje.c}!edje\_\-object\_\-part\_\-swallow@{edje\_\-object\_\-part\_\-swallow}}
+\index{edje\_\-object\_\-part\_\-swallow@{edje\_\-object\_\-part\_\-swallow}!edje.c@{edje.c}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI void edje\_\-object\_\-part\_\-swallow (Evas\_\-Object $\ast$ {\em obj}, \/  const char $\ast$ {\em part}, \/  Evas\_\-Object $\ast$ {\em obj\_\-swallow})}}
+\label{edje_8c_abb8e70c45e77960e06af627d7e9f553}
+
+
+Swallows an object into the edje. 
+
+\begin{Desc}
+\item[Parameters:]
+\begin{description}
+\item[{\em obj}]A valid Evas\_\-Object handle \item[{\em part}]The part name \item[{\em obj\_\-swallow}]The object to swallow\end{description}
+\end{Desc}
+Swallows the object into the edje part so that all geometry changes for the part affect the swallowed object. (e.g. resize, move, show, raise/lower, etc.).
+
+If an object has already been swallowed into this part, then it will first be unswallowed before the new object is swallowed. \hypertarget{edje_8c_bd8203b0ee5ac1bd00a71d847698518e}{
+\index{edje.c@{edje.c}!edje\_\-object\_\-part\_\-swallow\_\-get@{edje\_\-object\_\-part\_\-swallow\_\-get}}
+\index{edje\_\-object\_\-part\_\-swallow\_\-get@{edje\_\-object\_\-part\_\-swallow\_\-get}!edje.c@{edje.c}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI Evas\_\-Object $\ast$ edje\_\-object\_\-part\_\-swallow\_\-get (Evas\_\-Object $\ast$ {\em obj}, \/  const char $\ast$ {\em part})}}
+\label{edje_8c_bd8203b0ee5ac1bd00a71d847698518e}
+
+
+Get the object currently swallowed by a part. 
+
+\begin{Desc}
+\item[Parameters:]
+\begin{description}
+\item[{\em obj}]A valid Evas\_\-Object handle \item[{\em part}]The part name \end{description}
+\end{Desc}
+\begin{Desc}
+\item[Returns:]The swallowed object, or NULL if there is none. \end{Desc}
+\hypertarget{edje_8c_01cea6fb68ea1f695d49f8b3827a90e5}{
+\index{edje.c@{edje.c}!edje\_\-object\_\-part\_\-text\_\-get@{edje\_\-object\_\-part\_\-text\_\-get}}
+\index{edje\_\-object\_\-part\_\-text\_\-get@{edje\_\-object\_\-part\_\-text\_\-get}!edje.c@{edje.c}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI const char $\ast$ edje\_\-object\_\-part\_\-text\_\-get (Evas\_\-Object $\ast$ {\em obj}, \/  const char $\ast$ {\em part})}}
+\label{edje_8c_01cea6fb68ea1f695d49f8b3827a90e5}
+
+
+Returns the text of the object part. 
+
+\begin{Desc}
+\item[Parameters:]
+\begin{description}
+\item[{\em obj}]A valid Evas\_\-Object handle \item[{\em part}]The part name \end{description}
+\end{Desc}
+\begin{Desc}
+\item[Returns:]The text string \end{Desc}
+\hypertarget{edje_8c_a1da7ccccfcf650d09e0f72523481cca}{
+\index{edje.c@{edje.c}!edje\_\-object\_\-part\_\-text\_\-set@{edje\_\-object\_\-part\_\-text\_\-set}}
+\index{edje\_\-object\_\-part\_\-text\_\-set@{edje\_\-object\_\-part\_\-text\_\-set}!edje.c@{edje.c}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI void edje\_\-object\_\-part\_\-text\_\-set (Evas\_\-Object $\ast$ {\em obj}, \/  const char $\ast$ {\em part}, \/  const char $\ast$ {\em text})}}
+\label{edje_8c_a1da7ccccfcf650d09e0f72523481cca}
+
+
+Sets the text for an object part. 
+
+\begin{Desc}
+\item[Parameters:]
+\begin{description}
+\item[{\em obj}]A valid Evas Object handle \item[{\em part}]The part name \item[{\em text}]The text string \end{description}
+\end{Desc}
+\hypertarget{edje_8c_da07a85a52034271c85f36ecdd7c441c}{
+\index{edje.c@{edje.c}!edje\_\-object\_\-part\_\-unswallow@{edje\_\-object\_\-part\_\-unswallow}}
+\index{edje\_\-object\_\-part\_\-unswallow@{edje\_\-object\_\-part\_\-unswallow}!edje.c@{edje.c}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI void edje\_\-object\_\-part\_\-unswallow (Evas\_\-Object $\ast$ {\em obj}, \/  Evas\_\-Object $\ast$ {\em obj\_\-swallow})}}
+\label{edje_8c_da07a85a52034271c85f36ecdd7c441c}
+
+
+Unswallow an object. 
+
+\begin{Desc}
+\item[Parameters:]
+\begin{description}
+\item[{\em obj}]A valid Evas\_\-Object handle \item[{\em obj\_\-swallow}]The swallowed object\end{description}
+\end{Desc}
+Causes the edje to regurgitate a previously swallowed object. :) \hypertarget{edje_8c_65651e53be864ac806c90eb56705656d}{
+\index{edje.c@{edje.c}!edje\_\-object\_\-play\_\-get@{edje\_\-object\_\-play\_\-get}}
+\index{edje\_\-object\_\-play\_\-get@{edje\_\-object\_\-play\_\-get}!edje.c@{edje.c}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI int edje\_\-object\_\-play\_\-get (Evas\_\-Object $\ast$ {\em obj})}}
+\label{edje_8c_65651e53be864ac806c90eb56705656d}
+
+
+Get the Edje play/pause state. 
+
+\begin{Desc}
+\item[Parameters:]
+\begin{description}
+\item[{\em obj}]A valid Evas\_\-Object handle \end{description}
+\end{Desc}
+\begin{Desc}
+\item[Returns:]0 if Edje not connected, Edje delete\_\-me, or Edje paused\par
+ 1 if Edje set to play \end{Desc}
+\hypertarget{edje_8c_33aad219f49881b046279abca29ace12}{
+\index{edje.c@{edje.c}!edje\_\-object\_\-play\_\-set@{edje\_\-object\_\-play\_\-set}}
+\index{edje\_\-object\_\-play\_\-set@{edje\_\-object\_\-play\_\-set}!edje.c@{edje.c}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI void edje\_\-object\_\-play\_\-set (Evas\_\-Object $\ast$ {\em obj}, \/  int {\em play})}}
+\label{edje_8c_33aad219f49881b046279abca29ace12}
+
+
+Set the Edje to play or pause. 
+
+\begin{Desc}
+\item[Parameters:]
+\begin{description}
+\item[{\em obj}]A valid Evas\_\-Object handle \item[{\em play}]Play instruction (1 to play, 0 to pause)\end{description}
+\end{Desc}
+This sets the Edje to play or pause depending on the parameter. This has no effect if the Edje is already in that state. \hypertarget{edje_8c_4f440980b12bfda26e0d61738482b061}{
+\index{edje.c@{edje.c}!edje\_\-object\_\-signal\_\-callback\_\-add@{edje\_\-object\_\-signal\_\-callback\_\-add}}
+\index{edje\_\-object\_\-signal\_\-callback\_\-add@{edje\_\-object\_\-signal\_\-callback\_\-add}!edje.c@{edje.c}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI void edje\_\-object\_\-signal\_\-callback\_\-add (Evas\_\-Object $\ast$ {\em obj}, \/  const char $\ast$ {\em emission}, \/  const char $\ast$ {\em source}, \/  void($\ast$)(void $\ast$data, Evas\_\-Object $\ast$o, const char $\ast$emission, const char $\ast$source) {\em func}, \/  void $\ast$ {\em data})}}
+\label{edje_8c_4f440980b12bfda26e0d61738482b061}
+
+
+Add a callback for a signal emitted by {\em obj\/}. 
+
+\begin{Desc}
+\item[Parameters:]
+\begin{description}
+\item[{\em obj}]A valid Evas\_\-Object handle \item[{\em emission}]The signal name \item[{\em source}]The signal source \item[{\em func}]The callback function to be executed when the signal is emitted \item[{\em data}]A pointer to data to pass in to the callback function\end{description}
+\end{Desc}
+Connects a callback function to a signal emitted by {\em obj\/}. In EDC, a program can emit a signal as follows:
+
+
+
+\begin{Code}\begin{verbatim} program {
+   name: "emit_example";
+   action: SIGNAL_EMIT "a_signal" "a_source";
+ }
+\end{verbatim}
+\end{Code}
+
+
+
+Assuming a function with the following declaration is definded:
+
+
+
+\begin{Code}\begin{verbatim} void cb_signal(void *data, Evas_Object *o, const char *emission, const char *source);
+\end{verbatim}
+\end{Code}
+
+
+
+a callback is attached using:
+
+
+
+\begin{Code}\begin{verbatim} edje_object_callback_add(obj, "a_signal", "a_source", cb_signal, data);
+\end{verbatim}
+\end{Code}
+
+
+
+Here, {\em data\/} is an arbitrary pointer to be used as desired. Note that {\em emission\/} and {\em source\/} correspond respectively to first and second parameters to the SIGNAL\_\-EMIT action.
+
+Internal edje signals can also be attached to, and globs can be in either the emission or source name. e.g.
+
+
+
+\begin{Code}\begin{verbatim} edje_object_callback_add(obj, "mouse,down,*", "button.*", NULL);
+\end{verbatim}
+\end{Code}
+
+
+
+Here, any mouse down events on an edje part whose name begins with \char`\"{}button.\char`\"{} will trigger the callback. The actual signal and source name will be passed in to the {\em emission\/} and {\em source\/} parameters of the callback function. (e.g. \char`\"{}mouse,down,2\char`\"{} and \char`\"{}button.close\char`\"{}). \hypertarget{edje_8c_7f84cd72e6f34f475f69b8946ee31b2b}{
+\index{edje.c@{edje.c}!edje\_\-object\_\-signal\_\-callback\_\-del@{edje\_\-object\_\-signal\_\-callback\_\-del}}
+\index{edje\_\-object\_\-signal\_\-callback\_\-del@{edje\_\-object\_\-signal\_\-callback\_\-del}!edje.c@{edje.c}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI void$\ast$ edje\_\-object\_\-signal\_\-callback\_\-del (Evas\_\-Object $\ast$ {\em obj}, \/  const char $\ast$ {\em emission}, \/  const char $\ast$ {\em source}, \/  void($\ast$)(void $\ast$data, Evas\_\-Object $\ast$o, const char $\ast$emission, const char $\ast$source) {\em func})}}
+\label{edje_8c_7f84cd72e6f34f475f69b8946ee31b2b}
+
+
+Remove a callback from an object. 
+
+\begin{Desc}
+\item[Parameters:]
+\begin{description}
+\item[{\em obj}]A valid Evas\_\-Object handle \item[{\em emission}]the emission string \item[{\em source}]the source string \item[{\em func}]the callback function \end{description}
+\end{Desc}
+\begin{Desc}
+\item[Returns:]the data pointer\end{Desc}
+Removes a callback from an object. The parameters {\em emission\/}, {\em source\/} and {\em func\/} must match exactly those passed to a previous call to edje\_\-object\_\-signal\_\-callback\_\-add(). The data pointer that was passed to this call will be returned. \hypertarget{edje_8c_700d424448139fa85a09906b67dbd62c}{
+\index{edje.c@{edje.c}!edje\_\-object\_\-signal\_\-emit@{edje\_\-object\_\-signal\_\-emit}}
+\index{edje\_\-object\_\-signal\_\-emit@{edje\_\-object\_\-signal\_\-emit}!edje.c@{edje.c}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI void edje\_\-object\_\-signal\_\-emit (Evas\_\-Object $\ast$ {\em obj}, \/  const char $\ast$ {\em emission}, \/  const char $\ast$ {\em source})}}
+\label{edje_8c_700d424448139fa85a09906b67dbd62c}
+
+
+Send a signal to the Edje object. 
+
+\begin{Desc}
+\item[Parameters:]
+\begin{description}
+\item[{\em obj}]A vaild Evas\_\-Object handle \item[{\em emission}]The signal \item[{\em source}]The signal source\end{description}
+\end{Desc}
+This sends a signal to the edje object.
+
+An edje program can respond to a signal by specifying matching 'signal' and 'source' fields.
+
+E.g.
+
+
+
+\begin{Code}\begin{verbatim} edje_object_signal_emit(obj, "a_signal", "");
+\end{verbatim}
+\end{Code}
+
+
+
+will trigger a program whose edc is:
+
+
+
+\begin{Code}\begin{verbatim} program {
+  name: "a_program";
+  signal: "a_signal";
+  source: "";
+  action: ...
+ }
+\end{verbatim}
+\end{Code}
+
+
+
+FIXME should this signal be sent to children also? \hypertarget{edje_8c_19cb732b87093408ff1bbe58fe7b7241}{
+\index{edje.c@{edje.c}!edje\_\-object\_\-size\_\-max\_\-get@{edje\_\-object\_\-size\_\-max\_\-get}}
+\index{edje\_\-object\_\-size\_\-max\_\-get@{edje\_\-object\_\-size\_\-max\_\-get}!edje.c@{edje.c}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI void edje\_\-object\_\-size\_\-max\_\-get (Evas\_\-Object $\ast$ {\em obj}, \/  Evas\_\-Coord $\ast$ {\em maxw}, \/  Evas\_\-Coord $\ast$ {\em maxh})}}
+\label{edje_8c_19cb732b87093408ff1bbe58fe7b7241}
+
+
+Get the maximum size for an object. 
+
+\begin{Desc}
+\item[Parameters:]
+\begin{description}
+\item[{\em obj}]A valid Evas\_\-Object handle \item[{\em maxw}]Maximum width pointer \item[{\em maxh}]Maximum height pointer\end{description}
+\end{Desc}
+Gets the object's maximum size values from the Edje. These are set to zero if no Edje is connected to the Evas Object. \hypertarget{edje_8c_f0d4d021bd06b39314596366e0f92df7}{
+\index{edje.c@{edje.c}!edje\_\-object\_\-size\_\-min\_\-calc@{edje\_\-object\_\-size\_\-min\_\-calc}}
+\index{edje\_\-object\_\-size\_\-min\_\-calc@{edje\_\-object\_\-size\_\-min\_\-calc}!edje.c@{edje.c}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI void edje\_\-object\_\-size\_\-min\_\-calc (Evas\_\-Object $\ast$ {\em obj}, \/  Evas\_\-Coord $\ast$ {\em minw}, \/  Evas\_\-Coord $\ast$ {\em minh})}}
+\label{edje_8c_f0d4d021bd06b39314596366e0f92df7}
+
+
+Calculate minimum size. 
+
+\begin{Desc}
+\item[Parameters:]
+\begin{description}
+\item[{\em obj}]A valid Evas\_\-Object handle \item[{\em minw}]Minimum width pointer \item[{\em minh}]Minimum height pointer\end{description}
+\end{Desc}
+Calculates the object's minimum size ?! 
+
+References edje\_\-object\_\-size\_\-min\_\-restricted\_\-calc().\hypertarget{edje_8c_5aa26bbe4846410db16f053ce8e0c834}{
+\index{edje.c@{edje.c}!edje\_\-object\_\-size\_\-min\_\-get@{edje\_\-object\_\-size\_\-min\_\-get}}
+\index{edje\_\-object\_\-size\_\-min\_\-get@{edje\_\-object\_\-size\_\-min\_\-get}!edje.c@{edje.c}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI void edje\_\-object\_\-size\_\-min\_\-get (Evas\_\-Object $\ast$ {\em obj}, \/  Evas\_\-Coord $\ast$ {\em minw}, \/  Evas\_\-Coord $\ast$ {\em minh})}}
+\label{edje_8c_5aa26bbe4846410db16f053ce8e0c834}
+
+
+Get the minimum size for an object. 
+
+\begin{Desc}
+\item[Parameters:]
+\begin{description}
+\item[{\em obj}]A valid Evas\_\-Object handle \item[{\em minw}]Minimum width pointer \item[{\em minh}]Minimum height pointer\end{description}
+\end{Desc}
+Gets the object's minimum size values from the Edje. These are set to zero if no Edje is connected to the Evas Object. \hypertarget{edje_8c_18bd6fd0f71c23b2d75a7ff3c9c9d52c}{
+\index{edje.c@{edje.c}!edje\_\-object\_\-size\_\-min\_\-restricted\_\-calc@{edje\_\-object\_\-size\_\-min\_\-restricted\_\-calc}}
+\index{edje\_\-object\_\-size\_\-min\_\-restricted\_\-calc@{edje\_\-object\_\-size\_\-min\_\-restricted\_\-calc}!edje.c@{edje.c}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI void edje\_\-object\_\-size\_\-min\_\-restricted\_\-calc (Evas\_\-Object $\ast$ {\em obj}, \/  Evas\_\-Coord $\ast$ {\em minw}, \/  Evas\_\-Coord $\ast$ {\em minh}, \/  Evas\_\-Coord {\em restrictedw}, \/  Evas\_\-Coord {\em restrictedh})}}
+\label{edje_8c_18bd6fd0f71c23b2d75a7ff3c9c9d52c}
+
+
+Calculate minimum size. 
+
+\begin{Desc}
+\item[Parameters:]
+\begin{description}
+\item[{\em obj}]A valid Evas\_\-Object handle \item[{\em minw}]Minimum width pointer \item[{\em minh}]Minimum height pointer \item[{\em restrictedw}]Do not allow object min width calc to be less than this \item[{\em restrictedh}]Do not allow object min height calc to be less than this\end{description}
+\end{Desc}
+Calculates the object's minimum size ?! 
+
+Referenced by edje\_\-object\_\-size\_\-min\_\-calc().\hypertarget{edje_8c_ab2beb131b3faf5a3b687ab7d16ec10d}{
+\index{edje.c@{edje.c}!edje\_\-object\_\-text\_\-class\_\-set@{edje\_\-object\_\-text\_\-class\_\-set}}
+\index{edje\_\-object\_\-text\_\-class\_\-set@{edje\_\-object\_\-text\_\-class\_\-set}!edje.c@{edje.c}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI void edje\_\-object\_\-text\_\-class\_\-set (Evas\_\-Object $\ast$ {\em obj}, \/  const char $\ast$ {\em text\_\-class}, \/  const char $\ast$ {\em font}, \/  Evas\_\-Font\_\-Size {\em size})}}
+\label{edje_8c_ab2beb131b3faf5a3b687ab7d16ec10d}
+
+
+Sets Edje text class. 
+
+\begin{Desc}
+\item[Parameters:]
+\begin{description}
+\item[{\em obj}]A valid Evas\_\-Object handle \item[{\em text\_\-class}]The text class name \item[{\em font}]Font name \item[{\em size}]Font Size\end{description}
+\end{Desc}
+Sets the text class for the Edje. \hypertarget{edje_8c_aacbe9411555a39261a7fe883b502149}{
+\index{edje.c@{edje.c}!edje\_\-object\_\-thaw@{edje\_\-object\_\-thaw}}
+\index{edje\_\-object\_\-thaw@{edje\_\-object\_\-thaw}!edje.c@{edje.c}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI int edje\_\-object\_\-thaw (Evas\_\-Object $\ast$ {\em obj})}}
+\label{edje_8c_aacbe9411555a39261a7fe883b502149}
+
+
+Thaw object. 
+
+\begin{Desc}
+\item[Parameters:]
+\begin{description}
+\item[{\em obj}]A valid Evas\_\-Object handle \end{description}
+\end{Desc}
+\begin{Desc}
+\item[Returns:]The frozen state\par
+ 0 on Error\end{Desc}
+This allows frozen changes to occur. 
+
+Referenced by edje\_\-thaw().\hypertarget{edje_8c_f1529d06494668cf647e3160b48a0e2b}{
+\index{edje.c@{edje.c}!edje\_\-shutdown@{edje\_\-shutdown}}
+\index{edje\_\-shutdown@{edje\_\-shutdown}!edje.c@{edje.c}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI int edje\_\-shutdown (void)}}
+\label{edje_8c_f1529d06494668cf647e3160b48a0e2b}
+
+
+Shutdown the EDJE library. 
+
+\begin{Desc}
+\item[Returns:]The new init count. \end{Desc}
+\hypertarget{edje_8c_b64222c463060368d279ecdeee726dd6}{
+\index{edje.c@{edje.c}!edje\_\-text\_\-class\_\-del@{edje\_\-text\_\-class\_\-del}}
+\index{edje\_\-text\_\-class\_\-del@{edje\_\-text\_\-class\_\-del}!edje.c@{edje.c}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}void edje\_\-text\_\-class\_\-del (const char $\ast$ {\em text\_\-class})}}
+\label{edje_8c_b64222c463060368d279ecdeee726dd6}
+
+
+\begin{Desc}
+\item[Parameters:]
+\begin{description}
+\item[{\em text\_\-class}]Deletes any values at the process level for the specified text class. \end{description}
+\end{Desc}
+\hypertarget{edje_8c_620b50416b3c0f556c16b18f83a4680f}{
+\index{edje.c@{edje.c}!edje\_\-text\_\-class\_\-list@{edje\_\-text\_\-class\_\-list}}
+\index{edje\_\-text\_\-class\_\-list@{edje\_\-text\_\-class\_\-list}!edje.c@{edje.c}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}Evas\_\-List $\ast$ edje\_\-text\_\-class\_\-list (void)}}
+\label{edje_8c_620b50416b3c0f556c16b18f83a4680f}
+
+
+Lists all text classes known about by the current process. 
+
+\begin{Desc}
+\item[Returns:]A list of text class names (strings). These strings are stringshares and the list must be free()'d by the caller. \end{Desc}
+\hypertarget{edje_8c_8913b21baad418b111da8b3f7a32d9bf}{
+\index{edje.c@{edje.c}!edje\_\-text\_\-class\_\-set@{edje\_\-text\_\-class\_\-set}}
+\index{edje\_\-text\_\-class\_\-set@{edje\_\-text\_\-class\_\-set}!edje.c@{edje.c}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI void edje\_\-text\_\-class\_\-set (const char $\ast$ {\em text\_\-class}, \/  const char $\ast$ {\em font}, \/  Evas\_\-Font\_\-Size {\em size})}}
+\label{edje_8c_8913b21baad418b111da8b3f7a32d9bf}
+
+
+Set the Edje text class. 
+
+\begin{Desc}
+\item[Parameters:]
+\begin{description}
+\item[{\em text\_\-class}]The text class name ?! \item[{\em font}]The font name \item[{\em size}]The font size\end{description}
+\end{Desc}
+This sets updates all edje members which belong to this text class with the new font attributes. \hypertarget{edje_8c_559a1db557773c41d4c4f8afd4d99b2d}{
+\index{edje.c@{edje.c}!edje\_\-thaw@{edje\_\-thaw}}
+\index{edje\_\-thaw@{edje\_\-thaw}!edje.c@{edje.c}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI void edje\_\-thaw (void)}}
+\label{edje_8c_559a1db557773c41d4c4f8afd4d99b2d}
+
+
+Thaw all Edje objects in the current process. 
+
+See \hyperlink{edje_8c_aacbe9411555a39261a7fe883b502149}{edje\_\-object\_\-thaw()} for more. 
+
+References edje\_\-object\_\-thaw().

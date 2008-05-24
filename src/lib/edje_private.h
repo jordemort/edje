@@ -102,6 +102,57 @@ void *alloca (size_t);
 #define EDJE_PROGRAM_CACHE
 */
 
+struct _Edje_Position_Scale
+{
+   double x, y;
+};
+
+struct _Edje_Position
+{
+   int x, y;
+};
+
+struct _Edje_Size
+{
+   int w, h;
+};
+
+struct _Edje_Rectangle
+{
+   int x, y, w, h;
+};
+
+struct _Edje_Color
+{
+   unsigned char  r, g, b, a;
+};
+
+struct _Edje_Aspect_Prefer
+{
+   double min, max;
+   enum {
+     EDJE_ASPECT_PREFER_NONE,
+     EDJE_ASPECT_PREFER_VERTICAL,
+     EDJE_ASPECT_PREFER_HORIZONTAL,
+     EDJE_ASPECT_PREFER_BOTH
+   } prefer;
+};
+
+struct _Edje_Aspect
+{
+   int w, h;
+   Edje_Aspect_Control mode;
+};
+
+typedef struct _Edje_Position_Scale                  Edje_Alignment;
+typedef struct _Edje_Position_Scale                  Edje_Position_Scale;
+typedef struct _Edje_Position                        Edje_Position;
+typedef struct _Edje_Size                            Edje_Size;
+typedef struct _Edje_Rectangle                       Edje_Rectangle;
+typedef struct _Edje_Color                           Edje_Color;
+typedef struct _Edje_Aspect_Prefer                   Edje_Aspect_Prefer;
+typedef struct _Edje_Aspect                          Edje_Aspect;
+
 typedef struct _Edje_File                            Edje_File;
 typedef struct _Edje_Style                           Edje_Style;
 typedef struct _Edje_Style_Tag                       Edje_Style_Tag;
@@ -122,6 +173,7 @@ typedef struct _Edje_Part                            Edje_Part;
 typedef struct _Edje_Part_Image_Id                   Edje_Part_Image_Id;
 typedef struct _Edje_Part_Description                Edje_Part_Description;
 typedef struct _Edje_Spectrum_Color                  Edje_Spectrum_Color;
+typedef struct _Edje_Patterns                        Edje_Patterns;
 
 #define PI 3.14159265358979323846
 
@@ -181,10 +233,6 @@ typedef struct _Edje_Spectrum_Color                  Edje_Spectrum_Color;
 #define EDJE_VAR_LIST   4
 #define EDJE_VAR_HASH   5
 
-#define EDJE_ASPECT_PREFER_NONE       0
-#define EDJE_ASPECT_PREFER_VERTICAL   1
-#define EDJE_ASPECT_PREFER_HORIZONTAL 2
-#define EDJE_ASPECT_PREFER_BOTH       3
 #define EDJE_VAR_MAGIC_BASE 0x12fe84ba
 
 #define EDJE_STATE_PARAM_NONE         0
@@ -246,6 +294,10 @@ struct _Edje_File
    Evas_Hash			  *font_hash;
    Evas_List                      *collection_cache;
    Evas_Hash                      *data_cache;
+
+   Eet_File                       *ef;
+
+   unsigned int                    free_strings : 1;
 };
 
 struct _Edje_Style
@@ -328,31 +380,31 @@ struct _Edje_Spectrum_Color
 
 struct _Edje_Program /* a conditional program to be run */
 {
-   int        id; /* id of program */
-   char      *name; /* name of the action */
+   int         id; /* id of program */
+   const char *name; /* name of the action */
 
-   char      *signal; /* if signal emission name matches the glob here... */
-   char      *source; /* if part that emitted this (name) matches this glob */
+   const char *signal; /* if signal emission name matches the glob here... */
+   const char *source; /* if part that emitted this (name) matches this glob */
 
    struct {
-      double  from;
-      double  range;
+      double   from;
+      double   range;
    } in;
 
-   int        action; /* type - set state, stop action, set drag pos etc. */
-   char      *state; /* what state of alternates to apply, NULL = default */
-   char      *state2; /* what other state to use - for signal emit action */
-   double     value; /* value of state to apply (if multiple names match) */
-   double     value2; /* other value for drag actions */
+   int         action; /* type - set state, stop action, set drag pos etc. */
+   const char *state; /* what state of alternates to apply, NULL = default */
+   const char *state2; /* what other state to use - for signal emit action */
+   double      value; /* value of state to apply (if multiple names match) */
+   double      value2; /* other value for drag actions */
 
    struct {
-      int     mode; /* how to tween - linear, sinusoidal etc. */
-      double  time; /* time to graduate between current and new state */
+      int      mode; /* how to tween - linear, sinusoidal etc. */
+      double   time; /* time to graduate between current and new state */
    } tween;
 
-   Evas_List *targets; /* list of target parts to apply the state to */
+   Evas_List  *targets; /* list of target parts to apply the state to */
 
-   Evas_List *after; /* list of actions to run at the end of this, for looping */
+   Evas_List  *after; /* list of actions to run at the end of this, for looping */
 };
 
 struct _Edje_Program_Target /* the target of an action */
@@ -376,8 +428,8 @@ struct _Edje_Part_Collection_Directory
 
 struct _Edje_Part_Collection_Directory_Entry
 {
-   char *entry; /* the nominal name of the part collection */
-   int   id; /* the id of this named part collection */
+   const char *entry; /* the nominal name of the part collection */
+   int         id; /* the id of this named part collection */
 };
 
 /*----------*/
@@ -391,9 +443,7 @@ struct _Edje_Part_Collection
    int        id; /* the collection id */
 
    struct {
-      struct {
-	 int w, h;
-      } min, max;
+      Edje_Size min, max;
    } prop;
 
    int        references;
@@ -411,10 +461,10 @@ struct _Edje_Part_Collection
 
 struct _Edje_Part
 {
-   char                  *name; /* the name if any of the part */
+   const char            *name; /* the name if any of the part */
    Edje_Part_Description *default_desc; /* the part descriptor for default */
    Evas_List             *other_desc; /* other possible descriptors */
-   char                  *source;
+   const char            *source;
    int                    id; /* its id number */
    int                    clip_to_id; /* the part id to clip this one to */
    struct {
@@ -436,6 +486,7 @@ struct _Edje_Part
    unsigned char          effect; /* 0 = plain... */
    unsigned char          mouse_events; /* it will affect/respond to mouse events */
    unsigned char          repeat_events; /* it will repeat events to objects below */
+   Evas_Event_Flags       ignore_flags;
    unsigned char          precise_is_inside;
    unsigned char          use_alternate_font_metrics;
    char                   pointer_mode;
@@ -450,29 +501,18 @@ struct _Edje_Part_Description
 {
    struct {
       double         value; /* the value of the state (for ranges) */
-      char          *name; /* the named state if any */
+      const char    *name; /* the named state if any */
    } state;
 
-   struct {
-      double         x, y; /* 0 <-> 1.0 alignment within allocated space */
-   } align;
+   Edje_Alignment align; /* 0 <-> 1.0 alignment within allocated space */
 
    struct {
       unsigned char  w, h; /* width or height is fixed in side (cannot expand with Edje object size) */
    } fixed;
 
-   struct {
-      int            w, h; /* min & max size, 0 = none */
-   } min, max;
-
-   struct {
-      int            x, y; /* size stepping by n pixels, 0 = none */
-   } step;
-
-   struct {
-      double         min, max; /* aspect = w/h */
-      unsigned char  prefer; /* NEITHER = 0, VERTICAL = 1, HORIZONTAL = 2 */
-   } aspect;
+   Edje_Size min, max;
+   Edje_Position step; /* size stepping by n pixels, 0 = none */
+   Edje_Aspect_Prefer aspect;
 
    struct {
       double         relative_x;
@@ -529,9 +569,7 @@ struct _Edje_Part_Description
       char          *style; /* the text style if a textblock */
       char          *font; /* if a specific font is asked for */
 
-      struct {
-	 double      x, y; /* text alignment within bounds */
-      } align;
+      Edje_Alignment align; /* text alignment within bounds */
 
       double         elipsis; /* 0.0 - 1.0 defining where the elipsis align */
       int            size; /* 0 = use user set size */
@@ -547,9 +585,7 @@ struct _Edje_Part_Description
 
    } text;
 
-   struct {
-      unsigned char  r, g, b, a; /* color for rect or text, shadow etc. */
-   } color, color2, color3;
+   Edje_Color color, color2, color3;  /* color for rect or text, shadow etc. */
 
    unsigned char     visible; /* is it shown */
 };
@@ -577,6 +613,14 @@ typedef struct _Edje_Var_Animator Edje_Var_Animator;
 typedef struct _Edje_Var_Timer Edje_Var_Timer;
 typedef struct _Edje_Var_Pool Edje_Var_Pool;
 
+struct _Edje_Signals_Sources_Patterns
+{
+   Edje_Patterns *signals_patterns;
+   Edje_Patterns *sources_patterns;
+};
+
+typedef struct _Edje_Signals_Sources_Patterns Edje_Signals_Sources_Patterns;
+
 struct _Edje
 {
    const char           *path;
@@ -584,9 +628,7 @@ struct _Edje
    const char           *parent;
 
    Evas_Coord            x, y, w, h;
-   struct {
-      Evas_Coord         w, h;
-   } min;
+   Edje_Size             min;
    double                paused_at;
    Evas                 *evas; /* the Evas this Edje belongs to */
    Evas_Object          *obj; /* the smart object */
@@ -605,6 +647,11 @@ struct _Edje
    Edje_Program        **table_programs;
    int                   table_programs_size;
    int                   table_parts_size;
+
+   struct {
+      Edje_Signals_Sources_Patterns callbacks;
+      Edje_Signals_Sources_Patterns programs;
+   } patterns;
 
    int                   references;
    int                   block;
@@ -645,26 +692,15 @@ struct _Edje_Real_Part
    Evas_Object              *swallowed_object;
    Edje_Part                *part;
    int                       x, y, w, h;
+   Edje_Rectangle            req;
+   Edje_Position             offset;
    struct {
-      int                    x, y, w, h;
-   } req;
-   struct {
-      int                    x, y;
-   } offset;
-   struct {
-      struct {
-	 int                 w, h;
-      } min, max;
-      struct {
-	 int                 w, h;
-	 unsigned char       mode;
-      } aspect;
+      Edje_Size min, max;
+      Edje_Aspect aspect;
    } swallow_params;
    struct {
       double        x, y;
-      struct {
-	 double x, y;
-      } val, size, step, page;
+      Edje_Position_Scale val, size, step, page;
       struct {
 	 unsigned int count;
 	 int  x, y;
@@ -739,27 +775,19 @@ struct _Edje_Signal_Callback
 struct _Edje_Calc_Params
 {
    int              x, y, w, h;
-   struct {
-      int           x, y, w, h;
-   } req;
-   struct {
-      int           x, y, w, h;
-   } req_drag;
+   Edje_Rectangle   req;
+   Edje_Rectangle   req_drag;
    struct {
       int           x, y, w, h;
       int           angle;
       int           spread;
    } fill;
-   struct {
-      unsigned char r, g, b, a;
-   } color, color2, color3;
+   Edje_Color color, color2, color3;
    struct {
       int           l, r, t, b;
    } border;
    struct {
-      struct {
-         double      x, y; /* text alignment within bounds */
-      } align;
+      Edje_Alignment align; /* text alignment within bounds */
       double         elipsis;
    } text;
    struct {
@@ -910,17 +938,19 @@ typedef enum _Edje_Match_Error
    EDJE_MATCH_OK,
      EDJE_MATCH_ALLOC_ERROR,
      EDJE_MATCH_SYNTAX_ERROR
-     
+
 } Edje_Match_Error;
 
-typedef struct _Edje_Patterns   Edje_Patterns;
+typedef struct _Edje_States     Edje_States;
 struct _Edje_Patterns
 {
    const char    **patterns;
+
+   Edje_States    *states;
+
    size_t          patterns_size;
    size_t          max_length;
    size_t          finals[];
-   
 };
 
 Edje_Patterns   *edje_match_collection_dir_init(Evas_List *lst);
@@ -1000,6 +1030,8 @@ void  _edje_file_del(Edje *ed);
 void  _edje_file_free(Edje_File *edf);
 void  _edje_file_cache_shutdown(void);
 void  _edje_collection_free(Edje_File *edf, Edje_Part_Collection *ec);
+void  _edje_collection_free_part_description_free(Edje_Part_Description *desc, unsigned int free_strings);
+
 
 Edje *_edje_add(Evas_Object *obj);
 void  _edje_del(Edje *ed);
@@ -1014,6 +1046,8 @@ void  _edje_program_end(Edje *ed, Edje_Running_Program *runp);
 void  _edje_program_run(Edje *ed, Edje_Program *pr, int force, const char *ssig, const char *ssrc);
 void  _edje_emit(Edje *ed, const char *sig, const char *src);
 void  _edje_emit_handle(Edje *ed, const char *sig, const char *src);
+void  _edje_signals_sources_patterns_clean(Edje_Signals_Sources_Patterns *ssp);
+void  _edje_callbacks_patterns_clean(Edje *ed);
 
 void           _edje_text_init(void);
 void           _edje_text_part_on_add(Edje *ed, Edje_Real_Part *ep);
@@ -1022,6 +1056,8 @@ void           _edje_text_part_on_del(Edje *ed, Edje_Part *ep);
 void           _edje_text_real_part_on_del(Edje *ed, Edje_Real_Part *ep);
 void           _edje_text_recalc_apply(Edje *ed, Edje_Real_Part *ep, Edje_Calc_Params *params, Edje_Part_Description *chosen_desc);
 Evas_Font_Size _edje_text_size_calc(Evas_Font_Size size, Edje_Text_Class *tc);
+const char *   _edje_text_class_font_get(Edje *ed, Edje_Part_Description *chosen_desc, int *size, char **free_later);
+
 
 Edje_Real_Part   *_edje_real_part_get(Edje *ed, const char *part);
 Edje_Real_Part   *_edje_real_part_recursive_get(Edje *ed, const char *part);

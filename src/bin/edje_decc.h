@@ -13,9 +13,6 @@
 #include <stdarg.h>
 #include <locale.h>
 #include <ctype.h>
-#ifdef HAVE_ALLOCA_H
-#include <alloca.h>
-#endif
 
 /* types */
 typedef struct _Font                  Font;
@@ -51,7 +48,7 @@ int     source_append(Eet_File *ef);
 SrcFile_List *source_load(Eet_File *ef);
 int     source_fontmap_save(Eet_File *ef, Evas_List *fonts);
 Font_List *source_fontmap_load(Eet_File *ef);
-    
+
 void   *mem_alloc(size_t size);
 char   *mem_strdup(const char *s);
 #define SZ sizeof

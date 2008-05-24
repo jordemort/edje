@@ -549,12 +549,14 @@ _edje_part_recalc_single(Edje *ed,
 	if (chosen_desc->text.id_source >= 0)
 	  {
 	     ep->text.source = ed->table_parts[chosen_desc->text.id_source % ed->table_parts_size];
-	     style = ep->text.source->chosen_description->text.style;
+	     if (ep->text.source->chosen_description->text.style)
+	       style = ep->text.source->chosen_description->text.style;
 	  }
 	else
 	  {
 	     ep->text.source = NULL;
-	     style = chosen_desc->text.style;
+	     if (chosen_desc->text.style)
+	       style = chosen_desc->text.style;
 	  }
 
 	if (chosen_desc->text.id_text_source >= 0)
@@ -663,101 +665,12 @@ _edje_part_recalc_single(Edje *ed,
 	  text = ep->text.text_source->chosen_description->text.text;
 	else
 	  text = chosen_desc->text.text;
-	if (ep->text.source)
-	  {
-	     font = ep->text.source->chosen_description->text.font;
-	     size = ep->text.source->chosen_description->text.size;
-	  }
-	else
-	  {
-	     font = chosen_desc->text.font;
-	     size = chosen_desc->text.size;
-	  }
-	if (ep->text.source)
-	  {
-	     if ((ep->text.source->chosen_description->text.text_class) &&
-		 (*ep->text.source->chosen_description->text.text_class))
-	       {
-		  Edje_Text_Class *tc;
 
-		  tc = _edje_text_class_find(ed, ep->text.source->chosen_description->text.text_class);
-		  if (tc)
-		    {
-		       if ((tc->font) && (chosen_desc->text.font))
-			 {
-			    char *tok, *tok2, *e;
-			    
-			    tok = strstr(chosen_desc->text.font, ":style=");
-			    tok2 = strstr(tc->font, ":style=");
-			    if ((tok) && (!tok2))
-			      {
-				 char *stl;
-				 int tclen;
-				 
-				 e = strchr(tok, ',');
-				 stl = alloca(e - tok + 1);
-				 strncpy(stl, tok, e - tok);
-				 stl[e - tok] = 0;
-				 font = tc->font;
-				 tclen = strlen(tc->font);
-				 sfont = malloc(tclen + e - tok + 1);
-				 strcpy(sfont, tc->font);
-				 strcpy(sfont + tclen, stl);
-				 font = sfont;
-			      }
-			    else
-			      font = tc->font;
-			 }       
-		       else
-			 {
-			    if (tc->font) font = tc->font;
-			 }
-		       size = _edje_text_size_calc(size, tc);
-		    }
-	       }
-	  }
+	if (ep->text.source)
+	  font = _edje_text_class_font_get(ed, ep->text.source->chosen_description, &size, &sfont);
 	else
-	  {
-	     if ((chosen_desc->text.text_class) && (*chosen_desc->text.text_class))
-	       {
-		  Edje_Text_Class *tc;
+	  font = _edje_text_class_font_get(ed, chosen_desc, &size, &sfont);
 
-		  tc = _edje_text_class_find(ed, chosen_desc->text.text_class);
-		  if (tc)
-		    {
-		       if ((tc->font) && (chosen_desc->text.font))
-			 {
-			    char *tok, *tok2, *e;
-			    
-			    tok = strstr(chosen_desc->text.font, ":style=");
-			    tok2 = strstr(tc->font, ":style=");
-			    if ((tok) && (!tok2))
-			      {
-				 char *stl;
-				 int tclen;
-				 
-				 e = strchr(tok, ',');
-				 stl = alloca(e - tok + 1);
-				 strncpy(stl, tok, e - tok);
-				 stl[e - tok] = 0;
-				 font = tc->font;
-				 tclen = strlen(tc->font);
-				 sfont = malloc(tclen + e - tok + 1);
-				 strcpy(sfont, tc->font);
-				 strcpy(sfont + tclen, stl);
-				 font = sfont;
-			      }
-			    else
-			      font = tc->font;
-			 }       
-		       else
-			 {
-			    if (tc->font) font = tc->font;
-			 }
-		       size = _edje_text_size_calc(size, tc);
-		    }
-	       }
-	  }
 	if (!font) font = "";
 
 	if (ep->text.text_source)
@@ -768,7 +681,7 @@ _edje_part_recalc_single(Edje *ed,
 	  {
 	     if (ep->text.text) text = ep->text.text;
 	  }
-	
+
 	if (ep->text.source)
 	  {
 	     if (ep->text.source->text.font) font = ep->text.source->text.font;
@@ -1167,9 +1080,187 @@ _edje_part_recalc_single(Edje *ed,
 }
 
 static void
+_edje_gradient_recalc_apply(Edje *ed, Edje_Real_Part *ep, Edje_Calc_Params *p3, Edje_Part_Description *chosen_desc)
+{
+   evas_object_gradient_fill_angle_set(ep->object, p3->fill.angle);
+   evas_object_gradient_fill_spread_set(ep->object, p3->fill.spread);
+   evas_object_gradient_fill_set(ep->object, p3->fill.x, p3->fill.y,
+				 p3->fill.w, p3->fill.h);
+
+   if (p3->gradient.type && p3->gradient.type[0])
+     evas_object_gradient_type_set(ep->object, p3->gradient.type, NULL);
+
+   if (ed->file->spectrum_dir && ed->file->spectrum_dir->entries &&
+       p3->gradient.id != ep->gradient_id)
+     {
+	Edje_Spectrum_Directory_Entry *se;
+	Evas_List *l;
+
+	se = evas_list_nth(ed->file->spectrum_dir->entries, p3->gradient.id);
+	if (se)
+	  {
+	     evas_object_gradient_clear(ep->object);
+	     for (l = se->color_list; l; l = l->next)
+	       {
+		  Edje_Spectrum_Color *sc = l->data;
+		  evas_object_gradient_color_stop_add(ep->object, sc->r,
+						      sc->g, sc->b, 255,
+						      sc->d);
+		  evas_object_gradient_alpha_stop_add(ep->object,
+						      sc->a, sc->d);
+	       }
+	     ep->gradient_id = p3->gradient.id;
+	  }
+     }
+}
+
+static int
+_edje_nitoa_rec(char *string, int len, unsigned int value)
+{
+   const char	*array = "0123456789";
+   int		 length;
+   int		 quotient;
+   int		 modulo;
+
+   if (len <= 0) return 0;
+   if (value == 0) return 0;
+
+   quotient = value / 10;
+   modulo = value % 10;
+
+   length = _edje_nitoa_rec(string, len - 1, quotient);
+
+   if (length + 1 > len) return length;
+
+   string[length] = array[modulo];
+
+   return length + 1;
+}
+
+static int
+_edje_nitoa(char *string, int len, int value)
+{
+   int	length;
+
+   if (len <= 0) return 0;
+   if (len == 1)
+     {
+	*string = '\0';
+	return 1;
+     }
+
+   if (value < 0)
+     {
+	*string = '-';
+
+	++string;
+	--len;
+     }
+
+   if (value == 0)
+     {
+	strncpy(string, "0", len);
+	return 1;
+     }
+
+   length = _edje_nitoa_rec(string, len, value);
+   string[length] = '\0';
+
+   return length;
+}
+
+static void
+_edje_image_recalc_apply(Edje *ed, Edje_Real_Part *ep, Edje_Calc_Params *p3, Edje_Part_Description *chosen_desc, double pos)
+{
+   char buf[4096];
+   int image_id;
+   int image_count, image_num;
+
+   evas_object_image_fill_set(ep->object, p3->fill.x, p3->fill.y,
+			      p3->fill.w, p3->fill.h);
+   evas_object_image_smooth_scale_set(ep->object, p3->smooth);
+
+   evas_object_image_border_set(ep->object, p3->border.l, p3->border.r,
+				p3->border.t, p3->border.b);
+   evas_object_image_border_center_fill_set(ep->object,
+					    !(chosen_desc->border.no_fill));
+   image_id = ep->param1.description->image.id;
+   if (image_id < 0)
+     {
+	Edje_Image_Directory_Entry *ie;
+
+	if (!ed->file->image_dir) ie = NULL;
+	else ie = evas_list_nth(ed->file->image_dir->entries, (-image_id) - 1);
+	if ((ie) &&
+	    (ie->source_type == EDJE_IMAGE_SOURCE_TYPE_EXTERNAL) &&
+	    (ie->entry))
+	  {
+	     evas_object_image_file_set(ep->object, ie->entry, NULL);
+	  }
+     }
+   else
+     {
+	image_count = 2;
+	if (ep->param2.description)
+	  image_count += evas_list_count(ep->param2.description->image.tween_list);
+	image_num = (pos * ((double)image_count - 0.5));
+	if (image_num > (image_count - 1))
+	  image_num = image_count - 1;
+	if (image_num == 0)
+	  image_id = ep->param1.description->image.id;
+	else if (image_num == (image_count - 1))
+	  image_id = ep->param2.description->image.id;
+	else
+	  {
+	     Edje_Part_Image_Id *imid;
+
+	     imid = evas_list_nth(ep->param2.description->image.tween_list,
+				  image_num - 1);
+	     if (imid) image_id = imid->id;
+	  }
+	if (image_id < 0)
+	  {
+	     printf("EDJE ERROR: part \"%s\" has description, "
+		    "\"%s\" %3.3f with a missing image id!!!\n",
+		    ep->part->name,
+		    ep->param1.description->state.name,
+		    ep->param1.description->state.value);
+	  }
+	else
+	  {
+	     /* Replace snprint("images/%i") == memcpy + itoa */
+#define IMAGES "images/"
+	     memcpy(buf, IMAGES, strlen(IMAGES));
+	     _edje_nitoa(buf + strlen(IMAGES), sizeof(buf) - strlen(IMAGES), image_id);
+
+	     evas_object_image_file_set(ep->object, ed->file->path, buf);
+	     if (evas_object_image_load_error_get(ep->object) != EVAS_LOAD_ERROR_NONE)
+	       {
+		  printf("EDJE: Error loading image collection \"%s\" from "
+			 "file \"%s\". Missing EET Evas loader module?\n",
+			 buf, ed->file->path);
+		  if (evas_object_image_load_error_get(ep->object) == EVAS_LOAD_ERROR_GENERIC)
+		    printf("Error type: EVAS_LOAD_ERROR_GENERIC\n");
+		  else if (evas_object_image_load_error_get(ep->object) == EVAS_LOAD_ERROR_DOES_NOT_EXIST)
+		    printf("Error type: EVAS_LOAD_ERROR_DOES_NOT_EXIST\n");
+		  else if (evas_object_image_load_error_get(ep->object) == EVAS_LOAD_ERROR_PERMISSION_DENIED)
+		    printf("Error type: EVAS_LOAD_ERROR_PERMISSION_DENIED\n");
+		  else if (evas_object_image_load_error_get(ep->object) == EVAS_LOAD_ERROR_RESOURCE_ALLOCATION_FAILED)
+		    printf("Error type: EVAS_LOAD_ERROR_RESOURCE_ALLOCATION_FAILED\n");
+		  else if (evas_object_image_load_error_get(ep->object) == EVAS_LOAD_ERROR_CORRUPT_FILE)
+		    printf("Error type: EVAS_LOAD_ERROR_CORRUPT_FILE\n");
+		  else if (evas_object_image_load_error_get(ep->object) == EVAS_LOAD_ERROR_UNKNOWN_FORMAT)
+		    printf("Error type: EVAS_LOAD_ERROR_UNKNOWN_FORMAT\n");
+	       }
+	  }
+     }
+}
+
+
+static void
 _edje_part_recalc(Edje *ed, Edje_Real_Part *ep, int flags)
 {
-   Edje_Calc_Params p1, p2, p3;
+   Edje_Calc_Params p1, p2, p3, *pf;
    Edje_Part_Description *chosen_desc;
    double pos = 0.0;
 
@@ -1238,9 +1329,13 @@ _edje_part_recalc(Edje *ed, Edje_Real_Part *ep, int flags)
      _edje_part_recalc_single(ed, ep, ep->param1.description, chosen_desc, ep->param1.rel1_to_x, ep->param1.rel1_to_y, ep->param1.rel2_to_x, ep->param1.rel2_to_y, ep->confine_to, &p1, flags);
    if (ep->param2.description)
      {
+	int beginning_pos, part_type;
+
 	_edje_part_recalc_single(ed, ep, ep->param2.description, chosen_desc, ep->param2.rel1_to_x, ep->param2.rel1_to_y, ep->param2.rel2_to_x, ep->param2.rel2_to_y, ep->confine_to, &p2, flags);
 
 	pos = ep->description_pos;
+	beginning_pos = (pos < 0.5);
+	part_type = ep->part->type;
 
 	/* visible is special */
 	if ((p1.visible) && (!p2.visible))
@@ -1250,10 +1345,10 @@ _edje_part_recalc(Edje *ed, Edje_Real_Part *ep, int flags)
 	else
 	  p3.visible = p1.visible;
 
-	p3.smooth = (pos < 0.5) ? p1.smooth : p2.smooth;
+	p3.smooth = (beginning_pos) ? p1.smooth : p2.smooth;
 
 	/* FIXME: do x and y separately base on flag */
-#define INTP(_x1, _x2, _p) ((_x1) + (((_x2) - (_x1)) * _p))
+#define INTP(_x1, _x2, _p) (((_x1) == (_x2)) ? (_x1) : ((_x1) + (((_x2) - (_x1)) * (_p))))
 	p3.x = INTP(p1.x, p2.x, pos);
 	p3.y = INTP(p1.y, p2.y, pos);
 	p3.w = INTP(p1.w, p2.w, pos);
@@ -1264,54 +1359,69 @@ _edje_part_recalc(Edje *ed, Edje_Real_Part *ep, int flags)
 	p3.req.w = INTP(p1.req.w, p2.req.w, pos);
 	p3.req.h = INTP(p1.req.h, p2.req.h, pos);
 
-	p3.req_drag.x = INTP(p1.req_drag.x, p2.req_drag.x, pos);
-	p3.req_drag.y = INTP(p1.req_drag.y, p2.req_drag.y, pos);
-	p3.req_drag.w = INTP(p1.req_drag.w, p2.req_drag.w, pos);
-	p3.req_drag.h = INTP(p1.req_drag.h, p2.req_drag.h, pos);
-
-	p3.fill.x = INTP(p1.fill.x, p2.fill.x, pos);
-	p3.fill.y = INTP(p1.fill.y, p2.fill.y, pos);
-	p3.fill.w = INTP(p1.fill.w, p2.fill.w, pos);
-	p3.fill.h = INTP(p1.fill.h, p2.fill.h, pos);
-	p3.fill.angle = INTP(p1.fill.angle, p2.fill.angle, pos);
-	p3.fill.spread = pos > 0.5 ? p2.fill.spread : p1.fill.spread;
+	if (ep->part->dragable.x)
+	  {
+	     p3.req_drag.x = INTP(p1.req_drag.x, p2.req_drag.x, pos);
+	     p3.req_drag.w = INTP(p1.req_drag.w, p2.req_drag.w, pos);
+	  }
+	if (ep->part->dragable.y)
+	  {
+	     p3.req_drag.y = INTP(p1.req_drag.y, p2.req_drag.y, pos);
+	     p3.req_drag.h = INTP(p1.req_drag.h, p2.req_drag.h, pos);
+	  }
 
 	p3.color.r = INTP(p1.color.r, p2.color.r, pos);
 	p3.color.g = INTP(p1.color.g, p2.color.g, pos);
 	p3.color.b = INTP(p1.color.b, p2.color.b, pos);
 	p3.color.a = INTP(p1.color.a, p2.color.a, pos);
 
-	p3.color2.r = INTP(p1.color2.r, p2.color2.r, pos);
-	p3.color2.g = INTP(p1.color2.g, p2.color2.g, pos);
-	p3.color2.b = INTP(p1.color2.b, p2.color2.b, pos);
-	p3.color2.a = INTP(p1.color2.a, p2.color2.a, pos);
+	if ((part_type == EDJE_PART_TYPE_IMAGE) ||
+	    (part_type == EDJE_PART_TYPE_GRADIENT))
+	  {
+	     p3.fill.x = INTP(p1.fill.x, p2.fill.x, pos);
+	     p3.fill.y = INTP(p1.fill.y, p2.fill.y, pos);
+	     p3.fill.w = INTP(p1.fill.w, p2.fill.w, pos);
+	     p3.fill.h = INTP(p1.fill.h, p2.fill.h, pos);
+	     if (part_type == EDJE_PART_TYPE_GRADIENT)
+	       {
+		  p3.fill.angle = INTP(p1.fill.angle, p2.fill.angle, pos);
+		  p3.fill.spread = (beginning_pos) ? p1.fill.spread : p2.fill.spread;
+		  p3.gradient = (beginning_pos) ? p1.gradient : p2.gradient;
+	       }
+	     else
+	       {
+		  p3.border.l = INTP(p1.border.l, p2.border.l, pos);
+		  p3.border.r = INTP(p1.border.r, p2.border.r, pos);
+		  p3.border.t = INTP(p1.border.t, p2.border.t, pos);
+		  p3.border.b = INTP(p1.border.b, p2.border.b, pos);
+	       }
+	  }
+	else if ((part_type == EDJE_PART_TYPE_TEXT) ||
+		 (part_type == EDJE_PART_TYPE_TEXTBLOCK))
+	  {
+	     p3.color2.r = INTP(p1.color2.r, p2.color2.r, pos);
+	     p3.color2.g = INTP(p1.color2.g, p2.color2.g, pos);
+	     p3.color2.b = INTP(p1.color2.b, p2.color2.b, pos);
+	     p3.color2.a = INTP(p1.color2.a, p2.color2.a, pos);
 
-	p3.color3.r = INTP(p1.color3.r, p2.color3.r, pos);
-	p3.color3.g = INTP(p1.color3.g, p2.color3.g, pos);
-	p3.color3.b = INTP(p1.color3.b, p2.color3.b, pos);
-	p3.color3.a = INTP(p1.color3.a, p2.color3.a, pos);
+	     p3.color3.r = INTP(p1.color3.r, p2.color3.r, pos);
+	     p3.color3.g = INTP(p1.color3.g, p2.color3.g, pos);
+	     p3.color3.b = INTP(p1.color3.b, p2.color3.b, pos);
+	     p3.color3.a = INTP(p1.color3.a, p2.color3.a, pos);
 
-	p3.border.l = INTP(p1.border.l, p2.border.l, pos);
-	p3.border.r = INTP(p1.border.r, p2.border.r, pos);
-	p3.border.t = INTP(p1.border.t, p2.border.t, pos);
-	p3.border.b = INTP(p1.border.b, p2.border.b, pos);
+	     p3.text.align.x = INTP(p1.text.align.x, p2.text.align.x, pos);
+	     p3.text.align.y = INTP(p1.text.align.y, p2.text.align.y, pos);
+	     p3.text.elipsis = INTP(p1.text.elipsis, p2.text.elipsis, pos);
+	  }
 
-	p3.text.align.x = INTP(p1.text.align.x, p2.text.align.x, pos);
-	p3.text.align.y = INTP(p1.text.align.y, p2.text.align.y, pos);
-	p3.text.elipsis = INTP(p1.text.elipsis, p2.text.elipsis, pos);
-
-	p3.gradient.id = pos > 0.5 ? p2.gradient.id : p1.gradient.id;
-	p3.gradient.type = pos > 0.5 ? p2.gradient.type : p1.gradient.type;
+	pf = &p3;
      }
    else
      {
-	p3 = p1;
+	pf = &p1;
      }
 
-   ep->req.x = p3.req.x;
-   ep->req.y = p3.req.y;
-   ep->req.w = p3.req.w;
-   ep->req.h = p3.req.h;
+   ep->req = pf->req;
 
    if (ep->drag.need_reset)
      {
@@ -1328,158 +1438,50 @@ _edje_part_recalc(Edje *ed, Edje_Real_Part *ep, int flags)
      }
    if (!ed->calc_only)
      {
-	if (ep->part->type == EDJE_PART_TYPE_RECTANGLE)
+	/* Common move, resize and color_set for all part. */
+	switch (ep->part->type)
 	  {
-	     evas_object_move(ep->object, ed->x + p3.x, ed->y + p3.y);
-	     evas_object_resize(ep->object, p3.w, p3.h);
-	     evas_object_color_set(ep->object,
-				   (p3.color.r * p3.color.a) / 255,
-				   (p3.color.g * p3.color.a) / 255,
-				   (p3.color.b * p3.color.a) / 255,
-				   p3.color.a);
-	     if (p3.visible) evas_object_show(ep->object);
-	     else evas_object_hide(ep->object);
+	   case EDJE_PART_TYPE_RECTANGLE:
+	   case EDJE_PART_TYPE_IMAGE:
+	   case EDJE_PART_TYPE_TEXTBLOCK:
+	   case EDJE_PART_TYPE_GRADIENT:
+	      evas_object_color_set(ep->object,
+				    (pf->color.r * pf->color.a) / 255,
+				    (pf->color.g * pf->color.a) / 255,
+				    (pf->color.b * pf->color.a) / 255,
+				    pf->color.a);
+	      if (pf->visible) evas_object_show(ep->object);
+	      else evas_object_hide(ep->object);
+	      /* move and resize are needed for all previous object => no break here. */
+	   case EDJE_PART_TYPE_SWALLOW:
+	   case EDJE_PART_TYPE_GROUP:
+	      /* visibility and color have no meaning on SWALLOW and GROUP part. */
+	      evas_object_move(ep->object, ed->x + pf->x, ed->y + pf->y);
+	      evas_object_resize(ep->object, pf->w, pf->h);
+	      break;
+	   case EDJE_PART_TYPE_TEXT:
+	      /* This is correctly handle in _edje_text_recalc_apply at the moment. */
+	      break;
 	  }
-	else if (ep->part->type == EDJE_PART_TYPE_TEXT)
+
+	/* Some object need special recalc. */
+	switch (ep->part->type)
 	  {
-	     _edje_text_recalc_apply(ed, ep, &p3, chosen_desc);
-	  }
-	else if (ep->part->type == EDJE_PART_TYPE_IMAGE)
-	  {
-	     char buf[4096];
-	     int image_id;
-	     int image_count, image_num;
-
-	     evas_object_move(ep->object, ed->x + p3.x, ed->y + p3.y);
-	     evas_object_resize(ep->object, p3.w, p3.h);
-	     evas_object_image_fill_set(ep->object, p3.fill.x, p3.fill.y, p3.fill.w, p3.fill.h);
-	     evas_object_image_smooth_scale_set(ep->object, p3.smooth);
-
-	     evas_object_image_border_set(ep->object, p3.border.l, p3.border.r, p3.border.t, p3.border.b);
-	     evas_object_image_border_center_fill_set(ep->object, !(chosen_desc->border.no_fill));
-	     image_id = ep->param1.description->image.id;
-	     if (image_id < 0)
-	       {
-		  Edje_Image_Directory_Entry *ie;
-
-		  if (!ed->file->image_dir) ie = NULL;
-		  else ie = evas_list_nth(ed->file->image_dir->entries, (-image_id) - 1);
-		  if ((ie) &&
-		      (ie->source_type == EDJE_IMAGE_SOURCE_TYPE_EXTERNAL) &&
-		      (ie->entry))
-		    {
-		       evas_object_image_file_set(ep->object, ie->entry, NULL);
-		    }
-	       }
-	     else
-	       {
-		  image_count = 2;
-		  if (ep->param2.description)
-		    image_count += evas_list_count(ep->param2.description->image.tween_list);
-		  image_num = (pos * ((double)image_count - 0.5));
-		  if (image_num > (image_count - 1))
-		    image_num = image_count - 1;
-		  if (image_num == 0)
-		    image_id = ep->param1.description->image.id;
-		  else if (image_num == (image_count - 1))
-		    image_id = ep->param2.description->image.id;
-		  else
-		    {
-		       Edje_Part_Image_Id *imid;
-
-		       imid = evas_list_nth(ep->param2.description->image.tween_list, image_num - 1);
-		       if (imid) image_id = imid->id;
-		    }
-		  if (image_id < 0)
-		    {
-		       printf("EDJE ERROR: part \"%s\" has description, \"%s\" %3.3f with a missing image id!!!\n",
-			      ep->part->name,
-			      ep->param1.description->state.name,
-			      ep->param1.description->state.value
-			      );
-		    }
-		  else
-		    {
-		       snprintf(buf, sizeof(buf), "images/%i", image_id);
-		       evas_object_image_file_set(ep->object, ed->file->path, buf);
-		       if (evas_object_image_load_error_get(ep->object) != EVAS_LOAD_ERROR_NONE)
-			 {
-			    printf("EDJE: Error loading image collection \"%s\" from file \"%s\". Missing EET Evas loader module?\n",
-				   buf, ed->file->path);
-			    if (evas_object_image_load_error_get(ep->object) == EVAS_LOAD_ERROR_GENERIC)
-			      printf("Error type: EVAS_LOAD_ERROR_GENERIC\n");
-			    else if (evas_object_image_load_error_get(ep->object) == EVAS_LOAD_ERROR_DOES_NOT_EXIST)
-			      printf("Error type: EVAS_LOAD_ERROR_DOES_NOT_EXIST\n");
-			    else if (evas_object_image_load_error_get(ep->object) == EVAS_LOAD_ERROR_PERMISSION_DENIED)
-			      printf("Error type: EVAS_LOAD_ERROR_PERMISSION_DENIED\n");
-			    else if (evas_object_image_load_error_get(ep->object) == EVAS_LOAD_ERROR_RESOURCE_ALLOCATION_FAILED)
-			      printf("Error type: EVAS_LOAD_ERROR_RESOURCE_ALLOCATION_FAILED\n");
-			    else if (evas_object_image_load_error_get(ep->object) == EVAS_LOAD_ERROR_CORRUPT_FILE)
-			      printf("Error type: EVAS_LOAD_ERROR_CORRUPT_FILE\n");
-			    else if (evas_object_image_load_error_get(ep->object) == EVAS_LOAD_ERROR_UNKNOWN_FORMAT)
-			      printf("Error type: EVAS_LOAD_ERROR_UNKNOWN_FORMAT\n");
-			 }
-		    }
-	       }
-	     evas_object_color_set(ep->object,
-				   (p3.color.r * p3.color.a) / 255,
-				   (p3.color.g * p3.color.a) / 255,
-				   (p3.color.b * p3.color.a) / 255,
-				   p3.color.a);
-	     if (p3.visible) evas_object_show(ep->object);
-	     else evas_object_hide(ep->object);
-	  }
-	else if ((ep->part->type == EDJE_PART_TYPE_SWALLOW) ||
-		 (ep->part->type == EDJE_PART_TYPE_GROUP))
-	  {
-	     evas_object_move(ep->object, ed->x + p3.x, ed->y + p3.y);
-	     evas_object_resize(ep->object, p3.w, p3.h);
-	  }
-	else if (ep->part->type == EDJE_PART_TYPE_TEXTBLOCK)
-	  {
-	     evas_object_move(ep->object, ed->x + p3.x, ed->y + p3.y);
-	     evas_object_resize(ep->object, p3.w, p3.h);
-	  }
-	else if (ep->part->type == EDJE_PART_TYPE_GRADIENT)
-	  {
-	     evas_object_move(ep->object, ed->x + p3.x, ed->y + p3.y);
-	     evas_object_resize(ep->object, p3.w, p3.h);
-	     evas_object_color_set(ep->object,
-				   (p3.color.r * p3.color.a) / 255,
-				   (p3.color.g * p3.color.a) / 255,
-				   (p3.color.b * p3.color.a) / 255,
-				   p3.color.a);
-	     if (p3.visible) evas_object_show(ep->object);
-	     else evas_object_hide(ep->object);
-
-	     evas_object_gradient_fill_angle_set(ep->object, p3.fill.angle);
-	     evas_object_gradient_fill_spread_set(ep->object, p3.fill.spread);
-	     evas_object_gradient_fill_set(ep->object, p3.fill.x, p3.fill.y, p3.fill.w, p3.fill.h);
-
-	     if (p3.gradient.type && p3.gradient.type[0])
-	       evas_object_gradient_type_set(ep->object, p3.gradient.type, NULL);
-
-	     if (ed->file->spectrum_dir && ed->file->spectrum_dir->entries && p3.gradient.id != ep->gradient_id)
-	       {
-		  Edje_Spectrum_Directory_Entry *se;
-		  Evas_List *l;
-
-		  se = evas_list_nth(ed->file->spectrum_dir->entries, p3.gradient.id);
-		  if (se)
-		    {
-		       evas_object_gradient_clear(ep->object);
-		       for (l = se->color_list; l; l = l->next)
-			 {
-			    Edje_Spectrum_Color *sc = l->data;
-			    evas_object_gradient_color_stop_add(ep->object, sc->r,
-								sc->g, sc->b, 255,
-								sc->d);
-			    evas_object_gradient_alpha_stop_add(ep->object,
-								sc->a, sc->d);
-			 }
-		       ep->gradient_id = p3.gradient.id;
-		    }
-	       }
+	   case EDJE_PART_TYPE_TEXT:
+	      _edje_text_recalc_apply(ed, ep, pf, chosen_desc);
+	      break;
+	   case EDJE_PART_TYPE_IMAGE:
+	      _edje_image_recalc_apply(ed, ep, pf, chosen_desc, pos);
+	      break;
+	   case EDJE_PART_TYPE_GRADIENT:
+	      _edje_gradient_recalc_apply(ed, ep, pf, chosen_desc);
+	      break;
+	   case EDJE_PART_TYPE_RECTANGLE:
+	   case EDJE_PART_TYPE_SWALLOW:
+	   case EDJE_PART_TYPE_GROUP:
+	   case EDJE_PART_TYPE_TEXTBLOCK:
+	      /* Nothing special to do for this type of object. */
+	      break;
 	  }
 
 	if (ep->swallowed_object)
@@ -1489,21 +1491,21 @@ _edje_part_recalc(Edje *ed, Edje_Real_Part *ep, int flags)
 //// done via the clipper anyway. this created bugs when objects had their
 //// colro set and were swallowed - then had their color changed.
 //	     evas_object_color_set(ep->swallowed_object,
-//				   (p3.color.r * p3.color.a) / 255,
-//				   (p3.color.g * p3.color.a) / 255,
-//				   (p3.color.b * p3.color.a) / 255,
-//				   p3.color.a);
-	     evas_object_move(ep->swallowed_object, ed->x + p3.x, ed->y + p3.y);
-	     evas_object_resize(ep->swallowed_object, p3.w, p3.h);
-	     if (p3.visible) evas_object_show(ep->swallowed_object);
+//				   (pf->color.r * pf->color.a) / 255,
+//				   (pf->color.g * pf->color.a) / 255,
+//				   (pf->color.b * pf->color.a) / 255,
+//				   pf->color.a);
+	     evas_object_move(ep->swallowed_object, ed->x + pf->x, ed->y + pf->y);
+	     evas_object_resize(ep->swallowed_object, pf->w, pf->h);
+	     if (pf->visible) evas_object_show(ep->swallowed_object);
 	     else evas_object_hide(ep->swallowed_object);
 	  }
      }
 
-   ep->x = p3.x;
-   ep->y = p3.y;
-   ep->w = p3.w;
-   ep->h = p3.h;
+   ep->x = pf->x;
+   ep->y = pf->y;
+   ep->w = pf->w;
+   ep->h = pf->h;
 
    ep->calculated |= flags;
    ep->calculating = FLAG_NONE;

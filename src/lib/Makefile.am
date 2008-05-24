@@ -4,6 +4,7 @@ MAINTAINERCLEANFILES = Makefile.in
 AM_CPPFLAGS = \
 -I. \
 -I$(top_srcdir) \
+-I$(top_srcdir)/src/bin \
 -I$(top_srcdir)/src/lib \
 -DPACKAGE_BIN_DIR=\"$(bindir)\" \
 -DPACKAGE_LIB_DIR=\"$(libdir)\" \
@@ -14,7 +15,8 @@ lib_LTLIBRARIES      = \
 libedje.la
 
 include_HEADERS      =  \
-Edje.h
+Edje.h \
+Edje_Edit.h
 
 libedje_la_SOURCES  = \
 edje_calc.c \
@@ -35,7 +37,8 @@ edje_message_queue.c \
 edje_private.h \
 edje_cache.c \
 edje_match.c \
-edje_textblock_styles.c
+edje_textblock_styles.c \
+edje_edit.c
 
 libedje_la_LIBADD       = -lm @EDJE_LIBS@
 libedje_la_DEPENDENCIES = $(top_builddir)/config.h

@@ -56,7 +56,7 @@ edje_shutdown(void)
    _edje_text_class_hash_free();
    embryo_shutdown();
    ecore_job_shutdown();
-   
+
    return 0;
 }
 
@@ -90,6 +90,7 @@ _edje_del(Edje *ed)
 	return;
      }
    _edje_message_del(ed);
+   _edje_callbacks_patterns_clean(ed);
    _edje_file_del(ed);
    if (ed->path) evas_stringshare_del(ed->path);
    if (ed->part) evas_stringshare_del(ed->part);

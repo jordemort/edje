@@ -6,6 +6,25 @@
 #include "edje_private.h"
 
 void
+_edje_hold_cb(void *data, Evas * e, Evas_Object * obj, void *event_info)
+{
+   Evas_Event_Hold *ev;
+   Edje *ed;
+   Edje_Real_Part *rp;
+
+   ev = event_info;
+   ed = data;
+   rp = evas_object_data_get(obj, "real_part");
+   if (!rp) return;
+   if (ev->hold)
+     _edje_emit(ed, "hold,on", rp->part->name);
+   else
+     _edje_emit(ed, "hold,off", rp->part->name);
+   return;
+   e = NULL;
+}
+
+void
 _edje_mouse_in_cb(void *data, Evas * e, Evas_Object * obj, void *event_info)
 {
    Evas_Event_Mouse_In *ev;
@@ -15,7 +34,9 @@ _edje_mouse_in_cb(void *data, Evas * e, Evas_Object * obj, void *event_info)
    ev = event_info;
    ed = data;
    rp = evas_object_data_get(obj, "real_part");
-   if (!rp) return;
+   if ((!rp) ||
+       ((ev->event_flags) &&
+	(rp->part->ignore_flags & ev->event_flags))) return;
    _edje_emit(ed, "mouse,in", rp->part->name);
    return;
    e = NULL;
@@ -31,7 +52,9 @@ _edje_mouse_out_cb(void *data, Evas * e, Evas_Object * obj, void *event_info)
    ev = event_info;
    ed = data;
    rp = evas_object_data_get(obj, "real_part");
-   if (!rp) return;
+   if ((!rp) ||
+       ((ev->event_flags) &&
+	(rp->part->ignore_flags & ev->event_flags))) return;
    _edje_emit(ed, "mouse,out", rp->part->name);
    return;
    e = NULL;
@@ -44,20 +67,28 @@ _edje_mouse_down_cb(void *data, Evas * e, Evas_Object * obj, void *event_info)
    Edje *ed;
    Edje_Real_Part *rp;
    char buf[256];
+   int ignored;
 
    ev = event_info;
    ed = data;
    rp = evas_object_data_get(obj, "real_part");
    if (!rp) return;
-   if (ev->flags & EVAS_BUTTON_TRIPLE_CLICK)
-     snprintf(buf, sizeof(buf), "mouse,down,%i,triple", ev->button);
-   else if (ev->flags & EVAS_BUTTON_DOUBLE_CLICK)
-     snprintf(buf, sizeof(buf), "mouse,down,%i,double", ev->button);
-   else
-     snprintf(buf, sizeof(buf), "mouse,down,%i", ev->button);
+
+   ignored = rp->part->ignore_flags & ev->event_flags;
+
    _edje_ref(ed);
    _edje_freeze(ed);
-   _edje_emit(ed, buf, rp->part->name);
+
+   if ((!ev->event_flags) || (!ignored))
+     {
+	if (ev->flags & EVAS_BUTTON_TRIPLE_CLICK)
+	  snprintf(buf, sizeof(buf), "mouse,down,%i,triple", ev->button);
+	else if (ev->flags & EVAS_BUTTON_DOUBLE_CLICK)
+	  snprintf(buf, sizeof(buf), "mouse,down,%i,double", ev->button);
+	else
+	  snprintf(buf, sizeof(buf), "mouse,down,%i", ev->button);
+	_edje_emit(ed, buf, rp->part->name);
+     }
 
    if (rp->events_to)
      {
@@ -82,8 +113,11 @@ _edje_mouse_down_cb(void *data, Evas * e, Evas_Object * obj, void *event_info)
 		  events->y = ev->canvas.y - y - events->h / 2;
 	       }
 
-	     snprintf(buf, sizeof(buf), "mouse,down,%i", ev->button);
-	     _edje_emit(ed, buf, events->part->name);
+	     if (!ignored)
+	       {
+		  snprintf(buf, sizeof(buf), "mouse,down,%i", ev->button);
+		  _edje_emit(ed, buf, events->part->name);
+	       }
 	     ed->dirty = 1;
 	  }
 	_edje_recalc(ed);
@@ -104,7 +138,8 @@ _edje_mouse_down_cb(void *data, Evas * e, Evas_Object * obj, void *event_info)
 	       {
 		  rp->drag.val.x = dx;
 		  rp->drag.val.y = dy;
-		  _edje_emit(ed, "drag", rp->part->name);
+		  if (!ignored)
+		    _edje_emit(ed, "drag", rp->part->name);
 		  ed->dirty = 1;
 		  rp->drag.need_reset = 1;
 		  _edje_recalc(ed);
@@ -120,7 +155,8 @@ _edje_mouse_down_cb(void *data, Evas * e, Evas_Object * obj, void *event_info)
 		 rp->drag.down.x = ev->canvas.x;
 	     if (rp->part->dragable.y)
 		 rp->drag.down.y = ev->canvas.y;
-	     _edje_emit(ed, "drag,start", rp->part->name);
+	     if (!ignored)
+	       _edje_emit(ed, "drag,start", rp->part->name);
 	  }
 	rp->drag.down.count++;
      }
@@ -143,22 +179,32 @@ _edje_mouse_up_cb(void *data, Evas * e, Evas_Object * obj, void *event_info)
    Edje *ed;
    Edje_Real_Part *rp;
    char buf[256];
+   int ignored;
 
    ev = event_info;
    ed = data;
    rp = evas_object_data_get(obj, "real_part");
    if (!rp) return;
 
-   snprintf(buf, sizeof(buf), "mouse,up,%i", ev->button);
+   ignored = rp->part->ignore_flags & ev->event_flags;
+
    _edje_ref(ed);
    _edje_freeze(ed);
-   _edje_emit(ed, buf, rp->part->name);
+
+   if ((!ev->event_flags) || (!ignored))
+     {
+	snprintf(buf, sizeof(buf), "mouse,up,%i", ev->button);
+	_edje_emit(ed, buf, rp->part->name);
+     }
 
    if (rp->events_to)
      {
 	rp = rp->events_to;
-	snprintf(buf, sizeof(buf), "mouse,up,%i", ev->button);
-	_edje_emit(ed, buf, rp->part->name);
+	if (!ignored)
+	  {
+	     snprintf(buf, sizeof(buf), "mouse,up,%i", ev->button);
+	     _edje_emit(ed, buf, rp->part->name);
+	  }
      }
 
    if ((rp->part->dragable.x) || (rp->part->dragable.y))
@@ -170,11 +216,12 @@ _edje_mouse_up_cb(void *data, Evas * e, Evas_Object * obj, void *event_info)
 	       {
 		  rp->drag.need_reset = 1;
 		  ed->dirty = 1;
-		  _edje_emit(ed, "drag,stop", rp->part->name);
+		  if (!ignored)
+		    _edje_emit(ed, "drag,stop", rp->part->name);
 	       }
 	  }
      }
-   if ((rp->still_in) && (rp->clicked_button == ev->button))
+   if ((rp->still_in) && (rp->clicked_button == ev->button) && (!ignored))
      {
 	snprintf(buf, sizeof(buf), "mouse,clicked,%i", ev->button);
 	_edje_emit(ed, buf, rp->part->name);
@@ -195,6 +242,7 @@ _edje_mouse_move_cb(void *data, Evas * e, Evas_Object * obj, void *event_info)
    Evas_Event_Mouse_Move *ev;
    Edje *ed;
    Edje_Real_Part *rp;
+   int ignored;
 
    ev = event_info;
    ed = data;
@@ -202,8 +250,11 @@ _edje_mouse_move_cb(void *data, Evas * e, Evas_Object * obj, void *event_info)
    if (!rp) return;
    if (rp->events_to) rp = rp->events_to;
 
+   ignored = rp->part->ignore_flags & ev->event_flags;
+
    _edje_ref(ed);
-   _edje_emit(ed, "mouse,move", rp->part->name);
+   if ((!ev->event_flags) || (!ignored))
+     _edje_emit(ed, "mouse,move", rp->part->name);
 
    if (rp->still_in)
      {
@@ -248,7 +299,8 @@ _edje_mouse_move_cb(void *data, Evas * e, Evas_Object * obj, void *event_info)
 	       {
 		  rp->drag.val.x = dx;
 		  rp->drag.val.y = dy;
-		  _edje_emit(ed, "drag", rp->part->name);
+		  if (!ignored)
+		    _edje_emit(ed, "drag", rp->part->name);
 		  ed->dirty = 1;
 		  _edje_recalc(ed);
 	       }
@@ -271,7 +323,10 @@ _edje_mouse_wheel_cb(void *data, Evas * e, Evas_Object * obj, void *event_info)
    ev = event_info;
    ed = data;
    rp = evas_object_data_get(obj, "real_part");
-   if (!rp) return;
+   if ((!rp) || 
+       ((ev->event_flags) && 
+	(!(rp->part->ignore_flags & ev->event_flags)))) return;
+
    snprintf(buf, sizeof(buf), "mouse,wheel,%i,%i", ev->direction, (ev->z < 0) ? (-1) : (1));
    _edje_emit(ed, buf, rp->part->name);
    return;
@@ -369,6 +424,10 @@ void
 _edje_callbacks_add(Evas_Object *obj, Edje *ed, Edje_Real_Part *rp)
 {
    evas_object_event_callback_add(obj,
+                                  EVAS_CALLBACK_HOLD,
+                                  _edje_hold_cb,
+                                  ed);
+   evas_object_event_callback_add(obj,
                                   EVAS_CALLBACK_MOUSE_IN,
                                   _edje_mouse_in_cb,
                                   ed);
@@ -398,6 +457,9 @@ _edje_callbacks_add(Evas_Object *obj, Edje *ed, Edje_Real_Part *rp)
 void
 _edje_callbacks_del(Evas_Object *obj)
 {
+   evas_object_event_callback_del(obj,
+                                  EVAS_CALLBACK_HOLD,
+                                  _edje_hold_cb);
    evas_object_event_callback_del(obj,
                                   EVAS_CALLBACK_MOUSE_IN,
                                   _edje_mouse_in_cb);

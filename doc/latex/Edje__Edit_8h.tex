@@ -1,0 +1,3071 @@
+\hypertarget{Edje__Edit_8h}{
+\section{Edje\_\-Edit.h File Reference}
+\label{Edje__Edit_8h}\index{Edje\_\-Edit.h@{Edje\_\-Edit.h}}
+}
+
+
+\subsection{Detailed Description}
+Functions to deal with edje internal object. 
+
+Don't use in standard situations. The use of any of the edje\_\-edit\_\-$\ast$ functions can break your theme ability, remember that the program must be separated from the interface!
+
+The API can be used to query or set every part of an edje object in real time. You can manage every aspect of parts, part states, programs, script and whatever is contained in the edje file. For a reference of what all parameter means look at the complete \hyperlink{edcref}{Edje Data Collection reference}.
+
+All the functions that deals with part states include the state value inside the returned strings (ex: \char`\"{}defaut 0.00\char`\"{}). For this reason there aren't functions to set/get a state value, you have to pass the value inside the name string (always in the form \char`\"{}state x.xx\char`\"{}).
+
+Don't forget to free all the strings and the lists returned by any edje\_\-edit\_\-$\ast$() functions using \hyperlink{Edje__Edit_8h_924beb7b18a2f754b4b78cee3b3cc662}{edje\_\-edit\_\-string\_\-free()} and \hyperlink{Edje__Edit_8h_68ea52098aa643bf273436cf04e92ccf}{edje\_\-edit\_\-string\_\-list\_\-free()} when you don't need anymore.
+
+Example: print all the part in a loaded edje\_\-object 
+
+\begin{Code}\begin{verbatim}  Evas_List *parts, *l;
+
+  parts = edje_edit_parts_list_get(edje_object);
+  while(l = parts; l; l = l->next)
+  {
+     printf("Part: %s\n", (char*)l->data);
+  }
+  edje_edit_string_list_free(parts);
+\end{verbatim}
+\end{Code}
+
+
+
+Example: Change the color of a rect inside an edje file 
+
+\begin{Code}\begin{verbatim} Evas_Object *edje;
+
+ edje = edje_object_add(evas);
+ edje_object_file_set(edje,"edj/file/name", "group to load");
+ edje_edit_state_color_set(edje, "MyRectName", "default 0.00", 255, 255, 0, 255);
+ edje_edit_save(edje);
+\end{verbatim}
+\end{Code}
+
+ 
+
+\subsection*{Functions}
+\begin{Indent}{\bf General API}\par
+{\em General functions that don't fit in other cateories. }\begin{CompactItemize}
+\item 
+EAPI void \hyperlink{Edje__Edit_8h_68ea52098aa643bf273436cf04e92ccf}{edje\_\-edit\_\-string\_\-list\_\-free} (Evas\_\-List $\ast$lst)
+\begin{CompactList}\small\item\em Free a generic Evas\_\-List of (char $\ast$) allocated by an edje\_\-edit\_\-$\ast$\_\-get() function. \item\end{CompactList}\item 
+EAPI void \hyperlink{Edje__Edit_8h_924beb7b18a2f754b4b78cee3b3cc662}{edje\_\-edit\_\-string\_\-free} (const char $\ast$str)
+\begin{CompactList}\small\item\em Free a generic string (char $\ast$) allocated by an edje\_\-edit\_\-$\ast$\_\-get() function. \item\end{CompactList}\item 
+EAPI int \hyperlink{Edje__Edit_8h_baf201d9fe977ae1fc6ae53d3604532c}{edje\_\-edit\_\-save} (Evas\_\-Object $\ast$obj)
+\begin{CompactList}\small\item\em Save the modified edje object back to his file. \item\end{CompactList}\item 
+EAPI void \hyperlink{Edje__Edit_8h_08beedd62a25ae24babf679293d145a6}{edje\_\-edit\_\-print\_\-internal\_\-status} (Evas\_\-Object $\ast$obj)
+\begin{CompactList}\small\item\em Print on standard output many information about the internal status of the edje object. \item\end{CompactList}\end{CompactItemize}
+\end{Indent}
+\begin{Indent}{\bf Groups API}\par
+{\em Functions to deal with groups property (see \hyperlink{edcref}{Edje Data Collection reference}). }\begin{CompactItemize}
+\item 
+EAPI unsigned char \hyperlink{Edje__Edit_8h_f57708c9794923918a890fc3b760dca3}{edje\_\-edit\_\-group\_\-add} (Evas\_\-Object $\ast$obj, const char $\ast$name)
+\begin{CompactList}\small\item\em Create a new empty group in the given edje. \item\end{CompactList}\item 
+EAPI unsigned char \hyperlink{Edje__Edit_8h_8019f5bd84527bdf33f042995139f04c}{edje\_\-edit\_\-group\_\-del} (Evas\_\-Object $\ast$obj)
+\begin{CompactList}\small\item\em Delete the current group from the given edje. \item\end{CompactList}\item 
+EAPI unsigned char \hyperlink{Edje__Edit_8h_19165f30d39fa62a2e6ff13bd03d4ef9}{edje\_\-edit\_\-group\_\-exist} (Evas\_\-Object $\ast$obj, const char $\ast$group)
+\begin{CompactList}\small\item\em Check if a group with the given name exist in the edje. \item\end{CompactList}\item 
+EAPI unsigned char \hyperlink{Edje__Edit_8h_fa9254d33c789633878a3ecabf7bebd5}{edje\_\-edit\_\-group\_\-name\_\-set} (Evas\_\-Object $\ast$obj, const char $\ast$new\_\-name)
+\begin{CompactList}\small\item\em Set a new name for the current open group. \item\end{CompactList}\item 
+EAPI int \hyperlink{Edje__Edit_8h_c3ba0d18f662bcaf7fb7c2fb18d416b1}{edje\_\-edit\_\-group\_\-min\_\-w\_\-get} (Evas\_\-Object $\ast$obj)
+\begin{CompactList}\small\item\em Get the group min width. \item\end{CompactList}\item 
+EAPI void \hyperlink{Edje__Edit_8h_c2ad048c6e7ba8d91b4aae4cbdc8d917}{edje\_\-edit\_\-group\_\-min\_\-w\_\-set} (Evas\_\-Object $\ast$obj, int w)
+\begin{CompactList}\small\item\em Set the group min width. \item\end{CompactList}\item 
+EAPI int \hyperlink{Edje__Edit_8h_d787b65deee850ab46df4b8d288b498a}{edje\_\-edit\_\-group\_\-min\_\-h\_\-get} (Evas\_\-Object $\ast$obj)
+\begin{CompactList}\small\item\em Get the group min height. \item\end{CompactList}\item 
+EAPI void \hyperlink{Edje__Edit_8h_90e10859ecc2c33d2b8389b51ba8430f}{edje\_\-edit\_\-group\_\-min\_\-h\_\-set} (Evas\_\-Object $\ast$obj, int h)
+\begin{CompactList}\small\item\em Set the group min height. \item\end{CompactList}\item 
+EAPI int \hyperlink{Edje__Edit_8h_56beafc344519bbb1a7ebb1fedfe8e81}{edje\_\-edit\_\-group\_\-max\_\-w\_\-get} (Evas\_\-Object $\ast$obj)
+\begin{CompactList}\small\item\em Get the group max width. \item\end{CompactList}\item 
+EAPI void \hyperlink{Edje__Edit_8h_a1c59cc869b3e7c195ae7ceaaec6ab44}{edje\_\-edit\_\-group\_\-max\_\-w\_\-set} (Evas\_\-Object $\ast$obj, int w)
+\begin{CompactList}\small\item\em Set the group max width. \item\end{CompactList}\item 
+EAPI int \hyperlink{Edje__Edit_8h_6d1d6dea395c89afe1ec384332ecc8b2}{edje\_\-edit\_\-group\_\-max\_\-h\_\-get} (Evas\_\-Object $\ast$obj)
+\begin{CompactList}\small\item\em Get the group max height. \item\end{CompactList}\item 
+EAPI void \hyperlink{Edje__Edit_8h_b020e4856d4c4bc5dce6fc9f61ee0820}{edje\_\-edit\_\-group\_\-max\_\-h\_\-set} (Evas\_\-Object $\ast$obj, int h)
+\begin{CompactList}\small\item\em Set the group max height. \item\end{CompactList}\end{CompactItemize}
+\end{Indent}
+\begin{Indent}{\bf Parts API}\par
+{\em Functions to deal with part objects (see \hyperlink{edcref}{Edje Data Collection reference}). }\begin{CompactItemize}
+\item 
+EAPI Evas\_\-List $\ast$ \hyperlink{Edje__Edit_8h_a74f630561a477243a4ea8d4338ac00f}{edje\_\-edit\_\-parts\_\-list\_\-get} (Evas\_\-Object $\ast$obj)
+\begin{CompactList}\small\item\em Get the list of all the parts in the given edje object. \item\end{CompactList}\item 
+EAPI unsigned char \hyperlink{Edje__Edit_8h_94c3724252e4b92f7fc841665b849222}{edje\_\-edit\_\-part\_\-add} (Evas\_\-Object $\ast$obj, const char $\ast$name, unsigned char type)
+\begin{CompactList}\small\item\em Create a new part in the given edje If another part with the same name just exists nothing is created and FALSE is returned. \item\end{CompactList}\item 
+EAPI unsigned char \hyperlink{Edje__Edit_8h_70b3f7296ba293cb8f26078021bd1d65}{edje\_\-edit\_\-part\_\-del} (Evas\_\-Object $\ast$obj, const char $\ast$part)
+\begin{CompactList}\small\item\em Delete the given part from the edje All the reference to this part will be zeroed. \item\end{CompactList}\item 
+EAPI unsigned char \hyperlink{Edje__Edit_8h_654d2557761e097644c2677755d1388c}{edje\_\-edit\_\-part\_\-exist} (Evas\_\-Object $\ast$obj, const char $\ast$part)
+\begin{CompactList}\small\item\em Check if a part with the given name exist in the edje object. \item\end{CompactList}\item 
+EAPI unsigned char \hyperlink{Edje__Edit_8h_0245e3aac3c4cdc9948ddd6f68cc2ba7}{edje\_\-edit\_\-part\_\-restack\_\-below} (Evas\_\-Object $\ast$obj, const char $\ast$part)
+\begin{CompactList}\small\item\em Move the given part below the previous one. \item\end{CompactList}\item 
+EAPI unsigned char \hyperlink{Edje__Edit_8h_c3d78bca12ba5334f35e01f2568cb7d5}{edje\_\-edit\_\-part\_\-restack\_\-above} (Evas\_\-Object $\ast$obj, const char $\ast$part)
+\begin{CompactList}\small\item\em Move the given part above the next one. \item\end{CompactList}\item 
+EAPI unsigned char \hyperlink{Edje__Edit_8h_6f86937ca552b389fe7539794472eece}{edje\_\-edit\_\-part\_\-name\_\-set} (Evas\_\-Object $\ast$obj, const char $\ast$part, const char $\ast$new\_\-name)
+\begin{CompactList}\small\item\em Set a new name for part. \item\end{CompactList}\item 
+EAPI unsigned char \hyperlink{Edje__Edit_8h_749ed11666062aad310cd3c944749c24}{edje\_\-edit\_\-part\_\-type\_\-get} (Evas\_\-Object $\ast$obj, const char $\ast$part)
+\begin{CompactList}\small\item\em Get the type of a part. \item\end{CompactList}\item 
+EAPI const char $\ast$ \hyperlink{Edje__Edit_8h_7f8855f419a22aea66f2b1c62d4f28d5}{edje\_\-edit\_\-part\_\-clip\_\-to\_\-get} (Evas\_\-Object $\ast$obj, const char $\ast$part)
+\begin{CompactList}\small\item\em Get the clip\_\-to part. \item\end{CompactList}\item 
+EAPI unsigned char \hyperlink{Edje__Edit_8h_c4f35cc689dbaa36158918240c37b337}{edje\_\-edit\_\-part\_\-clip\_\-to\_\-set} (Evas\_\-Object $\ast$obj, const char $\ast$part, const char $\ast$clip\_\-to)
+\begin{CompactList}\small\item\em Set a part to clip part to. \item\end{CompactList}\item 
+EAPI const char $\ast$ \hyperlink{Edje__Edit_8h_72312674178e3171e9b19f58f339a778}{edje\_\-edit\_\-part\_\-source\_\-get} (Evas\_\-Object $\ast$obj, const char $\ast$part)
+\begin{CompactList}\small\item\em Get the source of part. \item\end{CompactList}\item 
+EAPI unsigned char \hyperlink{Edje__Edit_8h_3686d40e348148e13a42b4bc7d85645d}{edje\_\-edit\_\-part\_\-source\_\-set} (Evas\_\-Object $\ast$obj, const char $\ast$part, const char $\ast$source)
+\begin{CompactList}\small\item\em Set the source of part. \item\end{CompactList}\item 
+EAPI unsigned char \hyperlink{Edje__Edit_8h_d25b46077539615cd1047a25043896d2}{edje\_\-edit\_\-part\_\-effect\_\-get} (Evas\_\-Object $\ast$obj, const char $\ast$part)
+\begin{CompactList}\small\item\em Get the effect for a given part. \item\end{CompactList}\item 
+EAPI void \hyperlink{Edje__Edit_8h_316fe161b008336c870393f0841b89a2}{edje\_\-edit\_\-part\_\-effect\_\-set} (Evas\_\-Object $\ast$obj, const char $\ast$part, unsigned char effect)
+\begin{CompactList}\small\item\em Set the effect for a given part. \item\end{CompactList}\item 
+EAPI const char $\ast$ \hyperlink{Edje__Edit_8h_6e82d3c2f7ab76734710ef2ab3a4524c}{edje\_\-edit\_\-part\_\-selected\_\-state\_\-get} (Evas\_\-Object $\ast$obj, const char $\ast$part)
+\begin{CompactList}\small\item\em Get the current selected state in part. \item\end{CompactList}\item 
+EAPI unsigned char \hyperlink{Edje__Edit_8h_9b1498b4f6470988e4aab0d8521839ac}{edje\_\-edit\_\-part\_\-selected\_\-state\_\-set} (Evas\_\-Object $\ast$obj, const char $\ast$part, const char $\ast$state)
+\begin{CompactList}\small\item\em Set the current state in part. \item\end{CompactList}\item 
+EAPI unsigned char \hyperlink{Edje__Edit_8h_f3b9d27764561fd34bd6ff250408d9b9}{edje\_\-edit\_\-part\_\-mouse\_\-events\_\-get} (Evas\_\-Object $\ast$obj, const char $\ast$part)
+\begin{CompactList}\small\item\em Get mouse\_\-events for part. \item\end{CompactList}\item 
+EAPI void \hyperlink{Edje__Edit_8h_6f9c12bbda7ee48f1880d14a80a1a364}{edje\_\-edit\_\-part\_\-mouse\_\-events\_\-set} (Evas\_\-Object $\ast$obj, const char $\ast$part, unsigned char mouse\_\-events)
+\begin{CompactList}\small\item\em Set mouse\_\-events for part. \item\end{CompactList}\item 
+EAPI unsigned char \hyperlink{Edje__Edit_8h_07685670b76acdcb6dd0ed46ab5afd36}{edje\_\-edit\_\-part\_\-repeat\_\-events\_\-get} (Evas\_\-Object $\ast$obj, const char $\ast$part)
+\begin{CompactList}\small\item\em Get repeat\_\-events for part. \item\end{CompactList}\item 
+EAPI void \hyperlink{Edje__Edit_8h_207b217e33977f41c12b81ba80559b5e}{edje\_\-edit\_\-part\_\-repeat\_\-events\_\-set} (Evas\_\-Object $\ast$obj, const char $\ast$part, unsigned char repeat\_\-events)
+\begin{CompactList}\small\item\em Set repeat\_\-events for part. \item\end{CompactList}\item 
+EAPI Evas\_\-Event\_\-Flags \hyperlink{Edje__Edit_8h_4e73f9e001f0c6eb39d0e6bf82c9807c}{edje\_\-edit\_\-part\_\-ignore\_\-flags\_\-get} (Evas\_\-Object $\ast$obj, const char $\ast$part)
+\begin{CompactList}\small\item\em Get ignore\_\-flags for part. \item\end{CompactList}\item 
+EAPI void \hyperlink{Edje__Edit_8h_60cb251ce48a47aea6ecd19961073ab0}{edje\_\-edit\_\-part\_\-ignore\_\-flags\_\-set} (Evas\_\-Object $\ast$obj, const char $\ast$part, Evas\_\-Event\_\-Flags ignore\_\-flags)
+\begin{CompactList}\small\item\em Set repeat\_\-events for part. \item\end{CompactList}\end{CompactItemize}
+\end{Indent}
+\begin{Indent}{\bf States API}\par
+{\em Description of gen api 2. }\begin{CompactItemize}
+\item 
+EAPI Evas\_\-List $\ast$ \hyperlink{Edje__Edit_8h_f5be63a364f57b230ae9deb97195436d}{edje\_\-edit\_\-part\_\-states\_\-list\_\-get} (Evas\_\-Object $\ast$obj, const char $\ast$part)
+\begin{CompactList}\small\item\em Get the list of all the states in the given part. \item\end{CompactList}\item 
+EAPI int \hyperlink{Edje__Edit_8h_4763690d2abdf98f6e7f931164d5c5ce}{edje\_\-edit\_\-state\_\-name\_\-set} (Evas\_\-Object $\ast$obj, const char $\ast$part, const char $\ast$state, const char $\ast$new\_\-name)
+\begin{CompactList}\small\item\em Set a new name for the given state in the given part. \item\end{CompactList}\item 
+EAPI void \hyperlink{Edje__Edit_8h_7ce80c988b83d06cf9eec1a4000548bd}{edje\_\-edit\_\-state\_\-add} (Evas\_\-Object $\ast$obj, const char $\ast$part, const char $\ast$name)
+\begin{CompactList}\small\item\em Create a new state to the give part. \item\end{CompactList}\item 
+EAPI void \hyperlink{Edje__Edit_8h_ae33f814fc42555f6b6736e65b2fc97a}{edje\_\-edit\_\-state\_\-del} (Evas\_\-Object $\ast$obj, const char $\ast$part, const char $\ast$state)
+\begin{CompactList}\small\item\em Delete the given part state from the edje. \item\end{CompactList}\item 
+EAPI unsigned char \hyperlink{Edje__Edit_8h_fb897c6b8e904c4da5cb11be2245f84f}{edje\_\-edit\_\-state\_\-exist} (Evas\_\-Object $\ast$obj, const char $\ast$part, const char $\ast$state)
+\begin{CompactList}\small\item\em Check if a part state with the given name exist. \item\end{CompactList}\item 
+EAPI double \hyperlink{Edje__Edit_8h_5c7688ceccf4437d31fce8daa909dd8c}{edje\_\-edit\_\-state\_\-rel1\_\-relative\_\-x\_\-get} (Evas\_\-Object $\ast$obj, const char $\ast$part, const char $\ast$state)
+\begin{CompactList}\small\item\em Get the rel1 relative x value of state. \item\end{CompactList}\item 
+EAPI double \hyperlink{Edje__Edit_8h_dc10ecd7c8bb20bc9202bca340e0038b}{edje\_\-edit\_\-state\_\-rel1\_\-relative\_\-y\_\-get} (Evas\_\-Object $\ast$obj, const char $\ast$part, const char $\ast$state)
+\begin{CompactList}\small\item\em Get the rel1 relative y value of state. \item\end{CompactList}\item 
+EAPI double \hyperlink{Edje__Edit_8h_f5fc6673e1cc3a3862f99b6f2d58d37e}{edje\_\-edit\_\-state\_\-rel2\_\-relative\_\-x\_\-get} (Evas\_\-Object $\ast$obj, const char $\ast$part, const char $\ast$state)
+\begin{CompactList}\small\item\em Get the rel2 relative x value of state. \item\end{CompactList}\item 
+EAPI double \hyperlink{Edje__Edit_8h_269c1d4a5049dbe02cb2d98d8d524464}{edje\_\-edit\_\-state\_\-rel2\_\-relative\_\-y\_\-get} (Evas\_\-Object $\ast$obj, const char $\ast$part, const char $\ast$state)
+\begin{CompactList}\small\item\em Get the rel2 relative y value of state. \item\end{CompactList}\item 
+EAPI void \hyperlink{Edje__Edit_8h_395c05ded005bf1218d5e18d12435e9f}{edje\_\-edit\_\-state\_\-rel1\_\-relative\_\-x\_\-set} (Evas\_\-Object $\ast$obj, const char $\ast$part, const char $\ast$state, double x)
+\begin{CompactList}\small\item\em Set the rel1 relative x value of state. \item\end{CompactList}\item 
+EAPI void \hyperlink{Edje__Edit_8h_5889966f656aa8c5dac19b0001525bd0}{edje\_\-edit\_\-state\_\-rel1\_\-relative\_\-y\_\-set} (Evas\_\-Object $\ast$obj, const char $\ast$part, const char $\ast$state, double y)
+\begin{CompactList}\small\item\em Set the rel1 relative y value of state. \item\end{CompactList}\item 
+EAPI void \hyperlink{Edje__Edit_8h_809da6e072108020f58d5ec123ca7c47}{edje\_\-edit\_\-state\_\-rel2\_\-relative\_\-x\_\-set} (Evas\_\-Object $\ast$obj, const char $\ast$part, const char $\ast$state, double x)
+\begin{CompactList}\small\item\em Set the rel2 relative x value of state. \item\end{CompactList}\item 
+EAPI void \hyperlink{Edje__Edit_8h_ccadadbdb6be7cc9a10414780b484182}{edje\_\-edit\_\-state\_\-rel2\_\-relative\_\-y\_\-set} (Evas\_\-Object $\ast$obj, const char $\ast$part, const char $\ast$state, double y)
+\begin{CompactList}\small\item\em Set the rel2 relative y value of state. \item\end{CompactList}\item 
+EAPI int \hyperlink{Edje__Edit_8h_38b699e994bb34cb2cd31c86185dbb9d}{edje\_\-edit\_\-state\_\-rel1\_\-offset\_\-x\_\-get} (Evas\_\-Object $\ast$obj, const char $\ast$part, const char $\ast$state)
+\begin{CompactList}\small\item\em Get the rel1 offset x value of state. \item\end{CompactList}\item 
+EAPI int \hyperlink{Edje__Edit_8h_c517f7dd02921907a12d5769a1d0e477}{edje\_\-edit\_\-state\_\-rel1\_\-offset\_\-y\_\-get} (Evas\_\-Object $\ast$obj, const char $\ast$part, const char $\ast$state)
+\begin{CompactList}\small\item\em Get the rel1 offset y value of state. \item\end{CompactList}\item 
+EAPI int \hyperlink{Edje__Edit_8h_92aeabaf37bf1d46e9d8ea0d7a77dfca}{edje\_\-edit\_\-state\_\-rel2\_\-offset\_\-x\_\-get} (Evas\_\-Object $\ast$obj, const char $\ast$part, const char $\ast$state)
+\begin{CompactList}\small\item\em Get the rel2 offset x value of state. \item\end{CompactList}\item 
+EAPI int \hyperlink{Edje__Edit_8h_23b966d2abcb36b172406fa420651f87}{edje\_\-edit\_\-state\_\-rel2\_\-offset\_\-y\_\-get} (Evas\_\-Object $\ast$obj, const char $\ast$part, const char $\ast$state)
+\begin{CompactList}\small\item\em Get the rel2 offset y value of state. \item\end{CompactList}\item 
+EAPI void \hyperlink{Edje__Edit_8h_4d95cfca2fdc35fbcce288af88acfb54}{edje\_\-edit\_\-state\_\-rel1\_\-offset\_\-x\_\-set} (Evas\_\-Object $\ast$obj, const char $\ast$part, const char $\ast$state, double x)
+\begin{CompactList}\small\item\em Set the rel1 offset x value of state. \item\end{CompactList}\item 
+EAPI void \hyperlink{Edje__Edit_8h_71fe69c5f0909b9b69c71185430dc12d}{edje\_\-edit\_\-state\_\-rel1\_\-offset\_\-y\_\-set} (Evas\_\-Object $\ast$obj, const char $\ast$part, const char $\ast$state, double y)
+\begin{CompactList}\small\item\em Get the rel1 offset y value of state. \item\end{CompactList}\item 
+EAPI void \hyperlink{Edje__Edit_8h_b2212c4c10cdbc729122f205a8760bb3}{edje\_\-edit\_\-state\_\-rel2\_\-offset\_\-x\_\-set} (Evas\_\-Object $\ast$obj, const char $\ast$part, const char $\ast$state, double x)
+\begin{CompactList}\small\item\em Get the rel2 offset x value of state. \item\end{CompactList}\item 
+EAPI void \hyperlink{Edje__Edit_8h_7f6ecf8c1c3321c0a1d354858c0bd7de}{edje\_\-edit\_\-state\_\-rel2\_\-offset\_\-y\_\-set} (Evas\_\-Object $\ast$obj, const char $\ast$part, const char $\ast$state, double y)
+\begin{CompactList}\small\item\em Get the rel2 offset y value of state. \item\end{CompactList}\item 
+EAPI const char $\ast$ \hyperlink{Edje__Edit_8h_6cfd0b41a25f10cabf6cd616919be245}{edje\_\-edit\_\-state\_\-rel1\_\-to\_\-x\_\-get} (Evas\_\-Object $\ast$obj, const char $\ast$part, const char $\ast$state)
+\begin{CompactList}\small\item\em Get the part name rel1x is relative to. \item\end{CompactList}\item 
+EAPI const char $\ast$ \hyperlink{Edje__Edit_8h_39bbc17bae68f5361e3e112ecb271b32}{edje\_\-edit\_\-state\_\-rel1\_\-to\_\-y\_\-get} (Evas\_\-Object $\ast$obj, const char $\ast$part, const char $\ast$state)
+\begin{CompactList}\small\item\em Get the part name rel1y is relative to. \item\end{CompactList}\item 
+EAPI const char $\ast$ \hyperlink{Edje__Edit_8h_ab81c04c21844913651aa974b5a87c3b}{edje\_\-edit\_\-state\_\-rel2\_\-to\_\-x\_\-get} (Evas\_\-Object $\ast$obj, const char $\ast$part, const char $\ast$state)
+\begin{CompactList}\small\item\em Get the part name rel2x is relative to. \item\end{CompactList}\item 
+EAPI const char $\ast$ \hyperlink{Edje__Edit_8h_292bc535084c2a200f0e5cd3afbabdaa}{edje\_\-edit\_\-state\_\-rel2\_\-to\_\-y\_\-get} (Evas\_\-Object $\ast$obj, const char $\ast$part, const char $\ast$state)
+\begin{CompactList}\small\item\em Get the part name rel2y is relative to. \item\end{CompactList}\item 
+EAPI void \hyperlink{Edje__Edit_8h_be0cba2e0306707b79da3a3ef8090aa4}{edje\_\-edit\_\-state\_\-rel1\_\-to\_\-x\_\-set} (Evas\_\-Object $\ast$obj, const char $\ast$part, const char $\ast$state, const char $\ast$rel\_\-to)
+\begin{CompactList}\small\item\em Set the part rel1x is relative to. \item\end{CompactList}\item 
+EAPI void \hyperlink{Edje__Edit_8h_d05dfa691446b01d0b48687b9e7148e7}{edje\_\-edit\_\-state\_\-rel1\_\-to\_\-y\_\-set} (Evas\_\-Object $\ast$obj, const char $\ast$part, const char $\ast$state, const char $\ast$rel\_\-to)
+\begin{CompactList}\small\item\em Set the part rel1y is relative to. \item\end{CompactList}\item 
+EAPI void \hyperlink{Edje__Edit_8h_8cc33fc6ce62ae598e0a9d6831ca69f6}{edje\_\-edit\_\-state\_\-rel2\_\-to\_\-x\_\-set} (Evas\_\-Object $\ast$obj, const char $\ast$part, const char $\ast$state, const char $\ast$rel\_\-to)
+\begin{CompactList}\small\item\em Set the part rel2x is relative to. \item\end{CompactList}\item 
+EAPI void \hyperlink{Edje__Edit_8h_9f11789321ca5e944c057643764ffafc}{edje\_\-edit\_\-state\_\-rel2\_\-to\_\-y\_\-set} (Evas\_\-Object $\ast$obj, const char $\ast$part, const char $\ast$state, const char $\ast$rel\_\-to)
+\begin{CompactList}\small\item\em Set the part rel2y is relative to. \item\end{CompactList}\item 
+EAPI void \hyperlink{Edje__Edit_8h_bea383677f7049aa4eb3fbcbbd6c5a46}{edje\_\-edit\_\-state\_\-color\_\-get} (Evas\_\-Object $\ast$obj, const char $\ast$part, const char $\ast$state, int $\ast$r, int $\ast$g, int $\ast$b, int $\ast$a)
+\begin{CompactList}\small\item\em Get the color of a part state. \item\end{CompactList}\item 
+EAPI void \hyperlink{Edje__Edit_8h_545c0630d077879ca1aa01294d16224e}{edje\_\-edit\_\-state\_\-color2\_\-get} (Evas\_\-Object $\ast$obj, const char $\ast$part, const char $\ast$state, int $\ast$r, int $\ast$g, int $\ast$b, int $\ast$a)
+\begin{CompactList}\small\item\em Get the color2 of a part state. \item\end{CompactList}\item 
+EAPI void \hyperlink{Edje__Edit_8h_722ae96e80f108726bfa0ebfe5459a90}{edje\_\-edit\_\-state\_\-color3\_\-get} (Evas\_\-Object $\ast$obj, const char $\ast$part, const char $\ast$state, int $\ast$r, int $\ast$g, int $\ast$b, int $\ast$a)
+\begin{CompactList}\small\item\em Get the color3 of a part state. \item\end{CompactList}\item 
+EAPI void \hyperlink{Edje__Edit_8h_1976386a7b41757abafaa873f50b5d03}{edje\_\-edit\_\-state\_\-color\_\-set} (Evas\_\-Object $\ast$obj, const char $\ast$part, const char $\ast$state, int r, int g, int b, int a)
+\begin{CompactList}\small\item\em Set the color of a part state. \item\end{CompactList}\item 
+EAPI void \hyperlink{Edje__Edit_8h_62a84def8761578097d5ae997df423c4}{edje\_\-edit\_\-state\_\-color2\_\-set} (Evas\_\-Object $\ast$obj, const char $\ast$part, const char $\ast$state, int r, int g, int b, int a)
+\begin{CompactList}\small\item\em Set the color2 of a part state. \item\end{CompactList}\item 
+EAPI void \hyperlink{Edje__Edit_8h_842869393b9a446c547b5f3583809a22}{edje\_\-edit\_\-state\_\-color3\_\-set} (Evas\_\-Object $\ast$obj, const char $\ast$part, const char $\ast$state, int r, int g, int b, int a)
+\begin{CompactList}\small\item\em Set the color3 of a part state. \item\end{CompactList}\item 
+EAPI double \hyperlink{Edje__Edit_8h_d0986006e3b5a39760a646a32403e137}{edje\_\-edit\_\-state\_\-align\_\-x\_\-get} (Evas\_\-Object $\ast$obj, const char $\ast$part, const char $\ast$state)
+\begin{CompactList}\small\item\em Get the align\_\-x value of a part state. \item\end{CompactList}\item 
+EAPI double \hyperlink{Edje__Edit_8h_238efcdf5e4cd67d18add4544f2bfa7f}{edje\_\-edit\_\-state\_\-align\_\-y\_\-get} (Evas\_\-Object $\ast$obj, const char $\ast$part, const char $\ast$state)
+\begin{CompactList}\small\item\em Get the align\_\-y value of a part state. \item\end{CompactList}\item 
+EAPI void \hyperlink{Edje__Edit_8h_62518e6b0e7724f4a654a8ddd7aee131}{edje\_\-edit\_\-state\_\-align\_\-x\_\-set} (Evas\_\-Object $\ast$obj, const char $\ast$part, const char $\ast$state, double align)
+\begin{CompactList}\small\item\em Set the align\_\-x value of a part state. \item\end{CompactList}\item 
+EAPI void \hyperlink{Edje__Edit_8h_01ea930ca85c2d65761ef7e6c9958a6a}{edje\_\-edit\_\-state\_\-align\_\-y\_\-set} (Evas\_\-Object $\ast$obj, const char $\ast$part, const char $\ast$state, double align)
+\begin{CompactList}\small\item\em Set the align\_\-y value of a part state. \item\end{CompactList}\item 
+EAPI int \hyperlink{Edje__Edit_8h_1d51040a46d3138383f31578ead2c18e}{edje\_\-edit\_\-state\_\-min\_\-w\_\-get} (Evas\_\-Object $\ast$obj, const char $\ast$part, const char $\ast$state)
+\begin{CompactList}\small\item\em Get the min\_\-w value of a part state. \item\end{CompactList}\item 
+EAPI void \hyperlink{Edje__Edit_8h_bd9e7c7925a7cdb2ef944adb15d09ff1}{edje\_\-edit\_\-state\_\-min\_\-w\_\-set} (Evas\_\-Object $\ast$obj, const char $\ast$part, const char $\ast$state, int min\_\-w)
+\begin{CompactList}\small\item\em Set the min\_\-w value of a part state. \item\end{CompactList}\item 
+EAPI int \hyperlink{Edje__Edit_8h_90f7ade0f33994e333685b4348fecaf0}{edje\_\-edit\_\-state\_\-min\_\-h\_\-get} (Evas\_\-Object $\ast$obj, const char $\ast$part, const char $\ast$state)
+\begin{CompactList}\small\item\em Get the min\_\-h value of a part state. \item\end{CompactList}\item 
+EAPI void \hyperlink{Edje__Edit_8h_95e96fdca00b71bf3d93313be7a3584c}{edje\_\-edit\_\-state\_\-min\_\-h\_\-set} (Evas\_\-Object $\ast$obj, const char $\ast$part, const char $\ast$state, int min\_\-h)
+\begin{CompactList}\small\item\em Set the min\_\-h value of a part state. \item\end{CompactList}\item 
+EAPI int \hyperlink{Edje__Edit_8h_b33ea373251452c6131aea41652eb151}{edje\_\-edit\_\-state\_\-max\_\-w\_\-get} (Evas\_\-Object $\ast$obj, const char $\ast$part, const char $\ast$state)
+\begin{CompactList}\small\item\em Get the max\_\-w value of a part state. \item\end{CompactList}\item 
+EAPI void \hyperlink{Edje__Edit_8h_c3c5f98cbe0f380d114ee62ba4999998}{edje\_\-edit\_\-state\_\-max\_\-w\_\-set} (Evas\_\-Object $\ast$obj, const char $\ast$part, const char $\ast$state, int max\_\-w)
+\begin{CompactList}\small\item\em Set the max\_\-w value of a part state. \item\end{CompactList}\item 
+EAPI int \hyperlink{Edje__Edit_8h_821113025360d850646d702c872449e5}{edje\_\-edit\_\-state\_\-max\_\-h\_\-get} (Evas\_\-Object $\ast$obj, const char $\ast$part, const char $\ast$state)
+\begin{CompactList}\small\item\em Get the max\_\-h value of a part state. \item\end{CompactList}\item 
+EAPI void \hyperlink{Edje__Edit_8h_930bbc4cf13c9828ddc7f6fc3090a995}{edje\_\-edit\_\-state\_\-max\_\-h\_\-set} (Evas\_\-Object $\ast$obj, const char $\ast$part, const char $\ast$state, int max\_\-h)
+\begin{CompactList}\small\item\em Set the max\_\-h value of a part state. \item\end{CompactList}\item 
+EAPI double \hyperlink{Edje__Edit_8h_9761dfcf3f0f023075bd4750ead14bf5}{edje\_\-edit\_\-state\_\-aspect\_\-min\_\-get} (Evas\_\-Object $\ast$obj, const char $\ast$part, const char $\ast$state)
+\begin{CompactList}\small\item\em Get the minimum aspect value of a part state. \item\end{CompactList}\item 
+EAPI double \hyperlink{Edje__Edit_8h_0c10159d80dc08682f6e59a495996d3a}{edje\_\-edit\_\-state\_\-aspect\_\-max\_\-get} (Evas\_\-Object $\ast$obj, const char $\ast$part, const char $\ast$state)
+\begin{CompactList}\small\item\em Get the maximum aspect value of a part state. \item\end{CompactList}\item 
+EAPI void \hyperlink{Edje__Edit_8h_b9b2fc5b5bb63285dd1fa7a8d4b50d6d}{edje\_\-edit\_\-state\_\-aspect\_\-min\_\-set} (Evas\_\-Object $\ast$obj, const char $\ast$part, const char $\ast$state, double aspect)
+\begin{CompactList}\small\item\em Set the minimum aspect value of a part state. \item\end{CompactList}\item 
+EAPI void \hyperlink{Edje__Edit_8h_e51e6360f2829f2f1393babd4581db0c}{edje\_\-edit\_\-state\_\-aspect\_\-max\_\-set} (Evas\_\-Object $\ast$obj, const char $\ast$part, const char $\ast$state, double aspect)
+\begin{CompactList}\small\item\em Set the maximum aspect value of a part state. \item\end{CompactList}\item 
+EAPI unsigned char \hyperlink{Edje__Edit_8h_06f92fc552f58cbd4a186c34554be337}{edje\_\-edit\_\-state\_\-aspect\_\-pref\_\-get} (Evas\_\-Object $\ast$obj, const char $\ast$part, const char $\ast$state)
+\begin{CompactList}\small\item\em Get the aspect preference value of a part state. \item\end{CompactList}\item 
+EAPI void \hyperlink{Edje__Edit_8h_35c97e859c74ff12cc3a1ba793b5782e}{edje\_\-edit\_\-state\_\-aspect\_\-pref\_\-set} (Evas\_\-Object $\ast$obj, const char $\ast$part, const char $\ast$state, unsigned char pref)
+\begin{CompactList}\small\item\em Set the aspect preference value of a part state. \item\end{CompactList}\end{CompactItemize}
+\end{Indent}
+\begin{Indent}{\bf Text API}\par
+{\em Description of gen api 2. }\begin{CompactItemize}
+\item 
+EAPI const char $\ast$ \hyperlink{Edje__Edit_8h_05150ba7f516a5b909c83de289a9878c}{edje\_\-edit\_\-state\_\-text\_\-get} (Evas\_\-Object $\ast$obj, const char $\ast$part, const char $\ast$state)
+\begin{CompactList}\small\item\em Get the text of a part state. \item\end{CompactList}\item 
+EAPI void \hyperlink{Edje__Edit_8h_097cdd63bcf9c5ba6ed705dd1cf91ecf}{edje\_\-edit\_\-state\_\-text\_\-set} (Evas\_\-Object $\ast$obj, const char $\ast$part, const char $\ast$state, const char $\ast$text)
+\begin{CompactList}\small\item\em Set the text of a part state. \item\end{CompactList}\item 
+EAPI int \hyperlink{Edje__Edit_8h_2680c92586211c349a20fe8e9f9d3d07}{edje\_\-edit\_\-state\_\-text\_\-size\_\-get} (Evas\_\-Object $\ast$obj, const char $\ast$part, const char $\ast$state)
+\begin{CompactList}\small\item\em Get the text size of a part state. \item\end{CompactList}\item 
+EAPI void \hyperlink{Edje__Edit_8h_2ba8231663aa44869d37091235f120be}{edje\_\-edit\_\-state\_\-text\_\-size\_\-set} (Evas\_\-Object $\ast$obj, const char $\ast$part, const char $\ast$state, int size)
+\begin{CompactList}\small\item\em Set the text size of a part state. \item\end{CompactList}\item 
+EAPI double \hyperlink{Edje__Edit_8h_9b0c3c3dc7197c29590e5ec57e856c28}{edje\_\-edit\_\-state\_\-text\_\-align\_\-x\_\-get} (Evas\_\-Object $\ast$obj, const char $\ast$part, const char $\ast$state)
+\begin{CompactList}\small\item\em Get the text horizontal align of a part state. \item\end{CompactList}\item 
+EAPI double \hyperlink{Edje__Edit_8h_05513df83aa5d0eaa5b6de9827e08176}{edje\_\-edit\_\-state\_\-text\_\-align\_\-y\_\-get} (Evas\_\-Object $\ast$obj, const char $\ast$part, const char $\ast$state)
+\begin{CompactList}\small\item\em Get the text vertical align of a part state. \item\end{CompactList}\item 
+EAPI void \hyperlink{Edje__Edit_8h_fb044b3ac5f079c552cabbc31425a0b2}{edje\_\-edit\_\-state\_\-text\_\-align\_\-x\_\-set} (Evas\_\-Object $\ast$obj, const char $\ast$part, const char $\ast$state, double align)
+\begin{CompactList}\small\item\em Set the text horizontal align of a part state. \item\end{CompactList}\item 
+EAPI void \hyperlink{Edje__Edit_8h_15156a22255b0793938f2acfd1b9cbfb}{edje\_\-edit\_\-state\_\-text\_\-align\_\-y\_\-set} (Evas\_\-Object $\ast$obj, const char $\ast$part, const char $\ast$state, double align)
+\begin{CompactList}\small\item\em Set the text vertical align of a part state. \item\end{CompactList}\item 
+EAPI Evas\_\-List $\ast$ \hyperlink{Edje__Edit_8h_6b1f07b421247a0f21d2a87cb6263efc}{edje\_\-edit\_\-fonts\_\-list\_\-get} (Evas\_\-Object $\ast$obj)
+\begin{CompactList}\small\item\em Get the list of all the fonts in the given edje. \item\end{CompactList}\item 
+EAPI unsigned char \hyperlink{Edje__Edit_8h_7f04b332dd312e36b58be93ae1e3adaa}{edje\_\-edit\_\-font\_\-add} (Evas\_\-Object $\ast$obj, const char $\ast$path)
+\begin{CompactList}\small\item\em Add a new ttf font to the edje file. \item\end{CompactList}\item 
+EAPI const char $\ast$ \hyperlink{Edje__Edit_8h_555ef3b9d7db82cceb9b76aa8d6543cf}{edje\_\-edit\_\-state\_\-font\_\-get} (Evas\_\-Object $\ast$obj, const char $\ast$part, const char $\ast$state)
+\begin{CompactList}\small\item\em Get font name for a given part state. \item\end{CompactList}\item 
+EAPI void \hyperlink{Edje__Edit_8h_ab4161c56e6fab686eb9ff7e56a99fc7}{edje\_\-edit\_\-state\_\-font\_\-set} (Evas\_\-Object $\ast$obj, const char $\ast$part, const char $\ast$state, const char $\ast$font)
+\begin{CompactList}\small\item\em Set font name for a given part state. \item\end{CompactList}\end{CompactItemize}
+\end{Indent}
+\begin{Indent}{\bf Images API}\par
+{\em Description of gen api 2. }\begin{CompactItemize}
+\item 
+EAPI Evas\_\-List $\ast$ \hyperlink{Edje__Edit_8h_b7826bc948490ca86eff8fb2f0cc6a0f}{edje\_\-edit\_\-images\_\-list\_\-get} (Evas\_\-Object $\ast$obj)
+\begin{CompactList}\small\item\em Get the list of all the images in the given edje. \item\end{CompactList}\item 
+EAPI unsigned char \hyperlink{Edje__Edit_8h_2e01f28a79f100bb269f6d986de5a783}{edje\_\-edit\_\-image\_\-add} (Evas\_\-Object $\ast$obj, const char $\ast$path)
+\begin{CompactList}\small\item\em Add an new image to the image collection. \item\end{CompactList}\item 
+EAPI const char $\ast$ \hyperlink{Edje__Edit_8h_6a48626731db60d6dadfca350975dc82}{edje\_\-edit\_\-state\_\-image\_\-get} (Evas\_\-Object $\ast$obj, const char $\ast$part, const char $\ast$state)
+\begin{CompactList}\small\item\em Get normal image name for a given part state. \item\end{CompactList}\item 
+EAPI void \hyperlink{Edje__Edit_8h_8d4d353fe8d04aacccda423b76de48b0}{edje\_\-edit\_\-state\_\-image\_\-set} (Evas\_\-Object $\ast$obj, const char $\ast$part, const char $\ast$state, const char $\ast$image)
+\begin{CompactList}\small\item\em Set normal image for a given part state. \item\end{CompactList}\item 
+EAPI int \hyperlink{Edje__Edit_8h_9ea7619fbd5b17da787aa29be28b14f6}{edje\_\-edit\_\-image\_\-id\_\-get} (Evas\_\-Object $\ast$obj, const char $\ast$image\_\-name)
+\begin{CompactList}\small\item\em Get image id for a given image name. \item\end{CompactList}\item 
+EAPI void \hyperlink{Edje__Edit_8h_2a413823e46b5fd434bfa860edc83734}{edje\_\-edit\_\-state\_\-image\_\-border\_\-get} (Evas\_\-Object $\ast$obj, const char $\ast$part, const char $\ast$state, int $\ast$l, int $\ast$r, int $\ast$t, int $\ast$b)
+\begin{CompactList}\small\item\em Get the image border of a part state. \item\end{CompactList}\item 
+EAPI void \hyperlink{Edje__Edit_8h_d25f257e85a99aa9f9c06bb690689481}{edje\_\-edit\_\-state\_\-image\_\-border\_\-set} (Evas\_\-Object $\ast$obj, const char $\ast$part, const char $\ast$state, int l, int r, int t, int b)
+\begin{CompactList}\small\item\em Set the image border of a part state. \item\end{CompactList}\item 
+EAPI Evas\_\-List $\ast$ \hyperlink{Edje__Edit_8h_b04ec3fdcc2a32f1683c5ade62475651}{edje\_\-edit\_\-state\_\-tweens\_\-list\_\-get} (Evas\_\-Object $\ast$obj, const char $\ast$part, const char $\ast$state)
+\begin{CompactList}\small\item\em Get the list of all the tweens images in the given part state. \item\end{CompactList}\item 
+EAPI unsigned char \hyperlink{Edje__Edit_8h_4ba01394f4a4606714e7e6fffb1d1252}{edje\_\-edit\_\-state\_\-tween\_\-add} (Evas\_\-Object $\ast$obj, const char $\ast$part, const char $\ast$state, const char $\ast$tween)
+\begin{CompactList}\small\item\em Add a new tween frame to the given part state The tween param must be the name of an existing image. \item\end{CompactList}\item 
+EAPI unsigned char \hyperlink{Edje__Edit_8h_ad7ada01be3bad13ea63439207725f80}{edje\_\-edit\_\-state\_\-tween\_\-del} (Evas\_\-Object $\ast$obj, const char $\ast$part, const char $\ast$state, const char $\ast$tween)
+\begin{CompactList}\small\item\em Remove the first tween with the given name. \item\end{CompactList}\end{CompactItemize}
+\end{Indent}
+\begin{Indent}{\bf Programs API}\par
+{\em Description of gen api 2. }\begin{CompactItemize}
+\item 
+EAPI Evas\_\-List $\ast$ \hyperlink{Edje__Edit_8h_693857059e9d891934c9e6f39652d923}{edje\_\-edit\_\-programs\_\-list\_\-get} (Evas\_\-Object $\ast$obj)
+\begin{CompactList}\small\item\em Get the list of all the programs in the given edje object. \item\end{CompactList}\item 
+EAPI unsigned char \hyperlink{Edje__Edit_8h_6dcd96b8a3908b4ca88d4cb9c6c0ba97}{edje\_\-edit\_\-program\_\-add} (Evas\_\-Object $\ast$obj, const char $\ast$name)
+\begin{CompactList}\small\item\em Add a new program to the edje file If a program with the same name just exist the function will fail. \item\end{CompactList}\item 
+EAPI unsigned char \hyperlink{Edje__Edit_8h_7c7bf5a01bad84838ec9ab267b8a0b69}{edje\_\-edit\_\-program\_\-del} (Evas\_\-Object $\ast$obj, const char $\ast$prog)
+\begin{CompactList}\small\item\em Remove the given program from the edje file. \item\end{CompactList}\item 
+EAPI unsigned char \hyperlink{Edje__Edit_8h_32b66cd79d6d46c3b9a8048cf8c13ff7}{edje\_\-edit\_\-program\_\-exist} (Evas\_\-Object $\ast$obj, const char $\ast$prog)
+\begin{CompactList}\small\item\em Check if a program with the given name exist in the edje object. \item\end{CompactList}\item 
+EAPI unsigned char \hyperlink{Edje__Edit_8h_44be7d53ba8afdcd55de95c32226ca34}{edje\_\-edit\_\-program\_\-run} (Evas\_\-Object $\ast$obj, const char $\ast$prog)
+\begin{CompactList}\small\item\em Run the given program. \item\end{CompactList}\item 
+EAPI unsigned char \hyperlink{Edje__Edit_8h_7c92d2c083d2547e0c2c8060e464f38a}{edje\_\-edit\_\-program\_\-name\_\-set} (Evas\_\-Object $\ast$obj, const char $\ast$prog, const char $\ast$new\_\-name)
+\begin{CompactList}\small\item\em Set a new name for the given program. \item\end{CompactList}\item 
+EAPI const char $\ast$ \hyperlink{Edje__Edit_8h_62f90fa3c6e4468ddb813d61892989a0}{edje\_\-edit\_\-program\_\-source\_\-get} (Evas\_\-Object $\ast$obj, const char $\ast$prog)
+\begin{CompactList}\small\item\em Get source of a given program. \item\end{CompactList}\item 
+EAPI unsigned char \hyperlink{Edje__Edit_8h_cb3c3a6c9db4c706fe6fa6f6db3f3d84}{edje\_\-edit\_\-program\_\-source\_\-set} (Evas\_\-Object $\ast$obj, const char $\ast$prog, const char $\ast$source)
+\begin{CompactList}\small\item\em Set source of the given program. \item\end{CompactList}\item 
+EAPI const char $\ast$ \hyperlink{Edje__Edit_8h_5869d3d78f1ae6782081d1bbdb8ae5f1}{edje\_\-edit\_\-program\_\-signal\_\-get} (Evas\_\-Object $\ast$obj, const char $\ast$prog)
+\begin{CompactList}\small\item\em Get signal of a given program. \item\end{CompactList}\item 
+EAPI unsigned char \hyperlink{Edje__Edit_8h_915441990e35ca60b0f9d52c763aa161}{edje\_\-edit\_\-program\_\-signal\_\-set} (Evas\_\-Object $\ast$obj, const char $\ast$prog, const char $\ast$signal)
+\begin{CompactList}\small\item\em Set signal of the given program. \item\end{CompactList}\item 
+EAPI double \hyperlink{Edje__Edit_8h_81990d30bee37301815615462e864b04}{edje\_\-edit\_\-program\_\-in\_\-from\_\-get} (Evas\_\-Object $\ast$obj, const char $\ast$prog)
+\begin{CompactList}\small\item\em Get in.from of a given program. \item\end{CompactList}\item 
+EAPI unsigned char \hyperlink{Edje__Edit_8h_12ae11e52177b19a40c99173a4dae823}{edje\_\-edit\_\-program\_\-in\_\-from\_\-set} (Evas\_\-Object $\ast$obj, const char $\ast$prog, double seconds)
+\begin{CompactList}\small\item\em Set in.from of a given program. \item\end{CompactList}\item 
+EAPI double \hyperlink{Edje__Edit_8h_428b76b95bd3a9432ae2ac20ad7276cf}{edje\_\-edit\_\-program\_\-in\_\-range\_\-get} (Evas\_\-Object $\ast$obj, const char $\ast$prog)
+\begin{CompactList}\small\item\em Get in.range of a given program. \item\end{CompactList}\item 
+EAPI unsigned char \hyperlink{Edje__Edit_8h_2b51f5b63d85804e295817289a6cea74}{edje\_\-edit\_\-program\_\-in\_\-range\_\-set} (Evas\_\-Object $\ast$obj, const char $\ast$prog, double seconds)
+\begin{CompactList}\small\item\em Set in.range of a given program. \item\end{CompactList}\item 
+EAPI int \hyperlink{Edje__Edit_8h_94f279e8e6dddaac447c28e3bae3d3d4}{edje\_\-edit\_\-program\_\-action\_\-get} (Evas\_\-Object $\ast$obj, const char $\ast$prog)
+\begin{CompactList}\small\item\em Get the action of a given program. \item\end{CompactList}\item 
+EAPI unsigned char \hyperlink{Edje__Edit_8h_96556a6cfd85ef9f63fb5c6d9de8fba9}{edje\_\-edit\_\-program\_\-action\_\-set} (Evas\_\-Object $\ast$obj, const char $\ast$prog, int action)
+\begin{CompactList}\small\item\em Set the action of a given program. \item\end{CompactList}\item 
+EAPI Evas\_\-List $\ast$ \hyperlink{Edje__Edit_8h_d5b24b3449cb16e43d1d280ac7b6368b}{edje\_\-edit\_\-program\_\-targets\_\-get} (Evas\_\-Object $\ast$obj, const char $\ast$prog)
+\begin{CompactList}\small\item\em Get the list of the targets for the given program Return a list of target name Use \hyperlink{Edje__Edit_8h_68ea52098aa643bf273436cf04e92ccf}{edje\_\-edit\_\-string\_\-list\_\-free()} when you don't need it anymore. \item\end{CompactList}\item 
+EAPI unsigned char \hyperlink{Edje__Edit_8h_32b397cb386ec4114e5c9d1b71dfa51a}{edje\_\-edit\_\-program\_\-target\_\-add} (Evas\_\-Object $\ast$obj, const char $\ast$prog, const char $\ast$target)
+\begin{CompactList}\small\item\em Add a new target name to the list of 'targets' in the given program. \item\end{CompactList}\item 
+EAPI unsigned char \hyperlink{Edje__Edit_8h_7f9b895ccb503f47f70a4c5785d1b446}{edje\_\-edit\_\-program\_\-targets\_\-clear} (Evas\_\-Object $\ast$obj, const char $\ast$prog)
+\begin{CompactList}\small\item\em Clear the 'targets' list of the given program. \item\end{CompactList}\item 
+EAPI Evas\_\-List $\ast$ \hyperlink{Edje__Edit_8h_d1081f34d350a81edbd329cbb5b260d5}{edje\_\-edit\_\-program\_\-afters\_\-get} (Evas\_\-Object $\ast$obj, const char $\ast$prog)
+\begin{CompactList}\small\item\em Get the list of action that will be run after the give program Return a list of program name. \item\end{CompactList}\item 
+EAPI unsigned char \hyperlink{Edje__Edit_8h_bc729062c5846aad901ac737f247ab6b}{edje\_\-edit\_\-program\_\-after\_\-add} (Evas\_\-Object $\ast$obj, const char $\ast$prog, const char $\ast$after)
+\begin{CompactList}\small\item\em Add a new program name to the list of 'afters' in the given program. \item\end{CompactList}\item 
+EAPI unsigned char \hyperlink{Edje__Edit_8h_2ffa5164da708d90af2b0fd31284ba3e}{edje\_\-edit\_\-program\_\-afters\_\-clear} (Evas\_\-Object $\ast$obj, const char $\ast$prog)
+\begin{CompactList}\small\item\em Clear the 'afters' list of the given program. \item\end{CompactList}\item 
+EAPI const char $\ast$ \hyperlink{Edje__Edit_8h_51e0c344e5b1d6e8db356cd1a2dac570}{edje\_\-edit\_\-program\_\-state\_\-get} (Evas\_\-Object $\ast$obj, const char $\ast$prog)
+\begin{CompactList}\small\item\em Get the state for the given program In a STATE\_\-SET action this is the name of state to set. \item\end{CompactList}\item 
+EAPI unsigned char \hyperlink{Edje__Edit_8h_81c0264ad94b03373b955fa58671fcd5}{edje\_\-edit\_\-program\_\-state\_\-set} (Evas\_\-Object $\ast$obj, const char $\ast$prog, const char $\ast$state)
+\begin{CompactList}\small\item\em Set the state for the given program In a STATE\_\-SET action this is the name of state to set. \item\end{CompactList}\item 
+EAPI double \hyperlink{Edje__Edit_8h_409c7fbc62027154e7f64b891bf19341}{edje\_\-edit\_\-program\_\-value\_\-get} (Evas\_\-Object $\ast$obj, const char $\ast$prog)
+\begin{CompactList}\small\item\em Get the value of state for the given program. \item\end{CompactList}\item 
+EAPI unsigned char \hyperlink{Edje__Edit_8h_1de13e408d2c7a6a3c42e4b5e68419c8}{edje\_\-edit\_\-program\_\-value\_\-set} (Evas\_\-Object $\ast$obj, const char $\ast$prog, double value)
+\begin{CompactList}\small\item\em Set the value of state for the given program. \item\end{CompactList}\item 
+EAPI const char $\ast$ \hyperlink{Edje__Edit_8h_bad4bfcb41896668b6723db5343458c7}{edje\_\-edit\_\-program\_\-state2\_\-get} (Evas\_\-Object $\ast$obj, const char $\ast$prog)
+\begin{CompactList}\small\item\em Get the state2 for the given program In a STATE\_\-SET action is not used In a SIGNAL\_\-EMIT action is the source of the emitted signal. \item\end{CompactList}\item 
+EAPI unsigned char \hyperlink{Edje__Edit_8h_9c7bfab821eb918528f3f5d9353cc170}{edje\_\-edit\_\-program\_\-state2\_\-set} (Evas\_\-Object $\ast$obj, const char $\ast$prog, const char $\ast$state2)
+\begin{CompactList}\small\item\em Set the state2 for the given program In a STATE\_\-SET action is not used In a SIGNAL\_\-EMIT action is the source of the emitted signal. \item\end{CompactList}\item 
+EAPI double \hyperlink{Edje__Edit_8h_17db8070aab8732ad831868ae1a0a95c}{edje\_\-edit\_\-program\_\-value2\_\-get} (Evas\_\-Object $\ast$obj, const char $\ast$prog)
+\begin{CompactList}\small\item\em Get the value of state2 for the given program. \item\end{CompactList}\item 
+EAPI unsigned char \hyperlink{Edje__Edit_8h_ec930ca2fc31b5f8dbd7ca2636499339}{edje\_\-edit\_\-program\_\-value2\_\-set} (Evas\_\-Object $\ast$obj, const char $\ast$prog, double value)
+\begin{CompactList}\small\item\em Set the value2 of state for the given program. \item\end{CompactList}\item 
+EAPI int \hyperlink{Edje__Edit_8h_b67a809bcb5be3c95a08bedfcffdd93b}{edje\_\-edit\_\-program\_\-transition\_\-get} (Evas\_\-Object $\ast$obj, const char $\ast$prog)
+\begin{CompactList}\small\item\em Get the type of transition to use when apply animations. \item\end{CompactList}\item 
+EAPI unsigned char \hyperlink{Edje__Edit_8h_ebfc0183f3f9e60e243ee900d3812284}{edje\_\-edit\_\-program\_\-transition\_\-set} (Evas\_\-Object $\ast$obj, const char $\ast$prog, int transition)
+\begin{CompactList}\small\item\em Set the type of transition to use when apply animations. \item\end{CompactList}\item 
+EAPI double \hyperlink{Edje__Edit_8h_1a93963d36fd369c6e0d02e0dcf7c878}{edje\_\-edit\_\-program\_\-transition\_\-time\_\-get} (Evas\_\-Object $\ast$obj, const char $\ast$prog)
+\begin{CompactList}\small\item\em Get the duration of the transition in seconds. \item\end{CompactList}\item 
+EAPI unsigned char \hyperlink{Edje__Edit_8h_01c4a454d909ef20f1352a3de2abd43f}{edje\_\-edit\_\-program\_\-transition\_\-time\_\-set} (Evas\_\-Object $\ast$obj, const char $\ast$prog, double seconds)
+\begin{CompactList}\small\item\em Set the duration of the transition in seconds. \item\end{CompactList}\end{CompactItemize}
+\end{Indent}
+\begin{Indent}{\bf Scripts API}\par
+{\em Description of gen api 2. }\begin{CompactItemize}
+\item 
+\hypertarget{Edje__Edit_8h_73e9b0439f2e3300a43c6f507063ccbc}{
+EAPI const char $\ast$ \textbf{edje\_\-edit\_\-script\_\-get} (Evas\_\-Object $\ast$obj)}
+\label{Edje__Edit_8h_73e9b0439f2e3300a43c6f507063ccbc}
+
+\end{CompactItemize}
+\end{Indent}
+
+
+\subsection{Function Documentation}
+\hypertarget{Edje__Edit_8h_7f04b332dd312e36b58be93ae1e3adaa}{
+\index{Edje\_\-Edit.h@{Edje\_\-Edit.h}!edje\_\-edit\_\-font\_\-add@{edje\_\-edit\_\-font\_\-add}}
+\index{edje\_\-edit\_\-font\_\-add@{edje\_\-edit\_\-font\_\-add}!Edje_Edit.h@{Edje\_\-Edit.h}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI unsigned char edje\_\-edit\_\-font\_\-add (Evas\_\-Object $\ast$ {\em obj}, \/  const char $\ast$ {\em path})}}
+\label{Edje__Edit_8h_7f04b332dd312e36b58be93ae1e3adaa}
+
+
+Add a new ttf font to the edje file. 
+
+The newly created font will be available to all the groups in the edje, not only the current one. If font can't be load FALSE is returned.\begin{Desc}
+\item[Returns:]TRUE on success or FALSE on failure \end{Desc}
+\begin{Desc}
+\item[Parameters: ]\par
+\begin{description}
+\item[{\em 
+obj}]The edje object \item[{\em 
+path}]The file path to load the ttf font from \end{description}
+\end{Desc}
+\hypertarget{Edje__Edit_8h_6b1f07b421247a0f21d2a87cb6263efc}{
+\index{Edje\_\-Edit.h@{Edje\_\-Edit.h}!edje\_\-edit\_\-fonts\_\-list\_\-get@{edje\_\-edit\_\-fonts\_\-list\_\-get}}
+\index{edje\_\-edit\_\-fonts\_\-list\_\-get@{edje\_\-edit\_\-fonts\_\-list\_\-get}!Edje_Edit.h@{Edje\_\-Edit.h}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI Evas\_\-List$\ast$ edje\_\-edit\_\-fonts\_\-list\_\-get (Evas\_\-Object $\ast$ {\em obj})}}
+\label{Edje__Edit_8h_6b1f07b421247a0f21d2a87cb6263efc}
+
+
+Get the list of all the fonts in the given edje. 
+
+\begin{Desc}
+\item[Returns:]An Evas\_\-List$\ast$ of string (char $\ast$)containing all the fonts names found in the edje file. Use \hyperlink{Edje__Edit_8h_68ea52098aa643bf273436cf04e92ccf}{edje\_\-edit\_\-string\_\-list\_\-free()} when you don't need it anymore.
+
+A string list of all the fonts found in the edje file \end{Desc}
+\begin{Desc}
+\item[Parameters: ]\par
+\begin{description}
+\item[{\em 
+obj}]The edje object \end{description}
+\end{Desc}
+\hypertarget{Edje__Edit_8h_f57708c9794923918a890fc3b760dca3}{
+\index{Edje\_\-Edit.h@{Edje\_\-Edit.h}!edje\_\-edit\_\-group\_\-add@{edje\_\-edit\_\-group\_\-add}}
+\index{edje\_\-edit\_\-group\_\-add@{edje\_\-edit\_\-group\_\-add}!Edje_Edit.h@{Edje\_\-Edit.h}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI unsigned char edje\_\-edit\_\-group\_\-add (Evas\_\-Object $\ast$ {\em obj}, \/  const char $\ast$ {\em name})}}
+\label{Edje__Edit_8h_f57708c9794923918a890fc3b760dca3}
+
+
+Create a new empty group in the given edje. 
+
+If a group with the same name exist none is created.\begin{Desc}
+\item[Returns:]1 on success, 0 on failure \end{Desc}
+\begin{Desc}
+\item[Parameters: ]\par
+\begin{description}
+\item[{\em 
+obj}]The edje object \item[{\em 
+name}]The name for the new empty group \end{description}
+\end{Desc}
+\hypertarget{Edje__Edit_8h_8019f5bd84527bdf33f042995139f04c}{
+\index{Edje\_\-Edit.h@{Edje\_\-Edit.h}!edje\_\-edit\_\-group\_\-del@{edje\_\-edit\_\-group\_\-del}}
+\index{edje\_\-edit\_\-group\_\-del@{edje\_\-edit\_\-group\_\-del}!Edje_Edit.h@{Edje\_\-Edit.h}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI unsigned char edje\_\-edit\_\-group\_\-del (Evas\_\-Object $\ast$ {\em obj})}}
+\label{Edje__Edit_8h_8019f5bd84527bdf33f042995139f04c}
+
+
+Delete the current group from the given edje. 
+
+You can only delete the currently loaded group. All the parts and the programs inside the group will be deleted as well, but not image or font embedded in the edje.\begin{Desc}
+\item[Returns:]1 on success, 0 on failure \end{Desc}
+\begin{Desc}
+\item[Parameters: ]\par
+\begin{description}
+\item[{\em 
+obj}]The edje object \end{description}
+\end{Desc}
+\hypertarget{Edje__Edit_8h_19165f30d39fa62a2e6ff13bd03d4ef9}{
+\index{Edje\_\-Edit.h@{Edje\_\-Edit.h}!edje\_\-edit\_\-group\_\-exist@{edje\_\-edit\_\-group\_\-exist}}
+\index{edje\_\-edit\_\-group\_\-exist@{edje\_\-edit\_\-group\_\-exist}!Edje_Edit.h@{Edje\_\-Edit.h}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI unsigned char edje\_\-edit\_\-group\_\-exist (Evas\_\-Object $\ast$ {\em obj}, \/  const char $\ast$ {\em group})}}
+\label{Edje__Edit_8h_19165f30d39fa62a2e6ff13bd03d4ef9}
+
+
+Check if a group with the given name exist in the edje. 
+
+$<$ 1 if the group exist, 0 otherwise. \begin{Desc}
+\item[Parameters: ]\par
+\begin{description}
+\item[{\em 
+obj}]The edje object \item[{\em 
+group}]The name of the group \end{description}
+\end{Desc}
+\hypertarget{Edje__Edit_8h_6d1d6dea395c89afe1ec384332ecc8b2}{
+\index{Edje\_\-Edit.h@{Edje\_\-Edit.h}!edje\_\-edit\_\-group\_\-max\_\-h\_\-get@{edje\_\-edit\_\-group\_\-max\_\-h\_\-get}}
+\index{edje\_\-edit\_\-group\_\-max\_\-h\_\-get@{edje\_\-edit\_\-group\_\-max\_\-h\_\-get}!Edje_Edit.h@{Edje\_\-Edit.h}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI int edje\_\-edit\_\-group\_\-max\_\-h\_\-get (Evas\_\-Object $\ast$ {\em obj})}}
+\label{Edje__Edit_8h_6d1d6dea395c89afe1ec384332ecc8b2}
+
+
+Get the group max height. 
+
+\begin{Desc}
+\item[Returns:]The maxh value or -1 on errors \end{Desc}
+\begin{Desc}
+\item[Parameters: ]\par
+\begin{description}
+\item[{\em 
+obj}]The edje object \end{description}
+\end{Desc}
+\hypertarget{Edje__Edit_8h_b020e4856d4c4bc5dce6fc9f61ee0820}{
+\index{Edje\_\-Edit.h@{Edje\_\-Edit.h}!edje\_\-edit\_\-group\_\-max\_\-h\_\-set@{edje\_\-edit\_\-group\_\-max\_\-h\_\-set}}
+\index{edje\_\-edit\_\-group\_\-max\_\-h\_\-set@{edje\_\-edit\_\-group\_\-max\_\-h\_\-set}!Edje_Edit.h@{Edje\_\-Edit.h}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI void edje\_\-edit\_\-group\_\-max\_\-h\_\-set (Evas\_\-Object $\ast$ {\em obj}, \/  int {\em h})}}
+\label{Edje__Edit_8h_b020e4856d4c4bc5dce6fc9f61ee0820}
+
+
+Set the group max height. 
+
+\begin{Desc}
+\item[Parameters: ]\par
+\begin{description}
+\item[{\em 
+obj}]The edje object \item[{\em 
+h}]The new group maximum height in pixel \end{description}
+\end{Desc}
+\hypertarget{Edje__Edit_8h_56beafc344519bbb1a7ebb1fedfe8e81}{
+\index{Edje\_\-Edit.h@{Edje\_\-Edit.h}!edje\_\-edit\_\-group\_\-max\_\-w\_\-get@{edje\_\-edit\_\-group\_\-max\_\-w\_\-get}}
+\index{edje\_\-edit\_\-group\_\-max\_\-w\_\-get@{edje\_\-edit\_\-group\_\-max\_\-w\_\-get}!Edje_Edit.h@{Edje\_\-Edit.h}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI int edje\_\-edit\_\-group\_\-max\_\-w\_\-get (Evas\_\-Object $\ast$ {\em obj})}}
+\label{Edje__Edit_8h_56beafc344519bbb1a7ebb1fedfe8e81}
+
+
+Get the group max width. 
+
+\begin{Desc}
+\item[Returns:]The maxw value or -1 on errors \end{Desc}
+\begin{Desc}
+\item[Parameters: ]\par
+\begin{description}
+\item[{\em 
+obj}]The edje object \end{description}
+\end{Desc}
+\hypertarget{Edje__Edit_8h_a1c59cc869b3e7c195ae7ceaaec6ab44}{
+\index{Edje\_\-Edit.h@{Edje\_\-Edit.h}!edje\_\-edit\_\-group\_\-max\_\-w\_\-set@{edje\_\-edit\_\-group\_\-max\_\-w\_\-set}}
+\index{edje\_\-edit\_\-group\_\-max\_\-w\_\-set@{edje\_\-edit\_\-group\_\-max\_\-w\_\-set}!Edje_Edit.h@{Edje\_\-Edit.h}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI void edje\_\-edit\_\-group\_\-max\_\-w\_\-set (Evas\_\-Object $\ast$ {\em obj}, \/  int {\em w})}}
+\label{Edje__Edit_8h_a1c59cc869b3e7c195ae7ceaaec6ab44}
+
+
+Set the group max width. 
+
+\begin{Desc}
+\item[Parameters: ]\par
+\begin{description}
+\item[{\em 
+obj}]The edje object \item[{\em 
+w}]The new group maximum width in pixel \end{description}
+\end{Desc}
+\hypertarget{Edje__Edit_8h_d787b65deee850ab46df4b8d288b498a}{
+\index{Edje\_\-Edit.h@{Edje\_\-Edit.h}!edje\_\-edit\_\-group\_\-min\_\-h\_\-get@{edje\_\-edit\_\-group\_\-min\_\-h\_\-get}}
+\index{edje\_\-edit\_\-group\_\-min\_\-h\_\-get@{edje\_\-edit\_\-group\_\-min\_\-h\_\-get}!Edje_Edit.h@{Edje\_\-Edit.h}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI int edje\_\-edit\_\-group\_\-min\_\-h\_\-get (Evas\_\-Object $\ast$ {\em obj})}}
+\label{Edje__Edit_8h_d787b65deee850ab46df4b8d288b498a}
+
+
+Get the group min height. 
+
+\begin{Desc}
+\item[Returns:]The minh value or -1 on errors \end{Desc}
+\begin{Desc}
+\item[Parameters: ]\par
+\begin{description}
+\item[{\em 
+obj}]The edje object \end{description}
+\end{Desc}
+\hypertarget{Edje__Edit_8h_90e10859ecc2c33d2b8389b51ba8430f}{
+\index{Edje\_\-Edit.h@{Edje\_\-Edit.h}!edje\_\-edit\_\-group\_\-min\_\-h\_\-set@{edje\_\-edit\_\-group\_\-min\_\-h\_\-set}}
+\index{edje\_\-edit\_\-group\_\-min\_\-h\_\-set@{edje\_\-edit\_\-group\_\-min\_\-h\_\-set}!Edje_Edit.h@{Edje\_\-Edit.h}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI void edje\_\-edit\_\-group\_\-min\_\-h\_\-set (Evas\_\-Object $\ast$ {\em obj}, \/  int {\em h})}}
+\label{Edje__Edit_8h_90e10859ecc2c33d2b8389b51ba8430f}
+
+
+Set the group min height. 
+
+\begin{Desc}
+\item[Parameters: ]\par
+\begin{description}
+\item[{\em 
+obj}]The edje object \item[{\em 
+h}]The new group minimum height in pixel \end{description}
+\end{Desc}
+\hypertarget{Edje__Edit_8h_c3ba0d18f662bcaf7fb7c2fb18d416b1}{
+\index{Edje\_\-Edit.h@{Edje\_\-Edit.h}!edje\_\-edit\_\-group\_\-min\_\-w\_\-get@{edje\_\-edit\_\-group\_\-min\_\-w\_\-get}}
+\index{edje\_\-edit\_\-group\_\-min\_\-w\_\-get@{edje\_\-edit\_\-group\_\-min\_\-w\_\-get}!Edje_Edit.h@{Edje\_\-Edit.h}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI int edje\_\-edit\_\-group\_\-min\_\-w\_\-get (Evas\_\-Object $\ast$ {\em obj})}}
+\label{Edje__Edit_8h_c3ba0d18f662bcaf7fb7c2fb18d416b1}
+
+
+Get the group min width. 
+
+\begin{Desc}
+\item[Returns:]The minw value or -1 on errors \end{Desc}
+\begin{Desc}
+\item[Parameters: ]\par
+\begin{description}
+\item[{\em 
+obj}]The edje object \end{description}
+\end{Desc}
+\hypertarget{Edje__Edit_8h_c2ad048c6e7ba8d91b4aae4cbdc8d917}{
+\index{Edje\_\-Edit.h@{Edje\_\-Edit.h}!edje\_\-edit\_\-group\_\-min\_\-w\_\-set@{edje\_\-edit\_\-group\_\-min\_\-w\_\-set}}
+\index{edje\_\-edit\_\-group\_\-min\_\-w\_\-set@{edje\_\-edit\_\-group\_\-min\_\-w\_\-set}!Edje_Edit.h@{Edje\_\-Edit.h}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI void edje\_\-edit\_\-group\_\-min\_\-w\_\-set (Evas\_\-Object $\ast$ {\em obj}, \/  int {\em w})}}
+\label{Edje__Edit_8h_c2ad048c6e7ba8d91b4aae4cbdc8d917}
+
+
+Set the group min width. 
+
+\begin{Desc}
+\item[Parameters: ]\par
+\begin{description}
+\item[{\em 
+obj}]The edje object \item[{\em 
+w}]The new group minimum width in pixel \end{description}
+\end{Desc}
+\hypertarget{Edje__Edit_8h_fa9254d33c789633878a3ecabf7bebd5}{
+\index{Edje\_\-Edit.h@{Edje\_\-Edit.h}!edje\_\-edit\_\-group\_\-name\_\-set@{edje\_\-edit\_\-group\_\-name\_\-set}}
+\index{edje\_\-edit\_\-group\_\-name\_\-set@{edje\_\-edit\_\-group\_\-name\_\-set}!Edje_Edit.h@{Edje\_\-Edit.h}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI unsigned char edje\_\-edit\_\-group\_\-name\_\-set (Evas\_\-Object $\ast$ {\em obj}, \/  const char $\ast$ {\em new\_\-name})}}
+\label{Edje__Edit_8h_fa9254d33c789633878a3ecabf7bebd5}
+
+
+Set a new name for the current open group. 
+
+You can only rename a group that is currently loaded Note that the relative getter function don't exist as it don't make sense ;)\begin{Desc}
+\item[Returns:]1 on success, 0 on failure \end{Desc}
+\begin{Desc}
+\item[Parameters: ]\par
+\begin{description}
+\item[{\em 
+obj}]The edje object \item[{\em 
+new\_\-name}]The new name for the group \end{description}
+\end{Desc}
+\hypertarget{Edje__Edit_8h_2e01f28a79f100bb269f6d986de5a783}{
+\index{Edje\_\-Edit.h@{Edje\_\-Edit.h}!edje\_\-edit\_\-image\_\-add@{edje\_\-edit\_\-image\_\-add}}
+\index{edje\_\-edit\_\-image\_\-add@{edje\_\-edit\_\-image\_\-add}!Edje_Edit.h@{Edje\_\-Edit.h}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI unsigned char edje\_\-edit\_\-image\_\-add (Evas\_\-Object $\ast$ {\em obj}, \/  const char $\ast$ {\em path})}}
+\label{Edje__Edit_8h_2e01f28a79f100bb269f6d986de5a783}
+
+
+Add an new image to the image collection. 
+
+This function add the given image inside the edje. Don't add a new image part but only put the image inside the edje file. It actually write directly to the file so you don't have to save (and you can't undo!). After you have to create a new image\_\-part that use this image. Note that all the parts in the edje share the same image collection, thus you can/must use the same image for different part.
+
+The format of the image files that can be loaded depend on the evas engine on your system\begin{Desc}
+\item[Returns:]TRUE on success or FALSE on failure \end{Desc}
+\begin{Desc}
+\item[Parameters: ]\par
+\begin{description}
+\item[{\em 
+obj}]The edje object \item[{\em 
+path}]The name of the image file to include in the edje \end{description}
+\end{Desc}
+\hypertarget{Edje__Edit_8h_9ea7619fbd5b17da787aa29be28b14f6}{
+\index{Edje\_\-Edit.h@{Edje\_\-Edit.h}!edje\_\-edit\_\-image\_\-id\_\-get@{edje\_\-edit\_\-image\_\-id\_\-get}}
+\index{edje\_\-edit\_\-image\_\-id\_\-get@{edje\_\-edit\_\-image\_\-id\_\-get}!Edje_Edit.h@{Edje\_\-Edit.h}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI int edje\_\-edit\_\-image\_\-id\_\-get (Evas\_\-Object $\ast$ {\em obj}, \/  const char $\ast$ {\em image\_\-name})}}
+\label{Edje__Edit_8h_9ea7619fbd5b17da787aa29be28b14f6}
+
+
+Get image id for a given image name. 
+
+Could be usefull to directly load the image from the eet file. $<$ The ID of the givan image name \begin{Desc}
+\item[Parameters: ]\par
+\begin{description}
+\item[{\em 
+obj}]The edje object \end{description}
+\end{Desc}
+\hypertarget{Edje__Edit_8h_b7826bc948490ca86eff8fb2f0cc6a0f}{
+\index{Edje\_\-Edit.h@{Edje\_\-Edit.h}!edje\_\-edit\_\-images\_\-list\_\-get@{edje\_\-edit\_\-images\_\-list\_\-get}}
+\index{edje\_\-edit\_\-images\_\-list\_\-get@{edje\_\-edit\_\-images\_\-list\_\-get}!Edje_Edit.h@{Edje\_\-Edit.h}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI Evas\_\-List$\ast$ edje\_\-edit\_\-images\_\-list\_\-get (Evas\_\-Object $\ast$ {\em obj})}}
+\label{Edje__Edit_8h_b7826bc948490ca86eff8fb2f0cc6a0f}
+
+
+Get the list of all the images in the given edje. 
+
+\begin{Desc}
+\item[Returns:]An Evas\_\-List$\ast$ of string (char $\ast$)containing all the images names found in the edje file. Use \hyperlink{Edje__Edit_8h_68ea52098aa643bf273436cf04e92ccf}{edje\_\-edit\_\-string\_\-list\_\-free()} when you don't need it anymore.
+
+A string list containing all the images found in the edje file \end{Desc}
+\begin{Desc}
+\item[Parameters: ]\par
+\begin{description}
+\item[{\em 
+obj}]The edje object \end{description}
+\end{Desc}
+\hypertarget{Edje__Edit_8h_94c3724252e4b92f7fc841665b849222}{
+\index{Edje\_\-Edit.h@{Edje\_\-Edit.h}!edje\_\-edit\_\-part\_\-add@{edje\_\-edit\_\-part\_\-add}}
+\index{edje\_\-edit\_\-part\_\-add@{edje\_\-edit\_\-part\_\-add}!Edje_Edit.h@{Edje\_\-Edit.h}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI unsigned char edje\_\-edit\_\-part\_\-add (Evas\_\-Object $\ast$ {\em obj}, \/  const char $\ast$ {\em name}, \/  unsigned char {\em type})}}
+\label{Edje__Edit_8h_94c3724252e4b92f7fc841665b849222}
+
+
+Create a new part in the given edje If another part with the same name just exists nothing is created and FALSE is returned. 
+
+Note that this function also create a default description for the part.\begin{Desc}
+\item[Returns:]TRUE on success, FALSE if the part can't be created \end{Desc}
+\begin{Desc}
+\item[Parameters: ]\par
+\begin{description}
+\item[{\em 
+obj}]The edje object \item[{\em 
+name}]The name for the new part \item[{\em 
+type}]The type of the part to create (One of: EDJE\_\-PART\_\-TYPE\_\-NONE, EDJE\_\-PART\_\-TYPE\_\-RECTANGLE, EDJE\_\-PART\_\-TYPE\_\-TEXT,EDJE\_\-PART\_\-TYPE\_\-IMAGE, EDJE\_\-PART\_\-TYPE\_\-SWALLOW, EDJE\_\-PART\_\-TYPE\_\-TEXTBLOCK,EDJE\_\-PART\_\-TYPE\_\-GRADIENT or EDJE\_\-PART\_\-TYPE\_\-GROUP) \end{description}
+\end{Desc}
+\hypertarget{Edje__Edit_8h_7f8855f419a22aea66f2b1c62d4f28d5}{
+\index{Edje\_\-Edit.h@{Edje\_\-Edit.h}!edje\_\-edit\_\-part\_\-clip\_\-to\_\-get@{edje\_\-edit\_\-part\_\-clip\_\-to\_\-get}}
+\index{edje\_\-edit\_\-part\_\-clip\_\-to\_\-get@{edje\_\-edit\_\-part\_\-clip\_\-to\_\-get}!Edje_Edit.h@{Edje\_\-Edit.h}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI const char$\ast$ edje\_\-edit\_\-part\_\-clip\_\-to\_\-get (Evas\_\-Object $\ast$ {\em obj}, \/  const char $\ast$ {\em part})}}
+\label{Edje__Edit_8h_7f8855f419a22aea66f2b1c62d4f28d5}
+
+
+Get the clip\_\-to part. 
+
+NULL is returned on errors and if the part don't have a clip.\begin{Desc}
+\item[Returns:]The name of the part to clip part to. Use \hyperlink{Edje__Edit_8h_924beb7b18a2f754b4b78cee3b3cc662}{edje\_\-edit\_\-string\_\-free()} when you don't need it anymore. \end{Desc}
+\begin{Desc}
+\item[Parameters: ]\par
+\begin{description}
+\item[{\em 
+obj}]The edje object \item[{\em 
+part}]The name of the part \end{description}
+\end{Desc}
+\hypertarget{Edje__Edit_8h_c4f35cc689dbaa36158918240c37b337}{
+\index{Edje\_\-Edit.h@{Edje\_\-Edit.h}!edje\_\-edit\_\-part\_\-clip\_\-to\_\-set@{edje\_\-edit\_\-part\_\-clip\_\-to\_\-set}}
+\index{edje\_\-edit\_\-part\_\-clip\_\-to\_\-set@{edje\_\-edit\_\-part\_\-clip\_\-to\_\-set}!Edje_Edit.h@{Edje\_\-Edit.h}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI unsigned char edje\_\-edit\_\-part\_\-clip\_\-to\_\-set (Evas\_\-Object $\ast$ {\em obj}, \/  const char $\ast$ {\em part}, \/  const char $\ast$ {\em clip\_\-to})}}
+\label{Edje__Edit_8h_c4f35cc689dbaa36158918240c37b337}
+
+
+Set a part to clip part to. 
+
+If clip\_\-to is NULL then the clipping value will be cancelled (unset clipping)\begin{Desc}
+\item[Returns:]1 on success, 0 otherwise. \end{Desc}
+\begin{Desc}
+\item[Parameters: ]\par
+\begin{description}
+\item[{\em 
+obj}]The edje object \item[{\em 
+part}]The name of the part \item[{\em 
+clip\_\-to}]The name of the part to clip part to. \end{description}
+\end{Desc}
+\hypertarget{Edje__Edit_8h_70b3f7296ba293cb8f26078021bd1d65}{
+\index{Edje\_\-Edit.h@{Edje\_\-Edit.h}!edje\_\-edit\_\-part\_\-del@{edje\_\-edit\_\-part\_\-del}}
+\index{edje\_\-edit\_\-part\_\-del@{edje\_\-edit\_\-part\_\-del}!Edje_Edit.h@{Edje\_\-Edit.h}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI unsigned char edje\_\-edit\_\-part\_\-del (Evas\_\-Object $\ast$ {\em obj}, \/  const char $\ast$ {\em part})}}
+\label{Edje__Edit_8h_70b3f7296ba293cb8f26078021bd1d65}
+
+
+Delete the given part from the edje All the reference to this part will be zeroed. 
+
+A group must have at least one part, so it's not possible to remove the last remaining part.\begin{Desc}
+\item[Returns:]1 on success, 0 if the part can't be removed \end{Desc}
+\begin{Desc}
+\item[Parameters: ]\par
+\begin{description}
+\item[{\em 
+obj}]The edje object \item[{\em 
+part}]The name of the part to remove \end{description}
+\end{Desc}
+\hypertarget{Edje__Edit_8h_d25b46077539615cd1047a25043896d2}{
+\index{Edje\_\-Edit.h@{Edje\_\-Edit.h}!edje\_\-edit\_\-part\_\-effect\_\-get@{edje\_\-edit\_\-part\_\-effect\_\-get}}
+\index{edje\_\-edit\_\-part\_\-effect\_\-get@{edje\_\-edit\_\-part\_\-effect\_\-get}!Edje_Edit.h@{Edje\_\-Edit.h}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI unsigned char edje\_\-edit\_\-part\_\-effect\_\-get (Evas\_\-Object $\ast$ {\em obj}, \/  const char $\ast$ {\em part})}}
+\label{Edje__Edit_8h_d25b46077539615cd1047a25043896d2}
+
+
+Get the effect for a given part. 
+
+\begin{Desc}
+\item[Returns:]One of: EDJE\_\-TEXT\_\-EFFECT\_\-NONE, \_\-PLAIN, \_\-OUTLINE, \_\-SOFT\_\-OUTLINE, \_\-SHADOW, \_\-SOFT\_\-SHADOW, \_\-OUTLINE\_\-SHADOW, \_\-OUTLINE\_\-SOFT\_\-SHADOW, \_\-FAR\_\-SHADOW, \_\-FAR\_\-SOFT\_\-SHADOW, \_\-GLOW. \end{Desc}
+\begin{Desc}
+\item[Parameters: ]\par
+\begin{description}
+\item[{\em 
+obj}]The edje object \item[{\em 
+part}]The name of the part \end{description}
+\end{Desc}
+\hypertarget{Edje__Edit_8h_316fe161b008336c870393f0841b89a2}{
+\index{Edje\_\-Edit.h@{Edje\_\-Edit.h}!edje\_\-edit\_\-part\_\-effect\_\-set@{edje\_\-edit\_\-part\_\-effect\_\-set}}
+\index{edje\_\-edit\_\-part\_\-effect\_\-set@{edje\_\-edit\_\-part\_\-effect\_\-set}!Edje_Edit.h@{Edje\_\-Edit.h}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI void edje\_\-edit\_\-part\_\-effect\_\-set (Evas\_\-Object $\ast$ {\em obj}, \/  const char $\ast$ {\em part}, \/  unsigned char {\em effect})}}
+\label{Edje__Edit_8h_316fe161b008336c870393f0841b89a2}
+
+
+Set the effect for a given part. 
+
+\begin{Desc}
+\item[Parameters: ]\par
+\begin{description}
+\item[{\em 
+obj}]The edje object \item[{\em 
+part}]The name of the part \item[{\em 
+effect}]The effect to set. See \hyperlink{Edje__Edit_8h_d25b46077539615cd1047a25043896d2}{edje\_\-edit\_\-part\_\-effect\_\-get()} for possible value \end{description}
+\end{Desc}
+\hypertarget{Edje__Edit_8h_654d2557761e097644c2677755d1388c}{
+\index{Edje\_\-Edit.h@{Edje\_\-Edit.h}!edje\_\-edit\_\-part\_\-exist@{edje\_\-edit\_\-part\_\-exist}}
+\index{edje\_\-edit\_\-part\_\-exist@{edje\_\-edit\_\-part\_\-exist}!Edje_Edit.h@{Edje\_\-Edit.h}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI unsigned char edje\_\-edit\_\-part\_\-exist (Evas\_\-Object $\ast$ {\em obj}, \/  const char $\ast$ {\em part})}}
+\label{Edje__Edit_8h_654d2557761e097644c2677755d1388c}
+
+
+Check if a part with the given name exist in the edje object. 
+
+$<$ 1 if the part exist, 0 otherwise. \begin{Desc}
+\item[Parameters: ]\par
+\begin{description}
+\item[{\em 
+obj}]The edje object \item[{\em 
+part}]The name of the part \end{description}
+\end{Desc}
+\hypertarget{Edje__Edit_8h_4e73f9e001f0c6eb39d0e6bf82c9807c}{
+\index{Edje\_\-Edit.h@{Edje\_\-Edit.h}!edje\_\-edit\_\-part\_\-ignore\_\-flags\_\-get@{edje\_\-edit\_\-part\_\-ignore\_\-flags\_\-get}}
+\index{edje\_\-edit\_\-part\_\-ignore\_\-flags\_\-get@{edje\_\-edit\_\-part\_\-ignore\_\-flags\_\-get}!Edje_Edit.h@{Edje\_\-Edit.h}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI Evas\_\-Event\_\-Flags edje\_\-edit\_\-part\_\-ignore\_\-flags\_\-get (Evas\_\-Object $\ast$ {\em obj}, \/  const char $\ast$ {\em part})}}
+\label{Edje__Edit_8h_4e73f9e001f0c6eb39d0e6bf82c9807c}
+
+
+Get ignore\_\-flags for part. 
+
+\begin{Desc}
+\item[Returns:]event flags ignored \end{Desc}
+\begin{Desc}
+\item[Parameters: ]\par
+\begin{description}
+\item[{\em 
+obj}]The edje object \item[{\em 
+part}]The name of the part \end{description}
+\end{Desc}
+\hypertarget{Edje__Edit_8h_60cb251ce48a47aea6ecd19961073ab0}{
+\index{Edje\_\-Edit.h@{Edje\_\-Edit.h}!edje\_\-edit\_\-part\_\-ignore\_\-flags\_\-set@{edje\_\-edit\_\-part\_\-ignore\_\-flags\_\-set}}
+\index{edje\_\-edit\_\-part\_\-ignore\_\-flags\_\-set@{edje\_\-edit\_\-part\_\-ignore\_\-flags\_\-set}!Edje_Edit.h@{Edje\_\-Edit.h}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI void edje\_\-edit\_\-part\_\-ignore\_\-flags\_\-set (Evas\_\-Object $\ast$ {\em obj}, \/  const char $\ast$ {\em part}, \/  Evas\_\-Event\_\-Flags {\em ignore\_\-flags})}}
+\label{Edje__Edit_8h_60cb251ce48a47aea6ecd19961073ab0}
+
+
+Set repeat\_\-events for part. 
+
+\begin{Desc}
+\item[Parameters: ]\par
+\begin{description}
+\item[{\em 
+obj}]The edje object \item[{\em 
+part}]The name of the part \item[{\em 
+ignore\_\-flags}]event flags to be ignored \end{description}
+\end{Desc}
+\hypertarget{Edje__Edit_8h_f3b9d27764561fd34bd6ff250408d9b9}{
+\index{Edje\_\-Edit.h@{Edje\_\-Edit.h}!edje\_\-edit\_\-part\_\-mouse\_\-events\_\-get@{edje\_\-edit\_\-part\_\-mouse\_\-events\_\-get}}
+\index{edje\_\-edit\_\-part\_\-mouse\_\-events\_\-get@{edje\_\-edit\_\-part\_\-mouse\_\-events\_\-get}!Edje_Edit.h@{Edje\_\-Edit.h}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI unsigned char edje\_\-edit\_\-part\_\-mouse\_\-events\_\-get (Evas\_\-Object $\ast$ {\em obj}, \/  const char $\ast$ {\em part})}}
+\label{Edje__Edit_8h_f3b9d27764561fd34bd6ff250408d9b9}
+
+
+Get mouse\_\-events for part. 
+
+\begin{Desc}
+\item[Returns:]1 if part accept mouse events, 0 if not \end{Desc}
+\begin{Desc}
+\item[Parameters: ]\par
+\begin{description}
+\item[{\em 
+obj}]The edje object \item[{\em 
+part}]The name of the part \end{description}
+\end{Desc}
+\hypertarget{Edje__Edit_8h_6f9c12bbda7ee48f1880d14a80a1a364}{
+\index{Edje\_\-Edit.h@{Edje\_\-Edit.h}!edje\_\-edit\_\-part\_\-mouse\_\-events\_\-set@{edje\_\-edit\_\-part\_\-mouse\_\-events\_\-set}}
+\index{edje\_\-edit\_\-part\_\-mouse\_\-events\_\-set@{edje\_\-edit\_\-part\_\-mouse\_\-events\_\-set}!Edje_Edit.h@{Edje\_\-Edit.h}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI void edje\_\-edit\_\-part\_\-mouse\_\-events\_\-set (Evas\_\-Object $\ast$ {\em obj}, \/  const char $\ast$ {\em part}, \/  unsigned char {\em mouse\_\-events})}}
+\label{Edje__Edit_8h_6f9c12bbda7ee48f1880d14a80a1a364}
+
+
+Set mouse\_\-events for part. 
+
+\begin{Desc}
+\item[Parameters: ]\par
+\begin{description}
+\item[{\em 
+obj}]The edje object \item[{\em 
+part}]The name of the part \item[{\em 
+mouse\_\-events}]If set to 1 part will accept mouse events, 0 to ignore all mouse events from part. \end{description}
+\end{Desc}
+\hypertarget{Edje__Edit_8h_6f86937ca552b389fe7539794472eece}{
+\index{Edje\_\-Edit.h@{Edje\_\-Edit.h}!edje\_\-edit\_\-part\_\-name\_\-set@{edje\_\-edit\_\-part\_\-name\_\-set}}
+\index{edje\_\-edit\_\-part\_\-name\_\-set@{edje\_\-edit\_\-part\_\-name\_\-set}!Edje_Edit.h@{Edje\_\-Edit.h}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI unsigned char edje\_\-edit\_\-part\_\-name\_\-set (Evas\_\-Object $\ast$ {\em obj}, \/  const char $\ast$ {\em part}, \/  const char $\ast$ {\em new\_\-name})}}
+\label{Edje__Edit_8h_6f86937ca552b389fe7539794472eece}
+
+
+Set a new name for part. 
+
+Note that the relative getter function don't exist as it don't make sense ;)\begin{Desc}
+\item[Returns:]1 on success, 0 on failure \end{Desc}
+\begin{Desc}
+\item[Parameters: ]\par
+\begin{description}
+\item[{\em 
+obj}]The edje object \item[{\em 
+part}]The name of the part to rename \item[{\em 
+new\_\-name}]The new name for the part \end{description}
+\end{Desc}
+\hypertarget{Edje__Edit_8h_07685670b76acdcb6dd0ed46ab5afd36}{
+\index{Edje\_\-Edit.h@{Edje\_\-Edit.h}!edje\_\-edit\_\-part\_\-repeat\_\-events\_\-get@{edje\_\-edit\_\-part\_\-repeat\_\-events\_\-get}}
+\index{edje\_\-edit\_\-part\_\-repeat\_\-events\_\-get@{edje\_\-edit\_\-part\_\-repeat\_\-events\_\-get}!Edje_Edit.h@{Edje\_\-Edit.h}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI unsigned char edje\_\-edit\_\-part\_\-repeat\_\-events\_\-get (Evas\_\-Object $\ast$ {\em obj}, \/  const char $\ast$ {\em part})}}
+\label{Edje__Edit_8h_07685670b76acdcb6dd0ed46ab5afd36}
+
+
+Get repeat\_\-events for part. 
+
+\begin{Desc}
+\item[Returns:]1 if part will pass all events to the other parts, 0 if not \end{Desc}
+\begin{Desc}
+\item[Parameters: ]\par
+\begin{description}
+\item[{\em 
+obj}]The edje object \item[{\em 
+part}]The name of the part \end{description}
+\end{Desc}
+\hypertarget{Edje__Edit_8h_207b217e33977f41c12b81ba80559b5e}{
+\index{Edje\_\-Edit.h@{Edje\_\-Edit.h}!edje\_\-edit\_\-part\_\-repeat\_\-events\_\-set@{edje\_\-edit\_\-part\_\-repeat\_\-events\_\-set}}
+\index{edje\_\-edit\_\-part\_\-repeat\_\-events\_\-set@{edje\_\-edit\_\-part\_\-repeat\_\-events\_\-set}!Edje_Edit.h@{Edje\_\-Edit.h}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI void edje\_\-edit\_\-part\_\-repeat\_\-events\_\-set (Evas\_\-Object $\ast$ {\em obj}, \/  const char $\ast$ {\em part}, \/  unsigned char {\em repeat\_\-events})}}
+\label{Edje__Edit_8h_207b217e33977f41c12b81ba80559b5e}
+
+
+Set repeat\_\-events for part. 
+
+\begin{Desc}
+\item[Parameters: ]\par
+\begin{description}
+\item[{\em 
+obj}]The edje object \item[{\em 
+part}]The name of the part \item[{\em 
+repeat\_\-events}]If set to 1 part will repeat all the received mouse events to other parts. If set to 0 the events received will not propagate to other parts. \end{description}
+\end{Desc}
+\hypertarget{Edje__Edit_8h_c3d78bca12ba5334f35e01f2568cb7d5}{
+\index{Edje\_\-Edit.h@{Edje\_\-Edit.h}!edje\_\-edit\_\-part\_\-restack\_\-above@{edje\_\-edit\_\-part\_\-restack\_\-above}}
+\index{edje\_\-edit\_\-part\_\-restack\_\-above@{edje\_\-edit\_\-part\_\-restack\_\-above}!Edje_Edit.h@{Edje\_\-Edit.h}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI unsigned char edje\_\-edit\_\-part\_\-restack\_\-above (Evas\_\-Object $\ast$ {\em obj}, \/  const char $\ast$ {\em part})}}
+\label{Edje__Edit_8h_c3d78bca12ba5334f35e01f2568cb7d5}
+
+
+Move the given part above the next one. 
+
+\begin{Desc}
+\item[Returns:]1 on success, 0 on failure \end{Desc}
+\begin{Desc}
+\item[Parameters: ]\par
+\begin{description}
+\item[{\em 
+obj}]The edje object \item[{\em 
+part}]The name of the part to restack \end{description}
+\end{Desc}
+\hypertarget{Edje__Edit_8h_0245e3aac3c4cdc9948ddd6f68cc2ba7}{
+\index{Edje\_\-Edit.h@{Edje\_\-Edit.h}!edje\_\-edit\_\-part\_\-restack\_\-below@{edje\_\-edit\_\-part\_\-restack\_\-below}}
+\index{edje\_\-edit\_\-part\_\-restack\_\-below@{edje\_\-edit\_\-part\_\-restack\_\-below}!Edje_Edit.h@{Edje\_\-Edit.h}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI unsigned char edje\_\-edit\_\-part\_\-restack\_\-below (Evas\_\-Object $\ast$ {\em obj}, \/  const char $\ast$ {\em part})}}
+\label{Edje__Edit_8h_0245e3aac3c4cdc9948ddd6f68cc2ba7}
+
+
+Move the given part below the previous one. 
+
+\begin{Desc}
+\item[Returns:]1 on success, 0 on failure \end{Desc}
+\begin{Desc}
+\item[Parameters: ]\par
+\begin{description}
+\item[{\em 
+obj}]The edje object \item[{\em 
+part}]The name of the part to restack \end{description}
+\end{Desc}
+\hypertarget{Edje__Edit_8h_6e82d3c2f7ab76734710ef2ab3a4524c}{
+\index{Edje\_\-Edit.h@{Edje\_\-Edit.h}!edje\_\-edit\_\-part\_\-selected\_\-state\_\-get@{edje\_\-edit\_\-part\_\-selected\_\-state\_\-get}}
+\index{edje\_\-edit\_\-part\_\-selected\_\-state\_\-get@{edje\_\-edit\_\-part\_\-selected\_\-state\_\-get}!Edje_Edit.h@{Edje\_\-Edit.h}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI const char$\ast$ edje\_\-edit\_\-part\_\-selected\_\-state\_\-get (Evas\_\-Object $\ast$ {\em obj}, \/  const char $\ast$ {\em part})}}
+\label{Edje__Edit_8h_6e82d3c2f7ab76734710ef2ab3a4524c}
+
+
+Get the current selected state in part. 
+
+\begin{Desc}
+\item[Returns:]The name of the selected state including the float value. Use \hyperlink{Edje__Edit_8h_924beb7b18a2f754b4b78cee3b3cc662}{edje\_\-edit\_\-string\_\-free()} when you don't need it anymore. \end{Desc}
+\begin{Desc}
+\item[Parameters: ]\par
+\begin{description}
+\item[{\em 
+obj}]The edje object \item[{\em 
+part}]The name of the part \end{description}
+\end{Desc}
+\hypertarget{Edje__Edit_8h_9b1498b4f6470988e4aab0d8521839ac}{
+\index{Edje\_\-Edit.h@{Edje\_\-Edit.h}!edje\_\-edit\_\-part\_\-selected\_\-state\_\-set@{edje\_\-edit\_\-part\_\-selected\_\-state\_\-set}}
+\index{edje\_\-edit\_\-part\_\-selected\_\-state\_\-set@{edje\_\-edit\_\-part\_\-selected\_\-state\_\-set}!Edje_Edit.h@{Edje\_\-Edit.h}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI unsigned char edje\_\-edit\_\-part\_\-selected\_\-state\_\-set (Evas\_\-Object $\ast$ {\em obj}, \/  const char $\ast$ {\em part}, \/  const char $\ast$ {\em state})}}
+\label{Edje__Edit_8h_9b1498b4f6470988e4aab0d8521839ac}
+
+
+Set the current state in part. 
+
+\begin{Desc}
+\item[Returns:]1 on success, 0 otherwise. \end{Desc}
+\begin{Desc}
+\item[Parameters: ]\par
+\begin{description}
+\item[{\em 
+obj}]The edje object \item[{\em 
+part}]The name of the part \item[{\em 
+state}]The name of the state to set (including the float value) \end{description}
+\end{Desc}
+\hypertarget{Edje__Edit_8h_72312674178e3171e9b19f58f339a778}{
+\index{Edje\_\-Edit.h@{Edje\_\-Edit.h}!edje\_\-edit\_\-part\_\-source\_\-get@{edje\_\-edit\_\-part\_\-source\_\-get}}
+\index{edje\_\-edit\_\-part\_\-source\_\-get@{edje\_\-edit\_\-part\_\-source\_\-get}!Edje_Edit.h@{Edje\_\-Edit.h}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI const char$\ast$ edje\_\-edit\_\-part\_\-source\_\-get (Evas\_\-Object $\ast$ {\em obj}, \/  const char $\ast$ {\em part})}}
+\label{Edje__Edit_8h_72312674178e3171e9b19f58f339a778}
+
+
+Get the source of part. 
+
+Source is used in part of type EDJE\_\-PART\_\-TYPE\_\-GROUP to specify the group to 'autoswallow' inside the given part.\begin{Desc}
+\item[Returns:]The name of the group to source the given part. Use \hyperlink{Edje__Edit_8h_924beb7b18a2f754b4b78cee3b3cc662}{edje\_\-edit\_\-string\_\-free()} when you don't need it anymore. \end{Desc}
+\begin{Desc}
+\item[Parameters: ]\par
+\begin{description}
+\item[{\em 
+obj}]The edje object \item[{\em 
+part}]The name of the part \end{description}
+\end{Desc}
+\hypertarget{Edje__Edit_8h_3686d40e348148e13a42b4bc7d85645d}{
+\index{Edje\_\-Edit.h@{Edje\_\-Edit.h}!edje\_\-edit\_\-part\_\-source\_\-set@{edje\_\-edit\_\-part\_\-source\_\-set}}
+\index{edje\_\-edit\_\-part\_\-source\_\-set@{edje\_\-edit\_\-part\_\-source\_\-set}!Edje_Edit.h@{Edje\_\-Edit.h}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI unsigned char edje\_\-edit\_\-part\_\-source\_\-set (Evas\_\-Object $\ast$ {\em obj}, \/  const char $\ast$ {\em part}, \/  const char $\ast$ {\em source})}}
+\label{Edje__Edit_8h_3686d40e348148e13a42b4bc7d85645d}
+
+
+Set the source of part. 
+
+Source is used in part of type EDJE\_\-PART\_\-TYPE\_\-GROUP to specify the group to 'autoswallow' inside the given part. NOTE: This is not applied now. You must reload the edje to see the change.\begin{Desc}
+\item[Returns:]1 on success, 0 otherwise. \end{Desc}
+\begin{Desc}
+\item[Parameters: ]\par
+\begin{description}
+\item[{\em 
+obj}]The edje object \item[{\em 
+part}]The name of the part \item[{\em 
+source}]The name of the group to autoswallow in the given part \end{description}
+\end{Desc}
+\hypertarget{Edje__Edit_8h_f5be63a364f57b230ae9deb97195436d}{
+\index{Edje\_\-Edit.h@{Edje\_\-Edit.h}!edje\_\-edit\_\-part\_\-states\_\-list\_\-get@{edje\_\-edit\_\-part\_\-states\_\-list\_\-get}}
+\index{edje\_\-edit\_\-part\_\-states\_\-list\_\-get@{edje\_\-edit\_\-part\_\-states\_\-list\_\-get}!Edje_Edit.h@{Edje\_\-Edit.h}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI Evas\_\-List$\ast$ edje\_\-edit\_\-part\_\-states\_\-list\_\-get (Evas\_\-Object $\ast$ {\em obj}, \/  const char $\ast$ {\em part})}}
+\label{Edje__Edit_8h_f5be63a364f57b230ae9deb97195436d}
+
+
+Get the list of all the states in the given part. 
+
+\begin{Desc}
+\item[Returns:]An Evas\_\-List$\ast$ of string (char $\ast$)containing all the states names found in part, including the float value (ex: \char`\"{}default 0.00\char`\"{}). Use \hyperlink{Edje__Edit_8h_68ea52098aa643bf273436cf04e92ccf}{edje\_\-edit\_\-string\_\-list\_\-free()} when you don't need it anymore. \end{Desc}
+\begin{Desc}
+\item[Parameters: ]\par
+\begin{description}
+\item[{\em 
+obj}]The edje object \item[{\em 
+part}]The name of the part \end{description}
+\end{Desc}
+\hypertarget{Edje__Edit_8h_749ed11666062aad310cd3c944749c24}{
+\index{Edje\_\-Edit.h@{Edje\_\-Edit.h}!edje\_\-edit\_\-part\_\-type\_\-get@{edje\_\-edit\_\-part\_\-type\_\-get}}
+\index{edje\_\-edit\_\-part\_\-type\_\-get@{edje\_\-edit\_\-part\_\-type\_\-get}!Edje_Edit.h@{Edje\_\-Edit.h}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI unsigned char edje\_\-edit\_\-part\_\-type\_\-get (Evas\_\-Object $\ast$ {\em obj}, \/  const char $\ast$ {\em part})}}
+\label{Edje__Edit_8h_749ed11666062aad310cd3c944749c24}
+
+
+Get the type of a part. 
+
+\begin{Desc}
+\item[Returns:]One of: EDJE\_\-PART\_\-TYPE\_\-NONE, EDJE\_\-PART\_\-TYPE\_\-RECTANGLE, EDJE\_\-PART\_\-TYPE\_\-TEXT,EDJE\_\-PART\_\-TYPE\_\-IMAGE, EDJE\_\-PART\_\-TYPE\_\-SWALLOW, EDJE\_\-PART\_\-TYPE\_\-TEXTBLOCK,EDJE\_\-PART\_\-TYPE\_\-GRADIENT or EDJE\_\-PART\_\-TYPE\_\-GROUP \end{Desc}
+\begin{Desc}
+\item[Parameters: ]\par
+\begin{description}
+\item[{\em 
+obj}]The edje object \item[{\em 
+part}]The name of the part \end{description}
+\end{Desc}
+\hypertarget{Edje__Edit_8h_a74f630561a477243a4ea8d4338ac00f}{
+\index{Edje\_\-Edit.h@{Edje\_\-Edit.h}!edje\_\-edit\_\-parts\_\-list\_\-get@{edje\_\-edit\_\-parts\_\-list\_\-get}}
+\index{edje\_\-edit\_\-parts\_\-list\_\-get@{edje\_\-edit\_\-parts\_\-list\_\-get}!Edje_Edit.h@{Edje\_\-Edit.h}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI Evas\_\-List$\ast$ edje\_\-edit\_\-parts\_\-list\_\-get (Evas\_\-Object $\ast$ {\em obj})}}
+\label{Edje__Edit_8h_a74f630561a477243a4ea8d4338ac00f}
+
+
+Get the list of all the parts in the given edje object. 
+
+Use \hyperlink{Edje__Edit_8h_68ea52098aa643bf273436cf04e92ccf}{edje\_\-edit\_\-string\_\-list\_\-free()} when you don't need it anymore.\begin{Desc}
+\item[Returns:]An Evas\_\-List$\ast$ of string (char $\ast$)containing all the part names. \end{Desc}
+\begin{Desc}
+\item[Parameters: ]\par
+\begin{description}
+\item[{\em 
+obj}]The edje object \end{description}
+\end{Desc}
+\hypertarget{Edje__Edit_8h_08beedd62a25ae24babf679293d145a6}{
+\index{Edje\_\-Edit.h@{Edje\_\-Edit.h}!edje\_\-edit\_\-print\_\-internal\_\-status@{edje\_\-edit\_\-print\_\-internal\_\-status}}
+\index{edje\_\-edit\_\-print\_\-internal\_\-status@{edje\_\-edit\_\-print\_\-internal\_\-status}!Edje_Edit.h@{Edje\_\-Edit.h}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI void edje\_\-edit\_\-print\_\-internal\_\-status (Evas\_\-Object $\ast$ {\em obj})}}
+\label{Edje__Edit_8h_08beedd62a25ae24babf679293d145a6}
+
+
+Print on standard output many information about the internal status of the edje object. 
+
+This is probably only usefull to debug. \begin{Desc}
+\item[Parameters: ]\par
+\begin{description}
+\item[{\em 
+obj}]The edje object to inspect \end{description}
+\end{Desc}
+\hypertarget{Edje__Edit_8h_94f279e8e6dddaac447c28e3bae3d3d4}{
+\index{Edje\_\-Edit.h@{Edje\_\-Edit.h}!edje\_\-edit\_\-program\_\-action\_\-get@{edje\_\-edit\_\-program\_\-action\_\-get}}
+\index{edje\_\-edit\_\-program\_\-action\_\-get@{edje\_\-edit\_\-program\_\-action\_\-get}!Edje_Edit.h@{Edje\_\-Edit.h}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI int edje\_\-edit\_\-program\_\-action\_\-get (Evas\_\-Object $\ast$ {\em obj}, \/  const char $\ast$ {\em prog})}}
+\label{Edje__Edit_8h_94f279e8e6dddaac447c28e3bae3d3d4}
+
+
+Get the action of a given program. 
+
+Action can be one of EDJE\_\-ACTION\_\-TYPE\_\-NONE, \_\-STATE\_\-SET, ACTION\_\-STOP, SIGNAL\_\-EMIT, DRAG\_\-VAL\_\-SET, \_\-DRAG\_\-VAL\_\-STEP, \_\-DRAG\_\-VAL\_\-PAGE, \_\-SCRIPT\begin{Desc}
+\item[Returns:]The action type, or -1 on errors \end{Desc}
+\begin{Desc}
+\item[Parameters: ]\par
+\begin{description}
+\item[{\em 
+obj}]The edje object \item[{\em 
+prog}]The program name \end{description}
+\end{Desc}
+\hypertarget{Edje__Edit_8h_96556a6cfd85ef9f63fb5c6d9de8fba9}{
+\index{Edje\_\-Edit.h@{Edje\_\-Edit.h}!edje\_\-edit\_\-program\_\-action\_\-set@{edje\_\-edit\_\-program\_\-action\_\-set}}
+\index{edje\_\-edit\_\-program\_\-action\_\-set@{edje\_\-edit\_\-program\_\-action\_\-set}!Edje_Edit.h@{Edje\_\-Edit.h}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI unsigned char edje\_\-edit\_\-program\_\-action\_\-set (Evas\_\-Object $\ast$ {\em obj}, \/  const char $\ast$ {\em prog}, \/  int {\em action})}}
+\label{Edje__Edit_8h_96556a6cfd85ef9f63fb5c6d9de8fba9}
+
+
+Set the action of a given program. 
+
+Action can be one of EDJE\_\-ACTION\_\-TYPE\_\-NONE, \_\-STATE\_\-SET, ACTION\_\-STOP, SIGNAL\_\-EMIT, DRAG\_\-VAL\_\-SET, \_\-DRAG\_\-VAL\_\-STEP, \_\-DRAG\_\-VAL\_\-PAGE, \_\-SCRIPT\begin{Desc}
+\item[Returns:]1 on success or 0 on errors \end{Desc}
+\begin{Desc}
+\item[Parameters: ]\par
+\begin{description}
+\item[{\em 
+obj}]The edje object \item[{\em 
+prog}]The program name \item[{\em 
+action}]The new action type \end{description}
+\end{Desc}
+\hypertarget{Edje__Edit_8h_6dcd96b8a3908b4ca88d4cb9c6c0ba97}{
+\index{Edje\_\-Edit.h@{Edje\_\-Edit.h}!edje\_\-edit\_\-program\_\-add@{edje\_\-edit\_\-program\_\-add}}
+\index{edje\_\-edit\_\-program\_\-add@{edje\_\-edit\_\-program\_\-add}!Edje_Edit.h@{Edje\_\-Edit.h}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI unsigned char edje\_\-edit\_\-program\_\-add (Evas\_\-Object $\ast$ {\em obj}, \/  const char $\ast$ {\em name})}}
+\label{Edje__Edit_8h_6dcd96b8a3908b4ca88d4cb9c6c0ba97}
+
+
+Add a new program to the edje file If a program with the same name just exist the function will fail. 
+
+\begin{Desc}
+\item[Returns:]1 on success or 0 on errors \end{Desc}
+\begin{Desc}
+\item[Parameters: ]\par
+\begin{description}
+\item[{\em 
+obj}]The edje object \item[{\em 
+name}]The name of the new program \end{description}
+\end{Desc}
+\hypertarget{Edje__Edit_8h_bc729062c5846aad901ac737f247ab6b}{
+\index{Edje\_\-Edit.h@{Edje\_\-Edit.h}!edje\_\-edit\_\-program\_\-after\_\-add@{edje\_\-edit\_\-program\_\-after\_\-add}}
+\index{edje\_\-edit\_\-program\_\-after\_\-add@{edje\_\-edit\_\-program\_\-after\_\-add}!Edje_Edit.h@{Edje\_\-Edit.h}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI unsigned char edje\_\-edit\_\-program\_\-after\_\-add (Evas\_\-Object $\ast$ {\em obj}, \/  const char $\ast$ {\em prog}, \/  const char $\ast$ {\em after})}}
+\label{Edje__Edit_8h_bc729062c5846aad901ac737f247ab6b}
+
+
+Add a new program name to the list of 'afters' in the given program. 
+
+All the programs listed in 'afters' will be executed after program execution.\begin{Desc}
+\item[Returns:]1 on success or 0 on errors \end{Desc}
+\begin{Desc}
+\item[Parameters: ]\par
+\begin{description}
+\item[{\em 
+obj}]The edje object \item[{\em 
+prog}]The program name \item[{\em 
+after}]The name of another program to add to the afters list \end{description}
+\end{Desc}
+\hypertarget{Edje__Edit_8h_2ffa5164da708d90af2b0fd31284ba3e}{
+\index{Edje\_\-Edit.h@{Edje\_\-Edit.h}!edje\_\-edit\_\-program\_\-afters\_\-clear@{edje\_\-edit\_\-program\_\-afters\_\-clear}}
+\index{edje\_\-edit\_\-program\_\-afters\_\-clear@{edje\_\-edit\_\-program\_\-afters\_\-clear}!Edje_Edit.h@{Edje\_\-Edit.h}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI unsigned char edje\_\-edit\_\-program\_\-afters\_\-clear (Evas\_\-Object $\ast$ {\em obj}, \/  const char $\ast$ {\em prog})}}
+\label{Edje__Edit_8h_2ffa5164da708d90af2b0fd31284ba3e}
+
+
+Clear the 'afters' list of the given program. 
+
+\begin{Desc}
+\item[Returns:]1 on success or 0 on errors \end{Desc}
+\begin{Desc}
+\item[Parameters: ]\par
+\begin{description}
+\item[{\em 
+obj}]The edje object \item[{\em 
+prog}]The program name \end{description}
+\end{Desc}
+\hypertarget{Edje__Edit_8h_d1081f34d350a81edbd329cbb5b260d5}{
+\index{Edje\_\-Edit.h@{Edje\_\-Edit.h}!edje\_\-edit\_\-program\_\-afters\_\-get@{edje\_\-edit\_\-program\_\-afters\_\-get}}
+\index{edje\_\-edit\_\-program\_\-afters\_\-get@{edje\_\-edit\_\-program\_\-afters\_\-get}!Edje_Edit.h@{Edje\_\-Edit.h}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI Evas\_\-List$\ast$ edje\_\-edit\_\-program\_\-afters\_\-get (Evas\_\-Object $\ast$ {\em obj}, \/  const char $\ast$ {\em prog})}}
+\label{Edje__Edit_8h_d1081f34d350a81edbd329cbb5b260d5}
+
+
+Get the list of action that will be run after the give program Return a list of program name. 
+
+Use \hyperlink{Edje__Edit_8h_68ea52098aa643bf273436cf04e92ccf}{edje\_\-edit\_\-string\_\-list\_\-free()} when you don't need it anymore.\begin{Desc}
+\item[Returns:]An Evas\_\-List of char$\ast$, or NULL on error \end{Desc}
+\begin{Desc}
+\item[Parameters: ]\par
+\begin{description}
+\item[{\em 
+obj}]The edje object \item[{\em 
+prog}]The program name \end{description}
+\end{Desc}
+\hypertarget{Edje__Edit_8h_7c7bf5a01bad84838ec9ab267b8a0b69}{
+\index{Edje\_\-Edit.h@{Edje\_\-Edit.h}!edje\_\-edit\_\-program\_\-del@{edje\_\-edit\_\-program\_\-del}}
+\index{edje\_\-edit\_\-program\_\-del@{edje\_\-edit\_\-program\_\-del}!Edje_Edit.h@{Edje\_\-Edit.h}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI unsigned char edje\_\-edit\_\-program\_\-del (Evas\_\-Object $\ast$ {\em obj}, \/  const char $\ast$ {\em prog})}}
+\label{Edje__Edit_8h_7c7bf5a01bad84838ec9ab267b8a0b69}
+
+
+Remove the given program from the edje file. 
+
+\begin{Desc}
+\item[Returns:]1 on success or 0 on errors \end{Desc}
+\begin{Desc}
+\item[Parameters: ]\par
+\begin{description}
+\item[{\em 
+obj}]The edje object \item[{\em 
+prog}]The name of the program to remove \end{description}
+\end{Desc}
+\hypertarget{Edje__Edit_8h_32b66cd79d6d46c3b9a8048cf8c13ff7}{
+\index{Edje\_\-Edit.h@{Edje\_\-Edit.h}!edje\_\-edit\_\-program\_\-exist@{edje\_\-edit\_\-program\_\-exist}}
+\index{edje\_\-edit\_\-program\_\-exist@{edje\_\-edit\_\-program\_\-exist}!Edje_Edit.h@{Edje\_\-Edit.h}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI unsigned char edje\_\-edit\_\-program\_\-exist (Evas\_\-Object $\ast$ {\em obj}, \/  const char $\ast$ {\em prog})}}
+\label{Edje__Edit_8h_32b66cd79d6d46c3b9a8048cf8c13ff7}
+
+
+Check if a program with the given name exist in the edje object. 
+
+$<$ 1 if the program exist, 0 otherwise. \begin{Desc}
+\item[Parameters: ]\par
+\begin{description}
+\item[{\em 
+obj}]The edje object \item[{\em 
+prog}]The name of the program \end{description}
+\end{Desc}
+\hypertarget{Edje__Edit_8h_81990d30bee37301815615462e864b04}{
+\index{Edje\_\-Edit.h@{Edje\_\-Edit.h}!edje\_\-edit\_\-program\_\-in\_\-from\_\-get@{edje\_\-edit\_\-program\_\-in\_\-from\_\-get}}
+\index{edje\_\-edit\_\-program\_\-in\_\-from\_\-get@{edje\_\-edit\_\-program\_\-in\_\-from\_\-get}!Edje_Edit.h@{Edje\_\-Edit.h}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI double edje\_\-edit\_\-program\_\-in\_\-from\_\-get (Evas\_\-Object $\ast$ {\em obj}, \/  const char $\ast$ {\em prog})}}
+\label{Edje__Edit_8h_81990d30bee37301815615462e864b04}
+
+
+Get in.from of a given program. 
+
+\begin{Desc}
+\item[Returns:]The delay \end{Desc}
+\begin{Desc}
+\item[Parameters: ]\par
+\begin{description}
+\item[{\em 
+obj}]The edje object \item[{\em 
+prog}]The program name \end{description}
+\end{Desc}
+\hypertarget{Edje__Edit_8h_12ae11e52177b19a40c99173a4dae823}{
+\index{Edje\_\-Edit.h@{Edje\_\-Edit.h}!edje\_\-edit\_\-program\_\-in\_\-from\_\-set@{edje\_\-edit\_\-program\_\-in\_\-from\_\-set}}
+\index{edje\_\-edit\_\-program\_\-in\_\-from\_\-set@{edje\_\-edit\_\-program\_\-in\_\-from\_\-set}!Edje_Edit.h@{Edje\_\-Edit.h}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI unsigned char edje\_\-edit\_\-program\_\-in\_\-from\_\-set (Evas\_\-Object $\ast$ {\em obj}, \/  const char $\ast$ {\em prog}, \/  double {\em seconds})}}
+\label{Edje__Edit_8h_12ae11e52177b19a40c99173a4dae823}
+
+
+Set in.from of a given program. 
+
+\begin{Desc}
+\item[Returns:]1 on success or 0 on errors \end{Desc}
+\begin{Desc}
+\item[Parameters: ]\par
+\begin{description}
+\item[{\em 
+obj}]The edje object \item[{\em 
+prog}]The program name \item[{\em 
+seconds}]Number of seconds to delay the program execution \end{description}
+\end{Desc}
+\hypertarget{Edje__Edit_8h_428b76b95bd3a9432ae2ac20ad7276cf}{
+\index{Edje\_\-Edit.h@{Edje\_\-Edit.h}!edje\_\-edit\_\-program\_\-in\_\-range\_\-get@{edje\_\-edit\_\-program\_\-in\_\-range\_\-get}}
+\index{edje\_\-edit\_\-program\_\-in\_\-range\_\-get@{edje\_\-edit\_\-program\_\-in\_\-range\_\-get}!Edje_Edit.h@{Edje\_\-Edit.h}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI double edje\_\-edit\_\-program\_\-in\_\-range\_\-get (Evas\_\-Object $\ast$ {\em obj}, \/  const char $\ast$ {\em prog})}}
+\label{Edje__Edit_8h_428b76b95bd3a9432ae2ac20ad7276cf}
+
+
+Get in.range of a given program. 
+
+\begin{Desc}
+\item[Returns:]The delay random \end{Desc}
+\begin{Desc}
+\item[Parameters: ]\par
+\begin{description}
+\item[{\em 
+obj}]The edje object \item[{\em 
+prog}]The program name \end{description}
+\end{Desc}
+\hypertarget{Edje__Edit_8h_2b51f5b63d85804e295817289a6cea74}{
+\index{Edje\_\-Edit.h@{Edje\_\-Edit.h}!edje\_\-edit\_\-program\_\-in\_\-range\_\-set@{edje\_\-edit\_\-program\_\-in\_\-range\_\-set}}
+\index{edje\_\-edit\_\-program\_\-in\_\-range\_\-set@{edje\_\-edit\_\-program\_\-in\_\-range\_\-set}!Edje_Edit.h@{Edje\_\-Edit.h}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI unsigned char edje\_\-edit\_\-program\_\-in\_\-range\_\-set (Evas\_\-Object $\ast$ {\em obj}, \/  const char $\ast$ {\em prog}, \/  double {\em seconds})}}
+\label{Edje__Edit_8h_2b51f5b63d85804e295817289a6cea74}
+
+
+Set in.range of a given program. 
+
+\begin{Desc}
+\item[Returns:]1 on success or 0 on errors \end{Desc}
+\begin{Desc}
+\item[Parameters: ]\par
+\begin{description}
+\item[{\em 
+obj}]The edje object \item[{\em 
+prog}]The program name \item[{\em 
+seconds}]Max random number of seconds to delay \end{description}
+\end{Desc}
+\hypertarget{Edje__Edit_8h_7c92d2c083d2547e0c2c8060e464f38a}{
+\index{Edje\_\-Edit.h@{Edje\_\-Edit.h}!edje\_\-edit\_\-program\_\-name\_\-set@{edje\_\-edit\_\-program\_\-name\_\-set}}
+\index{edje\_\-edit\_\-program\_\-name\_\-set@{edje\_\-edit\_\-program\_\-name\_\-set}!Edje_Edit.h@{Edje\_\-Edit.h}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI unsigned char edje\_\-edit\_\-program\_\-name\_\-set (Evas\_\-Object $\ast$ {\em obj}, \/  const char $\ast$ {\em prog}, \/  const char $\ast$ {\em new\_\-name})}}
+\label{Edje__Edit_8h_7c92d2c083d2547e0c2c8060e464f38a}
+
+
+Set a new name for the given program. 
+
+\begin{Desc}
+\item[Returns:]1 on success or 0 on errors \end{Desc}
+\begin{Desc}
+\item[Parameters: ]\par
+\begin{description}
+\item[{\em 
+obj}]The edje object \item[{\em 
+prog}]The program name \item[{\em 
+new\_\-name}]The new name to assign \end{description}
+\end{Desc}
+\hypertarget{Edje__Edit_8h_44be7d53ba8afdcd55de95c32226ca34}{
+\index{Edje\_\-Edit.h@{Edje\_\-Edit.h}!edje\_\-edit\_\-program\_\-run@{edje\_\-edit\_\-program\_\-run}}
+\index{edje\_\-edit\_\-program\_\-run@{edje\_\-edit\_\-program\_\-run}!Edje_Edit.h@{Edje\_\-Edit.h}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI unsigned char edje\_\-edit\_\-program\_\-run (Evas\_\-Object $\ast$ {\em obj}, \/  const char $\ast$ {\em prog})}}
+\label{Edje__Edit_8h_44be7d53ba8afdcd55de95c32226ca34}
+
+
+Run the given program. 
+
+$<$ 1 on success, 0 otherwise. \begin{Desc}
+\item[Parameters: ]\par
+\begin{description}
+\item[{\em 
+obj}]The edje object \item[{\em 
+prog}]The name of the program to execute \end{description}
+\end{Desc}
+\hypertarget{Edje__Edit_8h_5869d3d78f1ae6782081d1bbdb8ae5f1}{
+\index{Edje\_\-Edit.h@{Edje\_\-Edit.h}!edje\_\-edit\_\-program\_\-signal\_\-get@{edje\_\-edit\_\-program\_\-signal\_\-get}}
+\index{edje\_\-edit\_\-program\_\-signal\_\-get@{edje\_\-edit\_\-program\_\-signal\_\-get}!Edje_Edit.h@{Edje\_\-Edit.h}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI const char$\ast$ edje\_\-edit\_\-program\_\-signal\_\-get (Evas\_\-Object $\ast$ {\em obj}, \/  const char $\ast$ {\em prog})}}
+\label{Edje__Edit_8h_5869d3d78f1ae6782081d1bbdb8ae5f1}
+
+
+Get signal of a given program. 
+
+Remember to free the returned string using \hyperlink{Edje__Edit_8h_924beb7b18a2f754b4b78cee3b3cc662}{edje\_\-edit\_\-string\_\-free()}. \begin{Desc}
+\item[Returns:]The signal value for prog \end{Desc}
+\begin{Desc}
+\item[Parameters: ]\par
+\begin{description}
+\item[{\em 
+obj}]The edje object \item[{\em 
+prog}]The program name \end{description}
+\end{Desc}
+\hypertarget{Edje__Edit_8h_915441990e35ca60b0f9d52c763aa161}{
+\index{Edje\_\-Edit.h@{Edje\_\-Edit.h}!edje\_\-edit\_\-program\_\-signal\_\-set@{edje\_\-edit\_\-program\_\-signal\_\-set}}
+\index{edje\_\-edit\_\-program\_\-signal\_\-set@{edje\_\-edit\_\-program\_\-signal\_\-set}!Edje_Edit.h@{Edje\_\-Edit.h}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI unsigned char edje\_\-edit\_\-program\_\-signal\_\-set (Evas\_\-Object $\ast$ {\em obj}, \/  const char $\ast$ {\em prog}, \/  const char $\ast$ {\em signal})}}
+\label{Edje__Edit_8h_915441990e35ca60b0f9d52c763aa161}
+
+
+Set signal of the given program. 
+
+\begin{Desc}
+\item[Returns:]1 on success or 0 on errors \end{Desc}
+\begin{Desc}
+\item[Parameters: ]\par
+\begin{description}
+\item[{\em 
+obj}]The edje object \item[{\em 
+prog}]The program name \item[{\em 
+signal}]The new signal value \end{description}
+\end{Desc}
+\hypertarget{Edje__Edit_8h_62f90fa3c6e4468ddb813d61892989a0}{
+\index{Edje\_\-Edit.h@{Edje\_\-Edit.h}!edje\_\-edit\_\-program\_\-source\_\-get@{edje\_\-edit\_\-program\_\-source\_\-get}}
+\index{edje\_\-edit\_\-program\_\-source\_\-get@{edje\_\-edit\_\-program\_\-source\_\-get}!Edje_Edit.h@{Edje\_\-Edit.h}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI const char$\ast$ edje\_\-edit\_\-program\_\-source\_\-get (Evas\_\-Object $\ast$ {\em obj}, \/  const char $\ast$ {\em prog})}}
+\label{Edje__Edit_8h_62f90fa3c6e4468ddb813d61892989a0}
+
+
+Get source of a given program. 
+
+Remember to free the returned string using \hyperlink{Edje__Edit_8h_924beb7b18a2f754b4b78cee3b3cc662}{edje\_\-edit\_\-string\_\-free()}. \begin{Desc}
+\item[Returns:]The source value for prog \end{Desc}
+\begin{Desc}
+\item[Parameters: ]\par
+\begin{description}
+\item[{\em 
+obj}]The edje object \item[{\em 
+prog}]The program name \end{description}
+\end{Desc}
+\hypertarget{Edje__Edit_8h_cb3c3a6c9db4c706fe6fa6f6db3f3d84}{
+\index{Edje\_\-Edit.h@{Edje\_\-Edit.h}!edje\_\-edit\_\-program\_\-source\_\-set@{edje\_\-edit\_\-program\_\-source\_\-set}}
+\index{edje\_\-edit\_\-program\_\-source\_\-set@{edje\_\-edit\_\-program\_\-source\_\-set}!Edje_Edit.h@{Edje\_\-Edit.h}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI unsigned char edje\_\-edit\_\-program\_\-source\_\-set (Evas\_\-Object $\ast$ {\em obj}, \/  const char $\ast$ {\em prog}, \/  const char $\ast$ {\em source})}}
+\label{Edje__Edit_8h_cb3c3a6c9db4c706fe6fa6f6db3f3d84}
+
+
+Set source of the given program. 
+
+\begin{Desc}
+\item[Returns:]1 on success or 0 on errors \end{Desc}
+\begin{Desc}
+\item[Parameters: ]\par
+\begin{description}
+\item[{\em 
+obj}]The edje object \item[{\em 
+prog}]The program name \item[{\em 
+source}]The new source value \end{description}
+\end{Desc}
+\hypertarget{Edje__Edit_8h_bad4bfcb41896668b6723db5343458c7}{
+\index{Edje\_\-Edit.h@{Edje\_\-Edit.h}!edje\_\-edit\_\-program\_\-state2\_\-get@{edje\_\-edit\_\-program\_\-state2\_\-get}}
+\index{edje\_\-edit\_\-program\_\-state2\_\-get@{edje\_\-edit\_\-program\_\-state2\_\-get}!Edje_Edit.h@{Edje\_\-Edit.h}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI const char$\ast$ edje\_\-edit\_\-program\_\-state2\_\-get (Evas\_\-Object $\ast$ {\em obj}, \/  const char $\ast$ {\em prog})}}
+\label{Edje__Edit_8h_bad4bfcb41896668b6723db5343458c7}
+
+
+Get the state2 for the given program In a STATE\_\-SET action is not used In a SIGNAL\_\-EMIT action is the source of the emitted signal. 
+
+\begin{Desc}
+\item[Returns:]The source to emit for prog \end{Desc}
+\begin{Desc}
+\item[Parameters: ]\par
+\begin{description}
+\item[{\em 
+obj}]The edje object \item[{\em 
+prog}]The program name \end{description}
+\end{Desc}
+\hypertarget{Edje__Edit_8h_9c7bfab821eb918528f3f5d9353cc170}{
+\index{Edje\_\-Edit.h@{Edje\_\-Edit.h}!edje\_\-edit\_\-program\_\-state2\_\-set@{edje\_\-edit\_\-program\_\-state2\_\-set}}
+\index{edje\_\-edit\_\-program\_\-state2\_\-set@{edje\_\-edit\_\-program\_\-state2\_\-set}!Edje_Edit.h@{Edje\_\-Edit.h}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI unsigned char edje\_\-edit\_\-program\_\-state2\_\-set (Evas\_\-Object $\ast$ {\em obj}, \/  const char $\ast$ {\em prog}, \/  const char $\ast$ {\em state2})}}
+\label{Edje__Edit_8h_9c7bfab821eb918528f3f5d9353cc170}
+
+
+Set the state2 for the given program In a STATE\_\-SET action is not used In a SIGNAL\_\-EMIT action is the source of the emitted signal. 
+
+\begin{Desc}
+\item[Returns:]1 on success or 0 on errors \end{Desc}
+\begin{Desc}
+\item[Parameters: ]\par
+\begin{description}
+\item[{\em 
+obj}]The edje object \item[{\em 
+prog}]The program name \item[{\em 
+state2}]The state2 value to set \end{description}
+\end{Desc}
+\hypertarget{Edje__Edit_8h_51e0c344e5b1d6e8db356cd1a2dac570}{
+\index{Edje\_\-Edit.h@{Edje\_\-Edit.h}!edje\_\-edit\_\-program\_\-state\_\-get@{edje\_\-edit\_\-program\_\-state\_\-get}}
+\index{edje\_\-edit\_\-program\_\-state\_\-get@{edje\_\-edit\_\-program\_\-state\_\-get}!Edje_Edit.h@{Edje\_\-Edit.h}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI const char$\ast$ edje\_\-edit\_\-program\_\-state\_\-get (Evas\_\-Object $\ast$ {\em obj}, \/  const char $\ast$ {\em prog})}}
+\label{Edje__Edit_8h_51e0c344e5b1d6e8db356cd1a2dac570}
+
+
+Get the state for the given program In a STATE\_\-SET action this is the name of state to set. 
+
+In a SIGNAL\_\-EMIT action is the name of the signal to emit.\begin{Desc}
+\item[Returns:]The name of state for prog \end{Desc}
+\begin{Desc}
+\item[Parameters: ]\par
+\begin{description}
+\item[{\em 
+obj}]The edje object \item[{\em 
+prog}]The program name \end{description}
+\end{Desc}
+\hypertarget{Edje__Edit_8h_81c0264ad94b03373b955fa58671fcd5}{
+\index{Edje\_\-Edit.h@{Edje\_\-Edit.h}!edje\_\-edit\_\-program\_\-state\_\-set@{edje\_\-edit\_\-program\_\-state\_\-set}}
+\index{edje\_\-edit\_\-program\_\-state\_\-set@{edje\_\-edit\_\-program\_\-state\_\-set}!Edje_Edit.h@{Edje\_\-Edit.h}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI unsigned char edje\_\-edit\_\-program\_\-state\_\-set (Evas\_\-Object $\ast$ {\em obj}, \/  const char $\ast$ {\em prog}, \/  const char $\ast$ {\em state})}}
+\label{Edje__Edit_8h_81c0264ad94b03373b955fa58671fcd5}
+
+
+Set the state for the given program In a STATE\_\-SET action this is the name of state to set. 
+
+In a SIGNAL\_\-EMIT action is the name of the signal to emit.\begin{Desc}
+\item[Returns:]1 on success or 0 on errors \end{Desc}
+\begin{Desc}
+\item[Parameters: ]\par
+\begin{description}
+\item[{\em 
+obj}]The edje object \item[{\em 
+prog}]The program name \item[{\em 
+state}]The state to set (not including the state value) \end{description}
+\end{Desc}
+\hypertarget{Edje__Edit_8h_32b397cb386ec4114e5c9d1b71dfa51a}{
+\index{Edje\_\-Edit.h@{Edje\_\-Edit.h}!edje\_\-edit\_\-program\_\-target\_\-add@{edje\_\-edit\_\-program\_\-target\_\-add}}
+\index{edje\_\-edit\_\-program\_\-target\_\-add@{edje\_\-edit\_\-program\_\-target\_\-add}!Edje_Edit.h@{Edje\_\-Edit.h}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI unsigned char edje\_\-edit\_\-program\_\-target\_\-add (Evas\_\-Object $\ast$ {\em obj}, \/  const char $\ast$ {\em prog}, \/  const char $\ast$ {\em target})}}
+\label{Edje__Edit_8h_32b397cb386ec4114e5c9d1b71dfa51a}
+
+
+Add a new target name to the list of 'targets' in the given program. 
+
+If program action is EDJE\_\-ACTION\_\-TYPE\_\-ACTION\_\-STOP then 'target' must be an existing program name. If action is EDJE\_\-ACTION\_\-TYPE\_\-STATE\_\-SET then 'target' must be an existing part name.\begin{Desc}
+\item[Returns:]1 on success or 0 on errors \end{Desc}
+\begin{Desc}
+\item[Parameters: ]\par
+\begin{description}
+\item[{\em 
+obj}]The edje object \item[{\em 
+prog}]The program name \item[{\em 
+target}]The name of another program or another part \end{description}
+\end{Desc}
+\hypertarget{Edje__Edit_8h_7f9b895ccb503f47f70a4c5785d1b446}{
+\index{Edje\_\-Edit.h@{Edje\_\-Edit.h}!edje\_\-edit\_\-program\_\-targets\_\-clear@{edje\_\-edit\_\-program\_\-targets\_\-clear}}
+\index{edje\_\-edit\_\-program\_\-targets\_\-clear@{edje\_\-edit\_\-program\_\-targets\_\-clear}!Edje_Edit.h@{Edje\_\-Edit.h}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI unsigned char edje\_\-edit\_\-program\_\-targets\_\-clear (Evas\_\-Object $\ast$ {\em obj}, \/  const char $\ast$ {\em prog})}}
+\label{Edje__Edit_8h_7f9b895ccb503f47f70a4c5785d1b446}
+
+
+Clear the 'targets' list of the given program. 
+
+\begin{Desc}
+\item[Returns:]1 on success or 0 on errors \end{Desc}
+\begin{Desc}
+\item[Parameters: ]\par
+\begin{description}
+\item[{\em 
+obj}]The edje object \item[{\em 
+prog}]The program name \end{description}
+\end{Desc}
+\hypertarget{Edje__Edit_8h_d5b24b3449cb16e43d1d280ac7b6368b}{
+\index{Edje\_\-Edit.h@{Edje\_\-Edit.h}!edje\_\-edit\_\-program\_\-targets\_\-get@{edje\_\-edit\_\-program\_\-targets\_\-get}}
+\index{edje\_\-edit\_\-program\_\-targets\_\-get@{edje\_\-edit\_\-program\_\-targets\_\-get}!Edje_Edit.h@{Edje\_\-Edit.h}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI Evas\_\-List$\ast$ edje\_\-edit\_\-program\_\-targets\_\-get (Evas\_\-Object $\ast$ {\em obj}, \/  const char $\ast$ {\em prog})}}
+\label{Edje__Edit_8h_d5b24b3449cb16e43d1d280ac7b6368b}
+
+
+Get the list of the targets for the given program Return a list of target name Use \hyperlink{Edje__Edit_8h_68ea52098aa643bf273436cf04e92ccf}{edje\_\-edit\_\-string\_\-list\_\-free()} when you don't need it anymore. 
+
+\begin{Desc}
+\item[Returns:]An Evas\_\-List of char$\ast$, or NULL on error \end{Desc}
+\begin{Desc}
+\item[Parameters: ]\par
+\begin{description}
+\item[{\em 
+obj}]The edje object \item[{\em 
+prog}]The program name \end{description}
+\end{Desc}
+\hypertarget{Edje__Edit_8h_b67a809bcb5be3c95a08bedfcffdd93b}{
+\index{Edje\_\-Edit.h@{Edje\_\-Edit.h}!edje\_\-edit\_\-program\_\-transition\_\-get@{edje\_\-edit\_\-program\_\-transition\_\-get}}
+\index{edje\_\-edit\_\-program\_\-transition\_\-get@{edje\_\-edit\_\-program\_\-transition\_\-get}!Edje_Edit.h@{Edje\_\-Edit.h}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI int edje\_\-edit\_\-program\_\-transition\_\-get (Evas\_\-Object $\ast$ {\em obj}, \/  const char $\ast$ {\em prog})}}
+\label{Edje__Edit_8h_b67a809bcb5be3c95a08bedfcffdd93b}
+
+
+Get the type of transition to use when apply animations. 
+
+Can be one of: EDJE\_\-TWEEN\_\-MODE\_\-NONE, EDJE\_\-TWEEN\_\-MODE\_\-LINEAR, EDJE\_\-TWEEN\_\-MODE\_\-SINUSOIDAL, EDJE\_\-TWEEN\_\-MODE\_\-ACCELERATE or EDJE\_\-TWEEN\_\-MODE\_\-DECELERATE.\begin{Desc}
+\item[Returns:]The type of transition used by program \end{Desc}
+\begin{Desc}
+\item[Parameters: ]\par
+\begin{description}
+\item[{\em 
+obj}]The edje object \item[{\em 
+prog}]The program name \end{description}
+\end{Desc}
+\hypertarget{Edje__Edit_8h_ebfc0183f3f9e60e243ee900d3812284}{
+\index{Edje\_\-Edit.h@{Edje\_\-Edit.h}!edje\_\-edit\_\-program\_\-transition\_\-set@{edje\_\-edit\_\-program\_\-transition\_\-set}}
+\index{edje\_\-edit\_\-program\_\-transition\_\-set@{edje\_\-edit\_\-program\_\-transition\_\-set}!Edje_Edit.h@{Edje\_\-Edit.h}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI unsigned char edje\_\-edit\_\-program\_\-transition\_\-set (Evas\_\-Object $\ast$ {\em obj}, \/  const char $\ast$ {\em prog}, \/  int {\em transition})}}
+\label{Edje__Edit_8h_ebfc0183f3f9e60e243ee900d3812284}
+
+
+Set the type of transition to use when apply animations. 
+
+Can be one of: EDJE\_\-TWEEN\_\-MODE\_\-NONE, EDJE\_\-TWEEN\_\-MODE\_\-LINEAR, EDJE\_\-TWEEN\_\-MODE\_\-SINUSOIDAL, EDJE\_\-TWEEN\_\-MODE\_\-ACCELERATE or EDJE\_\-TWEEN\_\-MODE\_\-DECELERATE.\begin{Desc}
+\item[Returns:]1 on success or 0 on errors \end{Desc}
+\begin{Desc}
+\item[Parameters: ]\par
+\begin{description}
+\item[{\em 
+obj}]The edje object \item[{\em 
+prog}]The program name \item[{\em 
+transition}]The transition type to set \end{description}
+\end{Desc}
+\hypertarget{Edje__Edit_8h_1a93963d36fd369c6e0d02e0dcf7c878}{
+\index{Edje\_\-Edit.h@{Edje\_\-Edit.h}!edje\_\-edit\_\-program\_\-transition\_\-time\_\-get@{edje\_\-edit\_\-program\_\-transition\_\-time\_\-get}}
+\index{edje\_\-edit\_\-program\_\-transition\_\-time\_\-get@{edje\_\-edit\_\-program\_\-transition\_\-time\_\-get}!Edje_Edit.h@{Edje\_\-Edit.h}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI double edje\_\-edit\_\-program\_\-transition\_\-time\_\-get (Evas\_\-Object $\ast$ {\em obj}, \/  const char $\ast$ {\em prog})}}
+\label{Edje__Edit_8h_1a93963d36fd369c6e0d02e0dcf7c878}
+
+
+Get the duration of the transition in seconds. 
+
+\begin{Desc}
+\item[Returns:]The duration of the transition \end{Desc}
+\begin{Desc}
+\item[Parameters: ]\par
+\begin{description}
+\item[{\em 
+obj}]The edje object \item[{\em 
+prog}]The program name \end{description}
+\end{Desc}
+\hypertarget{Edje__Edit_8h_01c4a454d909ef20f1352a3de2abd43f}{
+\index{Edje\_\-Edit.h@{Edje\_\-Edit.h}!edje\_\-edit\_\-program\_\-transition\_\-time\_\-set@{edje\_\-edit\_\-program\_\-transition\_\-time\_\-set}}
+\index{edje\_\-edit\_\-program\_\-transition\_\-time\_\-set@{edje\_\-edit\_\-program\_\-transition\_\-time\_\-set}!Edje_Edit.h@{Edje\_\-Edit.h}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI unsigned char edje\_\-edit\_\-program\_\-transition\_\-time\_\-set (Evas\_\-Object $\ast$ {\em obj}, \/  const char $\ast$ {\em prog}, \/  double {\em seconds})}}
+\label{Edje__Edit_8h_01c4a454d909ef20f1352a3de2abd43f}
+
+
+Set the duration of the transition in seconds. 
+
+\begin{Desc}
+\item[Returns:]1 on success or 0 on errors \end{Desc}
+\begin{Desc}
+\item[Parameters: ]\par
+\begin{description}
+\item[{\em 
+obj}]The edje object \item[{\em 
+prog}]The program name \item[{\em 
+seconds}]The duration of the transition (in seconds) \end{description}
+\end{Desc}
+\hypertarget{Edje__Edit_8h_17db8070aab8732ad831868ae1a0a95c}{
+\index{Edje\_\-Edit.h@{Edje\_\-Edit.h}!edje\_\-edit\_\-program\_\-value2\_\-get@{edje\_\-edit\_\-program\_\-value2\_\-get}}
+\index{edje\_\-edit\_\-program\_\-value2\_\-get@{edje\_\-edit\_\-program\_\-value2\_\-get}!Edje_Edit.h@{Edje\_\-Edit.h}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI double edje\_\-edit\_\-program\_\-value2\_\-get (Evas\_\-Object $\ast$ {\em obj}, \/  const char $\ast$ {\em prog})}}
+\label{Edje__Edit_8h_17db8070aab8732ad831868ae1a0a95c}
+
+
+Get the value of state2 for the given program. 
+
+I don't know what this is used for. :P\begin{Desc}
+\item[Returns:]The value of state2 for prog \end{Desc}
+\begin{Desc}
+\item[Parameters: ]\par
+\begin{description}
+\item[{\em 
+obj}]The edje object \item[{\em 
+prog}]The program name \end{description}
+\end{Desc}
+\hypertarget{Edje__Edit_8h_ec930ca2fc31b5f8dbd7ca2636499339}{
+\index{Edje\_\-Edit.h@{Edje\_\-Edit.h}!edje\_\-edit\_\-program\_\-value2\_\-set@{edje\_\-edit\_\-program\_\-value2\_\-set}}
+\index{edje\_\-edit\_\-program\_\-value2\_\-set@{edje\_\-edit\_\-program\_\-value2\_\-set}!Edje_Edit.h@{Edje\_\-Edit.h}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI unsigned char edje\_\-edit\_\-program\_\-value2\_\-set (Evas\_\-Object $\ast$ {\em obj}, \/  const char $\ast$ {\em prog}, \/  double {\em value})}}
+\label{Edje__Edit_8h_ec930ca2fc31b5f8dbd7ca2636499339}
+
+
+Set the value2 of state for the given program. 
+
+This is used in DRAG\_\-ACTION\begin{Desc}
+\item[Returns:]1 on success or 0 on errors \end{Desc}
+\begin{Desc}
+\item[Parameters: ]\par
+\begin{description}
+\item[{\em 
+obj}]The edje object \item[{\em 
+prog}]The program name \item[{\em 
+value}]The value to set \end{description}
+\end{Desc}
+\hypertarget{Edje__Edit_8h_409c7fbc62027154e7f64b891bf19341}{
+\index{Edje\_\-Edit.h@{Edje\_\-Edit.h}!edje\_\-edit\_\-program\_\-value\_\-get@{edje\_\-edit\_\-program\_\-value\_\-get}}
+\index{edje\_\-edit\_\-program\_\-value\_\-get@{edje\_\-edit\_\-program\_\-value\_\-get}!Edje_Edit.h@{Edje\_\-Edit.h}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI double edje\_\-edit\_\-program\_\-value\_\-get (Evas\_\-Object $\ast$ {\em obj}, \/  const char $\ast$ {\em prog})}}
+\label{Edje__Edit_8h_409c7fbc62027154e7f64b891bf19341}
+
+
+Get the value of state for the given program. 
+
+In a STATE\_\-SET action this is the value of state to set. Not used on SIGNAL\_\-EMIT action.\begin{Desc}
+\item[Returns:]The value of state for prog \end{Desc}
+\begin{Desc}
+\item[Parameters: ]\par
+\begin{description}
+\item[{\em 
+obj}]The edje object \item[{\em 
+prog}]The program name \end{description}
+\end{Desc}
+\hypertarget{Edje__Edit_8h_1de13e408d2c7a6a3c42e4b5e68419c8}{
+\index{Edje\_\-Edit.h@{Edje\_\-Edit.h}!edje\_\-edit\_\-program\_\-value\_\-set@{edje\_\-edit\_\-program\_\-value\_\-set}}
+\index{edje\_\-edit\_\-program\_\-value\_\-set@{edje\_\-edit\_\-program\_\-value\_\-set}!Edje_Edit.h@{Edje\_\-Edit.h}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI unsigned char edje\_\-edit\_\-program\_\-value\_\-set (Evas\_\-Object $\ast$ {\em obj}, \/  const char $\ast$ {\em prog}, \/  double {\em value})}}
+\label{Edje__Edit_8h_1de13e408d2c7a6a3c42e4b5e68419c8}
+
+
+Set the value of state for the given program. 
+
+In a STATE\_\-SET action this is the value of state to set. Not used on SIGNAL\_\-EMIT action.\begin{Desc}
+\item[Returns:]1 on success or 0 on errors \end{Desc}
+\begin{Desc}
+\item[Parameters: ]\par
+\begin{description}
+\item[{\em 
+obj}]The edje object \item[{\em 
+prog}]The program name \item[{\em 
+value}]The value to set \end{description}
+\end{Desc}
+\hypertarget{Edje__Edit_8h_693857059e9d891934c9e6f39652d923}{
+\index{Edje\_\-Edit.h@{Edje\_\-Edit.h}!edje\_\-edit\_\-programs\_\-list\_\-get@{edje\_\-edit\_\-programs\_\-list\_\-get}}
+\index{edje\_\-edit\_\-programs\_\-list\_\-get@{edje\_\-edit\_\-programs\_\-list\_\-get}!Edje_Edit.h@{Edje\_\-Edit.h}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI Evas\_\-List$\ast$ edje\_\-edit\_\-programs\_\-list\_\-get (Evas\_\-Object $\ast$ {\em obj})}}
+\label{Edje__Edit_8h_693857059e9d891934c9e6f39652d923}
+
+
+Get the list of all the programs in the given edje object. 
+
+\begin{Desc}
+\item[Parameters:]
+\begin{description}
+\item[{\em obj}]The edje object \end{description}
+\end{Desc}
+\begin{Desc}
+\item[Returns:]An Evas\_\-List$\ast$ of string (char $\ast$)containing all the program names. Use \hyperlink{Edje__Edit_8h_68ea52098aa643bf273436cf04e92ccf}{edje\_\-edit\_\-string\_\-list\_\-free()} when you don't need it anymore.
+
+A string list containing all the program names \end{Desc}
+\begin{Desc}
+\item[Parameters: ]\par
+\begin{description}
+\item[{\em 
+obj}]The edje object \end{description}
+\end{Desc}
+\hypertarget{Edje__Edit_8h_baf201d9fe977ae1fc6ae53d3604532c}{
+\index{Edje\_\-Edit.h@{Edje\_\-Edit.h}!edje\_\-edit\_\-save@{edje\_\-edit\_\-save}}
+\index{edje\_\-edit\_\-save@{edje\_\-edit\_\-save}!Edje_Edit.h@{Edje\_\-Edit.h}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI int edje\_\-edit\_\-save (Evas\_\-Object $\ast$ {\em obj})}}
+\label{Edje__Edit_8h_baf201d9fe977ae1fc6ae53d3604532c}
+
+
+Save the modified edje object back to his file. 
+
+Use this function when you are done with your editing, all the change made to the current loaded group will be saved back to the original file.
+
+NOTE: for now this as 2 limitations -the saved edje file cannot be decompiled anymore -you will lost your define in the edc source\begin{Desc}
+\item[Returns:]1 on success, 0 on failure \end{Desc}
+\begin{Desc}
+\item[Parameters: ]\par
+\begin{description}
+\item[{\em 
+obj}]The edje object to save \end{description}
+\end{Desc}
+\hypertarget{Edje__Edit_8h_7ce80c988b83d06cf9eec1a4000548bd}{
+\index{Edje\_\-Edit.h@{Edje\_\-Edit.h}!edje\_\-edit\_\-state\_\-add@{edje\_\-edit\_\-state\_\-add}}
+\index{edje\_\-edit\_\-state\_\-add@{edje\_\-edit\_\-state\_\-add}!Edje_Edit.h@{Edje\_\-Edit.h}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI void edje\_\-edit\_\-state\_\-add (Evas\_\-Object $\ast$ {\em obj}, \/  const char $\ast$ {\em part}, \/  const char $\ast$ {\em name})}}
+\label{Edje__Edit_8h_7ce80c988b83d06cf9eec1a4000548bd}
+
+
+Create a new state to the give part. 
+
+\begin{Desc}
+\item[Parameters: ]\par
+\begin{description}
+\item[{\em 
+obj}]The edje object \item[{\em 
+part}]The name of the part \item[{\em 
+name}]The name for the new state (not including the state value) \end{description}
+\end{Desc}
+\hypertarget{Edje__Edit_8h_d0986006e3b5a39760a646a32403e137}{
+\index{Edje\_\-Edit.h@{Edje\_\-Edit.h}!edje\_\-edit\_\-state\_\-align\_\-x\_\-get@{edje\_\-edit\_\-state\_\-align\_\-x\_\-get}}
+\index{edje\_\-edit\_\-state\_\-align\_\-x\_\-get@{edje\_\-edit\_\-state\_\-align\_\-x\_\-get}!Edje_Edit.h@{Edje\_\-Edit.h}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI double edje\_\-edit\_\-state\_\-align\_\-x\_\-get (Evas\_\-Object $\ast$ {\em obj}, \/  const char $\ast$ {\em part}, \/  const char $\ast$ {\em state})}}
+\label{Edje__Edit_8h_d0986006e3b5a39760a646a32403e137}
+
+
+Get the align\_\-x value of a part state. 
+
+\begin{Desc}
+\item[Returns:]The horizontal align value for the given state \end{Desc}
+\begin{Desc}
+\item[Parameters: ]\par
+\begin{description}
+\item[{\em 
+obj}]The edje object \item[{\em 
+part}]The name of the part \item[{\em 
+state}]The name of the 'part state' (ex. \char`\"{}default 0.00\char`\"{}) \end{description}
+\end{Desc}
+\hypertarget{Edje__Edit_8h_62518e6b0e7724f4a654a8ddd7aee131}{
+\index{Edje\_\-Edit.h@{Edje\_\-Edit.h}!edje\_\-edit\_\-state\_\-align\_\-x\_\-set@{edje\_\-edit\_\-state\_\-align\_\-x\_\-set}}
+\index{edje\_\-edit\_\-state\_\-align\_\-x\_\-set@{edje\_\-edit\_\-state\_\-align\_\-x\_\-set}!Edje_Edit.h@{Edje\_\-Edit.h}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI void edje\_\-edit\_\-state\_\-align\_\-x\_\-set (Evas\_\-Object $\ast$ {\em obj}, \/  const char $\ast$ {\em part}, \/  const char $\ast$ {\em state}, \/  double {\em align})}}
+\label{Edje__Edit_8h_62518e6b0e7724f4a654a8ddd7aee131}
+
+
+Set the align\_\-x value of a part state. 
+
+\begin{Desc}
+\item[Parameters: ]\par
+\begin{description}
+\item[{\em 
+obj}]The edje object \item[{\em 
+part}]The name of the part \item[{\em 
+state}]The name of the 'part state' (ex. \char`\"{}default 0.00\char`\"{}) \item[{\em 
+align}]The new horizontal align to set \end{description}
+\end{Desc}
+\hypertarget{Edje__Edit_8h_238efcdf5e4cd67d18add4544f2bfa7f}{
+\index{Edje\_\-Edit.h@{Edje\_\-Edit.h}!edje\_\-edit\_\-state\_\-align\_\-y\_\-get@{edje\_\-edit\_\-state\_\-align\_\-y\_\-get}}
+\index{edje\_\-edit\_\-state\_\-align\_\-y\_\-get@{edje\_\-edit\_\-state\_\-align\_\-y\_\-get}!Edje_Edit.h@{Edje\_\-Edit.h}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI double edje\_\-edit\_\-state\_\-align\_\-y\_\-get (Evas\_\-Object $\ast$ {\em obj}, \/  const char $\ast$ {\em part}, \/  const char $\ast$ {\em state})}}
+\label{Edje__Edit_8h_238efcdf5e4cd67d18add4544f2bfa7f}
+
+
+Get the align\_\-y value of a part state. 
+
+\begin{Desc}
+\item[Returns:]The vertical align value for the given state \end{Desc}
+\begin{Desc}
+\item[Parameters: ]\par
+\begin{description}
+\item[{\em 
+obj}]The edje object \item[{\em 
+part}]The name of the part \item[{\em 
+state}]The name of the 'part state' (ex. \char`\"{}default 0.00\char`\"{}) \end{description}
+\end{Desc}
+\hypertarget{Edje__Edit_8h_01ea930ca85c2d65761ef7e6c9958a6a}{
+\index{Edje\_\-Edit.h@{Edje\_\-Edit.h}!edje\_\-edit\_\-state\_\-align\_\-y\_\-set@{edje\_\-edit\_\-state\_\-align\_\-y\_\-set}}
+\index{edje\_\-edit\_\-state\_\-align\_\-y\_\-set@{edje\_\-edit\_\-state\_\-align\_\-y\_\-set}!Edje_Edit.h@{Edje\_\-Edit.h}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI void edje\_\-edit\_\-state\_\-align\_\-y\_\-set (Evas\_\-Object $\ast$ {\em obj}, \/  const char $\ast$ {\em part}, \/  const char $\ast$ {\em state}, \/  double {\em align})}}
+\label{Edje__Edit_8h_01ea930ca85c2d65761ef7e6c9958a6a}
+
+
+Set the align\_\-y value of a part state. 
+
+\begin{Desc}
+\item[Parameters: ]\par
+\begin{description}
+\item[{\em 
+obj}]The edje object \item[{\em 
+part}]The name of the part \item[{\em 
+state}]The name of the 'part state' (ex. \char`\"{}default 0.00\char`\"{}) \item[{\em 
+align}]The new vertical align to set \end{description}
+\end{Desc}
+\hypertarget{Edje__Edit_8h_0c10159d80dc08682f6e59a495996d3a}{
+\index{Edje\_\-Edit.h@{Edje\_\-Edit.h}!edje\_\-edit\_\-state\_\-aspect\_\-max\_\-get@{edje\_\-edit\_\-state\_\-aspect\_\-max\_\-get}}
+\index{edje\_\-edit\_\-state\_\-aspect\_\-max\_\-get@{edje\_\-edit\_\-state\_\-aspect\_\-max\_\-get}!Edje_Edit.h@{Edje\_\-Edit.h}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI double edje\_\-edit\_\-state\_\-aspect\_\-max\_\-get (Evas\_\-Object $\ast$ {\em obj}, \/  const char $\ast$ {\em part}, \/  const char $\ast$ {\em state})}}
+\label{Edje__Edit_8h_0c10159d80dc08682f6e59a495996d3a}
+
+
+Get the maximum aspect value of a part state. 
+
+\begin{Desc}
+\item[Returns:]The aspect maximum value of a part state \end{Desc}
+\begin{Desc}
+\item[Parameters: ]\par
+\begin{description}
+\item[{\em 
+obj}]The edje object \item[{\em 
+part}]The name of the part \item[{\em 
+state}]The name of the 'part state' (ex. \char`\"{}default 0.00\char`\"{}) \end{description}
+\end{Desc}
+\hypertarget{Edje__Edit_8h_e51e6360f2829f2f1393babd4581db0c}{
+\index{Edje\_\-Edit.h@{Edje\_\-Edit.h}!edje\_\-edit\_\-state\_\-aspect\_\-max\_\-set@{edje\_\-edit\_\-state\_\-aspect\_\-max\_\-set}}
+\index{edje\_\-edit\_\-state\_\-aspect\_\-max\_\-set@{edje\_\-edit\_\-state\_\-aspect\_\-max\_\-set}!Edje_Edit.h@{Edje\_\-Edit.h}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI void edje\_\-edit\_\-state\_\-aspect\_\-max\_\-set (Evas\_\-Object $\ast$ {\em obj}, \/  const char $\ast$ {\em part}, \/  const char $\ast$ {\em state}, \/  double {\em aspect})}}
+\label{Edje__Edit_8h_e51e6360f2829f2f1393babd4581db0c}
+
+
+Set the maximum aspect value of a part state. 
+
+\begin{Desc}
+\item[Parameters: ]\par
+\begin{description}
+\item[{\em 
+obj}]The edje object \item[{\em 
+part}]The name of the part \item[{\em 
+state}]The name of the 'part state' (ex. \char`\"{}default 0.00\char`\"{}) \item[{\em 
+aspect}]The new maximum aspect value to set \end{description}
+\end{Desc}
+\hypertarget{Edje__Edit_8h_9761dfcf3f0f023075bd4750ead14bf5}{
+\index{Edje\_\-Edit.h@{Edje\_\-Edit.h}!edje\_\-edit\_\-state\_\-aspect\_\-min\_\-get@{edje\_\-edit\_\-state\_\-aspect\_\-min\_\-get}}
+\index{edje\_\-edit\_\-state\_\-aspect\_\-min\_\-get@{edje\_\-edit\_\-state\_\-aspect\_\-min\_\-get}!Edje_Edit.h@{Edje\_\-Edit.h}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI double edje\_\-edit\_\-state\_\-aspect\_\-min\_\-get (Evas\_\-Object $\ast$ {\em obj}, \/  const char $\ast$ {\em part}, \/  const char $\ast$ {\em state})}}
+\label{Edje__Edit_8h_9761dfcf3f0f023075bd4750ead14bf5}
+
+
+Get the minimum aspect value of a part state. 
+
+\begin{Desc}
+\item[Returns:]The aspect minimum value of a part state \end{Desc}
+\begin{Desc}
+\item[Parameters: ]\par
+\begin{description}
+\item[{\em 
+obj}]The edje object \item[{\em 
+part}]The name of the part \item[{\em 
+state}]The name of the 'part state' (ex. \char`\"{}default 0.00\char`\"{}) \end{description}
+\end{Desc}
+\hypertarget{Edje__Edit_8h_b9b2fc5b5bb63285dd1fa7a8d4b50d6d}{
+\index{Edje\_\-Edit.h@{Edje\_\-Edit.h}!edje\_\-edit\_\-state\_\-aspect\_\-min\_\-set@{edje\_\-edit\_\-state\_\-aspect\_\-min\_\-set}}
+\index{edje\_\-edit\_\-state\_\-aspect\_\-min\_\-set@{edje\_\-edit\_\-state\_\-aspect\_\-min\_\-set}!Edje_Edit.h@{Edje\_\-Edit.h}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI void edje\_\-edit\_\-state\_\-aspect\_\-min\_\-set (Evas\_\-Object $\ast$ {\em obj}, \/  const char $\ast$ {\em part}, \/  const char $\ast$ {\em state}, \/  double {\em aspect})}}
+\label{Edje__Edit_8h_b9b2fc5b5bb63285dd1fa7a8d4b50d6d}
+
+
+Set the minimum aspect value of a part state. 
+
+\begin{Desc}
+\item[Parameters: ]\par
+\begin{description}
+\item[{\em 
+obj}]The edje object \item[{\em 
+part}]The name of the part \item[{\em 
+state}]The name of the 'part state' (ex. \char`\"{}default 0.00\char`\"{}) \item[{\em 
+aspect}]The new minimum aspect value to set \end{description}
+\end{Desc}
+\hypertarget{Edje__Edit_8h_06f92fc552f58cbd4a186c34554be337}{
+\index{Edje\_\-Edit.h@{Edje\_\-Edit.h}!edje\_\-edit\_\-state\_\-aspect\_\-pref\_\-get@{edje\_\-edit\_\-state\_\-aspect\_\-pref\_\-get}}
+\index{edje\_\-edit\_\-state\_\-aspect\_\-pref\_\-get@{edje\_\-edit\_\-state\_\-aspect\_\-pref\_\-get}!Edje_Edit.h@{Edje\_\-Edit.h}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI unsigned char edje\_\-edit\_\-state\_\-aspect\_\-pref\_\-get (Evas\_\-Object $\ast$ {\em obj}, \/  const char $\ast$ {\em part}, \/  const char $\ast$ {\em state})}}
+\label{Edje__Edit_8h_06f92fc552f58cbd4a186c34554be337}
+
+
+Get the aspect preference value of a part state. 
+
+\begin{Desc}
+\item[Returns:]The aspect preference (0=none, 1=vertical, 2=horizontal, 3=both) \end{Desc}
+\begin{Desc}
+\item[Parameters: ]\par
+\begin{description}
+\item[{\em 
+obj}]The edje object \item[{\em 
+part}]The name of the part \item[{\em 
+state}]The name of the 'part state' (ex. \char`\"{}default 0.00\char`\"{}) \end{description}
+\end{Desc}
+\hypertarget{Edje__Edit_8h_35c97e859c74ff12cc3a1ba793b5782e}{
+\index{Edje\_\-Edit.h@{Edje\_\-Edit.h}!edje\_\-edit\_\-state\_\-aspect\_\-pref\_\-set@{edje\_\-edit\_\-state\_\-aspect\_\-pref\_\-set}}
+\index{edje\_\-edit\_\-state\_\-aspect\_\-pref\_\-set@{edje\_\-edit\_\-state\_\-aspect\_\-pref\_\-set}!Edje_Edit.h@{Edje\_\-Edit.h}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI void edje\_\-edit\_\-state\_\-aspect\_\-pref\_\-set (Evas\_\-Object $\ast$ {\em obj}, \/  const char $\ast$ {\em part}, \/  const char $\ast$ {\em state}, \/  unsigned char {\em pref})}}
+\label{Edje__Edit_8h_35c97e859c74ff12cc3a1ba793b5782e}
+
+
+Set the aspect preference value of a part state. 
+
+\begin{Desc}
+\item[Parameters: ]\par
+\begin{description}
+\item[{\em 
+obj}]The edje object \item[{\em 
+part}]The name of the part \item[{\em 
+state}]The name of the 'part state' (ex. \char`\"{}default 0.00\char`\"{}) \item[{\em 
+pref}]The new aspect preference to set (0=none, 1=vertical, 2=horizontal, 3=both) \end{description}
+\end{Desc}
+\hypertarget{Edje__Edit_8h_545c0630d077879ca1aa01294d16224e}{
+\index{Edje\_\-Edit.h@{Edje\_\-Edit.h}!edje\_\-edit\_\-state\_\-color2\_\-get@{edje\_\-edit\_\-state\_\-color2\_\-get}}
+\index{edje\_\-edit\_\-state\_\-color2\_\-get@{edje\_\-edit\_\-state\_\-color2\_\-get}!Edje_Edit.h@{Edje\_\-Edit.h}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI void edje\_\-edit\_\-state\_\-color2\_\-get (Evas\_\-Object $\ast$ {\em obj}, \/  const char $\ast$ {\em part}, \/  const char $\ast$ {\em state}, \/  int $\ast$ {\em r}, \/  int $\ast$ {\em g}, \/  int $\ast$ {\em b}, \/  int $\ast$ {\em a})}}
+\label{Edje__Edit_8h_545c0630d077879ca1aa01294d16224e}
+
+
+Get the color2 of a part state. 
+
+Pass NULL to any of \mbox{[}r,g,b,a\mbox{]} to get only the others. \begin{Desc}
+\item[Parameters: ]\par
+\begin{description}
+\item[{\em 
+obj}]The edje object \item[{\em 
+part}]The name of the part \item[{\em 
+state}]The name of the 'part state' (ex. \char`\"{}default 0.00\char`\"{}) \item[{\em 
+r}]A pointer to store the red value \item[{\em 
+g}]A pointer to store the green value \item[{\em 
+b}]A pointer to store the blue value \item[{\em 
+a}]A pointer to store the alpha value \end{description}
+\end{Desc}
+\hypertarget{Edje__Edit_8h_62a84def8761578097d5ae997df423c4}{
+\index{Edje\_\-Edit.h@{Edje\_\-Edit.h}!edje\_\-edit\_\-state\_\-color2\_\-set@{edje\_\-edit\_\-state\_\-color2\_\-set}}
+\index{edje\_\-edit\_\-state\_\-color2\_\-set@{edje\_\-edit\_\-state\_\-color2\_\-set}!Edje_Edit.h@{Edje\_\-Edit.h}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI void edje\_\-edit\_\-state\_\-color2\_\-set (Evas\_\-Object $\ast$ {\em obj}, \/  const char $\ast$ {\em part}, \/  const char $\ast$ {\em state}, \/  int {\em r}, \/  int {\em g}, \/  int {\em b}, \/  int {\em a})}}
+\label{Edje__Edit_8h_62a84def8761578097d5ae997df423c4}
+
+
+Set the color2 of a part state. 
+
+Pass -1 to any of \mbox{[}r,g,b,a\mbox{]} to leave the value untouched. \begin{Desc}
+\item[Parameters: ]\par
+\begin{description}
+\item[{\em 
+obj}]The edje object \item[{\em 
+part}]The name of the part \item[{\em 
+state}]The name of the 'part state' (ex. \char`\"{}default 0.00\char`\"{}) \item[{\em 
+r}]The red value of the color \item[{\em 
+g}]The green value of the color \item[{\em 
+b}]The blue value of the color \item[{\em 
+a}]The alpha value of the color \end{description}
+\end{Desc}
+\hypertarget{Edje__Edit_8h_722ae96e80f108726bfa0ebfe5459a90}{
+\index{Edje\_\-Edit.h@{Edje\_\-Edit.h}!edje\_\-edit\_\-state\_\-color3\_\-get@{edje\_\-edit\_\-state\_\-color3\_\-get}}
+\index{edje\_\-edit\_\-state\_\-color3\_\-get@{edje\_\-edit\_\-state\_\-color3\_\-get}!Edje_Edit.h@{Edje\_\-Edit.h}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI void edje\_\-edit\_\-state\_\-color3\_\-get (Evas\_\-Object $\ast$ {\em obj}, \/  const char $\ast$ {\em part}, \/  const char $\ast$ {\em state}, \/  int $\ast$ {\em r}, \/  int $\ast$ {\em g}, \/  int $\ast$ {\em b}, \/  int $\ast$ {\em a})}}
+\label{Edje__Edit_8h_722ae96e80f108726bfa0ebfe5459a90}
+
+
+Get the color3 of a part state. 
+
+Pass NULL to any of \mbox{[}r,g,b,a\mbox{]} to get only the others. \begin{Desc}
+\item[Parameters: ]\par
+\begin{description}
+\item[{\em 
+obj}]The edje object \item[{\em 
+part}]The name of the part \item[{\em 
+state}]The name of the 'part state' (ex. \char`\"{}default 0.00\char`\"{}) \item[{\em 
+r}]A pointer to store the red value \item[{\em 
+g}]A pointer to store the green value \item[{\em 
+b}]A pointer to store the blue value \item[{\em 
+a}]A pointer to store the alpha value \end{description}
+\end{Desc}
+\hypertarget{Edje__Edit_8h_842869393b9a446c547b5f3583809a22}{
+\index{Edje\_\-Edit.h@{Edje\_\-Edit.h}!edje\_\-edit\_\-state\_\-color3\_\-set@{edje\_\-edit\_\-state\_\-color3\_\-set}}
+\index{edje\_\-edit\_\-state\_\-color3\_\-set@{edje\_\-edit\_\-state\_\-color3\_\-set}!Edje_Edit.h@{Edje\_\-Edit.h}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI void edje\_\-edit\_\-state\_\-color3\_\-set (Evas\_\-Object $\ast$ {\em obj}, \/  const char $\ast$ {\em part}, \/  const char $\ast$ {\em state}, \/  int {\em r}, \/  int {\em g}, \/  int {\em b}, \/  int {\em a})}}
+\label{Edje__Edit_8h_842869393b9a446c547b5f3583809a22}
+
+
+Set the color3 of a part state. 
+
+Pass -1 to any of \mbox{[}r,g,b,a\mbox{]} to leave the value untouched. \begin{Desc}
+\item[Parameters: ]\par
+\begin{description}
+\item[{\em 
+obj}]The edje object \item[{\em 
+part}]The name of the part \item[{\em 
+state}]The name of the 'part state' (ex. \char`\"{}default 0.00\char`\"{}) \item[{\em 
+r}]The red value of the color \item[{\em 
+g}]The green value of the color \item[{\em 
+b}]The blue value of the color \item[{\em 
+a}]The alpha value of the color \end{description}
+\end{Desc}
+\hypertarget{Edje__Edit_8h_bea383677f7049aa4eb3fbcbbd6c5a46}{
+\index{Edje\_\-Edit.h@{Edje\_\-Edit.h}!edje\_\-edit\_\-state\_\-color\_\-get@{edje\_\-edit\_\-state\_\-color\_\-get}}
+\index{edje\_\-edit\_\-state\_\-color\_\-get@{edje\_\-edit\_\-state\_\-color\_\-get}!Edje_Edit.h@{Edje\_\-Edit.h}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI void edje\_\-edit\_\-state\_\-color\_\-get (Evas\_\-Object $\ast$ {\em obj}, \/  const char $\ast$ {\em part}, \/  const char $\ast$ {\em state}, \/  int $\ast$ {\em r}, \/  int $\ast$ {\em g}, \/  int $\ast$ {\em b}, \/  int $\ast$ {\em a})}}
+\label{Edje__Edit_8h_bea383677f7049aa4eb3fbcbbd6c5a46}
+
+
+Get the color of a part state. 
+
+Pass NULL to any of \mbox{[}r,g,b,a\mbox{]} to get only the others. \begin{Desc}
+\item[Parameters: ]\par
+\begin{description}
+\item[{\em 
+obj}]The edje object \item[{\em 
+part}]The name of the part \item[{\em 
+state}]The name of the 'part state' (ex. \char`\"{}default 0.00\char`\"{}) \item[{\em 
+r}]A pointer to store the red value \item[{\em 
+g}]A pointer to store the green value \item[{\em 
+b}]A pointer to store the blue value \item[{\em 
+a}]A pointer to store the alpha value \end{description}
+\end{Desc}
+\hypertarget{Edje__Edit_8h_1976386a7b41757abafaa873f50b5d03}{
+\index{Edje\_\-Edit.h@{Edje\_\-Edit.h}!edje\_\-edit\_\-state\_\-color\_\-set@{edje\_\-edit\_\-state\_\-color\_\-set}}
+\index{edje\_\-edit\_\-state\_\-color\_\-set@{edje\_\-edit\_\-state\_\-color\_\-set}!Edje_Edit.h@{Edje\_\-Edit.h}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI void edje\_\-edit\_\-state\_\-color\_\-set (Evas\_\-Object $\ast$ {\em obj}, \/  const char $\ast$ {\em part}, \/  const char $\ast$ {\em state}, \/  int {\em r}, \/  int {\em g}, \/  int {\em b}, \/  int {\em a})}}
+\label{Edje__Edit_8h_1976386a7b41757abafaa873f50b5d03}
+
+
+Set the color of a part state. 
+
+Pass -1 to any of \mbox{[}r,g,b,a\mbox{]} to leave the value untouched. \begin{Desc}
+\item[Parameters: ]\par
+\begin{description}
+\item[{\em 
+obj}]The edje object \item[{\em 
+part}]The name of the part \item[{\em 
+state}]The name of the 'part state' (ex. \char`\"{}default 0.00\char`\"{}) \item[{\em 
+r}]The red value of the color \item[{\em 
+g}]The green value of the color \item[{\em 
+b}]The blue value of the color \item[{\em 
+a}]The alpha value of the color \end{description}
+\end{Desc}
+\hypertarget{Edje__Edit_8h_ae33f814fc42555f6b6736e65b2fc97a}{
+\index{Edje\_\-Edit.h@{Edje\_\-Edit.h}!edje\_\-edit\_\-state\_\-del@{edje\_\-edit\_\-state\_\-del}}
+\index{edje\_\-edit\_\-state\_\-del@{edje\_\-edit\_\-state\_\-del}!Edje_Edit.h@{Edje\_\-Edit.h}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI void edje\_\-edit\_\-state\_\-del (Evas\_\-Object $\ast$ {\em obj}, \/  const char $\ast$ {\em part}, \/  const char $\ast$ {\em state})}}
+\label{Edje__Edit_8h_ae33f814fc42555f6b6736e65b2fc97a}
+
+
+Delete the given part state from the edje. 
+
+\begin{Desc}
+\item[Parameters: ]\par
+\begin{description}
+\item[{\em 
+obj}]The edje object \item[{\em 
+part}]The name of the part that contain state \item[{\em 
+state}]The current name of the state (including the state value) \end{description}
+\end{Desc}
+\hypertarget{Edje__Edit_8h_fb897c6b8e904c4da5cb11be2245f84f}{
+\index{Edje\_\-Edit.h@{Edje\_\-Edit.h}!edje\_\-edit\_\-state\_\-exist@{edje\_\-edit\_\-state\_\-exist}}
+\index{edje\_\-edit\_\-state\_\-exist@{edje\_\-edit\_\-state\_\-exist}!Edje_Edit.h@{Edje\_\-Edit.h}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI unsigned char edje\_\-edit\_\-state\_\-exist (Evas\_\-Object $\ast$ {\em obj}, \/  const char $\ast$ {\em part}, \/  const char $\ast$ {\em state})}}
+\label{Edje__Edit_8h_fb897c6b8e904c4da5cb11be2245f84f}
+
+
+Check if a part state with the given name exist. 
+
+$<$ 1 if the part state exist, 0 otherwise. \begin{Desc}
+\item[Parameters: ]\par
+\begin{description}
+\item[{\em 
+obj}]The edje object \item[{\em 
+part}]The name of the part \item[{\em 
+state}]The name of the state to check (including the state value) \end{description}
+\end{Desc}
+\hypertarget{Edje__Edit_8h_555ef3b9d7db82cceb9b76aa8d6543cf}{
+\index{Edje\_\-Edit.h@{Edje\_\-Edit.h}!edje\_\-edit\_\-state\_\-font\_\-get@{edje\_\-edit\_\-state\_\-font\_\-get}}
+\index{edje\_\-edit\_\-state\_\-font\_\-get@{edje\_\-edit\_\-state\_\-font\_\-get}!Edje_Edit.h@{Edje\_\-Edit.h}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI const char$\ast$ edje\_\-edit\_\-state\_\-font\_\-get (Evas\_\-Object $\ast$ {\em obj}, \/  const char $\ast$ {\em part}, \/  const char $\ast$ {\em state})}}
+\label{Edje__Edit_8h_555ef3b9d7db82cceb9b76aa8d6543cf}
+
+
+Get font name for a given part state. 
+
+Remember to free the returned string using \hyperlink{Edje__Edit_8h_924beb7b18a2f754b4b78cee3b3cc662}{edje\_\-edit\_\-string\_\-free()}. \begin{Desc}
+\item[Returns:]The name of the font used in the given part state \end{Desc}
+\begin{Desc}
+\item[Parameters: ]\par
+\begin{description}
+\item[{\em 
+obj}]The edje object \item[{\em 
+part}]The name of the part \item[{\em 
+state}]The name of the 'part state' (ex. \char`\"{}default 0.00\char`\"{}) \end{description}
+\end{Desc}
+\hypertarget{Edje__Edit_8h_ab4161c56e6fab686eb9ff7e56a99fc7}{
+\index{Edje\_\-Edit.h@{Edje\_\-Edit.h}!edje\_\-edit\_\-state\_\-font\_\-set@{edje\_\-edit\_\-state\_\-font\_\-set}}
+\index{edje\_\-edit\_\-state\_\-font\_\-set@{edje\_\-edit\_\-state\_\-font\_\-set}!Edje_Edit.h@{Edje\_\-Edit.h}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI void edje\_\-edit\_\-state\_\-font\_\-set (Evas\_\-Object $\ast$ {\em obj}, \/  const char $\ast$ {\em part}, \/  const char $\ast$ {\em state}, \/  const char $\ast$ {\em font})}}
+\label{Edje__Edit_8h_ab4161c56e6fab686eb9ff7e56a99fc7}
+
+
+Set font name for a given part state. 
+
+\begin{Desc}
+\item[Parameters: ]\par
+\begin{description}
+\item[{\em 
+obj}]The edje object \item[{\em 
+part}]The name of the part \item[{\em 
+state}]The name of the 'part state' (ex. \char`\"{}default 0.00\char`\"{}) \item[{\em 
+font}]The name of the font to use in the given part state \end{description}
+\end{Desc}
+\hypertarget{Edje__Edit_8h_2a413823e46b5fd434bfa860edc83734}{
+\index{Edje\_\-Edit.h@{Edje\_\-Edit.h}!edje\_\-edit\_\-state\_\-image\_\-border\_\-get@{edje\_\-edit\_\-state\_\-image\_\-border\_\-get}}
+\index{edje\_\-edit\_\-state\_\-image\_\-border\_\-get@{edje\_\-edit\_\-state\_\-image\_\-border\_\-get}!Edje_Edit.h@{Edje\_\-Edit.h}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI void edje\_\-edit\_\-state\_\-image\_\-border\_\-get (Evas\_\-Object $\ast$ {\em obj}, \/  const char $\ast$ {\em part}, \/  const char $\ast$ {\em state}, \/  int $\ast$ {\em l}, \/  int $\ast$ {\em r}, \/  int $\ast$ {\em t}, \/  int $\ast$ {\em b})}}
+\label{Edje__Edit_8h_2a413823e46b5fd434bfa860edc83734}
+
+
+Get the image border of a part state. 
+
+Pass NULL to any of \mbox{[}r,g,b,a\mbox{]} to get only the others. \begin{Desc}
+\item[Parameters: ]\par
+\begin{description}
+\item[{\em 
+obj}]The edje object \item[{\em 
+part}]The name of the part \item[{\em 
+state}]The name of the 'part state' (ex. \char`\"{}default 0.00\char`\"{}) \item[{\em 
+l}]A pointer to store the left value \item[{\em 
+r}]A pointer to store the right value \item[{\em 
+t}]A pointer to store the top value \item[{\em 
+b}]A pointer to store the bottom value \end{description}
+\end{Desc}
+\hypertarget{Edje__Edit_8h_d25f257e85a99aa9f9c06bb690689481}{
+\index{Edje\_\-Edit.h@{Edje\_\-Edit.h}!edje\_\-edit\_\-state\_\-image\_\-border\_\-set@{edje\_\-edit\_\-state\_\-image\_\-border\_\-set}}
+\index{edje\_\-edit\_\-state\_\-image\_\-border\_\-set@{edje\_\-edit\_\-state\_\-image\_\-border\_\-set}!Edje_Edit.h@{Edje\_\-Edit.h}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI void edje\_\-edit\_\-state\_\-image\_\-border\_\-set (Evas\_\-Object $\ast$ {\em obj}, \/  const char $\ast$ {\em part}, \/  const char $\ast$ {\em state}, \/  int {\em l}, \/  int {\em r}, \/  int {\em t}, \/  int {\em b})}}
+\label{Edje__Edit_8h_d25f257e85a99aa9f9c06bb690689481}
+
+
+Set the image border of a part state. 
+
+Pass -1 to any of \mbox{[}l,r,t,b\mbox{]} to leave the value untouched. \begin{Desc}
+\item[Parameters: ]\par
+\begin{description}
+\item[{\em 
+obj}]The edje object \item[{\em 
+part}]The name of the part \item[{\em 
+state}]The name of the 'part state' (ex. \char`\"{}default 0.00\char`\"{}) \item[{\em 
+l}]The new left border (or -1) \item[{\em 
+r}]The new right border (or -1) \item[{\em 
+t}]The new top border (or -1) \item[{\em 
+b}]The new bottom border (or -1) \end{description}
+\end{Desc}
+\hypertarget{Edje__Edit_8h_6a48626731db60d6dadfca350975dc82}{
+\index{Edje\_\-Edit.h@{Edje\_\-Edit.h}!edje\_\-edit\_\-state\_\-image\_\-get@{edje\_\-edit\_\-state\_\-image\_\-get}}
+\index{edje\_\-edit\_\-state\_\-image\_\-get@{edje\_\-edit\_\-state\_\-image\_\-get}!Edje_Edit.h@{Edje\_\-Edit.h}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI const char$\ast$ edje\_\-edit\_\-state\_\-image\_\-get (Evas\_\-Object $\ast$ {\em obj}, \/  const char $\ast$ {\em part}, \/  const char $\ast$ {\em state})}}
+\label{Edje__Edit_8h_6a48626731db60d6dadfca350975dc82}
+
+
+Get normal image name for a given part state. 
+
+Remember to free the returned string using \hyperlink{Edje__Edit_8h_924beb7b18a2f754b4b78cee3b3cc662}{edje\_\-edit\_\-string\_\-free()}. \begin{Desc}
+\item[Returns:]The name of the image used by state \end{Desc}
+\begin{Desc}
+\item[Parameters: ]\par
+\begin{description}
+\item[{\em 
+obj}]The edje object \item[{\em 
+part}]The name of the part \item[{\em 
+state}]The name of the 'part state' (ex. \char`\"{}default 0.00\char`\"{}) \end{description}
+\end{Desc}
+\hypertarget{Edje__Edit_8h_8d4d353fe8d04aacccda423b76de48b0}{
+\index{Edje\_\-Edit.h@{Edje\_\-Edit.h}!edje\_\-edit\_\-state\_\-image\_\-set@{edje\_\-edit\_\-state\_\-image\_\-set}}
+\index{edje\_\-edit\_\-state\_\-image\_\-set@{edje\_\-edit\_\-state\_\-image\_\-set}!Edje_Edit.h@{Edje\_\-Edit.h}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI void edje\_\-edit\_\-state\_\-image\_\-set (Evas\_\-Object $\ast$ {\em obj}, \/  const char $\ast$ {\em part}, \/  const char $\ast$ {\em state}, \/  const char $\ast$ {\em image})}}
+\label{Edje__Edit_8h_8d4d353fe8d04aacccda423b76de48b0}
+
+
+Set normal image for a given part state. 
+
+\begin{Desc}
+\item[Parameters: ]\par
+\begin{description}
+\item[{\em 
+obj}]The edje object \item[{\em 
+part}]The name of the part \item[{\em 
+state}]The name of the 'part state' (ex. \char`\"{}default 0.00\char`\"{}) \item[{\em 
+image}]The name of the image for the given state (must be an image contained in the edje file) \end{description}
+\end{Desc}
+\hypertarget{Edje__Edit_8h_821113025360d850646d702c872449e5}{
+\index{Edje\_\-Edit.h@{Edje\_\-Edit.h}!edje\_\-edit\_\-state\_\-max\_\-h\_\-get@{edje\_\-edit\_\-state\_\-max\_\-h\_\-get}}
+\index{edje\_\-edit\_\-state\_\-max\_\-h\_\-get@{edje\_\-edit\_\-state\_\-max\_\-h\_\-get}!Edje_Edit.h@{Edje\_\-Edit.h}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI int edje\_\-edit\_\-state\_\-max\_\-h\_\-get (Evas\_\-Object $\ast$ {\em obj}, \/  const char $\ast$ {\em part}, \/  const char $\ast$ {\em state})}}
+\label{Edje__Edit_8h_821113025360d850646d702c872449e5}
+
+
+Get the max\_\-h value of a part state. 
+
+\begin{Desc}
+\item[Returns:]The maximum height of a part state \end{Desc}
+\begin{Desc}
+\item[Parameters: ]\par
+\begin{description}
+\item[{\em 
+obj}]The edje object \item[{\em 
+part}]The name of the part \item[{\em 
+state}]The name of the 'part state' (ex. \char`\"{}default 0.00\char`\"{}) \end{description}
+\end{Desc}
+\hypertarget{Edje__Edit_8h_930bbc4cf13c9828ddc7f6fc3090a995}{
+\index{Edje\_\-Edit.h@{Edje\_\-Edit.h}!edje\_\-edit\_\-state\_\-max\_\-h\_\-set@{edje\_\-edit\_\-state\_\-max\_\-h\_\-set}}
+\index{edje\_\-edit\_\-state\_\-max\_\-h\_\-set@{edje\_\-edit\_\-state\_\-max\_\-h\_\-set}!Edje_Edit.h@{Edje\_\-Edit.h}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI void edje\_\-edit\_\-state\_\-max\_\-h\_\-set (Evas\_\-Object $\ast$ {\em obj}, \/  const char $\ast$ {\em part}, \/  const char $\ast$ {\em state}, \/  int {\em max\_\-h})}}
+\label{Edje__Edit_8h_930bbc4cf13c9828ddc7f6fc3090a995}
+
+
+Set the max\_\-h value of a part state. 
+
+\begin{Desc}
+\item[Parameters: ]\par
+\begin{description}
+\item[{\em 
+obj}]The edje object \item[{\em 
+part}]The name of the part \item[{\em 
+state}]The name of the 'part state' (ex. \char`\"{}default 0.00\char`\"{}) \item[{\em 
+max\_\-h}]The new maximum height to set for the part state \end{description}
+\end{Desc}
+\hypertarget{Edje__Edit_8h_b33ea373251452c6131aea41652eb151}{
+\index{Edje\_\-Edit.h@{Edje\_\-Edit.h}!edje\_\-edit\_\-state\_\-max\_\-w\_\-get@{edje\_\-edit\_\-state\_\-max\_\-w\_\-get}}
+\index{edje\_\-edit\_\-state\_\-max\_\-w\_\-get@{edje\_\-edit\_\-state\_\-max\_\-w\_\-get}!Edje_Edit.h@{Edje\_\-Edit.h}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI int edje\_\-edit\_\-state\_\-max\_\-w\_\-get (Evas\_\-Object $\ast$ {\em obj}, \/  const char $\ast$ {\em part}, \/  const char $\ast$ {\em state})}}
+\label{Edje__Edit_8h_b33ea373251452c6131aea41652eb151}
+
+
+Get the max\_\-w value of a part state. 
+
+\begin{Desc}
+\item[Returns:]The maximum width of a part state \end{Desc}
+\begin{Desc}
+\item[Parameters: ]\par
+\begin{description}
+\item[{\em 
+obj}]The edje object \item[{\em 
+part}]The name of the part \item[{\em 
+state}]The name of the 'part state' (ex. \char`\"{}default 0.00\char`\"{}) \end{description}
+\end{Desc}
+\hypertarget{Edje__Edit_8h_c3c5f98cbe0f380d114ee62ba4999998}{
+\index{Edje\_\-Edit.h@{Edje\_\-Edit.h}!edje\_\-edit\_\-state\_\-max\_\-w\_\-set@{edje\_\-edit\_\-state\_\-max\_\-w\_\-set}}
+\index{edje\_\-edit\_\-state\_\-max\_\-w\_\-set@{edje\_\-edit\_\-state\_\-max\_\-w\_\-set}!Edje_Edit.h@{Edje\_\-Edit.h}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI void edje\_\-edit\_\-state\_\-max\_\-w\_\-set (Evas\_\-Object $\ast$ {\em obj}, \/  const char $\ast$ {\em part}, \/  const char $\ast$ {\em state}, \/  int {\em max\_\-w})}}
+\label{Edje__Edit_8h_c3c5f98cbe0f380d114ee62ba4999998}
+
+
+Set the max\_\-w value of a part state. 
+
+\begin{Desc}
+\item[Parameters: ]\par
+\begin{description}
+\item[{\em 
+obj}]The edje object \item[{\em 
+part}]The name of the part \item[{\em 
+state}]The name of the 'part state' (ex. \char`\"{}default 0.00\char`\"{}) \item[{\em 
+max\_\-w}]The new maximum width to set for the part state \end{description}
+\end{Desc}
+\hypertarget{Edje__Edit_8h_90f7ade0f33994e333685b4348fecaf0}{
+\index{Edje\_\-Edit.h@{Edje\_\-Edit.h}!edje\_\-edit\_\-state\_\-min\_\-h\_\-get@{edje\_\-edit\_\-state\_\-min\_\-h\_\-get}}
+\index{edje\_\-edit\_\-state\_\-min\_\-h\_\-get@{edje\_\-edit\_\-state\_\-min\_\-h\_\-get}!Edje_Edit.h@{Edje\_\-Edit.h}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI int edje\_\-edit\_\-state\_\-min\_\-h\_\-get (Evas\_\-Object $\ast$ {\em obj}, \/  const char $\ast$ {\em part}, \/  const char $\ast$ {\em state})}}
+\label{Edje__Edit_8h_90f7ade0f33994e333685b4348fecaf0}
+
+
+Get the min\_\-h value of a part state. 
+
+\begin{Desc}
+\item[Returns:]The minimum height of a part state \end{Desc}
+\begin{Desc}
+\item[Parameters: ]\par
+\begin{description}
+\item[{\em 
+obj}]The edje object \item[{\em 
+part}]The name of the part \item[{\em 
+state}]The name of the 'part state' (ex. \char`\"{}default 0.00\char`\"{}) \end{description}
+\end{Desc}
+\hypertarget{Edje__Edit_8h_95e96fdca00b71bf3d93313be7a3584c}{
+\index{Edje\_\-Edit.h@{Edje\_\-Edit.h}!edje\_\-edit\_\-state\_\-min\_\-h\_\-set@{edje\_\-edit\_\-state\_\-min\_\-h\_\-set}}
+\index{edje\_\-edit\_\-state\_\-min\_\-h\_\-set@{edje\_\-edit\_\-state\_\-min\_\-h\_\-set}!Edje_Edit.h@{Edje\_\-Edit.h}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI void edje\_\-edit\_\-state\_\-min\_\-h\_\-set (Evas\_\-Object $\ast$ {\em obj}, \/  const char $\ast$ {\em part}, \/  const char $\ast$ {\em state}, \/  int {\em min\_\-h})}}
+\label{Edje__Edit_8h_95e96fdca00b71bf3d93313be7a3584c}
+
+
+Set the min\_\-h value of a part state. 
+
+\begin{Desc}
+\item[Parameters: ]\par
+\begin{description}
+\item[{\em 
+obj}]The edje object \item[{\em 
+part}]The name of the part \item[{\em 
+state}]The name of the 'part state' (ex. \char`\"{}default 0.00\char`\"{}) \item[{\em 
+min\_\-h}]The new minimum height to set for the part state \end{description}
+\end{Desc}
+\hypertarget{Edje__Edit_8h_1d51040a46d3138383f31578ead2c18e}{
+\index{Edje\_\-Edit.h@{Edje\_\-Edit.h}!edje\_\-edit\_\-state\_\-min\_\-w\_\-get@{edje\_\-edit\_\-state\_\-min\_\-w\_\-get}}
+\index{edje\_\-edit\_\-state\_\-min\_\-w\_\-get@{edje\_\-edit\_\-state\_\-min\_\-w\_\-get}!Edje_Edit.h@{Edje\_\-Edit.h}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI int edje\_\-edit\_\-state\_\-min\_\-w\_\-get (Evas\_\-Object $\ast$ {\em obj}, \/  const char $\ast$ {\em part}, \/  const char $\ast$ {\em state})}}
+\label{Edje__Edit_8h_1d51040a46d3138383f31578ead2c18e}
+
+
+Get the min\_\-w value of a part state. 
+
+\begin{Desc}
+\item[Returns:]The minimum width of a part state \end{Desc}
+\begin{Desc}
+\item[Parameters: ]\par
+\begin{description}
+\item[{\em 
+obj}]The edje object \item[{\em 
+part}]The name of the part \item[{\em 
+state}]The name of the 'part state' (ex. \char`\"{}default 0.00\char`\"{}) \end{description}
+\end{Desc}
+\hypertarget{Edje__Edit_8h_bd9e7c7925a7cdb2ef944adb15d09ff1}{
+\index{Edje\_\-Edit.h@{Edje\_\-Edit.h}!edje\_\-edit\_\-state\_\-min\_\-w\_\-set@{edje\_\-edit\_\-state\_\-min\_\-w\_\-set}}
+\index{edje\_\-edit\_\-state\_\-min\_\-w\_\-set@{edje\_\-edit\_\-state\_\-min\_\-w\_\-set}!Edje_Edit.h@{Edje\_\-Edit.h}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI void edje\_\-edit\_\-state\_\-min\_\-w\_\-set (Evas\_\-Object $\ast$ {\em obj}, \/  const char $\ast$ {\em part}, \/  const char $\ast$ {\em state}, \/  int {\em min\_\-w})}}
+\label{Edje__Edit_8h_bd9e7c7925a7cdb2ef944adb15d09ff1}
+
+
+Set the min\_\-w value of a part state. 
+
+\begin{Desc}
+\item[Parameters: ]\par
+\begin{description}
+\item[{\em 
+obj}]The edje object \item[{\em 
+part}]The name of the part \item[{\em 
+state}]The name of the 'part state' (ex. \char`\"{}default 0.00\char`\"{}) \item[{\em 
+min\_\-w}]The new minimum width to set for the part state \end{description}
+\end{Desc}
+\hypertarget{Edje__Edit_8h_4763690d2abdf98f6e7f931164d5c5ce}{
+\index{Edje\_\-Edit.h@{Edje\_\-Edit.h}!edje\_\-edit\_\-state\_\-name\_\-set@{edje\_\-edit\_\-state\_\-name\_\-set}}
+\index{edje\_\-edit\_\-state\_\-name\_\-set@{edje\_\-edit\_\-state\_\-name\_\-set}!Edje_Edit.h@{Edje\_\-Edit.h}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI int edje\_\-edit\_\-state\_\-name\_\-set (Evas\_\-Object $\ast$ {\em obj}, \/  const char $\ast$ {\em part}, \/  const char $\ast$ {\em state}, \/  const char $\ast$ {\em new\_\-name})}}
+\label{Edje__Edit_8h_4763690d2abdf98f6e7f931164d5c5ce}
+
+
+Set a new name for the given state in the given part. 
+
+Note that state and new\_\-name must include the floating value inside the string (ex. \char`\"{}default 0.00\char`\"{}) \begin{Desc}
+\item[Parameters: ]\par
+\begin{description}
+\item[{\em 
+obj}]The edje object \item[{\em 
+part}]The name of the part that contain state \item[{\em 
+state}]The current name of the state \item[{\em 
+new\_\-name}]The new name to assign (including the value) \end{description}
+\end{Desc}
+\hypertarget{Edje__Edit_8h_38b699e994bb34cb2cd31c86185dbb9d}{
+\index{Edje\_\-Edit.h@{Edje\_\-Edit.h}!edje\_\-edit\_\-state\_\-rel1\_\-offset\_\-x\_\-get@{edje\_\-edit\_\-state\_\-rel1\_\-offset\_\-x\_\-get}}
+\index{edje\_\-edit\_\-state\_\-rel1\_\-offset\_\-x\_\-get@{edje\_\-edit\_\-state\_\-rel1\_\-offset\_\-x\_\-get}!Edje_Edit.h@{Edje\_\-Edit.h}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI int edje\_\-edit\_\-state\_\-rel1\_\-offset\_\-x\_\-get (Evas\_\-Object $\ast$ {\em obj}, \/  const char $\ast$ {\em part}, \/  const char $\ast$ {\em state})}}
+\label{Edje__Edit_8h_38b699e994bb34cb2cd31c86185dbb9d}
+
+
+Get the rel1 offset x value of state. 
+
+\begin{Desc}
+\item[Returns:]The 'rel1 offset X' value of the part state \end{Desc}
+\begin{Desc}
+\item[Parameters: ]\par
+\begin{description}
+\item[{\em 
+obj}]The edje object \item[{\em 
+part}]The name of the part \item[{\em 
+state}]The name of the 'part state' (ex. \char`\"{}default 0.00\char`\"{}) \end{description}
+\end{Desc}
+\hypertarget{Edje__Edit_8h_4d95cfca2fdc35fbcce288af88acfb54}{
+\index{Edje\_\-Edit.h@{Edje\_\-Edit.h}!edje\_\-edit\_\-state\_\-rel1\_\-offset\_\-x\_\-set@{edje\_\-edit\_\-state\_\-rel1\_\-offset\_\-x\_\-set}}
+\index{edje\_\-edit\_\-state\_\-rel1\_\-offset\_\-x\_\-set@{edje\_\-edit\_\-state\_\-rel1\_\-offset\_\-x\_\-set}!Edje_Edit.h@{Edje\_\-Edit.h}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI void edje\_\-edit\_\-state\_\-rel1\_\-offset\_\-x\_\-set (Evas\_\-Object $\ast$ {\em obj}, \/  const char $\ast$ {\em part}, \/  const char $\ast$ {\em state}, \/  double {\em x})}}
+\label{Edje__Edit_8h_4d95cfca2fdc35fbcce288af88acfb54}
+
+
+Set the rel1 offset x value of state. 
+
+\begin{Desc}
+\item[Parameters: ]\par
+\begin{description}
+\item[{\em 
+obj}]The edje object \item[{\em 
+part}]The name of the part \item[{\em 
+state}]The name of the 'part state' (ex. \char`\"{}default 0.00\char`\"{}) \item[{\em 
+x}]The new 'rel1 offset X' value to set \end{description}
+\end{Desc}
+\hypertarget{Edje__Edit_8h_c517f7dd02921907a12d5769a1d0e477}{
+\index{Edje\_\-Edit.h@{Edje\_\-Edit.h}!edje\_\-edit\_\-state\_\-rel1\_\-offset\_\-y\_\-get@{edje\_\-edit\_\-state\_\-rel1\_\-offset\_\-y\_\-get}}
+\index{edje\_\-edit\_\-state\_\-rel1\_\-offset\_\-y\_\-get@{edje\_\-edit\_\-state\_\-rel1\_\-offset\_\-y\_\-get}!Edje_Edit.h@{Edje\_\-Edit.h}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI int edje\_\-edit\_\-state\_\-rel1\_\-offset\_\-y\_\-get (Evas\_\-Object $\ast$ {\em obj}, \/  const char $\ast$ {\em part}, \/  const char $\ast$ {\em state})}}
+\label{Edje__Edit_8h_c517f7dd02921907a12d5769a1d0e477}
+
+
+Get the rel1 offset y value of state. 
+
+\begin{Desc}
+\item[Returns:]The 'rel1 offset Y' value of the part state \end{Desc}
+\begin{Desc}
+\item[Parameters: ]\par
+\begin{description}
+\item[{\em 
+obj}]The edje object \item[{\em 
+part}]The name of the part \item[{\em 
+state}]The name of the 'part state' (ex. \char`\"{}default 0.00\char`\"{}) \end{description}
+\end{Desc}
+\hypertarget{Edje__Edit_8h_71fe69c5f0909b9b69c71185430dc12d}{
+\index{Edje\_\-Edit.h@{Edje\_\-Edit.h}!edje\_\-edit\_\-state\_\-rel1\_\-offset\_\-y\_\-set@{edje\_\-edit\_\-state\_\-rel1\_\-offset\_\-y\_\-set}}
+\index{edje\_\-edit\_\-state\_\-rel1\_\-offset\_\-y\_\-set@{edje\_\-edit\_\-state\_\-rel1\_\-offset\_\-y\_\-set}!Edje_Edit.h@{Edje\_\-Edit.h}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI void edje\_\-edit\_\-state\_\-rel1\_\-offset\_\-y\_\-set (Evas\_\-Object $\ast$ {\em obj}, \/  const char $\ast$ {\em part}, \/  const char $\ast$ {\em state}, \/  double {\em y})}}
+\label{Edje__Edit_8h_71fe69c5f0909b9b69c71185430dc12d}
+
+
+Get the rel1 offset y value of state. 
+
+\begin{Desc}
+\item[Parameters: ]\par
+\begin{description}
+\item[{\em 
+obj}]The edje object \item[{\em 
+part}]The name of the part \item[{\em 
+state}]The name of the 'part state' (ex. \char`\"{}default 0.00\char`\"{}) \item[{\em 
+y}]The new 'rel1 offset Y' value to set \end{description}
+\end{Desc}
+\hypertarget{Edje__Edit_8h_5c7688ceccf4437d31fce8daa909dd8c}{
+\index{Edje\_\-Edit.h@{Edje\_\-Edit.h}!edje\_\-edit\_\-state\_\-rel1\_\-relative\_\-x\_\-get@{edje\_\-edit\_\-state\_\-rel1\_\-relative\_\-x\_\-get}}
+\index{edje\_\-edit\_\-state\_\-rel1\_\-relative\_\-x\_\-get@{edje\_\-edit\_\-state\_\-rel1\_\-relative\_\-x\_\-get}!Edje_Edit.h@{Edje\_\-Edit.h}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI double edje\_\-edit\_\-state\_\-rel1\_\-relative\_\-x\_\-get (Evas\_\-Object $\ast$ {\em obj}, \/  const char $\ast$ {\em part}, \/  const char $\ast$ {\em state})}}
+\label{Edje__Edit_8h_5c7688ceccf4437d31fce8daa909dd8c}
+
+
+Get the rel1 relative x value of state. 
+
+\begin{Desc}
+\item[Returns:]The 'rel1 relative X' value of the part state \end{Desc}
+\begin{Desc}
+\item[Parameters: ]\par
+\begin{description}
+\item[{\em 
+obj}]The edje object \item[{\em 
+part}]The name of the part \item[{\em 
+state}]The name of the part state (ex. \char`\"{}default 0.00\char`\"{}) \end{description}
+\end{Desc}
+\hypertarget{Edje__Edit_8h_395c05ded005bf1218d5e18d12435e9f}{
+\index{Edje\_\-Edit.h@{Edje\_\-Edit.h}!edje\_\-edit\_\-state\_\-rel1\_\-relative\_\-x\_\-set@{edje\_\-edit\_\-state\_\-rel1\_\-relative\_\-x\_\-set}}
+\index{edje\_\-edit\_\-state\_\-rel1\_\-relative\_\-x\_\-set@{edje\_\-edit\_\-state\_\-rel1\_\-relative\_\-x\_\-set}!Edje_Edit.h@{Edje\_\-Edit.h}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI void edje\_\-edit\_\-state\_\-rel1\_\-relative\_\-x\_\-set (Evas\_\-Object $\ast$ {\em obj}, \/  const char $\ast$ {\em part}, \/  const char $\ast$ {\em state}, \/  double {\em x})}}
+\label{Edje__Edit_8h_395c05ded005bf1218d5e18d12435e9f}
+
+
+Set the rel1 relative x value of state. 
+
+\begin{Desc}
+\item[Parameters: ]\par
+\begin{description}
+\item[{\em 
+obj}]The edje object \item[{\em 
+part}]The name of the part \item[{\em 
+state}]The name of the 'part state' (ex. \char`\"{}default 0.00\char`\"{}) \item[{\em 
+x}]The new 'rel1 relative X' value to set \end{description}
+\end{Desc}
+\hypertarget{Edje__Edit_8h_dc10ecd7c8bb20bc9202bca340e0038b}{
+\index{Edje\_\-Edit.h@{Edje\_\-Edit.h}!edje\_\-edit\_\-state\_\-rel1\_\-relative\_\-y\_\-get@{edje\_\-edit\_\-state\_\-rel1\_\-relative\_\-y\_\-get}}
+\index{edje\_\-edit\_\-state\_\-rel1\_\-relative\_\-y\_\-get@{edje\_\-edit\_\-state\_\-rel1\_\-relative\_\-y\_\-get}!Edje_Edit.h@{Edje\_\-Edit.h}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI double edje\_\-edit\_\-state\_\-rel1\_\-relative\_\-y\_\-get (Evas\_\-Object $\ast$ {\em obj}, \/  const char $\ast$ {\em part}, \/  const char $\ast$ {\em state})}}
+\label{Edje__Edit_8h_dc10ecd7c8bb20bc9202bca340e0038b}
+
+
+Get the rel1 relative y value of state. 
+
+\begin{Desc}
+\item[Returns:]The 'rel1 relative Y' value of the part state \end{Desc}
+\begin{Desc}
+\item[Parameters: ]\par
+\begin{description}
+\item[{\em 
+obj}]The edje object \item[{\em 
+part}]The name of the part \item[{\em 
+state}]The name of the 'part state' (ex. \char`\"{}default 0.00\char`\"{}) \end{description}
+\end{Desc}
+\hypertarget{Edje__Edit_8h_5889966f656aa8c5dac19b0001525bd0}{
+\index{Edje\_\-Edit.h@{Edje\_\-Edit.h}!edje\_\-edit\_\-state\_\-rel1\_\-relative\_\-y\_\-set@{edje\_\-edit\_\-state\_\-rel1\_\-relative\_\-y\_\-set}}
+\index{edje\_\-edit\_\-state\_\-rel1\_\-relative\_\-y\_\-set@{edje\_\-edit\_\-state\_\-rel1\_\-relative\_\-y\_\-set}!Edje_Edit.h@{Edje\_\-Edit.h}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI void edje\_\-edit\_\-state\_\-rel1\_\-relative\_\-y\_\-set (Evas\_\-Object $\ast$ {\em obj}, \/  const char $\ast$ {\em part}, \/  const char $\ast$ {\em state}, \/  double {\em y})}}
+\label{Edje__Edit_8h_5889966f656aa8c5dac19b0001525bd0}
+
+
+Set the rel1 relative y value of state. 
+
+\begin{Desc}
+\item[Parameters: ]\par
+\begin{description}
+\item[{\em 
+obj}]The edje object \item[{\em 
+part}]The name of the part \item[{\em 
+state}]The name of the 'part state' (ex. \char`\"{}default 0.00\char`\"{}) \item[{\em 
+y}]The new 'rel1 relative Y' value to set \end{description}
+\end{Desc}
+\hypertarget{Edje__Edit_8h_6cfd0b41a25f10cabf6cd616919be245}{
+\index{Edje\_\-Edit.h@{Edje\_\-Edit.h}!edje\_\-edit\_\-state\_\-rel1\_\-to\_\-x\_\-get@{edje\_\-edit\_\-state\_\-rel1\_\-to\_\-x\_\-get}}
+\index{edje\_\-edit\_\-state\_\-rel1\_\-to\_\-x\_\-get@{edje\_\-edit\_\-state\_\-rel1\_\-to\_\-x\_\-get}!Edje_Edit.h@{Edje\_\-Edit.h}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI const char$\ast$ edje\_\-edit\_\-state\_\-rel1\_\-to\_\-x\_\-get (Evas\_\-Object $\ast$ {\em obj}, \/  const char $\ast$ {\em part}, \/  const char $\ast$ {\em state})}}
+\label{Edje__Edit_8h_6cfd0b41a25f10cabf6cd616919be245}
+
+
+Get the part name rel1x is relative to. 
+
+The function return NULL if the part is relative to the whole interface. \begin{Desc}
+\item[Returns:]The name of the part to apply the relativity \end{Desc}
+\begin{Desc}
+\item[Parameters: ]\par
+\begin{description}
+\item[{\em 
+obj}]The edje object \item[{\em 
+part}]The name of the part \item[{\em 
+state}]The name of the 'part state' (ex. \char`\"{}default 0.00\char`\"{}) \end{description}
+\end{Desc}
+\hypertarget{Edje__Edit_8h_be0cba2e0306707b79da3a3ef8090aa4}{
+\index{Edje\_\-Edit.h@{Edje\_\-Edit.h}!edje\_\-edit\_\-state\_\-rel1\_\-to\_\-x\_\-set@{edje\_\-edit\_\-state\_\-rel1\_\-to\_\-x\_\-set}}
+\index{edje\_\-edit\_\-state\_\-rel1\_\-to\_\-x\_\-set@{edje\_\-edit\_\-state\_\-rel1\_\-to\_\-x\_\-set}!Edje_Edit.h@{Edje\_\-Edit.h}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI void edje\_\-edit\_\-state\_\-rel1\_\-to\_\-x\_\-set (Evas\_\-Object $\ast$ {\em obj}, \/  const char $\ast$ {\em part}, \/  const char $\ast$ {\em state}, \/  const char $\ast$ {\em rel\_\-to})}}
+\label{Edje__Edit_8h_be0cba2e0306707b79da3a3ef8090aa4}
+
+
+Set the part rel1x is relative to. 
+
+Set rel\_\-to to NULL make the part relative to the whole interface. \begin{Desc}
+\item[Parameters: ]\par
+\begin{description}
+\item[{\em 
+obj}]The edje object \item[{\em 
+part}]The name of the part \item[{\em 
+state}]The name of the 'part state' (ex. \char`\"{}default 0.00\char`\"{}) \item[{\em 
+rel\_\-to}]The name of the part that is used as container/parent \end{description}
+\end{Desc}
+\hypertarget{Edje__Edit_8h_39bbc17bae68f5361e3e112ecb271b32}{
+\index{Edje\_\-Edit.h@{Edje\_\-Edit.h}!edje\_\-edit\_\-state\_\-rel1\_\-to\_\-y\_\-get@{edje\_\-edit\_\-state\_\-rel1\_\-to\_\-y\_\-get}}
+\index{edje\_\-edit\_\-state\_\-rel1\_\-to\_\-y\_\-get@{edje\_\-edit\_\-state\_\-rel1\_\-to\_\-y\_\-get}!Edje_Edit.h@{Edje\_\-Edit.h}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI const char$\ast$ edje\_\-edit\_\-state\_\-rel1\_\-to\_\-y\_\-get (Evas\_\-Object $\ast$ {\em obj}, \/  const char $\ast$ {\em part}, \/  const char $\ast$ {\em state})}}
+\label{Edje__Edit_8h_39bbc17bae68f5361e3e112ecb271b32}
+
+
+Get the part name rel1y is relative to. 
+
+The function return NULL if the part is relative to the whole interface. \begin{Desc}
+\item[Returns:]The name of the part to apply the relativity \end{Desc}
+\begin{Desc}
+\item[Parameters: ]\par
+\begin{description}
+\item[{\em 
+obj}]The edje object \item[{\em 
+part}]The name of the part \item[{\em 
+state}]The name of the 'part state' (ex. \char`\"{}default 0.00\char`\"{}) \end{description}
+\end{Desc}
+\hypertarget{Edje__Edit_8h_d05dfa691446b01d0b48687b9e7148e7}{
+\index{Edje\_\-Edit.h@{Edje\_\-Edit.h}!edje\_\-edit\_\-state\_\-rel1\_\-to\_\-y\_\-set@{edje\_\-edit\_\-state\_\-rel1\_\-to\_\-y\_\-set}}
+\index{edje\_\-edit\_\-state\_\-rel1\_\-to\_\-y\_\-set@{edje\_\-edit\_\-state\_\-rel1\_\-to\_\-y\_\-set}!Edje_Edit.h@{Edje\_\-Edit.h}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI void edje\_\-edit\_\-state\_\-rel1\_\-to\_\-y\_\-set (Evas\_\-Object $\ast$ {\em obj}, \/  const char $\ast$ {\em part}, \/  const char $\ast$ {\em state}, \/  const char $\ast$ {\em rel\_\-to})}}
+\label{Edje__Edit_8h_d05dfa691446b01d0b48687b9e7148e7}
+
+
+Set the part rel1y is relative to. 
+
+Set rel\_\-to to NULL make the part relative to the whole interface. \begin{Desc}
+\item[Parameters: ]\par
+\begin{description}
+\item[{\em 
+obj}]The edje object \item[{\em 
+part}]The name of the part \item[{\em 
+state}]The name of the 'part state' (ex. \char`\"{}default 0.00\char`\"{}) \item[{\em 
+rel\_\-to}]The name of the part that is used as container/parent \end{description}
+\end{Desc}
+\hypertarget{Edje__Edit_8h_92aeabaf37bf1d46e9d8ea0d7a77dfca}{
+\index{Edje\_\-Edit.h@{Edje\_\-Edit.h}!edje\_\-edit\_\-state\_\-rel2\_\-offset\_\-x\_\-get@{edje\_\-edit\_\-state\_\-rel2\_\-offset\_\-x\_\-get}}
+\index{edje\_\-edit\_\-state\_\-rel2\_\-offset\_\-x\_\-get@{edje\_\-edit\_\-state\_\-rel2\_\-offset\_\-x\_\-get}!Edje_Edit.h@{Edje\_\-Edit.h}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI int edje\_\-edit\_\-state\_\-rel2\_\-offset\_\-x\_\-get (Evas\_\-Object $\ast$ {\em obj}, \/  const char $\ast$ {\em part}, \/  const char $\ast$ {\em state})}}
+\label{Edje__Edit_8h_92aeabaf37bf1d46e9d8ea0d7a77dfca}
+
+
+Get the rel2 offset x value of state. 
+
+\begin{Desc}
+\item[Returns:]The 'rel2 offset X' value of the part state \end{Desc}
+\begin{Desc}
+\item[Parameters: ]\par
+\begin{description}
+\item[{\em 
+obj}]The edje object \item[{\em 
+part}]The name of the part \item[{\em 
+state}]The name of the 'part state' (ex. \char`\"{}default 0.00\char`\"{}) \end{description}
+\end{Desc}
+\hypertarget{Edje__Edit_8h_b2212c4c10cdbc729122f205a8760bb3}{
+\index{Edje\_\-Edit.h@{Edje\_\-Edit.h}!edje\_\-edit\_\-state\_\-rel2\_\-offset\_\-x\_\-set@{edje\_\-edit\_\-state\_\-rel2\_\-offset\_\-x\_\-set}}
+\index{edje\_\-edit\_\-state\_\-rel2\_\-offset\_\-x\_\-set@{edje\_\-edit\_\-state\_\-rel2\_\-offset\_\-x\_\-set}!Edje_Edit.h@{Edje\_\-Edit.h}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI void edje\_\-edit\_\-state\_\-rel2\_\-offset\_\-x\_\-set (Evas\_\-Object $\ast$ {\em obj}, \/  const char $\ast$ {\em part}, \/  const char $\ast$ {\em state}, \/  double {\em x})}}
+\label{Edje__Edit_8h_b2212c4c10cdbc729122f205a8760bb3}
+
+
+Get the rel2 offset x value of state. 
+
+\begin{Desc}
+\item[Parameters: ]\par
+\begin{description}
+\item[{\em 
+obj}]The edje object \item[{\em 
+part}]The name of the part \item[{\em 
+state}]The name of the 'part state' (ex. \char`\"{}default 0.00\char`\"{}) \item[{\em 
+x}]The new 'rel2 offset X' value to set \end{description}
+\end{Desc}
+\hypertarget{Edje__Edit_8h_23b966d2abcb36b172406fa420651f87}{
+\index{Edje\_\-Edit.h@{Edje\_\-Edit.h}!edje\_\-edit\_\-state\_\-rel2\_\-offset\_\-y\_\-get@{edje\_\-edit\_\-state\_\-rel2\_\-offset\_\-y\_\-get}}
+\index{edje\_\-edit\_\-state\_\-rel2\_\-offset\_\-y\_\-get@{edje\_\-edit\_\-state\_\-rel2\_\-offset\_\-y\_\-get}!Edje_Edit.h@{Edje\_\-Edit.h}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI int edje\_\-edit\_\-state\_\-rel2\_\-offset\_\-y\_\-get (Evas\_\-Object $\ast$ {\em obj}, \/  const char $\ast$ {\em part}, \/  const char $\ast$ {\em state})}}
+\label{Edje__Edit_8h_23b966d2abcb36b172406fa420651f87}
+
+
+Get the rel2 offset y value of state. 
+
+\begin{Desc}
+\item[Returns:]The 'rel2 offset Y' value of the part state \end{Desc}
+\begin{Desc}
+\item[Parameters: ]\par
+\begin{description}
+\item[{\em 
+obj}]The edje object \item[{\em 
+part}]The name of the part \item[{\em 
+state}]The name of the 'part state' (ex. \char`\"{}default 0.00\char`\"{}) \end{description}
+\end{Desc}
+\hypertarget{Edje__Edit_8h_7f6ecf8c1c3321c0a1d354858c0bd7de}{
+\index{Edje\_\-Edit.h@{Edje\_\-Edit.h}!edje\_\-edit\_\-state\_\-rel2\_\-offset\_\-y\_\-set@{edje\_\-edit\_\-state\_\-rel2\_\-offset\_\-y\_\-set}}
+\index{edje\_\-edit\_\-state\_\-rel2\_\-offset\_\-y\_\-set@{edje\_\-edit\_\-state\_\-rel2\_\-offset\_\-y\_\-set}!Edje_Edit.h@{Edje\_\-Edit.h}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI void edje\_\-edit\_\-state\_\-rel2\_\-offset\_\-y\_\-set (Evas\_\-Object $\ast$ {\em obj}, \/  const char $\ast$ {\em part}, \/  const char $\ast$ {\em state}, \/  double {\em y})}}
+\label{Edje__Edit_8h_7f6ecf8c1c3321c0a1d354858c0bd7de}
+
+
+Get the rel2 offset y value of state. 
+
+\begin{Desc}
+\item[Parameters: ]\par
+\begin{description}
+\item[{\em 
+obj}]The edje object \item[{\em 
+part}]The name of the part \item[{\em 
+state}]The name of the 'part state' (ex. \char`\"{}default 0.00\char`\"{}) \item[{\em 
+y}]The new 'rel2 offset Y' value to set \end{description}
+\end{Desc}
+\hypertarget{Edje__Edit_8h_f5fc6673e1cc3a3862f99b6f2d58d37e}{
+\index{Edje\_\-Edit.h@{Edje\_\-Edit.h}!edje\_\-edit\_\-state\_\-rel2\_\-relative\_\-x\_\-get@{edje\_\-edit\_\-state\_\-rel2\_\-relative\_\-x\_\-get}}
+\index{edje\_\-edit\_\-state\_\-rel2\_\-relative\_\-x\_\-get@{edje\_\-edit\_\-state\_\-rel2\_\-relative\_\-x\_\-get}!Edje_Edit.h@{Edje\_\-Edit.h}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI double edje\_\-edit\_\-state\_\-rel2\_\-relative\_\-x\_\-get (Evas\_\-Object $\ast$ {\em obj}, \/  const char $\ast$ {\em part}, \/  const char $\ast$ {\em state})}}
+\label{Edje__Edit_8h_f5fc6673e1cc3a3862f99b6f2d58d37e}
+
+
+Get the rel2 relative x value of state. 
+
+\begin{Desc}
+\item[Returns:]The 'rel2 relative X' value of the part state \end{Desc}
+\begin{Desc}
+\item[Parameters: ]\par
+\begin{description}
+\item[{\em 
+obj}]The edje object \item[{\em 
+part}]The name of the part \item[{\em 
+state}]The name of the 'part state' (ex. \char`\"{}default 0.00\char`\"{}) \end{description}
+\end{Desc}
+\hypertarget{Edje__Edit_8h_809da6e072108020f58d5ec123ca7c47}{
+\index{Edje\_\-Edit.h@{Edje\_\-Edit.h}!edje\_\-edit\_\-state\_\-rel2\_\-relative\_\-x\_\-set@{edje\_\-edit\_\-state\_\-rel2\_\-relative\_\-x\_\-set}}
+\index{edje\_\-edit\_\-state\_\-rel2\_\-relative\_\-x\_\-set@{edje\_\-edit\_\-state\_\-rel2\_\-relative\_\-x\_\-set}!Edje_Edit.h@{Edje\_\-Edit.h}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI void edje\_\-edit\_\-state\_\-rel2\_\-relative\_\-x\_\-set (Evas\_\-Object $\ast$ {\em obj}, \/  const char $\ast$ {\em part}, \/  const char $\ast$ {\em state}, \/  double {\em x})}}
+\label{Edje__Edit_8h_809da6e072108020f58d5ec123ca7c47}
+
+
+Set the rel2 relative x value of state. 
+
+\begin{Desc}
+\item[Parameters: ]\par
+\begin{description}
+\item[{\em 
+obj}]The edje object \item[{\em 
+part}]The name of the part \item[{\em 
+state}]The name of the 'part state' (ex. \char`\"{}default 0.00\char`\"{}) \item[{\em 
+x}]The new 'rel2 relative X' value to set \end{description}
+\end{Desc}
+\hypertarget{Edje__Edit_8h_269c1d4a5049dbe02cb2d98d8d524464}{
+\index{Edje\_\-Edit.h@{Edje\_\-Edit.h}!edje\_\-edit\_\-state\_\-rel2\_\-relative\_\-y\_\-get@{edje\_\-edit\_\-state\_\-rel2\_\-relative\_\-y\_\-get}}
+\index{edje\_\-edit\_\-state\_\-rel2\_\-relative\_\-y\_\-get@{edje\_\-edit\_\-state\_\-rel2\_\-relative\_\-y\_\-get}!Edje_Edit.h@{Edje\_\-Edit.h}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI double edje\_\-edit\_\-state\_\-rel2\_\-relative\_\-y\_\-get (Evas\_\-Object $\ast$ {\em obj}, \/  const char $\ast$ {\em part}, \/  const char $\ast$ {\em state})}}
+\label{Edje__Edit_8h_269c1d4a5049dbe02cb2d98d8d524464}
+
+
+Get the rel2 relative y value of state. 
+
+\begin{Desc}
+\item[Returns:]The 'rel2 relative Y' value of the part state \end{Desc}
+\begin{Desc}
+\item[Parameters: ]\par
+\begin{description}
+\item[{\em 
+obj}]The edje object \item[{\em 
+part}]The name of the part \item[{\em 
+state}]The name of the 'part state' (ex. \char`\"{}default 0.00\char`\"{}) \end{description}
+\end{Desc}
+\hypertarget{Edje__Edit_8h_ccadadbdb6be7cc9a10414780b484182}{
+\index{Edje\_\-Edit.h@{Edje\_\-Edit.h}!edje\_\-edit\_\-state\_\-rel2\_\-relative\_\-y\_\-set@{edje\_\-edit\_\-state\_\-rel2\_\-relative\_\-y\_\-set}}
+\index{edje\_\-edit\_\-state\_\-rel2\_\-relative\_\-y\_\-set@{edje\_\-edit\_\-state\_\-rel2\_\-relative\_\-y\_\-set}!Edje_Edit.h@{Edje\_\-Edit.h}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI void edje\_\-edit\_\-state\_\-rel2\_\-relative\_\-y\_\-set (Evas\_\-Object $\ast$ {\em obj}, \/  const char $\ast$ {\em part}, \/  const char $\ast$ {\em state}, \/  double {\em y})}}
+\label{Edje__Edit_8h_ccadadbdb6be7cc9a10414780b484182}
+
+
+Set the rel2 relative y value of state. 
+
+\begin{Desc}
+\item[Parameters: ]\par
+\begin{description}
+\item[{\em 
+obj}]The edje object \item[{\em 
+part}]The name of the part \item[{\em 
+state}]The name of the 'part state' (ex. \char`\"{}default 0.00\char`\"{}) \item[{\em 
+y}]The new 'rel2 relative Y' value to set \end{description}
+\end{Desc}
+\hypertarget{Edje__Edit_8h_ab81c04c21844913651aa974b5a87c3b}{
+\index{Edje\_\-Edit.h@{Edje\_\-Edit.h}!edje\_\-edit\_\-state\_\-rel2\_\-to\_\-x\_\-get@{edje\_\-edit\_\-state\_\-rel2\_\-to\_\-x\_\-get}}
+\index{edje\_\-edit\_\-state\_\-rel2\_\-to\_\-x\_\-get@{edje\_\-edit\_\-state\_\-rel2\_\-to\_\-x\_\-get}!Edje_Edit.h@{Edje\_\-Edit.h}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI const char$\ast$ edje\_\-edit\_\-state\_\-rel2\_\-to\_\-x\_\-get (Evas\_\-Object $\ast$ {\em obj}, \/  const char $\ast$ {\em part}, \/  const char $\ast$ {\em state})}}
+\label{Edje__Edit_8h_ab81c04c21844913651aa974b5a87c3b}
+
+
+Get the part name rel2x is relative to. 
+
+The function return NULL if the part is relative to the whole interface. \begin{Desc}
+\item[Returns:]The name of the part to apply the relativity \end{Desc}
+\begin{Desc}
+\item[Parameters: ]\par
+\begin{description}
+\item[{\em 
+obj}]The edje object \item[{\em 
+part}]The name of the part \item[{\em 
+state}]The name of the 'part state' (ex. \char`\"{}default 0.00\char`\"{}) \end{description}
+\end{Desc}
+\hypertarget{Edje__Edit_8h_8cc33fc6ce62ae598e0a9d6831ca69f6}{
+\index{Edje\_\-Edit.h@{Edje\_\-Edit.h}!edje\_\-edit\_\-state\_\-rel2\_\-to\_\-x\_\-set@{edje\_\-edit\_\-state\_\-rel2\_\-to\_\-x\_\-set}}
+\index{edje\_\-edit\_\-state\_\-rel2\_\-to\_\-x\_\-set@{edje\_\-edit\_\-state\_\-rel2\_\-to\_\-x\_\-set}!Edje_Edit.h@{Edje\_\-Edit.h}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI void edje\_\-edit\_\-state\_\-rel2\_\-to\_\-x\_\-set (Evas\_\-Object $\ast$ {\em obj}, \/  const char $\ast$ {\em part}, \/  const char $\ast$ {\em state}, \/  const char $\ast$ {\em rel\_\-to})}}
+\label{Edje__Edit_8h_8cc33fc6ce62ae598e0a9d6831ca69f6}
+
+
+Set the part rel2x is relative to. 
+
+Set rel\_\-to to NULL make the part relative to the whole interface. \begin{Desc}
+\item[Parameters: ]\par
+\begin{description}
+\item[{\em 
+obj}]The edje object \item[{\em 
+part}]The name of the part \item[{\em 
+state}]The name of the 'part state' (ex. \char`\"{}default 0.00\char`\"{}) \item[{\em 
+rel\_\-to}]The name of the part that is used as container/parent \end{description}
+\end{Desc}
+\hypertarget{Edje__Edit_8h_292bc535084c2a200f0e5cd3afbabdaa}{
+\index{Edje\_\-Edit.h@{Edje\_\-Edit.h}!edje\_\-edit\_\-state\_\-rel2\_\-to\_\-y\_\-get@{edje\_\-edit\_\-state\_\-rel2\_\-to\_\-y\_\-get}}
+\index{edje\_\-edit\_\-state\_\-rel2\_\-to\_\-y\_\-get@{edje\_\-edit\_\-state\_\-rel2\_\-to\_\-y\_\-get}!Edje_Edit.h@{Edje\_\-Edit.h}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI const char$\ast$ edje\_\-edit\_\-state\_\-rel2\_\-to\_\-y\_\-get (Evas\_\-Object $\ast$ {\em obj}, \/  const char $\ast$ {\em part}, \/  const char $\ast$ {\em state})}}
+\label{Edje__Edit_8h_292bc535084c2a200f0e5cd3afbabdaa}
+
+
+Get the part name rel2y is relative to. 
+
+The function return NULL if the part is relative to the whole interface. \begin{Desc}
+\item[Returns:]The name of the part to apply the relativity \end{Desc}
+\begin{Desc}
+\item[Parameters: ]\par
+\begin{description}
+\item[{\em 
+obj}]The edje object \item[{\em 
+part}]The name of the part \item[{\em 
+state}]The name of the 'part state' (ex. \char`\"{}default 0.00\char`\"{}) \end{description}
+\end{Desc}
+\hypertarget{Edje__Edit_8h_9f11789321ca5e944c057643764ffafc}{
+\index{Edje\_\-Edit.h@{Edje\_\-Edit.h}!edje\_\-edit\_\-state\_\-rel2\_\-to\_\-y\_\-set@{edje\_\-edit\_\-state\_\-rel2\_\-to\_\-y\_\-set}}
+\index{edje\_\-edit\_\-state\_\-rel2\_\-to\_\-y\_\-set@{edje\_\-edit\_\-state\_\-rel2\_\-to\_\-y\_\-set}!Edje_Edit.h@{Edje\_\-Edit.h}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI void edje\_\-edit\_\-state\_\-rel2\_\-to\_\-y\_\-set (Evas\_\-Object $\ast$ {\em obj}, \/  const char $\ast$ {\em part}, \/  const char $\ast$ {\em state}, \/  const char $\ast$ {\em rel\_\-to})}}
+\label{Edje__Edit_8h_9f11789321ca5e944c057643764ffafc}
+
+
+Set the part rel2y is relative to. 
+
+Set rel\_\-to to NULL make the part relative to the whole interface. \begin{Desc}
+\item[Parameters: ]\par
+\begin{description}
+\item[{\em 
+obj}]The edje object \item[{\em 
+part}]The name of the part \item[{\em 
+state}]The name of the 'part state' (ex. \char`\"{}default 0.00\char`\"{}) \item[{\em 
+rel\_\-to}]The name of the part that is used as container/parent \end{description}
+\end{Desc}
+\hypertarget{Edje__Edit_8h_9b0c3c3dc7197c29590e5ec57e856c28}{
+\index{Edje\_\-Edit.h@{Edje\_\-Edit.h}!edje\_\-edit\_\-state\_\-text\_\-align\_\-x\_\-get@{edje\_\-edit\_\-state\_\-text\_\-align\_\-x\_\-get}}
+\index{edje\_\-edit\_\-state\_\-text\_\-align\_\-x\_\-get@{edje\_\-edit\_\-state\_\-text\_\-align\_\-x\_\-get}!Edje_Edit.h@{Edje\_\-Edit.h}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI double edje\_\-edit\_\-state\_\-text\_\-align\_\-x\_\-get (Evas\_\-Object $\ast$ {\em obj}, \/  const char $\ast$ {\em part}, \/  const char $\ast$ {\em state})}}
+\label{Edje__Edit_8h_9b0c3c3dc7197c29590e5ec57e856c28}
+
+
+Get the text horizontal align of a part state. 
+
+The value range is from 0.0(right) to 1.0(left) \begin{Desc}
+\item[Returns:]The text align X value \end{Desc}
+\begin{Desc}
+\item[Parameters: ]\par
+\begin{description}
+\item[{\em 
+obj}]The edje object \item[{\em 
+part}]The name of the part \item[{\em 
+state}]The name of the 'part state' (ex. \char`\"{}default 0.00\char`\"{}) \end{description}
+\end{Desc}
+\hypertarget{Edje__Edit_8h_fb044b3ac5f079c552cabbc31425a0b2}{
+\index{Edje\_\-Edit.h@{Edje\_\-Edit.h}!edje\_\-edit\_\-state\_\-text\_\-align\_\-x\_\-set@{edje\_\-edit\_\-state\_\-text\_\-align\_\-x\_\-set}}
+\index{edje\_\-edit\_\-state\_\-text\_\-align\_\-x\_\-set@{edje\_\-edit\_\-state\_\-text\_\-align\_\-x\_\-set}!Edje_Edit.h@{Edje\_\-Edit.h}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI void edje\_\-edit\_\-state\_\-text\_\-align\_\-x\_\-set (Evas\_\-Object $\ast$ {\em obj}, \/  const char $\ast$ {\em part}, \/  const char $\ast$ {\em state}, \/  double {\em align})}}
+\label{Edje__Edit_8h_fb044b3ac5f079c552cabbc31425a0b2}
+
+
+Set the text horizontal align of a part state. 
+
+The value range is from 0.0(right) to 1.0(left) \begin{Desc}
+\item[Parameters: ]\par
+\begin{description}
+\item[{\em 
+obj}]The edje object \item[{\em 
+part}]The name of the part \item[{\em 
+state}]The name of the 'part state' (ex. \char`\"{}default 0.00\char`\"{}) \item[{\em 
+align}]The new text align X value \end{description}
+\end{Desc}
+\hypertarget{Edje__Edit_8h_05513df83aa5d0eaa5b6de9827e08176}{
+\index{Edje\_\-Edit.h@{Edje\_\-Edit.h}!edje\_\-edit\_\-state\_\-text\_\-align\_\-y\_\-get@{edje\_\-edit\_\-state\_\-text\_\-align\_\-y\_\-get}}
+\index{edje\_\-edit\_\-state\_\-text\_\-align\_\-y\_\-get@{edje\_\-edit\_\-state\_\-text\_\-align\_\-y\_\-get}!Edje_Edit.h@{Edje\_\-Edit.h}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI double edje\_\-edit\_\-state\_\-text\_\-align\_\-y\_\-get (Evas\_\-Object $\ast$ {\em obj}, \/  const char $\ast$ {\em part}, \/  const char $\ast$ {\em state})}}
+\label{Edje__Edit_8h_05513df83aa5d0eaa5b6de9827e08176}
+
+
+Get the text vertical align of a part state. 
+
+The value range is from 0.0(top) to 1.0(bottom) \begin{Desc}
+\item[Returns:]The text align Y value \end{Desc}
+\begin{Desc}
+\item[Parameters: ]\par
+\begin{description}
+\item[{\em 
+obj}]The edje object \item[{\em 
+part}]The name of the part \item[{\em 
+state}]The name of the 'part state' (ex. \char`\"{}default 0.00\char`\"{}) \end{description}
+\end{Desc}
+\hypertarget{Edje__Edit_8h_15156a22255b0793938f2acfd1b9cbfb}{
+\index{Edje\_\-Edit.h@{Edje\_\-Edit.h}!edje\_\-edit\_\-state\_\-text\_\-align\_\-y\_\-set@{edje\_\-edit\_\-state\_\-text\_\-align\_\-y\_\-set}}
+\index{edje\_\-edit\_\-state\_\-text\_\-align\_\-y\_\-set@{edje\_\-edit\_\-state\_\-text\_\-align\_\-y\_\-set}!Edje_Edit.h@{Edje\_\-Edit.h}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI void edje\_\-edit\_\-state\_\-text\_\-align\_\-y\_\-set (Evas\_\-Object $\ast$ {\em obj}, \/  const char $\ast$ {\em part}, \/  const char $\ast$ {\em state}, \/  double {\em align})}}
+\label{Edje__Edit_8h_15156a22255b0793938f2acfd1b9cbfb}
+
+
+Set the text vertical align of a part state. 
+
+The value range is from 0.0(top) to 1.0(bottom) \begin{Desc}
+\item[Parameters: ]\par
+\begin{description}
+\item[{\em 
+obj}]The edje object \item[{\em 
+part}]The name of the part \item[{\em 
+state}]The name of the 'part state' (ex. \char`\"{}default 0.00\char`\"{}) \item[{\em 
+align}]The new text align Y value \end{description}
+\end{Desc}
+\hypertarget{Edje__Edit_8h_05150ba7f516a5b909c83de289a9878c}{
+\index{Edje\_\-Edit.h@{Edje\_\-Edit.h}!edje\_\-edit\_\-state\_\-text\_\-get@{edje\_\-edit\_\-state\_\-text\_\-get}}
+\index{edje\_\-edit\_\-state\_\-text\_\-get@{edje\_\-edit\_\-state\_\-text\_\-get}!Edje_Edit.h@{Edje\_\-Edit.h}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI const char$\ast$ edje\_\-edit\_\-state\_\-text\_\-get (Evas\_\-Object $\ast$ {\em obj}, \/  const char $\ast$ {\em part}, \/  const char $\ast$ {\em state})}}
+\label{Edje__Edit_8h_05150ba7f516a5b909c83de289a9878c}
+
+
+Get the text of a part state. 
+
+Remember to free the returned string with \hyperlink{Edje__Edit_8h_924beb7b18a2f754b4b78cee3b3cc662}{edje\_\-edit\_\-string\_\-free()}. \begin{Desc}
+\item[Returns:]A newly allocated string containing the text for the given state \end{Desc}
+\begin{Desc}
+\item[Parameters: ]\par
+\begin{description}
+\item[{\em 
+obj}]The edje object \item[{\em 
+part}]The name of the part \item[{\em 
+state}]The name of the 'part state' (ex. \char`\"{}default 0.00\char`\"{}) \end{description}
+\end{Desc}
+\hypertarget{Edje__Edit_8h_097cdd63bcf9c5ba6ed705dd1cf91ecf}{
+\index{Edje\_\-Edit.h@{Edje\_\-Edit.h}!edje\_\-edit\_\-state\_\-text\_\-set@{edje\_\-edit\_\-state\_\-text\_\-set}}
+\index{edje\_\-edit\_\-state\_\-text\_\-set@{edje\_\-edit\_\-state\_\-text\_\-set}!Edje_Edit.h@{Edje\_\-Edit.h}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI void edje\_\-edit\_\-state\_\-text\_\-set (Evas\_\-Object $\ast$ {\em obj}, \/  const char $\ast$ {\em part}, \/  const char $\ast$ {\em state}, \/  const char $\ast$ {\em text})}}
+\label{Edje__Edit_8h_097cdd63bcf9c5ba6ed705dd1cf91ecf}
+
+
+Set the text of a part state. 
+
+\begin{Desc}
+\item[Parameters: ]\par
+\begin{description}
+\item[{\em 
+obj}]The edje object \item[{\em 
+part}]The name of the part \item[{\em 
+state}]The name of the 'part state' (ex. \char`\"{}default 0.00\char`\"{}) \item[{\em 
+text}]The new text to assign \end{description}
+\end{Desc}
+\hypertarget{Edje__Edit_8h_2680c92586211c349a20fe8e9f9d3d07}{
+\index{Edje\_\-Edit.h@{Edje\_\-Edit.h}!edje\_\-edit\_\-state\_\-text\_\-size\_\-get@{edje\_\-edit\_\-state\_\-text\_\-size\_\-get}}
+\index{edje\_\-edit\_\-state\_\-text\_\-size\_\-get@{edje\_\-edit\_\-state\_\-text\_\-size\_\-get}!Edje_Edit.h@{Edje\_\-Edit.h}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI int edje\_\-edit\_\-state\_\-text\_\-size\_\-get (Evas\_\-Object $\ast$ {\em obj}, \/  const char $\ast$ {\em part}, \/  const char $\ast$ {\em state})}}
+\label{Edje__Edit_8h_2680c92586211c349a20fe8e9f9d3d07}
+
+
+Get the text size of a part state. 
+
+The function will return -1 on errors. \begin{Desc}
+\item[Returns:]The font size in pixel or -1 on errors. \end{Desc}
+\begin{Desc}
+\item[Parameters: ]\par
+\begin{description}
+\item[{\em 
+obj}]The edje object \item[{\em 
+part}]The name of the part \item[{\em 
+state}]The name of the 'part state' (ex. \char`\"{}default 0.00\char`\"{}) \end{description}
+\end{Desc}
+\hypertarget{Edje__Edit_8h_2ba8231663aa44869d37091235f120be}{
+\index{Edje\_\-Edit.h@{Edje\_\-Edit.h}!edje\_\-edit\_\-state\_\-text\_\-size\_\-set@{edje\_\-edit\_\-state\_\-text\_\-size\_\-set}}
+\index{edje\_\-edit\_\-state\_\-text\_\-size\_\-set@{edje\_\-edit\_\-state\_\-text\_\-size\_\-set}!Edje_Edit.h@{Edje\_\-Edit.h}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI void edje\_\-edit\_\-state\_\-text\_\-size\_\-set (Evas\_\-Object $\ast$ {\em obj}, \/  const char $\ast$ {\em part}, \/  const char $\ast$ {\em state}, \/  int {\em size})}}
+\label{Edje__Edit_8h_2ba8231663aa44869d37091235f120be}
+
+
+Set the text size of a part state. 
+
+\begin{Desc}
+\item[Parameters: ]\par
+\begin{description}
+\item[{\em 
+obj}]The edje object \item[{\em 
+part}]The name of the part \item[{\em 
+state}]The name of the 'part state' (ex. \char`\"{}default 0.00\char`\"{}) \item[{\em 
+size}]The new font size to set (in pixel) \end{description}
+\end{Desc}
+\hypertarget{Edje__Edit_8h_4ba01394f4a4606714e7e6fffb1d1252}{
+\index{Edje\_\-Edit.h@{Edje\_\-Edit.h}!edje\_\-edit\_\-state\_\-tween\_\-add@{edje\_\-edit\_\-state\_\-tween\_\-add}}
+\index{edje\_\-edit\_\-state\_\-tween\_\-add@{edje\_\-edit\_\-state\_\-tween\_\-add}!Edje_Edit.h@{Edje\_\-Edit.h}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI unsigned char edje\_\-edit\_\-state\_\-tween\_\-add (Evas\_\-Object $\ast$ {\em obj}, \/  const char $\ast$ {\em part}, \/  const char $\ast$ {\em state}, \/  const char $\ast$ {\em tween})}}
+\label{Edje__Edit_8h_4ba01394f4a4606714e7e6fffb1d1252}
+
+
+Add a new tween frame to the given part state The tween param must be the name of an existing image. 
+
+\begin{Desc}
+\item[Returns:]1 on success, 0 otherwise \end{Desc}
+\begin{Desc}
+\item[Parameters: ]\par
+\begin{description}
+\item[{\em 
+obj}]The edje object \item[{\em 
+part}]The name of the part \item[{\em 
+state}]The name of the 'part state' (ex. \char`\"{}default 0.00\char`\"{}) \item[{\em 
+tween}]The name of the image to add. \end{description}
+\end{Desc}
+\hypertarget{Edje__Edit_8h_ad7ada01be3bad13ea63439207725f80}{
+\index{Edje\_\-Edit.h@{Edje\_\-Edit.h}!edje\_\-edit\_\-state\_\-tween\_\-del@{edje\_\-edit\_\-state\_\-tween\_\-del}}
+\index{edje\_\-edit\_\-state\_\-tween\_\-del@{edje\_\-edit\_\-state\_\-tween\_\-del}!Edje_Edit.h@{Edje\_\-Edit.h}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI unsigned char edje\_\-edit\_\-state\_\-tween\_\-del (Evas\_\-Object $\ast$ {\em obj}, \/  const char $\ast$ {\em part}, \/  const char $\ast$ {\em state}, \/  const char $\ast$ {\em tween})}}
+\label{Edje__Edit_8h_ad7ada01be3bad13ea63439207725f80}
+
+
+Remove the first tween with the given name. 
+
+If none is removed the function return 0. The image is not removed from the edje.\begin{Desc}
+\item[Returns:]1 on success, 0 otherwise \end{Desc}
+\begin{Desc}
+\item[Parameters: ]\par
+\begin{description}
+\item[{\em 
+obj}]The edje object \item[{\em 
+part}]The name of the part \item[{\em 
+state}]The name of the 'part state' (ex. \char`\"{}default 0.00\char`\"{}) \item[{\em 
+tween}]The name of the image to remove from the tween list. \end{description}
+\end{Desc}
+\hypertarget{Edje__Edit_8h_b04ec3fdcc2a32f1683c5ade62475651}{
+\index{Edje\_\-Edit.h@{Edje\_\-Edit.h}!edje\_\-edit\_\-state\_\-tweens\_\-list\_\-get@{edje\_\-edit\_\-state\_\-tweens\_\-list\_\-get}}
+\index{edje\_\-edit\_\-state\_\-tweens\_\-list\_\-get@{edje\_\-edit\_\-state\_\-tweens\_\-list\_\-get}!Edje_Edit.h@{Edje\_\-Edit.h}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI Evas\_\-List$\ast$ edje\_\-edit\_\-state\_\-tweens\_\-list\_\-get (Evas\_\-Object $\ast$ {\em obj}, \/  const char $\ast$ {\em part}, \/  const char $\ast$ {\em state})}}
+\label{Edje__Edit_8h_b04ec3fdcc2a32f1683c5ade62475651}
+
+
+Get the list of all the tweens images in the given part state. 
+
+Use \hyperlink{Edje__Edit_8h_68ea52098aa643bf273436cf04e92ccf}{edje\_\-edit\_\-string\_\-list\_\-free()} when you don't need it anymore.\begin{Desc}
+\item[Returns:]A string list containing all the image name that form a tween animation in the given part state \end{Desc}
+\begin{Desc}
+\item[Parameters: ]\par
+\begin{description}
+\item[{\em 
+obj}]The edje object \item[{\em 
+part}]The name of the part \item[{\em 
+state}]The name of the 'part state' (ex. \char`\"{}default 0.00\char`\"{}) \end{description}
+\end{Desc}
+\hypertarget{Edje__Edit_8h_924beb7b18a2f754b4b78cee3b3cc662}{
+\index{Edje\_\-Edit.h@{Edje\_\-Edit.h}!edje\_\-edit\_\-string\_\-free@{edje\_\-edit\_\-string\_\-free}}
+\index{edje\_\-edit\_\-string\_\-free@{edje\_\-edit\_\-string\_\-free}!Edje_Edit.h@{Edje\_\-Edit.h}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI void edje\_\-edit\_\-string\_\-free (const char $\ast$ {\em str})}}
+\label{Edje__Edit_8h_924beb7b18a2f754b4b78cee3b3cc662}
+
+
+Free a generic string (char $\ast$) allocated by an edje\_\-edit\_\-$\ast$\_\-get() function. 
+
+\begin{Desc}
+\item[Parameters: ]\par
+\begin{description}
+\item[{\em 
+str}]The string to free. \end{description}
+\end{Desc}
+\hypertarget{Edje__Edit_8h_68ea52098aa643bf273436cf04e92ccf}{
+\index{Edje\_\-Edit.h@{Edje\_\-Edit.h}!edje\_\-edit\_\-string\_\-list\_\-free@{edje\_\-edit\_\-string\_\-list\_\-free}}
+\index{edje\_\-edit\_\-string\_\-list\_\-free@{edje\_\-edit\_\-string\_\-list\_\-free}!Edje_Edit.h@{Edje\_\-Edit.h}}
+\subsubsection{\setlength{\rightskip}{0pt plus 5cm}EAPI void edje\_\-edit\_\-string\_\-list\_\-free (Evas\_\-List $\ast$ {\em lst})}}
+\label{Edje__Edit_8h_68ea52098aa643bf273436cf04e92ccf}
+
+
+Free a generic Evas\_\-List of (char $\ast$) allocated by an edje\_\-edit\_\-$\ast$\_\-get() function. 
+
+\begin{Desc}
+\item[Parameters: ]\par
+\begin{description}
+\item[{\em 
+lst}]The list to free. Will also free all the strings. \end{description}
+\end{Desc}
