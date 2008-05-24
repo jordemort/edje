@@ -6,17 +6,8 @@ include /usr/share/cdbs/1/rules/patchsys-quilt.mk
 
 LDFLAGS += -Wl,--as-needed
 
-build/libedje-doc::
-	cd $(DEB_SRCDIR) && doxygen
-
 install/libedje-doc::
 	cp -R $(DEB_SRCDIR)/doc/html debian/libedje-doc/usr/share/doc/libedje-doc/
-
-clean::
-	rm -rf $(DEB_SRCDIR)/doc/html $(DEB_SRCDIR)/doc/latex $(DEB_SRCDIR)/doc/man
-	mkdir -p $(DEB_SRCDIR)/doc/html
-	cp $(DEB_SRCDIR)/doc/img/*.png $(DEB_SRCDIR)/doc/html/
-	cp $(DEB_SRCDIR)/doc/img/*.gif $(DEB_SRCDIR)/doc/html/
 
 #DEB_INSTALL_MANPAGES_libedje-doc := $(DEB_SRCDIR)/doc/man/man3/*.3
 DEB_DH_STRIP_ARGS := --dbg-package=libedje-dbg

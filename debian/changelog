@@ -1,6 +1,7 @@
 edje (0.9.9.043-1) UNRELEASED; urgency=low
 
   * New upstream release
+  * Docs are now prebuilt in the tarbal
 
  -- Jan Lübbe <jluebbe@debian.org>  Sat, 24 May 2008 15:52:31 +0200
 
