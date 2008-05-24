@@ -105,6 +105,8 @@ edje_object_signal_callback_add(Evas_Object *obj, const char *emission, const ch
 	escb->just_added = 1;
 	ed->just_added_callbacks = 1;
      }
+   else
+     _edje_callbacks_patterns_clean(ed);
 }
 
 /** Remove a callback from an object
@@ -150,6 +152,8 @@ edje_object_signal_callback_del(Evas_Object *obj, const char *emission, const ch
 	       }
 	     else
 	       {
+		  _edje_callbacks_patterns_clean(ed);
+
 		  ed->callbacks = evas_list_remove_list(ed->callbacks, l);
 		  if (escb->signal) evas_stringshare_del(escb->signal);
 		  if (escb->source) evas_stringshare_del(escb->source);
@@ -454,7 +458,7 @@ void
 _edje_program_end(Edje *ed, Edje_Running_Program *runp)
 {
    Evas_List *l;
-   char *pname = NULL;
+   const char *pname = NULL;
    int free_runp = 0;
 
    if (ed->delete_me) return;
@@ -859,6 +863,25 @@ static int _edje_glob_callback(Edje_Program *pr, void *dt)
    return 0;
 }
 
+
+void
+_edje_callbacks_patterns_clean(Edje *ed)
+{
+   _edje_signals_sources_patterns_clean(&ed->patterns.callbacks);
+}
+
+static void
+_edje_callbacks_patterns_init(Edje *ed)
+{
+   Edje_Signals_Sources_Patterns *ssp = &ed->patterns.callbacks;
+
+   if (ssp->signals_patterns)
+     return;
+
+   ssp->signals_patterns = edje_match_callback_signal_init(ed->callbacks);
+   ssp->sources_patterns = edje_match_callback_source_init(ed->callbacks);
+}
+
 /* FIXME: what if we delete the evas object??? */
 void
 _edje_emit_handle(Edje *ed, const char *sig, const char *src)
@@ -926,29 +949,16 @@ _edje_emit_handle(Edje *ed, const char *sig, const char *src)
 	     data.matched = 0;
 	     data.matches = NULL;
 #endif
-             Edje_Patterns      *signals_patterns;
-             Edje_Patterns      *sources_patterns;
-
              if (ed->collection->programs)
                {
-                  signals_patterns = edje_match_programs_signal_init(ed->collection->programs);
-                  sources_patterns = edje_match_programs_source_init(ed->collection->programs);
-
-                  if (edje_match_programs_exec(signals_patterns,
-                                               sources_patterns,
+                  if (edje_match_programs_exec(ed->patterns.programs.signals_patterns,
+                                               ed->patterns.programs.sources_patterns,
                                                sig,
                                                src,
                                                ed->collection->programs,
                                                _edje_glob_callback,
                                                &data) == 0)
-                    {
-                       edje_match_patterns_free(signals_patterns);
-                       edje_match_patterns_free(sources_patterns);
-                       goto break_prog;
-                    }
-
-                  edje_match_patterns_free(signals_patterns);
-                  edje_match_patterns_free(sources_patterns);
+                    goto break_prog;
                }
 
 #ifdef EDJE_PROGRAM_CACHE
@@ -979,39 +989,32 @@ _edje_emit_handle(Edje *ed, const char *sig, const char *src)
 static void
 _edje_emit_cb(Edje *ed, const char *sig, const char *src)
 {
-   Edje_Patterns        *signals_patterns;
-   Edje_Patterns        *sources_patterns;
    Evas_List            *l;
 
    if (ed->delete_me) return;
    _edje_ref(ed);
    _edje_freeze(ed);
    _edje_block(ed);
+
+   if (ed->just_added_callbacks)
+     _edje_callbacks_patterns_clean(ed);
+
    ed->walking_callbacks = 1;
 
    if (ed->callbacks)
      {
         int     r;
 
-        signals_patterns = edje_match_callback_signal_init(ed->callbacks);
-        sources_patterns = edje_match_callback_source_init(ed->callbacks);
-
-        r = edje_match_callback_exec(signals_patterns,
-                                     sources_patterns,
+	_edje_callbacks_patterns_init(ed);
+        r = edje_match_callback_exec(ed->patterns.callbacks.signals_patterns,
+                                     ed->patterns.callbacks.sources_patterns,
                                      sig,
                                      src,
                                      ed->callbacks,
                                      ed);
 
         if (!r)
-          {
-             edje_match_patterns_free(signals_patterns);
-             edje_match_patterns_free(sources_patterns);
-             goto break_prog;
-          }
-
-        edje_match_patterns_free(signals_patterns);
-        edje_match_patterns_free(sources_patterns);
+          goto break_prog;
      }
 
    ed->walking_callbacks = 0;
@@ -1037,6 +1040,8 @@ _edje_emit_cb(Edje *ed, const char *sig, const char *src)
 	       }
 	     l = next_l;
 	  }
+
+        _edje_callbacks_patterns_clean(ed);
      }
    break_prog:
    _edje_unblock(ed);

@@ -60,7 +60,8 @@ am_libedje_la_OBJECTS = edje_calc.lo edje_callbacks.lo edje_data.lo \
 	edje_embryo.lo edje_load.lo edje_main.lo edje_misc.lo \
 	edje_program.lo edje_smart.lo edje_text.lo edje_util.lo \
 	edje_var.lo edje_container.lo edje_message_queue.lo \
-	edje_cache.lo edje_match.lo edje_textblock_styles.lo
+	edje_cache.lo edje_match.lo edje_textblock_styles.lo \
+	edje_edit.lo
 libedje_la_OBJECTS = $(am_libedje_la_OBJECTS)
 DEFAULT_INCLUDES = -I. -I$(srcdir) -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/depcomp
@@ -106,6 +107,7 @@ CYGPATH_W = @CYGPATH_W@
 DEFS = @DEFS@
 DEPDIR = @DEPDIR@
 DLLTOOL = @DLLTOOL@
+DSYMUTIL = @DSYMUTIL@
 ECHO = @ECHO@
 ECHO_C = @ECHO_C@
 ECHO_N = @ECHO_N@
@@ -129,6 +131,7 @@ LIBTOOL = @LIBTOOL@
 LN_S = @LN_S@
 LTLIBOBJS = @LTLIBOBJS@
 MAKEINFO = @MAKEINFO@
+NMEDIT = @NMEDIT@
 OBJDUMP = @OBJDUMP@
 OBJEXT = @OBJEXT@
 PACKAGE = @PACKAGE@
@@ -196,6 +199,7 @@ MAINTAINERCLEANFILES = Makefile.in
 AM_CPPFLAGS = \
 -I. \
 -I$(top_srcdir) \
+-I$(top_srcdir)/src/bin \
 -I$(top_srcdir)/src/lib \
 -DPACKAGE_BIN_DIR=\"$(bindir)\" \
 -DPACKAGE_LIB_DIR=\"$(libdir)\" \
@@ -206,7 +210,8 @@ lib_LTLIBRARIES = \
 libedje.la
 
 include_HEADERS = \
-Edje.h
+Edje.h \
+Edje_Edit.h
 
 libedje_la_SOURCES = \
 edje_calc.c \
@@ -227,7 +232,8 @@ edje_message_queue.c \
 edje_private.h \
 edje_cache.c \
 edje_match.c \
-edje_textblock_styles.c
+edje_textblock_styles.c \
+edje_edit.c
 
 libedje_la_LIBADD = -lm @EDJE_LIBS@
 libedje_la_DEPENDENCIES = $(top_builddir)/config.h
@@ -306,6 +312,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/edje_callbacks.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/edje_container.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/edje_data.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/edje_edit.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/edje_embryo.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/edje_load.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/edje_main.Plo@am__quote@

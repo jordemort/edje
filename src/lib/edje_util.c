@@ -21,8 +21,8 @@ struct _Edje_List_Foreach_Data
    Evas_List *list;
 };
 
-static Evas_Bool _edje_color_class_list_foreach(Evas_Hash *hash, const char *key, void *data, void *fdata);
-static Evas_Bool _edje_text_class_list_foreach(Evas_Hash *hash, const char *key, void *data, void *fdata);
+static Evas_Bool _edje_color_class_list_foreach(const Evas_Hash *hash, const char *key, void *data, void *fdata);
+static Evas_Bool _edje_text_class_list_foreach(const Evas_Hash *hash, const char *key, void *data, void *fdata);
 
 Edje_Real_Part *_edje_real_part_recursive_get_helper(Edje *ed, char **path);
 
@@ -211,7 +211,8 @@ edje_color_class_set(const char *color_class, int r, int g, int b, int a, int r2
 	     free(cc);
 	     return;
 	  }
-	_edje_color_class_hash = evas_hash_add(_edje_color_class_hash, color_class, cc);
+	_edje_color_class_hash =
+          evas_hash_add(_edje_color_class_hash, color_class, cc);
 	if (evas_hash_alloc_error())
 	  {
 	     evas_stringshare_del(cc->name);
@@ -277,7 +278,8 @@ edje_color_class_del(const char *color_class)
    cc = evas_hash_find(_edje_color_class_hash, color_class);
    if (!cc) return;
 
-   _edje_color_class_hash = evas_hash_del(_edje_color_class_hash, color_class, cc);
+   _edje_color_class_hash =
+     evas_hash_del(_edje_color_class_hash, color_class, cc);
    evas_stringshare_del(cc->name);
    free(cc);
 
@@ -305,13 +307,14 @@ edje_color_class_list(void)
    Edje_List_Foreach_Data fdata;
 
    memset(&fdata, 0, sizeof(Edje_List_Foreach_Data));
-   evas_hash_foreach(_edje_color_class_member_hash, _edje_color_class_list_foreach, &fdata);
+   evas_hash_foreach(_edje_color_class_member_hash,
+                     _edje_color_class_list_foreach, &fdata);
 
    return fdata.list;
 }
 
 static Evas_Bool
-_edje_color_class_list_foreach(Evas_Hash *hash, const char *key, void *data, void *fdata)
+_edje_color_class_list_foreach(const Evas_Hash *hash, const char *key, void *data, void *fdata)
 {
    Edje_List_Foreach_Data *fd;
 
@@ -494,7 +497,8 @@ edje_text_class_set(const char *text_class, const char *font, Evas_Font_Size siz
 	     free(tc);
 	     return;
 	  }
-	_edje_text_class_hash = evas_hash_add(_edje_text_class_hash, text_class, tc);
+	_edje_text_class_hash =
+          evas_hash_add(_edje_text_class_hash, text_class, tc);
 	if (evas_hash_alloc_error())
 	  {
 	     evas_stringshare_del(tc->name);
@@ -516,7 +520,8 @@ edje_text_class_set(const char *text_class, const char *font, Evas_Font_Size siz
    tc->font = evas_stringshare_add(font);
    if (!tc->font)
      {
-	_edje_text_class_hash = evas_hash_del(_edje_text_class_hash, text_class, tc);
+	_edje_text_class_hash =
+          evas_hash_del(_edje_text_class_hash, text_class, tc);
 	free(tc);
 	return;
      }
@@ -552,7 +557,8 @@ edje_text_class_del(const char *text_class)
    tc = evas_hash_find(_edje_text_class_hash, text_class);
    if (!tc) return;
 
-   _edje_text_class_hash = evas_hash_del(_edje_text_class_hash, text_class, tc);
+   _edje_text_class_hash =
+     evas_hash_del(_edje_text_class_hash, text_class, tc);
    evas_stringshare_del(tc->name);
    evas_stringshare_del(tc->font);
    free(tc);
@@ -582,13 +588,14 @@ edje_text_class_list(void)
    Edje_List_Foreach_Data fdata;
 
    memset(&fdata, 0, sizeof(Edje_List_Foreach_Data));
-   evas_hash_foreach(_edje_text_class_member_hash, _edje_text_class_list_foreach, &fdata);
+   evas_hash_foreach(_edje_text_class_member_hash,
+                     _edje_text_class_list_foreach, &fdata);
 
    return fdata.list;
 }
 
 static Evas_Bool
-_edje_text_class_list_foreach(Evas_Hash *hash, const char *key, void *data, void *fdata)
+_edje_text_class_list_foreach(const Evas_Hash *hash, const char *key, void *data, void *fdata)
 {
    Edje_List_Foreach_Data *fd;
 
@@ -623,15 +630,12 @@ edje_object_text_class_set(Evas_Object *obj, const char *text_class, const char 
 	if ((tc->name) && (!strcmp(tc->name, text_class)))
 	  {
 	     /* Match and the same, return */
-	     if ((tc->font) && (font) &&
-		 (!strcmp(tc->font, font)) &&
+	     if ((tc->font) && (font) && (!strcmp(tc->font, font)) &&
 		 (tc->size == size))
 	       return;
 
 	     /* No font but size is the same, return */
-	     if ((!tc->font) && (!font) &&
-		 (tc->size == size))
-	       return;
+	     if ((!tc->font) && (!font) && (tc->size == size)) return;
 
 	     /* Update new text class properties */
 	     if (tc->font) evas_stringshare_del(tc->font);
@@ -809,7 +813,8 @@ edje_object_part_text_set(Evas_Object *obj, const char *part, const char *text)
    else rp->text.text = NULL;
    rp->edje->dirty = 1;
    _edje_recalc(rp->edje);
-   if (rp->edje->text_change.func) rp->edje->text_change.func(rp->edje->text_change.data, obj, part);
+   if (rp->edje->text_change.func)
+     rp->edje->text_change.func(rp->edje->text_change.data, obj, part);
 }
 
 /** Returns the text of the object part
@@ -1004,8 +1009,8 @@ edje_object_part_unswallow(Evas_Object *obj, Evas_Object *obj_swallow)
      {
 	evas_object_smart_member_del(rp->swallowed_object);
 	evas_object_event_callback_del(rp->swallowed_object,
-	      EVAS_CALLBACK_FREE,
-	      _edje_object_part_swallow_free_cb);
+                                       EVAS_CALLBACK_FREE,
+                                       _edje_object_part_swallow_free_cb);
 	evas_object_clip_unset(rp->swallowed_object);
 	evas_object_data_del(rp->swallowed_object, "\377 edje.swallowing_part");
 
@@ -1136,6 +1141,21 @@ edje_object_calc_force(Evas_Object *obj)
 EAPI void
 edje_object_size_min_calc(Evas_Object *obj, Evas_Coord *minw, Evas_Coord *minh)
 {
+   edje_object_size_min_restricted_calc(obj, minw, minh, 0, 0);
+}
+
+/** Calculate minimum size
+ * @param obj A valid Evas_Object handle
+ * @param minw Minimum width pointer
+ * @param minh Minimum height pointer
+ * @param restrictedw Do not allow object min width calc to be less than this
+ * @param restrictedh Do not allow object min height calc to be less than this
+ *
+ * Calculates the object's minimum size ?!
+ */
+EAPI void
+edje_object_size_min_restricted_calc(Evas_Object *obj, Evas_Coord *minw, Evas_Coord *minh, Evas_Coord restrictedw, Evas_Coord restrictedh)
+{
    Edje *ed;
    Evas_Coord pw, ph;
    int maxw, maxh;
@@ -1146,8 +1166,8 @@ edje_object_size_min_calc(Evas_Object *obj, Evas_Coord *minw, Evas_Coord *minh)
    ed = _edje_fetch(obj);
    if ((!ed) || (!ed->collection))
      {
-	if (minw) *minw = 0;
-	if (minh) *minh = 0;
+	if (minw) *minw = restrictedw;
+	if (minh) *minh = restrictedh;
 	return;
      }
    reset_maxwh = 1;
@@ -1156,8 +1176,8 @@ edje_object_size_min_calc(Evas_Object *obj, Evas_Coord *minw, Evas_Coord *minh)
    ph = ed->h;
 
    again:
-   ed->w = 0;
-   ed->h = 0;
+   ed->w = restrictedw;
+   ed->h = restrictedh;
 
    maxw = 0;
    maxh = 0;
@@ -1196,6 +1216,10 @@ edje_object_size_min_calc(Evas_Object *obj, Evas_Coord *minw, Evas_Coord *minh)
 		       pep = ep;
 		       didw = 1;
 		    }
+		  if ((ep->part->type == EDJE_PART_TYPE_TEXTBLOCK))
+		    {
+		       /* FIXME: do something */
+		    }
 	       }
 	     if (!((ep->chosen_description) &&
 		   (ep->chosen_description->fixed.h)))
@@ -1217,6 +1241,8 @@ edje_object_size_min_calc(Evas_Object *obj, Evas_Coord *minw, Evas_Coord *minh)
 	  {
 	     ed->w += maxw;
 	     ed->h += maxh;
+	     if (ed->w < restrictedw) ed->w = restrictedw;
+	     if (ed->h < restrictedh) ed->h = restrictedh;
 	  }
 	if ((ed->w > 4000) || (ed->h > 4000))
 	  {
@@ -1310,15 +1336,9 @@ edje_object_part_drag_dir_get(Evas_Object *obj, const char *part)
    Edje_Real_Part *rp;
 
    ed = _edje_fetch(obj);
-   if ((!ed) || (!part))
-     {
-	return EDJE_DRAG_DIR_NONE;
-     }
+   if ((!ed) || (!part)) return EDJE_DRAG_DIR_NONE;
    rp = _edje_real_part_recursive_get(ed, (char *)part);
-   if (!rp)
-     {
-	return EDJE_DRAG_DIR_NONE;
-     }
+   if (!rp) return EDJE_DRAG_DIR_NONE;
    if ((rp->part->dragable.x) && (rp->part->dragable.y)) return EDJE_DRAG_DIR_XY;
    else if (rp->part->dragable.x) return EDJE_DRAG_DIR_X;
    else if (rp->part->dragable.y) return EDJE_DRAG_DIR_Y;
@@ -1340,15 +1360,9 @@ edje_object_part_drag_value_set(Evas_Object *obj, const char *part, double dx, d
    Edje_Real_Part *rp;
 
    ed = _edje_fetch(obj);
-   if ((!ed) || (!part))
-     {
-	return;
-     }
+   if ((!ed) || (!part)) return;
    rp = _edje_real_part_recursive_get(ed, (char *)part);
-   if (!rp)
-     {
-	return;
-     }
+   if (!rp) return;
    if (rp->drag.down.count > 0) return;
    if (rp->part->dragable.confine_id != -1)
      {
@@ -1417,15 +1431,9 @@ edje_object_part_drag_size_set(Evas_Object *obj, const char *part, double dw, do
    Edje_Real_Part *rp;
 
    ed = _edje_fetch(obj);
-   if ((!ed) || (!part))
-     {
-	return;
-     }
+   if ((!ed) || (!part)) return;
    rp = _edje_real_part_recursive_get(ed, (char *)part);
-   if (!rp)
-     {
-	return;
-     }
+   if (!rp) return;
    if (dw < 0.0) dw = 0.0;
    else if (dw > 1.0) dw = 1.0;
    if (dh < 0.0) dh = 0.0;
@@ -1484,15 +1492,9 @@ edje_object_part_drag_step_set(Evas_Object *obj, const char *part, double dx, do
    Edje_Real_Part *rp;
 
    ed = _edje_fetch(obj);
-   if ((!ed) || (!part))
-     {
-	return;
-     }
+   if ((!ed) || (!part)) return;
    rp = _edje_real_part_recursive_get(ed, (char *)part);
-   if (!rp)
-     {
-	return;
-     }
+   if (!rp) return;
    if (dx < 0.0) dx = 0.0;
    else if (dx > 1.0) dx = 1.0;
    if (dy < 0.0) dy = 0.0;
@@ -1548,15 +1550,9 @@ edje_object_part_drag_page_set(Evas_Object *obj, const char *part, double dx, do
    Edje_Real_Part *rp;
 
    ed = _edje_fetch(obj);
-   if ((!ed) || (!part))
-     {
-	return;
-     }
+   if ((!ed) || (!part)) return;
    rp = _edje_real_part_recursive_get(ed, (char *)part);
-   if (!rp)
-     {
-	return;
-     }
+   if (!rp) return;
    if (dx < 0.0) dx = 0.0;
    else if (dx > 1.0) dx = 1.0;
    if (dy < 0.0) dy = 0.0;
@@ -1614,15 +1610,9 @@ edje_object_part_drag_step(Evas_Object *obj, const char *part, double dx, double
    double px, py;
 
    ed = _edje_fetch(obj);
-   if ((!ed) || (!part))
-     {
-	return;
-     }
+   if ((!ed) || (!part)) return;
    rp = _edje_real_part_recursive_get(ed, (char *)part);
-   if (!rp)
-     {
-	return;
-     }
+   if (!rp) return;
    if (rp->drag.down.count > 0) return;
    px = rp->drag.val.x;
    py = rp->drag.val.y;
@@ -1652,15 +1642,9 @@ edje_object_part_drag_page(Evas_Object *obj, const char *part, double dx, double
    double px, py;
 
    ed = _edje_fetch(obj);
-   if ((!ed) || (!part))
-     {
-	return;
-     }
+   if ((!ed) || (!part)) return;
    rp = _edje_real_part_recursive_get(ed, (char *)part);
-   if (!rp)
-     {
-	return;
-     }
+   if (!rp) return;
    if (rp->drag.down.count > 0) return;
    px = rp->drag.val.x;
    py = rp->drag.val.y;
@@ -1695,10 +1679,10 @@ _edje_real_part_recursive_get_helper(Edje *ed, char **path)
    Edje_Real_Part *rp;
    //printf("  lookup: %s on %s\n", path[0], ed->parent ? ed->parent : "-");
    rp = _edje_real_part_get(ed, path[0]);
-   if (path[1] == NULL)
-     return rp;
+   if (path[1] == NULL) return rp;
 
-   if (!rp || rp->part->type != EDJE_PART_TYPE_GROUP || !rp->swallowed_object) return NULL;
+   if ((!rp) || (rp->part->type != EDJE_PART_TYPE_GROUP) ||
+       (!rp->swallowed_object)) return NULL;
 
    ed = _edje_fetch(rp->swallowed_object);
    if (!ed) return NULL;
@@ -1761,10 +1745,15 @@ _edje_color_class_member_add(Edje *ed, const char *color_class)
 
    if ((!ed) || (!color_class)) return;
    members = evas_hash_find(_edje_color_class_member_hash, color_class);
-   if (members) _edje_color_class_member_hash = evas_hash_del(_edje_color_class_member_hash, color_class, members);
+   if (members)
+     {
+        _edje_color_class_member_hash =
+          evas_hash_del(_edje_color_class_member_hash, color_class, members);
+     }
 
    members = evas_list_prepend(members, ed);
-   _edje_color_class_member_hash = evas_hash_add(_edje_color_class_member_hash, color_class, members);
+   _edje_color_class_member_hash =
+     evas_hash_add(_edje_color_class_member_hash, color_class, members);
 }
 
 void
@@ -1776,56 +1765,54 @@ _edje_color_class_member_del(Edje *ed, const char *color_class)
    members = evas_hash_find(_edje_color_class_member_hash, color_class);
    if (!members) return;
 
-   _edje_color_class_member_hash = evas_hash_del(_edje_color_class_member_hash, color_class, members);
+   _edje_color_class_member_hash =
+     evas_hash_del(_edje_color_class_member_hash, color_class, members);
    members = evas_list_remove(members, ed);
-   if (members) _edje_color_class_member_hash = evas_hash_add(_edje_color_class_member_hash, color_class, members);
+   if (members)
+     {
+        _edje_color_class_member_hash =
+          evas_hash_add(_edje_color_class_member_hash, color_class, members);
+     }
 }
 
 /**
  * Used to free the member lists that are stored in the text_class
  * and color_class hashtables.
  */
-static Evas_Bool member_list_free(Evas_Hash *hash, const char *key,
-                                  void *data, void *fdata)
+static Evas_Bool
+member_list_free(const Evas_Hash *hash, const char *key, void *data, void *fdata)
 {
-	evas_list_free(data);
-
-	return 1;
+   evas_list_free(data);
+   return 1;
 }
 
 void
 _edje_color_class_members_free(void)
 {
    if (!_edje_color_class_member_hash) return;
-
-   evas_hash_foreach(_edje_color_class_member_hash, member_list_free,
-                     NULL);
+   evas_hash_foreach(_edje_color_class_member_hash, member_list_free, NULL);
    evas_hash_free(_edje_color_class_member_hash);
    _edje_color_class_member_hash = NULL;
 }
 
-static Evas_Bool color_class_hash_list_free(Evas_Hash *hash,
-                                            const char *key, void *data,
-                                            void *fdata)
+static Evas_Bool
+color_class_hash_list_free(const Evas_Hash *hash, const char *key, void *data, void *fdata)
 {
-  Edje_Color_Class *cc;
+   Edje_Color_Class *cc;
 
-  cc = data;
-  if (cc->name) evas_stringshare_del(cc->name);
-  free(cc);
-
-  return 1;
+   cc = data;
+   if (cc->name) evas_stringshare_del(cc->name);
+   free(cc);
+   return 1;
 }
 
 void
 _edje_color_class_hash_free(void)
 {
-  if (!_edje_color_class_hash) return;
-
-  evas_hash_foreach(_edje_color_class_hash, color_class_hash_list_free,
-                    NULL);
-  evas_hash_free(_edje_color_class_hash);
-  _edje_color_class_hash = NULL;
+   if (!_edje_color_class_hash) return;
+   evas_hash_foreach(_edje_color_class_hash, color_class_hash_list_free, NULL);
+   evas_hash_free(_edje_color_class_hash);
+   _edje_color_class_hash = NULL;
 }
 
 void
@@ -1842,9 +1829,7 @@ _edje_color_class_on_del(Edje *ed, Edje_Part *ep)
 
 	desc = tmp->data;
 	if (desc->color_class)
-	  {
-	     _edje_color_class_member_del(ed, desc->color_class);
-	  }
+          _edje_color_class_member_del(ed, desc->color_class);
      }
 }
 
@@ -1876,13 +1861,17 @@ _edje_text_class_member_add(Edje *ed, const char *text_class)
 
    /* Remove members list */
    if (members)
-     _edje_text_class_member_hash = evas_hash_del(_edje_text_class_member_hash, text_class, members);
+     {
+        _edje_text_class_member_hash =
+          evas_hash_del(_edje_text_class_member_hash, text_class, members);
+     }
 
    /* Update the member list */
    members = evas_list_prepend(members, ed);
 
    /* Add the member list back */
-   _edje_text_class_member_hash = evas_hash_add(_edje_text_class_member_hash, text_class, members);
+   _edje_text_class_member_hash =
+     evas_hash_add(_edje_text_class_member_hash, text_class, members);
 }
 
 void
@@ -1894,46 +1883,45 @@ _edje_text_class_member_del(Edje *ed, const char *text_class)
    members = evas_hash_find(_edje_text_class_member_hash, text_class);
    if (!members) return;
 
-   _edje_text_class_member_hash = evas_hash_del(_edje_text_class_member_hash, text_class, members);
+   _edje_text_class_member_hash =
+     evas_hash_del(_edje_text_class_member_hash, text_class, members);
 
    members = evas_list_remove(members, ed);
-   if (members) _edje_text_class_member_hash = evas_hash_add(_edje_text_class_member_hash, text_class, members);
+   if (members)
+     {
+        _edje_text_class_member_hash =
+          evas_hash_add(_edje_text_class_member_hash, text_class, members);
+     }
 }
 
 void
 _edje_text_class_members_free(void)
 {
    if (!_edje_text_class_member_hash) return;
-
-   evas_hash_foreach(_edje_text_class_member_hash, member_list_free,
-                     NULL);
+   evas_hash_foreach(_edje_text_class_member_hash, member_list_free, NULL);
    evas_hash_free(_edje_text_class_member_hash);
    _edje_text_class_member_hash = NULL;
 }
 
-static Evas_Bool text_class_hash_list_free(Evas_Hash *hash,
-                                            const char *key, void *data,
-                                            void *fdata)
+static Evas_Bool
+text_class_hash_list_free(const Evas_Hash *hash, const char *key, void *data, void *fdata)
 {
-  Edje_Text_Class *tc;
+   Edje_Text_Class *tc;
 
-  tc = data;
-  if (tc->name) evas_stringshare_del(tc->name);
-  if (tc->font) evas_stringshare_del(tc->font);
-  free(tc);
-
+   tc = data;
+   if (tc->name) evas_stringshare_del(tc->name);
+   if (tc->font) evas_stringshare_del(tc->font);
+   free(tc);
   return 1;
 }
 
 void
 _edje_text_class_hash_free(void)
 {
-  if (!_edje_text_class_hash) return;
-
-  evas_hash_foreach(_edje_text_class_hash, text_class_hash_list_free,
-                    NULL);
-  evas_hash_free(_edje_text_class_hash);
-  _edje_text_class_hash = NULL;
+   if (!_edje_text_class_hash) return;
+   evas_hash_foreach(_edje_text_class_hash, text_class_hash_list_free, NULL);
+   evas_hash_free(_edje_text_class_hash);
+   _edje_text_class_hash = NULL;
 }
 
 Edje *
@@ -1990,10 +1978,7 @@ _edje_unblock(Edje *ed)
    if (!ed) return ret;
 
    ed->block--;
-   if (ed->block == 0)
-     {
-	ed->block_break = 0;
-     }
+   if (ed->block == 0) ed->block_break = 0;
    ret = ed->block;
    _edje_unref(ed);
    return ret;
@@ -2048,8 +2033,7 @@ _edje_real_part_swallow(Edje_Real_Part *rp, Evas_Object *obj_swallow)
      evas_object_clip_set(rp->swallowed_object, rp->clip_to->object);
    else evas_object_clip_set(rp->swallowed_object, rp->edje->clipper);
    evas_object_stack_above(rp->swallowed_object, rp->object);
-   evas_object_event_callback_add(rp->swallowed_object,
-				  EVAS_CALLBACK_FREE,
+   evas_object_event_callback_add(rp->swallowed_object, EVAS_CALLBACK_FREE,
 				  _edje_object_part_swallow_free_cb,
 				  rp->edje->obj);
    type = (char *)evas_object_type_get(obj_swallow);
@@ -2068,8 +2052,7 @@ _edje_real_part_swallow(Edje_Real_Part *rp, Evas_Object *obj_swallow)
 	rp->swallow_params.max.w = w;
 	rp->swallow_params.max.h = h;
      }
-   else if ((type) && ((!strcmp(type, "text")) ||
-		       (!strcmp(type, "polygon")) ||
+   else if ((type) && ((!strcmp(type, "text")) || (!strcmp(type, "polygon")) ||
 		       (!strcmp(type, "line"))))
      {
 	Evas_Coord w, h;

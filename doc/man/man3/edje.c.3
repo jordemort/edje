@@ -1,0 +1,1318 @@
+.TH "edje.c" 3 "19 May 2008" "Edje" \" -*- nroff -*-
+.ad l
+.nh
+.SH NAME
+edje.c \- 
+.SH "Detailed Description"
+.PP 
+Edje Graphical Design Library. 
+
+These routines are used for Edje. 
+.SH SYNOPSIS
+.br
+.PP
+.SS "Functions"
+
+.in +1c
+.ti -1c
+.RI "EAPI int \fBedje_init\fP (void)"
+.br
+.RI "\fIInitialize the EDJE library. \fP"
+.ti -1c
+.RI "EAPI int \fBedje_shutdown\fP (void)"
+.br
+.RI "\fIShutdown the EDJE library. \fP"
+.ti -1c
+.RI "EAPI void \fBedje_frametime_set\fP (double t)"
+.br
+.RI "\fISet the frametime. \fP"
+.ti -1c
+.RI "EAPI double \fBedje_frametime_get\fP (void)"
+.br
+.RI "\fIGet the frametime. \fP"
+.ti -1c
+.RI "EAPI void \fBedje_freeze\fP (void)"
+.br
+.RI "\fIFreeze all Edje objects in the current process. \fP"
+.ti -1c
+.RI "EAPI void \fBedje_thaw\fP (void)"
+.br
+.RI "\fIThaw all Edje objects in the current process. \fP"
+.ti -1c
+.RI "EAPI Evas_List * \fBedje_file_collection_list\fP (const char *file)"
+.br
+.RI "\fIGet a list of groups in an edje file. \fP"
+.ti -1c
+.RI "EAPI void \fBedje_file_collection_list_free\fP (Evas_List *lst)"
+.br
+.RI "\fIFree file collection list. \fP"
+.ti -1c
+.RI "EAPI int \fBedje_file_group_exists\fP (const char *file, const char *glob)"
+.br
+.RI "\fIDetermine whether a group matching glob exists in an edje file. \fP"
+.ti -1c
+.RI "EAPI char * \fBedje_file_data_get\fP (const char *file, const char *key)"
+.br
+.RI "\fIGet data from the file level data block of an edje file. \fP"
+.ti -1c
+.RI "EAPI void \fBedje_color_class_set\fP (const char *color_class, int r, int g, int b, int a, int r2, int g2, int b2, int a2, int r3, int g3, int b3, int a3)"
+.br
+.RI "\fISet Edje color class. \fP"
+.ti -1c
+.RI "EAPI void \fBedje_color_class_del\fP (const char *color_class)"
+.br
+.ti -1c
+.RI "EAPI Evas_List * \fBedje_color_class_list\fP (void)"
+.br
+.RI "\fILists all color classes known about by the current process. \fP"
+.ti -1c
+.RI "EAPI void \fBedje_text_class_set\fP (const char *text_class, const char *font, Evas_Font_Size size)"
+.br
+.RI "\fISet the Edje text class. \fP"
+.ti -1c
+.RI "EAPI void \fBedje_text_class_del\fP (const char *text_class)"
+.br
+.ti -1c
+.RI "EAPI Evas_List * \fBedje_text_class_list\fP (void)"
+.br
+.RI "\fILists all text classes known about by the current process. \fP"
+.ti -1c
+.RI "EAPI void \fBedje_extern_object_min_size_set\fP (Evas_Object *obj, Evas_Coord minw, Evas_Coord minh)"
+.br
+.RI "\fISet the object minimum size. \fP"
+.ti -1c
+.RI "EAPI void \fBedje_extern_object_max_size_set\fP (Evas_Object *obj, Evas_Coord maxw, Evas_Coord maxh)"
+.br
+.RI "\fISet the object maximum size. \fP"
+.ti -1c
+.RI "EAPI void \fBedje_extern_object_aspect_set\fP (Evas_Object *obj, Edje_Aspect_Control aspect, Evas_Coord aw, Evas_Coord ah)"
+.br
+.RI "\fISet the object aspect size. \fP"
+.ti -1c
+.RI "EAPI Evas_Object * \fBedje_object_add\fP (Evas *evas)"
+.br
+.RI "\fIConstructs the Edje object. \fP"
+.ti -1c
+.RI "EAPI const char * \fBedje_object_data_get\fP (Evas_Object *obj, const char *key)"
+.br
+.RI "\fIGet Edje object data. \fP"
+.ti -1c
+.RI "EAPI int \fBedje_object_file_set\fP (Evas_Object *obj, const char *file, const char *part)"
+.br
+.RI "\fISets the EET file and group to load \fIobj\fP from. \fP"
+.ti -1c
+.RI "EAPI void \fBedje_object_file_get\fP (Evas_Object *obj, const char **file, const char **part)"
+.br
+.RI "\fIGet the file and group name that \fIobj\fP was loaded from. \fP"
+.ti -1c
+.RI "EAPI int \fBedje_object_load_error_get\fP (Evas_Object *obj)"
+.br
+.RI "\fIGets the Edje load error. \fP"
+.ti -1c
+.RI "EAPI void \fBedje_object_signal_emit\fP (Evas_Object *obj, const char *emission, const char *source)"
+.br
+.RI "\fISend a signal to the Edje object. \fP"
+.ti -1c
+.RI "EAPI void \fBedje_object_play_set\fP (Evas_Object *obj, int play)"
+.br
+.RI "\fISet the Edje to play or pause. \fP"
+.ti -1c
+.RI "EAPI int \fBedje_object_play_get\fP (Evas_Object *obj)"
+.br
+.RI "\fIGet the Edje play/pause state. \fP"
+.ti -1c
+.RI "EAPI void \fBedje_object_animation_set\fP (Evas_Object *obj, int on)"
+.br
+.RI "\fISet Animation state. \fP"
+.ti -1c
+.RI "EAPI int \fBedje_object_animation_get\fP (Evas_Object *obj)"
+.br
+.RI "\fIGet the animation state. \fP"
+.ti -1c
+.RI "EAPI int \fBedje_object_freeze\fP (Evas_Object *obj)"
+.br
+.RI "\fIFreeze object. \fP"
+.ti -1c
+.RI "EAPI int \fBedje_object_thaw\fP (Evas_Object *obj)"
+.br
+.RI "\fIThaw object. \fP"
+.ti -1c
+.RI "EAPI void \fBedje_object_color_class_set\fP (Evas_Object *obj, const char *color_class, int r, int g, int b, int a, int r2, int g2, int b2, int a2, int r3, int g3, int b3, int a3)"
+.br
+.RI "\fISets the object color class. \fP"
+.ti -1c
+.RI "EAPI void \fBedje_object_color_class_del\fP (Evas_Object *obj, const char *color_class)"
+.br
+.ti -1c
+.RI "EAPI void \fBedje_object_text_class_set\fP (Evas_Object *obj, const char *text_class, const char *font, Evas_Font_Size size)"
+.br
+.RI "\fISets Edje text class. \fP"
+.ti -1c
+.RI "EAPI void \fBedje_object_size_min_get\fP (Evas_Object *obj, Evas_Coord *minw, Evas_Coord *minh)"
+.br
+.RI "\fIGet the minimum size for an object. \fP"
+.ti -1c
+.RI "EAPI void \fBedje_object_size_max_get\fP (Evas_Object *obj, Evas_Coord *maxw, Evas_Coord *maxh)"
+.br
+.RI "\fIGet the maximum size for an object. \fP"
+.ti -1c
+.RI "EAPI void \fBedje_object_calc_force\fP (Evas_Object *obj)"
+.br
+.RI "\fIForce a Size/Geometry calculation. \fP"
+.ti -1c
+.RI "EAPI void \fBedje_object_size_min_calc\fP (Evas_Object *obj, Evas_Coord *minw, Evas_Coord *minh)"
+.br
+.RI "\fICalculate minimum size. \fP"
+.ti -1c
+.RI "EAPI void \fBedje_object_size_min_restricted_calc\fP (Evas_Object *obj, Evas_Coord *minw, Evas_Coord *minh, Evas_Coord restrictedw, Evas_Coord restrictedh)"
+.br
+.RI "\fICalculate minimum size. \fP"
+.ti -1c
+.RI "EAPI int \fBedje_object_part_exists\fP (Evas_Object *obj, const char *part)"
+.br
+.RI "\fICheck if Edje part exists. \fP"
+.ti -1c
+.RI "EAPI Evas_Object * \fBedje_object_part_object_get\fP (Evas_Object *obj, const char *part)"
+.br
+.RI "\fIGets the Evas_Object corresponding to a given part. \fP"
+.ti -1c
+.RI "EAPI void \fBedje_object_part_geometry_get\fP (Evas_Object *obj, const char *part, Evas_Coord *x, Evas_Coord *y, Evas_Coord *w, Evas_Coord *h)"
+.br
+.RI "\fIGet the geometry of an Edje part. \fP"
+.ti -1c
+.RI "EAPI void \fBedje_object_part_text_set\fP (Evas_Object *obj, const char *part, const char *text)"
+.br
+.RI "\fISets the text for an object part. \fP"
+.ti -1c
+.RI "EAPI const char * \fBedje_object_part_text_get\fP (Evas_Object *obj, const char *part)"
+.br
+.RI "\fIReturns the text of the object part. \fP"
+.ti -1c
+.RI "EAPI void \fBedje_object_part_swallow\fP (Evas_Object *obj, const char *part, Evas_Object *obj_swallow)"
+.br
+.RI "\fISwallows an object into the edje. \fP"
+.ti -1c
+.RI "EAPI void \fBedje_object_part_unswallow\fP (Evas_Object *obj, Evas_Object *obj_swallow)"
+.br
+.RI "\fIUnswallow an object. \fP"
+.ti -1c
+.RI "EAPI Evas_Object * \fBedje_object_part_swallow_get\fP (Evas_Object *obj, const char *part)"
+.br
+.RI "\fIGet the object currently swallowed by a part. \fP"
+.ti -1c
+.RI "EAPI const char * \fBedje_object_part_state_get\fP (Evas_Object *obj, const char *part, double *val_ret)"
+.br
+.RI "\fIReturns the state of the Edje part. \fP"
+.ti -1c
+.RI "EAPI int \fBedje_object_part_drag_dir_get\fP (Evas_Object *obj, const char *part)"
+.br
+.RI "\fIDetermine dragable directions. \fP"
+.ti -1c
+.RI "EAPI void \fBedje_object_part_drag_value_set\fP (Evas_Object *obj, const char *part, double dx, double dy)"
+.br
+.RI "\fISet the dragable object location. \fP"
+.ti -1c
+.RI "EAPI void \fBedje_object_part_drag_value_get\fP (Evas_Object *obj, const char *part, double *dx, double *dy)"
+.br
+.RI "\fIGet the dragable object location. \fP"
+.ti -1c
+.RI "EAPI void \fBedje_object_part_drag_size_set\fP (Evas_Object *obj, const char *part, double dw, double dh)"
+.br
+.RI "\fISet the dragable object size. \fP"
+.ti -1c
+.RI "EAPI void \fBedje_object_part_drag_size_get\fP (Evas_Object *obj, const char *part, double *dw, double *dh)"
+.br
+.RI "\fIGet the dragable object size. \fP"
+.ti -1c
+.RI "EAPI void \fBedje_object_part_drag_step_set\fP (Evas_Object *obj, const char *part, double dx, double dy)"
+.br
+.RI "\fISets the drag step increment. \fP"
+.ti -1c
+.RI "EAPI void \fBedje_object_part_drag_step_get\fP (Evas_Object *obj, const char *part, double *dx, double *dy)"
+.br
+.RI "\fIGets the drag step increment values. \fP"
+.ti -1c
+.RI "EAPI void \fBedje_object_part_drag_page_set\fP (Evas_Object *obj, const char *part, double dx, double dy)"
+.br
+.RI "\fISets the page step increments. \fP"
+.ti -1c
+.RI "EAPI void \fBedje_object_part_drag_page_get\fP (Evas_Object *obj, const char *part, double *dx, double *dy)"
+.br
+.RI "\fIGets the page step increments. \fP"
+.ti -1c
+.RI "EAPI void \fBedje_object_part_drag_step\fP (Evas_Object *obj, const char *part, double dx, double dy)"
+.br
+.RI "\fISteps the dragable x,y steps. \fP"
+.ti -1c
+.RI "EAPI void \fBedje_object_part_drag_page\fP (Evas_Object *obj, const char *part, double dx, double dy)"
+.br
+.RI "\fIPages x,y steps. \fP"
+.ti -1c
+.RI "EAPI void \fBedje_object_signal_callback_add\fP (Evas_Object *obj, const char *emission, const char *source, void(*func)(void *data, Evas_Object *o, const char *emission, const char *source), void *data)"
+.br
+.RI "\fIAdd a callback for a signal emitted by \fIobj\fP. \fP"
+.ti -1c
+.RI "EAPI void * \fBedje_object_signal_callback_del\fP (Evas_Object *obj, const char *emission, const char *source, void(*func)(void *data, Evas_Object *o, const char *emission, const char *source))"
+.br
+.RI "\fIRemove a callback from an object. \fP"
+.in -1c
+.SH "Function Documentation"
+.PP 
+.SS "void edje_color_class_del (const char * color_class)"
+.PP
+\fBParameters:\fP
+.RS 4
+\fIcolor_class\fP Deletes any values at the process level for the specified color class. 
+.RE
+.PP
+
+.SS "Evas_List * edje_color_class_list (void)"
+.PP
+Lists all color classes known about by the current process. 
+.PP
+\fBReturns:\fP
+.RS 4
+A list of color class names (strings). These strings and the list must be free()'d by the caller. 
+.RE
+.PP
+
+.SS "EAPI void edje_color_class_set (const char * color_class, int r, int g, int b, int a, int r2, int g2, int b2, int a2, int r3, int g3, int b3, int a3)"
+.PP
+Set Edje color class. 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIcolor_class\fP 
+.br
+\fIr\fP Object Red value 
+.br
+\fIg\fP Object Green value 
+.br
+\fIb\fP Object Blue value 
+.br
+\fIa\fP Object Alpha value 
+.br
+\fIr2\fP Outline Red value 
+.br
+\fIg2\fP Outline Green value 
+.br
+\fIb2\fP Outline Blue value 
+.br
+\fIa2\fP Outline Alpha value 
+.br
+\fIr3\fP Shadow Red value 
+.br
+\fIg3\fP Shadow Green value 
+.br
+\fIb3\fP Shadow Blue value 
+.br
+\fIa3\fP Shadow Alpha value
+.RE
+.PP
+Sets the color values for a process level color class. This will cause all edje parts in the current process that have the specified color class to have their colors multiplied by these values. (Object level color classes set by \fBedje_object_color_class_set()\fP will override the values set by this function).
+.PP
+The first color is the object, the second is the text outline, and the third is the text shadow. (Note that the second two only apply to text parts) 
+.SS "EAPI void edje_extern_object_aspect_set (Evas_Object * obj, Edje_Aspect_Control aspect, Evas_Coord aw, Evas_Coord ah)"
+.PP
+Set the object aspect size. 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIobj\fP A valid Evas_Object handle 
+.br
+\fIaspect\fP The aspect control axes 
+.br
+\fIaw\fP The aspect radio width 
+.br
+\fIah\fP The aspect ratio height
+.RE
+.PP
+This sets the desired aspect ratio to keep an object that will be swallowed by Edje. The width and height define a preferred size ASPECT and the object may be scaled to be larger or smaller, but retaining the relative scale of both aspect width and height. 
+.SS "EAPI void edje_extern_object_max_size_set (Evas_Object * obj, Evas_Coord maxw, Evas_Coord maxh)"
+.PP
+Set the object maximum size. 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIobj\fP A valid Evas_Object handle 
+.br
+\fImaxw\fP The maximum width 
+.br
+\fImaxh\fP The maximum height
+.RE
+.PP
+This sets the maximum size restriction for the object. 
+.SS "EAPI void edje_extern_object_min_size_set (Evas_Object * obj, Evas_Coord minw, Evas_Coord minh)"
+.PP
+Set the object minimum size. 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIobj\fP A valid Evas_Object handle 
+.br
+\fIminw\fP The minimum width 
+.br
+\fIminh\fP The minimum height
+.RE
+.PP
+This sets the minimum size restriction for the object. 
+.SS "EAPI Evas_List * edje_file_collection_list (const char * file)"
+.PP
+Get a list of groups in an edje file. 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIfile\fP The path to the edje file
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+The Evas_List of group names (char *)
+.RE
+.PP
+Note: the list must be freed using \fBedje_file_collection_list_free()\fP when you are done with it. 
+.SS "EAPI void edje_file_collection_list_free (Evas_List * lst)"
+.PP
+Free file collection list. 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIlst\fP The Evas_List of groups
+.RE
+.PP
+Frees the list returned by \fBedje_file_collection_list()\fP. 
+.SS "EAPI char * edje_file_data_get (const char * file, const char * key)"
+.PP
+Get data from the file level data block of an edje file. 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIfile\fP The path to the .edj file 
+.br
+\fIkey\fP The data key 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+The string value of the data
+.RE
+.PP
+If an edje file is built from the following edc:
+.PP
+data { item: 'key1' 'value1'; item: 'key2' 'value2'; } collections { ... }
+.PP
+Then, edje_file_data_get('key1') will return 'value1' 
+.SS "EAPI int edje_file_group_exists (const char * file, const char * glob)"
+.PP
+Determine whether a group matching glob exists in an edje file. 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIfile\fP The file path 
+.br
+\fIglob\fP A glob to match on
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+1 if a match is found, 0 otherwise 
+.RE
+.PP
+
+.SS "EAPI double edje_frametime_get (void)"
+.PP
+Get the frametime. 
+.PP
+\fBReturns:\fP
+.RS 4
+The frametime
+.RE
+.PP
+Returns the frametime in seconds, by default this is 1/30. 
+.SS "EAPI void edje_frametime_set (double t)"
+.PP
+Set the frametime. 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIt\fP The frametime
+.RE
+.PP
+Sets the global frametime in seconds, by default this is 1/30. 
+.SS "EAPI void edje_freeze (void)"
+.PP
+Freeze all Edje objects in the current process. 
+.PP
+See \fBedje_object_freeze()\fP for more. 
+.PP
+References edje_object_freeze().
+.SS "EAPI int edje_init (void)"
+.PP
+Initialize the EDJE library. 
+.PP
+\fBReturns:\fP
+.RS 4
+The new init count. 
+.RE
+.PP
+
+.SS "EAPI Evas_Object * edje_object_add (Evas * evas)"
+.PP
+Constructs the Edje object. 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIevas\fP A valid Evas handle 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+The Evas_Object pointer.
+.RE
+.PP
+Creates the Edje smart object, returning the Evas_Object handle. 
+.SS "EAPI int edje_object_animation_get (Evas_Object * obj)"
+.PP
+Get the animation state. 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIobj\fP A valid Evas_Object handle 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+0 on Error or if not animated
+.br
+ 1 if animated 
+.RE
+.PP
+
+.SS "EAPI void edje_object_animation_set (Evas_Object * obj, int on)"
+.PP
+Set Animation state. 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIobj\fP A valid Evas_Object handle 
+.br
+\fIon\fP Animation State
+.RE
+.PP
+Stop or start an Edje animation. 
+.SS "EAPI void edje_object_calc_force (Evas_Object * obj)"
+.PP
+Force a Size/Geometry calculation. 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIobj\fP A valid Evas_Object handle
+.RE
+.PP
+Forces the object \fCobj\fP to recalculation layout regardless of freeze/thaw. 
+.SS "void edje_object_color_class_del (Evas_Object * obj, const char * color_class)"
+.PP
+\fBParameters:\fP
+.RS 4
+\fIcolor_class\fP Deletes any values at the object level for the specified object and color class. 
+.RE
+.PP
+
+.SS "EAPI void edje_object_color_class_set (Evas_Object * obj, const char * color_class, int r, int g, int b, int a, int r2, int g2, int b2, int a2, int r3, int g3, int b3, int a3)"
+.PP
+Sets the object color class. 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIobj\fP A valid Evas_Object handle 
+.br
+\fIcolor_class\fP 
+.br
+\fIr\fP Object Red value 
+.br
+\fIg\fP Object Green value 
+.br
+\fIb\fP Object Blue value 
+.br
+\fIa\fP Object Alpha value 
+.br
+\fIr2\fP Outline Red value 
+.br
+\fIg2\fP Outline Green value 
+.br
+\fIb2\fP Outline Blue value 
+.br
+\fIa2\fP Outline Alpha value 
+.br
+\fIr3\fP Shadow Red value 
+.br
+\fIg3\fP Shadow Green value 
+.br
+\fIb3\fP Shadow Blue value 
+.br
+\fIa3\fP Shadow Alpha value
+.RE
+.PP
+Sets the color values for an object level color class. This will cause all edje parts in the specified object that have the specified color class to have their colors multiplied by these values.
+.PP
+The first color is the object, the second is the text outline, and the third is the text shadow. (Note that the second two only apply to text parts) 
+.SS "EAPI const char * edje_object_data_get (Evas_Object * obj, const char * key)"
+.PP
+Get Edje object data. 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIobj\fP A valid Evas_Object handle 
+.br
+\fIkey\fP The data key 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+The data string
+.RE
+.PP
+This fetches data specified at the object level.
+.PP
+In EDC this comes from a data block within the group block that \fIobj\fP was loaded from. E.g.
+.PP
+.PP
+.nf
+ collections {
+   group {
+     name: 'a_group';
+     data {
+   item: 'key1' 'value1';
+   item: 'key2' 'value2';
+     }
+   }
+ }
+.fi
+.PP
+ 
+.SS "EAPI void edje_object_file_get (Evas_Object * obj, const char ** file, const char ** part)"
+.PP
+Get the file and group name that \fIobj\fP was loaded from. 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIobj\fP A valid Evas_Object handle 
+.br
+\fIfile\fP A pointer to store a pointer to the filename in 
+.br
+\fIpart\fP A pointer to store a pointer to the group name in
+.RE
+.PP
+This gets the EET file location and group for the given Evas_Object. If \fIobj\fP is either not an edje file, or has not had its file/group set using \fBedje_object_file_set()\fP, then both \fIfile\fP and \fIpart\fP will be set to NULL.
+.PP
+It is valid to pass in NULL for either \fIfile\fP or \fIpart\fP if you are not interested in one of the values. 
+.SS "EAPI int edje_object_file_set (Evas_Object * obj, const char * file, const char * part)"
+.PP
+Sets the EET file and group to load \fIobj\fP from. 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIobj\fP A valid Evas_Object handle 
+.br
+\fIfile\fP The path to the EET file 
+.br
+\fIpart\fP The group name in the Edje 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+0 on Error
+.br
+ 1 on Success and sets EDJE_LOAD_ERROR_NONE
+.RE
+.PP
+Edje uses EET files, conventionally ending in .edj, to store object descriptions. A single file contains multiple named groups. This function specifies the file and group name to load \fIobj\fP from. 
+.SS "EAPI int edje_object_freeze (Evas_Object * obj)"
+.PP
+Freeze object. 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIobj\fP A valid Evas_Object handle 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+The frozen state
+.br
+ 0 on Error
+.RE
+.PP
+This puts all changes on hold. Successive freezes will nest, requiring an equal number of thaws. 
+.PP
+Referenced by edje_freeze().
+.SS "EAPI int edje_object_load_error_get (Evas_Object * obj)"
+.PP
+Gets the Edje load error. 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIobj\fP A valid Evas_Object handle
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+The Edje load error:
+.br
+ 0: No Error
+.br
+ 1: Generic Error
+.br
+ 2: Does not Exist
+.br
+ 3: Permission Denied
+.br
+ 4: Resource Allocation Failed
+.br
+ 5: Corrupt File
+.br
+ 6: Unknown Format
+.br
+ 7: Incompatible File 
+.RE
+.PP
+
+.SS "EAPI int edje_object_part_drag_dir_get (Evas_Object * obj, const char * part)"
+.PP
+Determine dragable directions. 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIobj\fP A valid Evas_Object handle 
+.br
+\fIpart\fP The part name
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+0: Not dragable
+.br
+ 1: Dragable in X direction
+.br
+ 2: Dragable in Y direction
+.br
+ 3: Dragable in X & Y directions 
+.RE
+.PP
+
+.SS "EAPI void edje_object_part_drag_page (Evas_Object * obj, const char * part, double dx, double dy)"
+.PP
+Pages x,y steps. 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIobj\fP A valid Evas_Object handle 
+.br
+\fIpart\fP The part name 
+.br
+\fIdx\fP The x step 
+.br
+\fIdy\fP The y step
+.RE
+.PP
+Pages x,y where the increment is defined by edje_object_part_drag_page_set.
+.br
+ WARNING: Paging is bugged! 
+.SS "EAPI void edje_object_part_drag_page_get (Evas_Object * obj, const char * part, double * dx, double * dy)"
+.PP
+Gets the page step increments. 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIobj\fP A valid Evas_Object handle 
+.br
+\fIpart\fP The part name 
+.br
+\fIdx\fP The dx page increment pointer 
+.br
+\fIdy\fP The dy page increment pointer
+.RE
+.PP
+Gets the x,y page step increments for the dragable object. 
+.SS "EAPI void edje_object_part_drag_page_set (Evas_Object * obj, const char * part, double dx, double dy)"
+.PP
+Sets the page step increments. 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIobj\fP A valid Evas_Object handle 
+.br
+\fIpart\fP The part name 
+.br
+\fIdx\fP The x page step increment 
+.br
+\fIdy\fP The y page step increment
+.RE
+.PP
+Sets the x,y page step increment values. 
+.SS "EAPI void edje_object_part_drag_size_get (Evas_Object * obj, const char * part, double * dw, double * dh)"
+.PP
+Get the dragable object size. 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIobj\fP A valid Evas_Object handle 
+.br
+\fIpart\fP The part name 
+.br
+\fIdw\fP The drag width pointer 
+.br
+\fIdh\fP The drag height pointer
+.RE
+.PP
+Gets the dragable object size. 
+.SS "EAPI void edje_object_part_drag_size_set (Evas_Object * obj, const char * part, double dw, double dh)"
+.PP
+Set the dragable object size. 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIobj\fP A valid Evas_Object handle 
+.br
+\fIpart\fP The part name 
+.br
+\fIdw\fP The drag width 
+.br
+\fIdh\fP The drag height
+.RE
+.PP
+Sets the size of the dragable object. 
+.SS "EAPI void edje_object_part_drag_step (Evas_Object * obj, const char * part, double dx, double dy)"
+.PP
+Steps the dragable x,y steps. 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIobj\fP A valid Evas_Object handle 
+.br
+\fIpart\fP The part name 
+.br
+\fIdx\fP The x step 
+.br
+\fIdy\fP The y step
+.RE
+.PP
+Steps x,y where the step increment is the amount set by edje_object_part_drag_step_set. 
+.SS "EAPI void edje_object_part_drag_step_get (Evas_Object * obj, const char * part, double * dx, double * dy)"
+.PP
+Gets the drag step increment values. 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIobj\fP A valid Evas_Object handle 
+.br
+\fIpart\fP The part 
+.br
+\fIdx\fP The x step increment pointer 
+.br
+\fIdy\fP The y step increment pointer
+.RE
+.PP
+Gets the x and y step increments for the dragable object. 
+.SS "EAPI void edje_object_part_drag_step_set (Evas_Object * obj, const char * part, double dx, double dy)"
+.PP
+Sets the drag step increment. 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIobj\fP A valid Evas_Object handle 
+.br
+\fIpart\fP The part name 
+.br
+\fIdx\fP The x step ammount 
+.br
+\fIdy\fP The y step ammount
+.RE
+.PP
+Sets the x,y step increments for a dragable object. 
+.SS "EAPI void edje_object_part_drag_value_get (Evas_Object * obj, const char * part, double * dx, double * dy)"
+.PP
+Get the dragable object location. 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIobj\fP A valid Evas_Object handle 
+.br
+\fIpart\fP The part name 
+.br
+\fIdx\fP The X value pointer 
+.br
+\fIdy\fP The Y value pointer
+.RE
+.PP
+Gets the drag location values. 
+.SS "EAPI void edje_object_part_drag_value_set (Evas_Object * obj, const char * part, double dx, double dy)"
+.PP
+Set the dragable object location. 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIobj\fP A valid Evas_Object handle 
+.br
+\fIpart\fP The part name 
+.br
+\fIdx\fP The x value 
+.br
+\fIdy\fP The y value
+.RE
+.PP
+Places the dragable object at the given location. 
+.SS "EAPI int edje_object_part_exists (Evas_Object * obj, const char * part)"
+.PP
+Check if Edje part exists. 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIobj\fP A valid Evas_Object handle 
+.br
+\fIpart\fP The part name to check 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+0 on Error
+.br
+ 1 if Edje part exists 
+.RE
+.PP
+
+.SS "EAPI void edje_object_part_geometry_get (Evas_Object * obj, const char * part, Evas_Coord * x, Evas_Coord * y, Evas_Coord * w, Evas_Coord * h)"
+.PP
+Get the geometry of an Edje part. 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIobj\fP A valid Evas_Object handle 
+.br
+\fIpart\fP The Edje part 
+.br
+\fIx\fP The x coordinate pointer 
+.br
+\fIy\fP The y coordinate pointer 
+.br
+\fIw\fP The width pointer 
+.br
+\fIh\fP The height pointer
+.RE
+.PP
+Gets the geometry of an Edje part
+.PP
+It is valid to pass NULL as any of \fIx\fP, \fIy\fP, \fIw\fP or \fIh\fP, whose values you are uninterested in. 
+.SS "EAPI Evas_Object * edje_object_part_object_get (Evas_Object * obj, const char * part)"
+.PP
+Gets the Evas_Object corresponding to a given part. 
+.PP
+You should never modify the state of the returned object (with evas_object_move() or evas_object_hide() for example), but you can safely query info about its current state (with evas_object_visible_get() or evas_object_color_get() for example)
+.PP
+\fBParameters:\fP
+.RS 4
+\fIobj\fP A valid Evas_Object handle 
+.br
+\fIpart\fP The Edje part 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+Returns the Evas_Object corresponding to the given part, or NULL on failure (if the part doesn't exist) 
+.RE
+.PP
+
+.SS "EAPI const char * edje_object_part_state_get (Evas_Object * obj, const char * part, double * val_ret)"
+.PP
+Returns the state of the Edje part. 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIobj\fP A valid Evas_Object handle 
+.br
+\fIpart\fP The part name 
+.br
+\fIval_ret\fP 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+The part state:
+.br
+ 'default' for the default state
+.br
+ '' for other states 
+.RE
+.PP
+
+.SS "EAPI void edje_object_part_swallow (Evas_Object * obj, const char * part, Evas_Object * obj_swallow)"
+.PP
+Swallows an object into the edje. 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIobj\fP A valid Evas_Object handle 
+.br
+\fIpart\fP The part name 
+.br
+\fIobj_swallow\fP The object to swallow
+.RE
+.PP
+Swallows the object into the edje part so that all geometry changes for the part affect the swallowed object. (e.g. resize, move, show, raise/lower, etc.).
+.PP
+If an object has already been swallowed into this part, then it will first be unswallowed before the new object is swallowed. 
+.SS "EAPI Evas_Object * edje_object_part_swallow_get (Evas_Object * obj, const char * part)"
+.PP
+Get the object currently swallowed by a part. 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIobj\fP A valid Evas_Object handle 
+.br
+\fIpart\fP The part name 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+The swallowed object, or NULL if there is none. 
+.RE
+.PP
+
+.SS "EAPI const char * edje_object_part_text_get (Evas_Object * obj, const char * part)"
+.PP
+Returns the text of the object part. 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIobj\fP A valid Evas_Object handle 
+.br
+\fIpart\fP The part name 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+The text string 
+.RE
+.PP
+
+.SS "EAPI void edje_object_part_text_set (Evas_Object * obj, const char * part, const char * text)"
+.PP
+Sets the text for an object part. 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIobj\fP A valid Evas Object handle 
+.br
+\fIpart\fP The part name 
+.br
+\fItext\fP The text string 
+.RE
+.PP
+
+.SS "EAPI void edje_object_part_unswallow (Evas_Object * obj, Evas_Object * obj_swallow)"
+.PP
+Unswallow an object. 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIobj\fP A valid Evas_Object handle 
+.br
+\fIobj_swallow\fP The swallowed object
+.RE
+.PP
+Causes the edje to regurgitate a previously swallowed object. :) 
+.SS "EAPI int edje_object_play_get (Evas_Object * obj)"
+.PP
+Get the Edje play/pause state. 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIobj\fP A valid Evas_Object handle 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+0 if Edje not connected, Edje delete_me, or Edje paused
+.br
+ 1 if Edje set to play 
+.RE
+.PP
+
+.SS "EAPI void edje_object_play_set (Evas_Object * obj, int play)"
+.PP
+Set the Edje to play or pause. 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIobj\fP A valid Evas_Object handle 
+.br
+\fIplay\fP Play instruction (1 to play, 0 to pause)
+.RE
+.PP
+This sets the Edje to play or pause depending on the parameter. This has no effect if the Edje is already in that state. 
+.SS "EAPI void edje_object_signal_callback_add (Evas_Object * obj, const char * emission, const char * source, void(*)(void *data, Evas_Object *o, const char *emission, const char *source) func, void * data)"
+.PP
+Add a callback for a signal emitted by \fIobj\fP. 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIobj\fP A valid Evas_Object handle 
+.br
+\fIemission\fP The signal name 
+.br
+\fIsource\fP The signal source 
+.br
+\fIfunc\fP The callback function to be executed when the signal is emitted 
+.br
+\fIdata\fP A pointer to data to pass in to the callback function
+.RE
+.PP
+Connects a callback function to a signal emitted by \fIobj\fP. In EDC, a program can emit a signal as follows:
+.PP
+.PP
+.nf
+ program {
+   name: 'emit_example';
+   action: SIGNAL_EMIT 'a_signal' 'a_source';
+ }
+.fi
+.PP
+.PP
+Assuming a function with the following declaration is definded:
+.PP
+.PP
+.nf
+ void cb_signal(void *data, Evas_Object *o, const char *emission, const char *source);
+.fi
+.PP
+.PP
+a callback is attached using:
+.PP
+.PP
+.nf
+ edje_object_callback_add(obj, 'a_signal', 'a_source', cb_signal, data);
+.fi
+.PP
+.PP
+Here, \fIdata\fP is an arbitrary pointer to be used as desired. Note that \fIemission\fP and \fIsource\fP correspond respectively to first and second parameters to the SIGNAL_EMIT action.
+.PP
+Internal edje signals can also be attached to, and globs can be in either the emission or source name. e.g.
+.PP
+.PP
+.nf
+ edje_object_callback_add(obj, 'mouse,down,*', 'button.*', NULL);
+.fi
+.PP
+.PP
+Here, any mouse down events on an edje part whose name begins with 'button.' will trigger the callback. The actual signal and source name will be passed in to the \fIemission\fP and \fIsource\fP parameters of the callback function. (e.g. 'mouse,down,2' and 'button.close'). 
+.SS "EAPI void* edje_object_signal_callback_del (Evas_Object * obj, const char * emission, const char * source, void(*)(void *data, Evas_Object *o, const char *emission, const char *source) func)"
+.PP
+Remove a callback from an object. 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIobj\fP A valid Evas_Object handle 
+.br
+\fIemission\fP the emission string 
+.br
+\fIsource\fP the source string 
+.br
+\fIfunc\fP the callback function 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+the data pointer
+.RE
+.PP
+Removes a callback from an object. The parameters \fIemission\fP, \fIsource\fP and \fIfunc\fP must match exactly those passed to a previous call to edje_object_signal_callback_add(). The data pointer that was passed to this call will be returned. 
+.SS "EAPI void edje_object_signal_emit (Evas_Object * obj, const char * emission, const char * source)"
+.PP
+Send a signal to the Edje object. 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIobj\fP A vaild Evas_Object handle 
+.br
+\fIemission\fP The signal 
+.br
+\fIsource\fP The signal source
+.RE
+.PP
+This sends a signal to the edje object.
+.PP
+An edje program can respond to a signal by specifying matching 'signal' and 'source' fields.
+.PP
+E.g.
+.PP
+.PP
+.nf
+ edje_object_signal_emit(obj, 'a_signal', '');
+.fi
+.PP
+.PP
+will trigger a program whose edc is:
+.PP
+.PP
+.nf
+ program {
+  name: 'a_program';
+  signal: 'a_signal';
+  source: '';
+  action: ...
+ }
+.fi
+.PP
+.PP
+FIXME should this signal be sent to children also? 
+.SS "EAPI void edje_object_size_max_get (Evas_Object * obj, Evas_Coord * maxw, Evas_Coord * maxh)"
+.PP
+Get the maximum size for an object. 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIobj\fP A valid Evas_Object handle 
+.br
+\fImaxw\fP Maximum width pointer 
+.br
+\fImaxh\fP Maximum height pointer
+.RE
+.PP
+Gets the object's maximum size values from the Edje. These are set to zero if no Edje is connected to the Evas Object. 
+.SS "EAPI void edje_object_size_min_calc (Evas_Object * obj, Evas_Coord * minw, Evas_Coord * minh)"
+.PP
+Calculate minimum size. 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIobj\fP A valid Evas_Object handle 
+.br
+\fIminw\fP Minimum width pointer 
+.br
+\fIminh\fP Minimum height pointer
+.RE
+.PP
+Calculates the object's minimum size ?! 
+.PP
+References edje_object_size_min_restricted_calc().
+.SS "EAPI void edje_object_size_min_get (Evas_Object * obj, Evas_Coord * minw, Evas_Coord * minh)"
+.PP
+Get the minimum size for an object. 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIobj\fP A valid Evas_Object handle 
+.br
+\fIminw\fP Minimum width pointer 
+.br
+\fIminh\fP Minimum height pointer
+.RE
+.PP
+Gets the object's minimum size values from the Edje. These are set to zero if no Edje is connected to the Evas Object. 
+.SS "EAPI void edje_object_size_min_restricted_calc (Evas_Object * obj, Evas_Coord * minw, Evas_Coord * minh, Evas_Coord restrictedw, Evas_Coord restrictedh)"
+.PP
+Calculate minimum size. 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIobj\fP A valid Evas_Object handle 
+.br
+\fIminw\fP Minimum width pointer 
+.br
+\fIminh\fP Minimum height pointer 
+.br
+\fIrestrictedw\fP Do not allow object min width calc to be less than this 
+.br
+\fIrestrictedh\fP Do not allow object min height calc to be less than this
+.RE
+.PP
+Calculates the object's minimum size ?! 
+.PP
+Referenced by edje_object_size_min_calc().
+.SS "EAPI void edje_object_text_class_set (Evas_Object * obj, const char * text_class, const char * font, Evas_Font_Size size)"
+.PP
+Sets Edje text class. 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIobj\fP A valid Evas_Object handle 
+.br
+\fItext_class\fP The text class name 
+.br
+\fIfont\fP Font name 
+.br
+\fIsize\fP Font Size
+.RE
+.PP
+Sets the text class for the Edje. 
+.SS "EAPI int edje_object_thaw (Evas_Object * obj)"
+.PP
+Thaw object. 
+.PP
+\fBParameters:\fP
+.RS 4
+\fIobj\fP A valid Evas_Object handle 
+.RE
+.PP
+\fBReturns:\fP
+.RS 4
+The frozen state
+.br
+ 0 on Error
+.RE
+.PP
+This allows frozen changes to occur. 
+.PP
+Referenced by edje_thaw().
+.SS "EAPI int edje_shutdown (void)"
+.PP
+Shutdown the EDJE library. 
+.PP
+\fBReturns:\fP
+.RS 4
+The new init count. 
+.RE
+.PP
+
+.SS "void edje_text_class_del (const char * text_class)"
+.PP
+\fBParameters:\fP
+.RS 4
+\fItext_class\fP Deletes any values at the process level for the specified text class. 
+.RE
+.PP
+
+.SS "Evas_List * edje_text_class_list (void)"
+.PP
+Lists all text classes known about by the current process. 
+.PP
+\fBReturns:\fP
+.RS 4
+A list of text class names (strings). These strings are stringshares and the list must be free()'d by the caller. 
+.RE
+.PP
+
+.SS "EAPI void edje_text_class_set (const char * text_class, const char * font, Evas_Font_Size size)"
+.PP
+Set the Edje text class. 
+.PP
+\fBParameters:\fP
+.RS 4
+\fItext_class\fP The text class name ?! 
+.br
+\fIfont\fP The font name 
+.br
+\fIsize\fP The font size
+.RE
+.PP
+This sets updates all edje members which belong to this text class with the new font attributes. 
+.SS "EAPI void edje_thaw (void)"
+.PP
+Thaw all Edje objects in the current process. 
+.PP
+See \fBedje_object_thaw()\fP for more. 
+.PP
+References edje_object_thaw().
+.SH "Author"
+.PP 
+Generated automatically by Doxygen for Edje from the source code.
