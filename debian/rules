@@ -27,7 +27,7 @@ refresh-patches:
 	@echo 'refreshing debian/patches:'
 	@rm -rf '$(CURDIR)'/debian/patches
 	@mkdir -p '$(CURDIR)'/debian/patches
-	@cd '$(CURDIR)'/debian/patches && git format-patch upstream..upstream+patches | tee series
+	@cd '$(CURDIR)'/debian/patches && git format-patch upstream..upstream-$(DEB_UPSTREAM_VERSION)+patches | tee series
 	@sed -i s:^debian/patches/:: '$(CURDIR)'/debian/patches/series
 	@echo .
 
