@@ -1,3 +1,9 @@
+edje (0.9.9.043-1) UNRELEASED; urgency=low
+
+  * New upstream release
+
+ -- Jan Lübbe <jluebbe@debian.org>  Sat, 24 May 2008 15:52:31 +0200
+
 edje (0.5.0.042-2) experimental; urgency=low
 
   [ Jan Luebbe ]
