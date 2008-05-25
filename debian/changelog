@@ -1,9 +1,9 @@
-edje (0.9.9.043-1) UNRELEASED; urgency=low
+edje (0.9.9.043-1) experimental; urgency=low
 
   * New upstream release
-  * Docs are now prebuilt in the tarbal
+  * Docs are now prebuilt in the tarball
 
- -- Jan Lübbe <jluebbe@debian.org>  Sat, 24 May 2008 15:52:31 +0200
+ -- Jan Lübbe <jluebbe@debian.org>  Sun, 25 May 2008 18:59:51 +0200
 
 edje (0.5.0.042-2) experimental; urgency=low
 
