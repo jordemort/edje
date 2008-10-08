@@ -1,4 +1,4 @@
-From 2c739bb1c839cc17756e48d7202a3422b73b32d5 Mon Sep 17 00:00:00 2001
+From 7606a241d00b8d14b1be3b464728b186b26333f1 Mon Sep 17 00:00:00 2001
 From: Jan Luebbe <jluebbe@debian.org>
 Date: Sun, 4 May 2008 18:23:25 +0200
 Subject: [PATCH] Add libtool -Wl,--as-needed reordering workaround
@@ -40,5 +40,5 @@ index e420fac..9a9b252 100644
  	  if test "$linkmode,$pass" = "prog,link"; then
  	    compile_deplibs="$deplib $compile_deplibs"
 -- 
-1.5.5.1
+1.5.6.5
 
