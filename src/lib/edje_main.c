@@ -2,11 +2,6 @@
  * vim:ts=8:sw=3:sts=8:noexpandtab:cino=>5n-3f0^-2{2
  */
 
-#include <time.h>
-
-#include <Ecore_Job.h>
-
-#include "Edje.h"
 #include "edje_private.h"
 
 static int initted = 0;
@@ -28,6 +23,7 @@ edje_init(void)
 	_edje_edd_setup();
 	_edje_text_init();
 	embryo_init();
+	eet_init();
      }
    _edje_message_init();
    return initted;
@@ -56,6 +52,7 @@ edje_shutdown(void)
    _edje_text_class_hash_free();
    embryo_shutdown();
    ecore_job_shutdown();
+   eet_shutdown();
 
    return 0;
 }
@@ -93,10 +90,10 @@ _edje_del(Edje *ed)
    _edje_callbacks_patterns_clean(ed);
    _edje_file_del(ed);
    if (ed->path) evas_stringshare_del(ed->path);
-   if (ed->part) evas_stringshare_del(ed->part);
+   if (ed->group) evas_stringshare_del(ed->group);
    if (ed->parent) evas_stringshare_del(ed->parent);
    ed->path = NULL;
-   ed->part = NULL;
+   ed->group = NULL;
    if ((ed->actions) || (ed->pending_actions))
      {
 	_edje_animators = evas_list_remove(_edje_animators, ed);

@@ -2,7 +2,6 @@
  * vim:ts=8:sw=3:sts=8:noexpandtab:cino=>5n-3f0^-2{2
  */
 
-#include "Edje.h"
 #include "edje_private.h"
 
 #define FLAG_NONE 0
@@ -139,11 +138,18 @@ _edje_recalc(Edje *ed)
 {
    int i;
 
-   if (!ed->dirty) return;
-   if (ed->freeze)
+   if (!ed->dirty)
+     {
+	return;
+     }
+   if ((ed->freeze > 0) || (_edje_freeze_val > 0))
      {
 	ed->recalc = 1;
-	if (!ed->calc_only) return;
+	if (!ed->calc_only)
+	  {
+	     if (_edje_freeze_val > 0) _edje_freeze_calc_count++;
+	     return;
+	  }
      }
    for (i = 0; i < ed->table_parts_size; i++)
      {
@@ -258,35 +264,79 @@ _edje_part_recalc_single(Edje *ed,
 //   if (flags & FLAG_X)
      {
 	minw = desc->min.w;
-	if (ep->swallow_params.min.w > desc->min.w) minw = ep->swallow_params.min.w;
+	if (ep->part->scale) minw = (int)(((double)minw) * _edje_scale);
+	if (ep->swallow_params.min.w > desc->min.w)
+	  minw = ep->swallow_params.min.w;
 
 	/* XXX TODO: remove need of EDJE_INF_MAX_W, see edje_util.c */
 	if ((ep->swallow_params.max.w <= 0) ||
 	    (ep->swallow_params.max.w == EDJE_INF_MAX_W))
-	  maxw = desc->max.w;
+	  {
+	     maxw = desc->max.w;
+	     if (maxw > 0)
+	       {
+		  if (ep->part->scale) maxw = (int)(((double)maxw) * _edje_scale);
+		  if (maxw < 1) maxw = 1;
+	       }
+	  }
 	else
 	  {
 	     if (desc->max.w <= 0)
 	       maxw = ep->swallow_params.max.w;
 	     else
-	       maxw = MIN(ep->swallow_params.max.w, desc->max.w);
+	       {
+		  maxw = desc->max.w;
+		  if (maxw > 0)
+		    {
+		       if (ep->part->scale) maxw = (int)(((double)maxw) * _edje_scale);
+		       if (maxw < 1) maxw = 1;
+		    }
+		  if (ep->swallow_params.max.w < maxw)
+		    maxw = ep->swallow_params.max.w;
+	       }
+	  }
+	if (maxw >= 0)
+	  {
+	     if (maxw < minw) maxw = minw;
 	  }
      }
 //   if (flags & FLAG_Y)
      {
 	minh = desc->min.h;
-	if (ep->swallow_params.min.h > desc->min.h) minh = ep->swallow_params.min.h;
+	if (ep->part->scale) minh = (int)(((double)minh) * _edje_scale);
+	if (ep->swallow_params.min.h > desc->min.h)
+	  minh = ep->swallow_params.min.h;
 
 	/* XXX TODO: remove need of EDJE_INF_MAX_H, see edje_util.c */
 	if ((ep->swallow_params.max.h <= 0) ||
 	    (ep->swallow_params.max.h == EDJE_INF_MAX_H))
-	  maxh = desc->max.h;
+	  {
+	     maxh = desc->max.h;
+	     if (maxh > 0)
+	       {
+		  if (ep->part->scale) maxh = (int)(((double)maxh) * _edje_scale);
+		  if (maxh < 1) maxh = 1;
+	       }
+	  }
 	else
 	  {
 	     if (desc->max.h <= 0)
 	       maxh = ep->swallow_params.max.h;
 	     else
-	       maxh = MIN(ep->swallow_params.max.h, desc->max.h);
+	       {
+		  maxh = desc->max.h;
+		  if (maxh > 0)
+		    {
+		       if (ep->part->scale) maxh = (int)(((double)maxh) * _edje_scale);
+		       if (maxh < 1) maxh = 1;
+		    }
+		  if (ep->swallow_params.max.h < maxh)
+		    maxh = ep->swallow_params.max.h;
+	       }
+	  }
+	if (maxh >= 0)
+	  {
+	     if (maxh < minh) maxh = minh;
 	  }
      }
    /* relative coords of top left & bottom right */
@@ -368,63 +418,69 @@ _edje_part_recalc_single(Edje *ed,
 		  break;
 	       }
 	  }
-	if (apref == EDJE_ASPECT_PREFER_NONE) /* keep botth dimensions in check */
+
+	switch (apref)
 	  {
-	     /* adjust for min aspect (width / height) */
-	     if ((amin > 0.0) && (aspect < amin))
-	       {
-		  new_h = (params->w / amin);
-		  new_w = (params->h * amin);
-	       }
-	     /* adjust for max aspect (width / height) */
-	     if ((amax > 0.0) && (aspect > amax))
-	       {
-		  new_h = (params->w / amax);
-		  new_w = (params->h * amax);
-	       }
-	     if ((amax > 0.0) && (new_w < params->w))
-	       {
-		  new_w = params->w;
-		  new_h = params->w / amax;
-	       }
-	     if ((amax > 0.0) && (new_h < params->h))
-	       {
-		  new_w = params->h * amax;
-		  new_h = params->h;
-	       }
-	  } /* prefer vertical size as determiner */
-	else if (apref == EDJE_ASPECT_PREFER_VERTICAL) /* keep both dimensions in check */
-	  {
-	     /* adjust for max aspect (width / height) */
-	     if ((amax > 0.0) && (aspect > amax))
-	       new_w = (params->h * amax);
-	     /* adjust for min aspect (width / height) */
-	     if ((amin > 0.0) && (aspect < amin))
-	       new_w = (params->h * amin);
-	  } /* prefer horizontal size as determiner */
-	else if (apref == EDJE_ASPECT_PREFER_HORIZONTAL) /* keep both dimensions in check */
-	  {
-	     /* adjust for max aspect (width / height) */
-	     if ((amax > 0.0) && (aspect > amax))
-	       new_h = (params->w / amax);
-	     /* adjust for min aspect (width / height) */
-	     if ((amin > 0.0) && (aspect < amin))
-	       new_h = (params->w / amin);
-	  }
-	else if (apref == EDJE_ASPECT_PREFER_BOTH) /* keep both dimensions in check */
-	  {
-	     /* adjust for max aspect (width / height) */
-	     if ((amax > 0.0) && (aspect > amax))
-	       {
-		  new_w = (params->h * amax);
-		  new_h = (params->w / amax);
-	       }
-	     /* adjust for min aspect (width / height) */
-	     if ((amin > 0.0) && (aspect < amin))
-	       {
-		  new_w = (params->h * amin);
-		  new_h = (params->w / amin);
-	       }
+	   case EDJE_ASPECT_PREFER_NONE:
+	      /* keep botth dimensions in check */
+	      /* adjust for min aspect (width / height) */
+	      if ((amin > 0.0) && (aspect < amin))
+		{
+		   new_h = (params->w / amin);
+		   new_w = (params->h * amin);
+		}
+	      /* adjust for max aspect (width / height) */
+	      if ((amax > 0.0) && (aspect > amax))
+		{
+		   new_h = (params->w / amax);
+		   new_w = (params->h * amax);
+		}
+	      if ((amax > 0.0) && (new_w < params->w))
+		{
+		   new_w = params->w;
+		   new_h = params->w / amax;
+		}
+	      if ((amax > 0.0) && (new_h < params->h))
+		{
+		   new_w = params->h * amax;
+		   new_h = params->h;
+		}
+	      break;
+	   /* prefer vertical size as determiner */
+	   case  EDJE_ASPECT_PREFER_VERTICAL:
+	      /* keep both dimensions in check */
+	      /* adjust for max aspect (width / height) */
+	      if ((amax > 0.0) && (aspect > amax))
+		new_w = (params->h * amax);
+	      /* adjust for min aspect (width / height) */
+	      if ((amin > 0.0) && (aspect < amin))
+		new_w = (params->h * amin);
+	      break;
+	   /* prefer horizontal size as determiner */
+	   case EDJE_ASPECT_PREFER_HORIZONTAL:
+	      /* keep both dimensions in check */
+	      /* adjust for max aspect (width / height) */
+	      if ((amax > 0.0) && (aspect > amax))
+		new_h = (params->w / amax);
+	      /* adjust for min aspect (width / height) */
+	      if ((amin > 0.0) && (aspect < amin))
+		new_h = (params->w / amin);
+	      break;
+	   case EDJE_ASPECT_PREFER_BOTH:
+	      /* keep both dimensions in check */
+	      /* adjust for max aspect (width / height) */
+	      if ((amax > 0.0) && (aspect > amax))
+		{
+		   new_w = (params->h * amax);
+		   new_h = (params->w / amax);
+		}
+	      /* adjust for min aspect (width / height) */
+	      if ((amin > 0.0) && (aspect < amin))
+		{
+		   new_w = (params->h * amin);
+		   new_h = (params->w / amin);
+		}
+	      break;
 	  }
 
         if (!((amin > 0.0) && (amax > 0.0) && (apref == EDJE_ASPECT_PREFER_NONE)))
@@ -579,6 +635,9 @@ _edje_part_recalc_single(Edje *ed,
 	     stl = NULL;
 	  }
 
+	if (ep->part->scale)
+	  evas_object_scale_set(ep->object, _edje_scale);
+	
 	if (stl)
 	  {
 	     const char *ptxt;
@@ -707,6 +766,8 @@ _edje_part_recalc_single(Edje *ed,
 		  inlined_font = 1;
 	       }
 	  }
+	if (ep->part->scale)
+	  evas_object_scale_set(ep->object, _edje_scale);
 	if (inlined_font) evas_object_text_font_source_set(ep->object, ed->path);
 	else evas_object_text_font_source_set(ep->object, NULL);
 
@@ -1239,18 +1300,27 @@ _edje_image_recalc_apply(Edje *ed, Edje_Real_Part *ep, Edje_Calc_Params *p3, Edj
 		  printf("EDJE: Error loading image collection \"%s\" from "
 			 "file \"%s\". Missing EET Evas loader module?\n",
 			 buf, ed->file->path);
-		  if (evas_object_image_load_error_get(ep->object) == EVAS_LOAD_ERROR_GENERIC)
-		    printf("Error type: EVAS_LOAD_ERROR_GENERIC\n");
-		  else if (evas_object_image_load_error_get(ep->object) == EVAS_LOAD_ERROR_DOES_NOT_EXIST)
-		    printf("Error type: EVAS_LOAD_ERROR_DOES_NOT_EXIST\n");
-		  else if (evas_object_image_load_error_get(ep->object) == EVAS_LOAD_ERROR_PERMISSION_DENIED)
-		    printf("Error type: EVAS_LOAD_ERROR_PERMISSION_DENIED\n");
-		  else if (evas_object_image_load_error_get(ep->object) == EVAS_LOAD_ERROR_RESOURCE_ALLOCATION_FAILED)
-		    printf("Error type: EVAS_LOAD_ERROR_RESOURCE_ALLOCATION_FAILED\n");
-		  else if (evas_object_image_load_error_get(ep->object) == EVAS_LOAD_ERROR_CORRUPT_FILE)
-		    printf("Error type: EVAS_LOAD_ERROR_CORRUPT_FILE\n");
-		  else if (evas_object_image_load_error_get(ep->object) == EVAS_LOAD_ERROR_UNKNOWN_FORMAT)
-		    printf("Error type: EVAS_LOAD_ERROR_UNKNOWN_FORMAT\n");
+		  switch (evas_object_image_load_error_get(ep->object))
+		    {
+		     case EVAS_LOAD_ERROR_GENERIC:
+			printf("Error type: EVAS_LOAD_ERROR_GENERIC\n");
+			break;
+		     case EVAS_LOAD_ERROR_DOES_NOT_EXIST:
+			printf("Error type: EVAS_LOAD_ERROR_DOES_NOT_EXIST\n");
+			break;
+		     case EVAS_LOAD_ERROR_PERMISSION_DENIED:
+			printf("Error type: EVAS_LOAD_ERROR_PERMISSION_DENIED\n");
+			break;
+		     case EVAS_LOAD_ERROR_RESOURCE_ALLOCATION_FAILED:
+			printf("Error type: EVAS_LOAD_ERROR_RESOURCE_ALLOCATION_FAILED\n");
+			break;
+		     case EVAS_LOAD_ERROR_CORRUPT_FILE:
+			printf("Error type: EVAS_LOAD_ERROR_CORRUPT_FILE\n");
+			break;
+		     case EVAS_LOAD_ERROR_UNKNOWN_FORMAT:
+			printf("Error type: EVAS_LOAD_ERROR_UNKNOWN_FORMAT\n");
+			break;
+		    }
 	       }
 	  }
      }
@@ -1375,43 +1445,44 @@ _edje_part_recalc(Edje *ed, Edje_Real_Part *ep, int flags)
 	p3.color.b = INTP(p1.color.b, p2.color.b, pos);
 	p3.color.a = INTP(p1.color.a, p2.color.a, pos);
 
-	if ((part_type == EDJE_PART_TYPE_IMAGE) ||
-	    (part_type == EDJE_PART_TYPE_GRADIENT))
+	switch (part_type)
 	  {
-	     p3.fill.x = INTP(p1.fill.x, p2.fill.x, pos);
-	     p3.fill.y = INTP(p1.fill.y, p2.fill.y, pos);
-	     p3.fill.w = INTP(p1.fill.w, p2.fill.w, pos);
-	     p3.fill.h = INTP(p1.fill.h, p2.fill.h, pos);
-	     if (part_type == EDJE_PART_TYPE_GRADIENT)
-	       {
-		  p3.fill.angle = INTP(p1.fill.angle, p2.fill.angle, pos);
-		  p3.fill.spread = (beginning_pos) ? p1.fill.spread : p2.fill.spread;
-		  p3.gradient = (beginning_pos) ? p1.gradient : p2.gradient;
-	       }
-	     else
-	       {
-		  p3.border.l = INTP(p1.border.l, p2.border.l, pos);
-		  p3.border.r = INTP(p1.border.r, p2.border.r, pos);
-		  p3.border.t = INTP(p1.border.t, p2.border.t, pos);
-		  p3.border.b = INTP(p1.border.b, p2.border.b, pos);
-	       }
-	  }
-	else if ((part_type == EDJE_PART_TYPE_TEXT) ||
-		 (part_type == EDJE_PART_TYPE_TEXTBLOCK))
-	  {
-	     p3.color2.r = INTP(p1.color2.r, p2.color2.r, pos);
-	     p3.color2.g = INTP(p1.color2.g, p2.color2.g, pos);
-	     p3.color2.b = INTP(p1.color2.b, p2.color2.b, pos);
-	     p3.color2.a = INTP(p1.color2.a, p2.color2.a, pos);
+	   case EDJE_PART_TYPE_IMAGE:
+	   case EDJE_PART_TYPE_GRADIENT:
+	      p3.fill.x = INTP(p1.fill.x, p2.fill.x, pos);
+	      p3.fill.y = INTP(p1.fill.y, p2.fill.y, pos);
+	      p3.fill.w = INTP(p1.fill.w, p2.fill.w, pos);
+	      p3.fill.h = INTP(p1.fill.h, p2.fill.h, pos);
+	      if (part_type == EDJE_PART_TYPE_GRADIENT)
+		{
+		   p3.fill.angle = INTP(p1.fill.angle, p2.fill.angle, pos);
+		   p3.fill.spread = (beginning_pos) ? p1.fill.spread : p2.fill.spread;
+		   p3.gradient = (beginning_pos) ? p1.gradient : p2.gradient;
+		}
+	      else
+		{
+		   p3.border.l = INTP(p1.border.l, p2.border.l, pos);
+		   p3.border.r = INTP(p1.border.r, p2.border.r, pos);
+		   p3.border.t = INTP(p1.border.t, p2.border.t, pos);
+		   p3.border.b = INTP(p1.border.b, p2.border.b, pos);
+		}
+	      break;
+	   case EDJE_PART_TYPE_TEXT:
+	   case EDJE_PART_TYPE_TEXTBLOCK:
+	      p3.color2.r = INTP(p1.color2.r, p2.color2.r, pos);
+	      p3.color2.g = INTP(p1.color2.g, p2.color2.g, pos);
+	      p3.color2.b = INTP(p1.color2.b, p2.color2.b, pos);
+	      p3.color2.a = INTP(p1.color2.a, p2.color2.a, pos);
 
-	     p3.color3.r = INTP(p1.color3.r, p2.color3.r, pos);
-	     p3.color3.g = INTP(p1.color3.g, p2.color3.g, pos);
-	     p3.color3.b = INTP(p1.color3.b, p2.color3.b, pos);
-	     p3.color3.a = INTP(p1.color3.a, p2.color3.a, pos);
+	      p3.color3.r = INTP(p1.color3.r, p2.color3.r, pos);
+	      p3.color3.g = INTP(p1.color3.g, p2.color3.g, pos);
+	      p3.color3.b = INTP(p1.color3.b, p2.color3.b, pos);
+	      p3.color3.a = INTP(p1.color3.a, p2.color3.a, pos);
 
-	     p3.text.align.x = INTP(p1.text.align.x, p2.text.align.x, pos);
-	     p3.text.align.y = INTP(p1.text.align.y, p2.text.align.y, pos);
-	     p3.text.elipsis = INTP(p1.text.elipsis, p2.text.elipsis, pos);
+	      p3.text.align.x = INTP(p1.text.align.x, p2.text.align.x, pos);
+	      p3.text.align.y = INTP(p1.text.align.y, p2.text.align.y, pos);
+	      p3.text.elipsis = INTP(p1.text.elipsis, p2.text.elipsis, pos);
+	      break;
 	  }
 
 	pf = &p3;
@@ -1450,8 +1521,12 @@ _edje_part_recalc(Edje *ed, Edje_Real_Part *ep, int flags)
 				    (pf->color.g * pf->color.a) / 255,
 				    (pf->color.b * pf->color.a) / 255,
 				    pf->color.a);
-	      if (pf->visible) evas_object_show(ep->object);
-	      else evas_object_hide(ep->object);
+	      if (!pf->visible)
+		{
+		   evas_object_hide(ep->object);
+		   break;
+		}
+	      evas_object_show(ep->object);
 	      /* move and resize are needed for all previous object => no break here. */
 	   case EDJE_PART_TYPE_SWALLOW:
 	   case EDJE_PART_TYPE_GROUP:
@@ -1495,10 +1570,14 @@ _edje_part_recalc(Edje *ed, Edje_Real_Part *ep, int flags)
 //				   (pf->color.g * pf->color.a) / 255,
 //				   (pf->color.b * pf->color.a) / 255,
 //				   pf->color.a);
-	     evas_object_move(ep->swallowed_object, ed->x + pf->x, ed->y + pf->y);
-	     evas_object_resize(ep->swallowed_object, pf->w, pf->h);
-	     if (pf->visible) evas_object_show(ep->swallowed_object);
-	     else evas_object_hide(ep->swallowed_object);
+	     if (pf->visible)
+	       {
+		  evas_object_show(ep->swallowed_object);
+		  evas_object_move(ep->swallowed_object, ed->x + pf->x, ed->y + pf->y);
+		  evas_object_resize(ep->swallowed_object, pf->w, pf->h);
+	       }
+	     else
+	       evas_object_hide(ep->swallowed_object);
 	  }
      }
 

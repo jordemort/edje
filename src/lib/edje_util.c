@@ -1,9 +1,7 @@
 /*
  * vim:ts=8:sw=3:sts=8:noexpandtab:cino=>5n-3f0^-2{2
  */
-#include <stddef.h>
-#include <Ecore_Str.h>
-#include "Edje.h"
+
 #include "edje_private.h"
 
 static Evas_Hash *_edje_color_class_hash = NULL;
@@ -13,6 +11,9 @@ static Evas_Hash *_edje_text_class_hash = NULL;
 static Evas_Hash *_edje_text_class_member_hash = NULL;
 
 char *_edje_fontset_append = NULL;
+double _edje_scale = 1.0;
+int _edje_freeze_val = 0;
+int _edje_freeze_calc_count = 0;
 
 typedef struct _Edje_List_Foreach_Data Edje_List_Foreach_Data;
 
@@ -30,6 +31,8 @@ Edje_Real_Part *_edje_real_part_recursive_get_helper(Edje *ed, char **path);
 
 /* FIXDOC: These all need to be looked over, Verified/Expanded upon.  I just got lazy and stopped putting FIXDOC next to each function in this file. */
 
+//#define FASTFREEZE 1
+
 /** Freeze all Edje objects in the current process.
  *
  * See edje_object_freeze() for more.
@@ -37,11 +40,41 @@ Edje_Real_Part *_edje_real_part_recursive_get_helper(Edje *ed, char **path);
 EAPI void
 edje_freeze(void)
 {
+#ifdef FASTFREEZE   
+   _edje_freeze_val++;
+   printf("fr ++ ->%i\n", _edje_freeze_val);
+#else   
+// FIXME: could just have a global freeze instead of per object
+// above i tried.. but this broke some things. notable e17's menus. why?
    Evas_List *l;
 
    for (l = _edje_edjes; l; l = l->next)
      edje_object_freeze((Evas_Object *)(l->data));
+#endif   
 }
+
+#ifdef FASTFREEZE   
+static void
+_edje_thaw_edje(Edje *ed)
+{
+   int i;
+   
+   for (i = 0; i < ed->table_parts_size; i++)
+     {
+	Edje_Real_Part *rp;
+	
+	rp = ed->table_parts[i];
+	if (rp->part->type == EDJE_PART_TYPE_GROUP && rp->swallowed_object)
+	  {
+	     Edje *ed2;
+	     
+	     ed2 = _edje_fetch(rp->swallowed_object);
+	     if (ed2) _edje_thaw_edje(ed2);
+	  }
+     }
+   if ((ed->recalc) && (ed->freeze <= 0)) _edje_recalc(ed);
+}
+#endif
 
 /** Thaw all Edje objects in the current process.
  *
@@ -50,10 +83,30 @@ edje_freeze(void)
 EAPI void
 edje_thaw(void)
 {
+#ifdef FASTFREEZE   
+   _edje_freeze_val--;
+   printf("fr -- ->%i\n", _edje_freeze_val);
+   if ((_edje_freeze_val <= 0) && (_edje_freeze_calc_count > 0))
+     {
+	Evas_List *l;
+
+	_edje_freeze_calc_count = 0;
+	for (l = _edje_edjes; l; l = l->next)
+	  {
+	     Edje *ed;
+	     
+	     ed = _edje_fetch(l->data);
+	     if (ed) _edje_thaw_edje(ed);
+	  }
+     }
+#else   
+// FIXME: could just have a global freeze instead of per object
+// comment as above.. why?
    Evas_List *l;
 
    for (l = _edje_edjes; l; l = l->next)
      edje_object_thaw((Evas_Object *)(l->data));
+#endif   
 }
 
 /* FIXDOC: Expand */
@@ -70,6 +123,23 @@ EAPI const char *
 edje_fontset_append_get(void)
 {
    return _edje_fontset_append;
+}
+
+EAPI void
+edje_scale_set(double scale)
+{
+   Evas_List *l;
+
+   if (_edje_scale == scale) return;
+   _edje_scale = scale;
+   for (l = _edje_edjes; l; l = l->next)
+     edje_object_calc_force((Evas_Object *)(l->data));
+}
+
+EAPI double
+edje_scale_get(void)
+{
+   return _edje_scale;
 }
 
 /* FIXDOC: Verify/Expand */
@@ -96,7 +166,7 @@ edje_fontset_append_get(void)
  * @endcode
  */
 EAPI const char *
-edje_object_data_get(Evas_Object *obj, const char *key)
+edje_object_data_get(const Evas_Object *obj, const char *key)
 {
    Edje *ed;
    Evas_List *l;
@@ -685,7 +755,7 @@ edje_object_text_class_set(Evas_Object *obj, const char *text_class, const char 
  * 1 if Edje part exists
  */
 EAPI int
-edje_object_part_exists(Evas_Object *obj, const char *part)
+edje_object_part_exists(const Evas_Object *obj, const char *part)
 {
    Edje *ed;
    Edje_Real_Part *rp;
@@ -709,8 +779,8 @@ edje_object_part_exists(Evas_Object *obj, const char *part)
  * @return Returns the Evas_Object corresponding to the given part,
  * or NULL on failure (if the part doesn't exist)
  **/
-EAPI Evas_Object *
-edje_object_part_object_get(Evas_Object *obj, const char *part)
+EAPI const Evas_Object *
+edje_object_part_object_get(const Evas_Object *obj, const char *part)
 {
    Edje *ed;
    Edje_Real_Part *rp;
@@ -736,7 +806,7 @@ edje_object_part_object_get(Evas_Object *obj, const char *part)
  * values you are uninterested in.
  */
 EAPI void
-edje_object_part_geometry_get(Evas_Object *obj, const char *part, Evas_Coord *x, Evas_Coord *y, Evas_Coord *w, Evas_Coord *h )
+edje_object_part_geometry_get(const Evas_Object *obj, const char *part, Evas_Coord *x, Evas_Coord *y, Evas_Coord *w, Evas_Coord *h )
 {
    Edje *ed;
    Edje_Real_Part *rp;
@@ -823,7 +893,7 @@ edje_object_part_text_set(Evas_Object *obj, const char *part, const char *text)
  * @return The text string
  */
 EAPI const char *
-edje_object_part_text_get(Evas_Object *obj, const char *part)
+edje_object_part_text_get(const Evas_Object *obj, const char *part)
 {
    Edje *ed;
    Edje_Real_Part *rp;
@@ -894,11 +964,11 @@ edje_extern_object_min_size_set(Evas_Object *obj, Evas_Coord minw, Evas_Coord mi
    if (mw < 0) mw = 0;
    if (mh < 0) mh = 0;
    if (mw > 0)
-     evas_object_data_set(obj, "\377 edje.minw", (void *)mw);
+     evas_object_data_set(obj, "\377 edje.minw", (void *)(long)mw);
    else
      evas_object_data_del(obj, "\377 edje.minw");
    if (mh > 0)
-     evas_object_data_set(obj, "\377 edje.minh", (void *)mh);
+     evas_object_data_set(obj, "\377 edje.minh", (void *)(long)mh);
    else
      evas_object_data_del(obj, "\377 edje.minh");
 
@@ -928,11 +998,11 @@ edje_extern_object_max_size_set(Evas_Object *obj, Evas_Coord maxw, Evas_Coord ma
    mw = maxw;
    mh = maxh;
    if (mw >= 0)
-     evas_object_data_set(obj, "\377 edje.maxw", (void *)mw);
+     evas_object_data_set(obj, "\377 edje.maxw", (void *)(long)mw);
    else
      evas_object_data_del(obj, "\377 edje.maxw");
    if (mh >= 0)
-     evas_object_data_set(obj, "\377 edje.maxh", (void *)mh);
+     evas_object_data_set(obj, "\377 edje.maxh", (void *)(long)mh);
    else
      evas_object_data_del(obj, "\377 edje.maxh");
 
@@ -968,15 +1038,15 @@ edje_extern_object_aspect_set(Evas_Object *obj, Edje_Aspect_Control aspect, Evas
    mw = aw;
    mh = ah;
    if (mc > 0)
-     evas_object_data_set(obj, "\377 edje.aspm", (void *)mc);
+     evas_object_data_set(obj, "\377 edje.aspm", (void *)(long)mc);
    else
      evas_object_data_del(obj, "\377 edje.aspm");
    if (mw > 0)
-     evas_object_data_set(obj, "\377 edje.aspw", (void *)mw);
+     evas_object_data_set(obj, "\377 edje.aspw", (void *)(long)mw);
    else
      evas_object_data_del(obj, "\377 edje.aspw");
    if (mh > 0)
-     evas_object_data_set(obj, "\377 edje.asph", (void *)mh);
+     evas_object_data_set(obj, "\377 edje.asph", (void *)(long)mh);
    else
      evas_object_data_del(obj, "\377 edje.asph");
 
@@ -1034,7 +1104,7 @@ edje_object_part_unswallow(Evas_Object *obj, Evas_Object *obj_swallow)
  * @return The swallowed object, or NULL if there is none.
  */
 EAPI Evas_Object *
-edje_object_part_swallow_get(Evas_Object *obj, const char *part)
+edje_object_part_swallow_get(const Evas_Object *obj, const char *part)
 {
    Edje *ed;
    Edje_Real_Part *rp;
@@ -1055,7 +1125,7 @@ edje_object_part_swallow_get(Evas_Object *obj, const char *part)
  * to zero if no Edje is connected to the Evas Object.
  */
 EAPI void
-edje_object_size_min_get(Evas_Object *obj, Evas_Coord *minw, Evas_Coord *minh)
+edje_object_size_min_get(const Evas_Object *obj, Evas_Coord *minw, Evas_Coord *minh)
 {
    Edje *ed;
 
@@ -1079,7 +1149,7 @@ edje_object_size_min_get(Evas_Object *obj, Evas_Coord *minw, Evas_Coord *minh)
  * to zero if no Edje is connected to the Evas Object.
  */
 EAPI void
-edje_object_size_max_get(Evas_Object *obj, Evas_Coord *maxw, Evas_Coord *maxh)
+edje_object_size_max_get(const Evas_Object *obj, Evas_Coord *maxw, Evas_Coord *maxh)
 {
    Edje *ed;
 
@@ -1120,15 +1190,22 @@ EAPI void
 edje_object_calc_force(Evas_Object *obj)
 {
    Edje *ed;
-   int pf;
+   int pf, pf2;
 
    ed = _edje_fetch(obj);
    if (!ed) return;
    ed->dirty = 1;
+   
+   pf2 = _edje_freeze_val;
    pf = ed->freeze;
+   
+   _edje_freeze_val = 0;
    ed->freeze = 0;
+   
    _edje_recalc(ed);
+   
    ed->freeze = pf;
+   _edje_freeze_val = pf2;
 }
 
 /** Calculate minimum size
@@ -1247,7 +1324,7 @@ edje_object_size_min_restricted_calc(Evas_Object *obj, Evas_Coord *minw, Evas_Co
 	if ((ed->w > 4000) || (ed->h > 4000))
 	  {
 	     printf("EDJE ERROR: file %s, group %s has a non-fixed part. add fixed: 1 1; ???\n",
-		    ed->path, ed->part);
+		    ed->path, ed->group);
 	     if (pep)
 	       printf("  Problem part is: %s\n", pep->part->name);
 	     printf("  Will recalc min size not allowing broken parts to affect the result.\n");
@@ -1282,7 +1359,7 @@ edje_object_size_min_restricted_calc(Evas_Object *obj, Evas_Coord *minw, Evas_Co
  */
 /* FIXME: Correctly return other states */
 EAPI const char *
-edje_object_part_state_get(Evas_Object *obj, const char *part, double *val_ret)
+edje_object_part_state_get(const Evas_Object *obj, const char *part, double *val_ret)
 {
    Edje *ed;
    Edje_Real_Part *rp;
@@ -1330,7 +1407,7 @@ edje_object_part_state_get(Evas_Object *obj, const char *part, double *val_ret)
  * 3: Dragable in X & Y directions
  */
 EAPI int
-edje_object_part_drag_dir_get(Evas_Object *obj, const char *part)
+edje_object_part_drag_dir_get(const Evas_Object *obj, const char *part)
 {
    Edje *ed;
    Edje_Real_Part *rp;
@@ -1388,7 +1465,7 @@ edje_object_part_drag_value_set(Evas_Object *obj, const char *part, double dx, d
  */
 /* FIXME: Should this be x and y instead of dx/dy? */
 EAPI void
-edje_object_part_drag_value_get(Evas_Object *obj, const char *part, double *dx, double *dy)
+edje_object_part_drag_value_get(const Evas_Object *obj, const char *part, double *dx, double *dy)
 {
    Edje *ed;
    Edje_Real_Part *rp;
@@ -1454,7 +1531,7 @@ edje_object_part_drag_size_set(Evas_Object *obj, const char *part, double dw, do
  * Gets the dragable object size.
  */
 EAPI void
-edje_object_part_drag_size_get(Evas_Object *obj, const char *part, double *dw, double *dh)
+edje_object_part_drag_size_get(const Evas_Object *obj, const char *part, double *dw, double *dh)
 {
    Edje *ed;
    Edje_Real_Part *rp;
@@ -1512,7 +1589,7 @@ edje_object_part_drag_step_set(Evas_Object *obj, const char *part, double dx, do
  * Gets the x and y step increments for the dragable object.
  */
 EAPI void
-edje_object_part_drag_step_get(Evas_Object *obj, const char *part, double *dx, double *dy)
+edje_object_part_drag_step_get(const Evas_Object *obj, const char *part, double *dx, double *dy)
 {
    Edje *ed;
    Edje_Real_Part *rp;
@@ -1570,7 +1647,7 @@ edje_object_part_drag_page_set(Evas_Object *obj, const char *part, double dx, do
  * Gets the x,y page step increments for the dragable object.
  */
 EAPI void
-edje_object_part_drag_page_get(Evas_Object *obj, const char *part, double *dx, double *dy)
+edje_object_part_drag_page_get(const Evas_Object *obj, const char *part, double *dx, double *dy)
 {
    Edje *ed;
    Edje_Real_Part *rp;
@@ -1925,7 +2002,7 @@ _edje_text_class_hash_free(void)
 }
 
 Edje *
-_edje_fetch(Evas_Object *obj)
+_edje_fetch(const Evas_Object *obj)
 {
    Edje *ed;
    char *type;
@@ -2066,13 +2143,13 @@ _edje_real_part_swallow(Edje_Real_Part *rp, Evas_Object *obj_swallow)
      {
 	int w1, h1, w2, h2, am, aw, ah;
 
-	w1 = (int)evas_object_data_get(obj_swallow, "\377 edje.minw");
-	h1 = (int)evas_object_data_get(obj_swallow, "\377 edje.minh");
-	w2 = (int)evas_object_data_get(obj_swallow, "\377 edje.maxw");
-	h2 = (int)evas_object_data_get(obj_swallow, "\377 edje.maxh");
-	am = (int)evas_object_data_get(obj_swallow, "\377 edje.aspm");
-	aw = (int)evas_object_data_get(obj_swallow, "\377 edje.aspw");
-	ah = (int)evas_object_data_get(obj_swallow, "\377 edje.asph");
+	w1 = (int)(long)evas_object_data_get(obj_swallow, "\377 edje.minw");
+	h1 = (int)(long)evas_object_data_get(obj_swallow, "\377 edje.minh");
+	w2 = (int)(long)evas_object_data_get(obj_swallow, "\377 edje.maxw");
+	h2 = (int)(long)evas_object_data_get(obj_swallow, "\377 edje.maxh");
+	am = (int)(long)evas_object_data_get(obj_swallow, "\377 edje.aspm");
+	aw = (int)(long)evas_object_data_get(obj_swallow, "\377 edje.aspw");
+	ah = (int)(long)evas_object_data_get(obj_swallow, "\377 edje.asph");
 	rp->swallow_params.min.w = w1;
 	rp->swallow_params.min.h = h1;
 	if (w2 > 0) rp->swallow_params.max.w = w2;

@@ -1,4 +1,4 @@
-.TH "Edje_Edit.h" 3 "19 May 2008" "Edje" \" -*- nroff -*-
+.TH "Edje_Edit.h" 3 "25 Sep 2008" "Edje" \" -*- nroff -*-
 .ad l
 .nh
 .SH NAME
@@ -131,6 +131,35 @@ Functions to deal with groups property (see \fBEdje Data Collection reference\fP
 .in -1c
 .in -1c
 .PP
+.RI "\fBData API\fP"
+.br
+Functions to deal with data embedded in the edje (see \fBEdje Data Collection reference\fP). 
+.PP
+.in +1c
+.in +1c
+.ti -1c
+.RI "EAPI Evas_List * \fBedje_edit_data_list_get\fP (Evas_Object *obj)"
+.br
+.RI "\fIRetrieves a list with the item names inside the data block. \fP"
+.ti -1c
+.RI "EAPI unsigned char \fBedje_edit_data_add\fP (Evas_Object *obj, const char *itemname, const char *value)"
+.br
+.RI "\fICreate a new data object in the given edje If another data with the same name exists nothing is created and FALSE is returned. \fP"
+.ti -1c
+.RI "EAPI unsigned char \fBedje_edit_data_del\fP (Evas_Object *obj, const char *itemname)"
+.br
+.RI "\fIDelete the given data object from edje. \fP"
+.ti -1c
+.RI "EAPI const char * \fBedje_edit_data_value_get\fP (Evas_Object *obj, char *itemname)"
+.br
+.RI "\fIGet the data associated with the given itemname. \fP"
+.ti -1c
+.RI "EAPI unsigned char \fBedje_edit_data_value_set\fP (Evas_Object *obj, const char *itemname, const char *value)"
+.br
+.RI "\fISet the data associated with the given itemname. \fP"
+.in -1c
+.in -1c
+.PP
 .RI "\fBParts API\fP"
 .br
 Functions to deal with part objects (see \fBEdje Data Collection reference\fP). 
@@ -230,7 +259,7 @@ Functions to deal with part objects (see \fBEdje Data Collection reference\fP).
 .PP
 .RI "\fBStates API\fP"
 .br
-Description of gen api 2. 
+Functions to deal with part states (see \fBEdje Data Collection reference\fP). 
 .PP
 .in +1c
 .in +1c
@@ -446,12 +475,84 @@ Description of gen api 2.
 .RI "EAPI void \fBedje_edit_state_aspect_pref_set\fP (Evas_Object *obj, const char *part, const char *state, unsigned char pref)"
 .br
 .RI "\fISet the aspect preference value of a part state. \fP"
+.ti -1c
+.RI "EAPI double \fBedje_edit_state_fill_origin_relative_x_get\fP (Evas_Object *obj, const char *part, const char *state)"
+.br
+.RI "\fIGet the fill origin relative x value of a part state. \fP"
+.ti -1c
+.RI "EAPI double \fBedje_edit_state_fill_origin_relative_y_get\fP (Evas_Object *obj, const char *part, const char *state)"
+.br
+.RI "\fIGet the fill origin relative y value of a part state. \fP"
+.ti -1c
+.RI "EAPI int \fBedje_edit_state_fill_origin_offset_x_get\fP (Evas_Object *obj, const char *part, const char *state)"
+.br
+.RI "\fIGet the fill origin offset x value of a part state. \fP"
+.ti -1c
+.RI "EAPI int \fBedje_edit_state_fill_origin_offset_y_get\fP (Evas_Object *obj, const char *part, const char *state)"
+.br
+.RI "\fIGet the fill origin offset y value of a part state. \fP"
+.ti -1c
+.RI "EAPI void \fBedje_edit_state_fill_origin_relative_x_set\fP (Evas_Object *obj, const char *part, const char *state, double x)"
+.br
+.RI "\fISet the fill origin relative x value of a part state. \fP"
+.ti -1c
+.RI "EAPI void \fBedje_edit_state_fill_origin_relative_y_set\fP (Evas_Object *obj, const char *part, const char *state, double x)"
+.br
+.RI "\fISet the fill origin relative y value of a part state. \fP"
+.ti -1c
+.RI "EAPI void \fBedje_edit_state_fill_origin_offset_x_set\fP (Evas_Object *obj, const char *part, const char *state, double x)"
+.br
+.RI "\fISet the fill origin offset x value of a part state. \fP"
+.ti -1c
+.RI "EAPI void \fBedje_edit_state_fill_origin_offset_y_set\fP (Evas_Object *obj, const char *part, const char *state, double y)"
+.br
+.RI "\fISet the fill origin offset x value of a part state. \fP"
+.ti -1c
+.RI "EAPI double \fBedje_edit_state_fill_size_relative_x_get\fP (Evas_Object *obj, const char *part, const char *state)"
+.br
+.RI "\fIGet the fill size relative x value of a part state. \fP"
+.ti -1c
+.RI "EAPI double \fBedje_edit_state_fill_size_relative_y_get\fP (Evas_Object *obj, const char *part, const char *state)"
+.br
+.RI "\fIGet the fill size relative y value of a part state. \fP"
+.ti -1c
+.RI "EAPI int \fBedje_edit_state_fill_size_offset_x_get\fP (Evas_Object *obj, const char *part, const char *state)"
+.br
+.RI "\fIGet the fill size offset x value of a part state. \fP"
+.ti -1c
+.RI "EAPI int \fBedje_edit_state_fill_size_offset_y_get\fP (Evas_Object *obj, const char *part, const char *state)"
+.br
+.RI "\fIGet the fill size offset y value of a part state. \fP"
+.ti -1c
+.RI "EAPI void \fBedje_edit_state_fill_size_relative_x_set\fP (Evas_Object *obj, const char *part, const char *state, double x)"
+.br
+.RI "\fISet the fill size relative x value of a part state. \fP"
+.ti -1c
+.RI "EAPI void \fBedje_edit_state_fill_size_relative_y_set\fP (Evas_Object *obj, const char *part, const char *state, double x)"
+.br
+.RI "\fISet the fill size relative y value of a part state. \fP"
+.ti -1c
+.RI "EAPI void \fBedje_edit_state_fill_size_offset_x_set\fP (Evas_Object *obj, const char *part, const char *state, double x)"
+.br
+.RI "\fISet the fill size offset x value of a part state. \fP"
+.ti -1c
+.RI "EAPI void \fBedje_edit_state_fill_size_offset_y_set\fP (Evas_Object *obj, const char *part, const char *state, double y)"
+.br
+.RI "\fISet the fill size offset x value of a part state. \fP"
+.ti -1c
+.RI "EAPI unsigned char \fBedje_edit_state_visible_get\fP (Evas_Object *obj, const char *part, const char *state)"
+.br
+.RI "\fIGet the visibility of a part state. \fP"
+.ti -1c
+.RI "EAPI void \fBedje_edit_state_visible_set\fP (Evas_Object *obj, const char *part, const char *state, unsigned char visible)"
+.br
+.RI "\fISet the visibility of a part state. \fP"
 .in -1c
 .in -1c
 .PP
 .RI "\fBText API\fP"
 .br
-Description of gen api 2. 
+Functions to deal with text objects (see \fBEdje Data Collection reference\fP). 
 .PP
 .in +1c
 .in +1c
@@ -508,7 +609,7 @@ Description of gen api 2.
 .PP
 .RI "\fBImages API\fP"
 .br
-Description of gen api 2. 
+Functions to deal with image objects (see \fBEdje Data Collection reference\fP). 
 .PP
 .in +1c
 .in +1c
@@ -533,6 +634,14 @@ Description of gen api 2.
 .br
 .RI "\fIGet image id for a given image name. \fP"
 .ti -1c
+.RI "EAPI int \fBedje_edit_image_compression_type_get\fP (Evas_Object *obj, const char *image)"
+.br
+.RI "\fIGet compression type for the given image. \fP"
+.ti -1c
+.RI "EAPI int \fBedje_edit_image_compression_rate_get\fP (Evas_Object *obj, const char *image)"
+.br
+.RI "\fIGet compression rate for the given image. \fP"
+.ti -1c
 .RI "EAPI void \fBedje_edit_state_image_border_get\fP (Evas_Object *obj, const char *part, const char *state, int *l, int *r, int *t, int *b)"
 .br
 .RI "\fIGet the image border of a part state. \fP"
@@ -555,9 +664,143 @@ Description of gen api 2.
 .in -1c
 .in -1c
 .PP
+.RI "\fBSpectrum API\fP"
+.br
+Functions to manage spectrum (see \fBEdje Data Collection reference\fP). 
+.PP
+.in +1c
+.in +1c
+.ti -1c
+.RI "EAPI Evas_List * \fBedje_edit_spectrum_list_get\fP (Evas_Object *obj)"
+.br
+.RI "\fIGet the list of all the spectrum in the given edje object. \fP"
+.ti -1c
+.RI "EAPI unsigned char \fBedje_edit_spectra_add\fP (Evas_Object *obj, const char *name)"
+.br
+.RI "\fIAdd a new spectra in the given edje object. \fP"
+.ti -1c
+.RI "EAPI unsigned char \fBedje_edit_spectra_del\fP (Evas_Object *obj, const char *spectra)"
+.br
+.RI "\fIDelete the given spectra from the edje object. \fP"
+.ti -1c
+.RI "EAPI unsigned char \fBedje_edit_spectra_name_set\fP (Evas_Object *obj, const char *spectra, const char *name)"
+.br
+.RI "\fIChange the name of the given spectra. \fP"
+.ti -1c
+.RI "EAPI int \fBedje_edit_spectra_stop_num_get\fP (Evas_Object *obj, const char *spectra)"
+.br
+.RI "\fIGet the number of stops in the given spectra. \fP"
+.ti -1c
+.RI "EAPI unsigned char \fBedje_edit_spectra_stop_num_set\fP (Evas_Object *obj, const char *spectra, int num)"
+.br
+.RI "\fISet the number of stops in the given spectra. \fP"
+.ti -1c
+.RI "EAPI unsigned char \fBedje_edit_spectra_stop_color_get\fP (Evas_Object *obj, const char *spectra, int stop_number, int *r, int *g, int *b, int *a, int *d)"
+.br
+.RI "\fIGet the colors of the given stop. \fP"
+.ti -1c
+.RI "EAPI unsigned char \fBedje_edit_spectra_stop_color_set\fP (Evas_Object *obj, const char *spectra, int stop_number, int r, int g, int b, int a, int d)"
+.br
+.RI "\fISet the colors of the given stop. \fP"
+.in -1c
+.in -1c
+.PP
+.RI "\fBGradient API\fP"
+.br
+Functions to deal with gradient objects (see \fBEdje Data Collection reference\fP). 
+.PP
+.in +1c
+.in +1c
+.ti -1c
+.RI "EAPI const char * \fBedje_edit_state_gradient_type_get\fP (Evas_Object *obj, const char *part, const char *state)"
+.br
+.RI "\fIGet the type of gradient. \fP"
+.ti -1c
+.RI "EAPI unsigned char \fBedje_edit_state_gradient_type_set\fP (Evas_Object *obj, const char *part, const char *state, const char *type)"
+.br
+.RI "\fISet the type of gradient. \fP"
+.ti -1c
+.RI "EAPI unsigned char \fBedje_edit_state_gradient_use_fill_get\fP (Evas_Object *obj, const char *part, const char *state)"
+.br
+.RI "\fIGet if the current gradient use the fill properties or the gradient_rel as params. \fP"
+.ti -1c
+.RI "EAPI const char * \fBedje_edit_state_gradient_spectra_get\fP (Evas_Object *obj, const char *part, const char *state)"
+.br
+.RI "\fIGet the spectra used by part state. \fP"
+.ti -1c
+.RI "EAPI unsigned char \fBedje_edit_state_gradient_spectra_set\fP (Evas_Object *obj, const char *part, const char *state, const char *spectra)"
+.br
+.RI "\fISet the spectra used by part state. \fP"
+.ti -1c
+.RI "EAPI double \fBedje_edit_state_gradient_rel1_relative_x_get\fP (Evas_Object *obj, const char *part, const char *state)"
+.br
+.RI "\fIGet the gradien rel1 relative x value. \fP"
+.ti -1c
+.RI "EAPI double \fBedje_edit_state_gradient_rel1_relative_y_get\fP (Evas_Object *obj, const char *part, const char *state)"
+.br
+.RI "\fIGet the gradien rel1 relative y value. \fP"
+.ti -1c
+.RI "EAPI double \fBedje_edit_state_gradient_rel2_relative_x_get\fP (Evas_Object *obj, const char *part, const char *state)"
+.br
+.RI "\fIGet the gradien rel2 relative x value. \fP"
+.ti -1c
+.RI "EAPI double \fBedje_edit_state_gradient_rel2_relative_y_get\fP (Evas_Object *obj, const char *part, const char *state)"
+.br
+.RI "\fIGet the gradien rel2 relative y value. \fP"
+.ti -1c
+.RI "EAPI unsigned char \fBedje_edit_state_gradient_rel1_relative_x_set\fP (Evas_Object *obj, const char *part, const char *state, double val)"
+.br
+.RI "\fISet the gradien rel1 relative x value. \fP"
+.ti -1c
+.RI "EAPI unsigned char \fBedje_edit_state_gradient_rel1_relative_y_set\fP (Evas_Object *obj, const char *part, const char *state, double val)"
+.br
+.RI "\fISet the gradien rel1 relative y value. \fP"
+.ti -1c
+.RI "EAPI unsigned char \fBedje_edit_state_gradient_rel2_relative_x_set\fP (Evas_Object *obj, const char *part, const char *state, double val)"
+.br
+.RI "\fISet the gradien rel2 relative x value. \fP"
+.ti -1c
+.RI "EAPI unsigned char \fBedje_edit_state_gradient_rel2_relative_y_set\fP (Evas_Object *obj, const char *part, const char *state, double val)"
+.br
+.RI "\fISet the gradien rel2 relative y value. \fP"
+.ti -1c
+.RI "EAPI int \fBedje_edit_state_gradient_rel1_offset_x_get\fP (Evas_Object *obj, const char *part, const char *state)"
+.br
+.RI "\fIGet the gradien rel1 offset x value. \fP"
+.ti -1c
+.RI "EAPI int \fBedje_edit_state_gradient_rel1_offset_y_get\fP (Evas_Object *obj, const char *part, const char *state)"
+.br
+.RI "\fIGet the gradien rel1 offset y value. \fP"
+.ti -1c
+.RI "EAPI int \fBedje_edit_state_gradient_rel2_offset_x_get\fP (Evas_Object *obj, const char *part, const char *state)"
+.br
+.RI "\fIGet the gradien rel2 offset x value. \fP"
+.ti -1c
+.RI "EAPI int \fBedje_edit_state_gradient_rel2_offset_y_get\fP (Evas_Object *obj, const char *part, const char *state)"
+.br
+.RI "\fIGet the gradien rel2 offset y value. \fP"
+.ti -1c
+.RI "EAPI unsigned char \fBedje_edit_state_gradient_rel1_offset_x_set\fP (Evas_Object *obj, const char *part, const char *state, int val)"
+.br
+.RI "\fISet the gradien rel1 offset x value. \fP"
+.ti -1c
+.RI "EAPI unsigned char \fBedje_edit_state_gradient_rel1_offset_y_set\fP (Evas_Object *obj, const char *part, const char *state, int val)"
+.br
+.RI "\fISet the gradien rel1 offset y value. \fP"
+.ti -1c
+.RI "EAPI unsigned char \fBedje_edit_state_gradient_rel2_offset_x_set\fP (Evas_Object *obj, const char *part, const char *state, int val)"
+.br
+.RI "\fISet the gradien rel2 offset x value. \fP"
+.ti -1c
+.RI "EAPI unsigned char \fBedje_edit_state_gradient_rel2_offset_y_set\fP (Evas_Object *obj, const char *part, const char *state, int val)"
+.br
+.RI "\fISet the gradien rel2 offset y value. \fP"
+.in -1c
+.in -1c
+.PP
 .RI "\fBPrograms API\fP"
 .br
-Description of gen api 2. 
+Functions to deal with programs (see \fBEdje Data Collection reference\fP). 
 .PP
 .in +1c
 .in +1c
@@ -702,7 +945,7 @@ Description of gen api 2.
 .PP
 .RI "\fBScripts API\fP"
 .br
-Description of gen api 2. 
+Functions to deal with embryo scripts (see \fBEdje Data Collection reference\fP). 
 .PP
 .in +1c
 .in +1c
@@ -713,6 +956,104 @@ Description of gen api 2.
 .in -1c
 .SH "Function Documentation"
 .PP 
+.SS "EAPI unsigned char edje_edit_data_add (Evas_Object * obj, const char * itemname, const char * value)"
+.PP
+Create a new data object in the given edje If another data with the same name exists nothing is created and FALSE is returned. 
+.PP
+\fBReturns:\fP
+.RS 4
+TRUE on success 
+.RE
+.PP
+
+.PP
+\fBParameters: \fP
+.in +1c
+.TP
+\fB\fIobj\fP\fP
+The edje object 
+.TP
+\fB\fIitemname\fP\fP
+The name for the new data 
+.TP
+\fB\fIvalue\fP\fP
+The value for the new data 
+.SS "EAPI unsigned char edje_edit_data_del (Evas_Object * obj, const char * itemname)"
+.PP
+Delete the given data object from edje. 
+.PP
+\fBReturns:\fP
+.RS 4
+TRUE on success 
+.RE
+.PP
+
+.PP
+\fBParameters: \fP
+.in +1c
+.TP
+\fB\fIobj\fP\fP
+The edje object 
+.TP
+\fB\fIitemname\fP\fP
+The name of the data to remove 
+.SS "EAPI Evas_List* edje_edit_data_list_get (Evas_Object * obj)"
+.PP
+Retrieves a list with the item names inside the data block. 
+.PP
+\fBReturns:\fP
+.RS 4
+An Evas_List* of string (char *)containing all the data names. 
+.RE
+.PP
+
+.PP
+\fBParameters: \fP
+.in +1c
+.TP
+\fB\fIobj\fP\fP
+The edje object 
+.SS "EAPI const char* edje_edit_data_value_get (Evas_Object * obj, char * itemname)"
+.PP
+Get the data associated with the given itemname. 
+.PP
+\fBReturns:\fP
+.RS 4
+The data value 
+.RE
+.PP
+
+.PP
+\fBParameters: \fP
+.in +1c
+.TP
+\fB\fIobj\fP\fP
+The edje object 
+.TP
+\fB\fIitemname\fP\fP
+The name of the data item 
+.SS "EAPI unsigned char edje_edit_data_value_set (Evas_Object * obj, const char * itemname, const char * value)"
+.PP
+Set the data associated with the given itemname. 
+.PP
+\fBReturns:\fP
+.RS 4
+TRUE on success 
+.RE
+.PP
+
+.PP
+\fBParameters: \fP
+.in +1c
+.TP
+\fB\fIobj\fP\fP
+The edje object 
+.TP
+\fB\fIitemname\fP\fP
+The name of the data item 
+.TP
+\fB\fIvalue\fP\fP
+The new value to set 
 .SS "EAPI unsigned char edje_edit_font_add (Evas_Object * obj, const char * path)"
 .PP
 Add a new ttf font to the edje file. 
@@ -738,11 +1079,11 @@ The file path to load the ttf font from
 .PP
 Get the list of all the fonts in the given edje. 
 .PP
+Use \fBedje_edit_string_list_free()\fP when you don't need the list anymore.
+.PP
 \fBReturns:\fP
 .RS 4
-An Evas_List* of string (char *)containing all the fonts names found in the edje file. Use \fBedje_edit_string_list_free()\fP when you don't need it anymore.
-.PP
-A string list of all the fonts found in the edje file 
+An Evas_List* of string (char *)containing all the fonts names found in the edje file. 
 .RE
 .PP
 
@@ -961,6 +1302,44 @@ The edje object
 .TP
 \fB\fIpath\fP\fP
 The name of the image file to include in the edje 
+.SS "EAPI int edje_edit_image_compression_rate_get (Evas_Object * obj, const char * image)"
+.PP
+Get compression rate for the given image. 
+.PP
+\fBReturns:\fP
+.RS 4
+the compression rate if the image is EDJE_EDIT_IMAGE_COMP_LOSSY. Or < 0 on errors 
+.RE
+.PP
+
+.PP
+\fBParameters: \fP
+.in +1c
+.TP
+\fB\fIobj\fP\fP
+The edje object 
+.TP
+\fB\fIimage\fP\fP
+The name of the image 
+.SS "EAPI int edje_edit_image_compression_type_get (Evas_Object * obj, const char * image)"
+.PP
+Get compression type for the given image. 
+.PP
+\fBReturns:\fP
+.RS 4
+One of EDJE_EDIT_IMAGE_COMP_RAW, EDJE_EDIT_IMAGE_COMP_USER, EDJE_EDIT_IMAGE_COMP_COMP or EDJE_EDIT_IMAGE_COMP_LOSSY 
+.RE
+.PP
+
+.PP
+\fBParameters: \fP
+.in +1c
+.TP
+\fB\fIobj\fP\fP
+The edje object 
+.TP
+\fB\fIimage\fP\fP
+The name of the image 
 .SS "EAPI int edje_edit_image_id_get (Evas_Object * obj, const char * image_name)"
 .PP
 Get image id for a given image name. 
@@ -976,11 +1355,11 @@ The edje object
 .PP
 Get the list of all the images in the given edje. 
 .PP
+Use \fBedje_edit_string_list_free()\fP when you don't need the list anymore.
+.PP
 \fBReturns:\fP
 .RS 4
-An Evas_List* of string (char *)containing all the images names found in the edje file. Use \fBedje_edit_string_list_free()\fP when you don't need it anymore.
-.PP
-A string list containing all the images found in the edje file 
+An Evas_List* of string (char *)containing all the images names found in the edje file. 
 .RE
 .PP
 
@@ -2185,6 +2564,199 @@ NOTE: for now this as 2 limitations -the saved edje file cannot be decompiled an
 .TP
 \fB\fIobj\fP\fP
 The edje object to save 
+.SS "EAPI unsigned char edje_edit_spectra_add (Evas_Object * obj, const char * name)"
+.PP
+Add a new spectra in the given edje object. 
+.PP
+\fBReturns:\fP
+.RS 4
+1 on success, 0 otherwise 
+.RE
+.PP
+
+.PP
+\fBParameters: \fP
+.in +1c
+.TP
+\fB\fIobj\fP\fP
+The edje object 
+.TP
+\fB\fIname\fP\fP
+The name of the new spectra 
+.SS "EAPI unsigned char edje_edit_spectra_del (Evas_Object * obj, const char * spectra)"
+.PP
+Delete the given spectra from the edje object. 
+.PP
+\fBReturns:\fP
+.RS 4
+1 on success, 0 otherwise 
+.RE
+.PP
+
+.PP
+\fBParameters: \fP
+.in +1c
+.TP
+\fB\fIobj\fP\fP
+The edje object 
+.TP
+\fB\fIspectra\fP\fP
+The name of the spectra to delete 
+.SS "EAPI unsigned char edje_edit_spectra_name_set (Evas_Object * obj, const char * spectra, const char * name)"
+.PP
+Change the name of the given spectra. 
+.PP
+\fBReturns:\fP
+.RS 4
+1 on success, 0 otherwise 
+.RE
+.PP
+
+.PP
+\fBParameters: \fP
+.in +1c
+.TP
+\fB\fIobj\fP\fP
+The edje object 
+.TP
+\fB\fIspectra\fP\fP
+The current name of the spectra 
+.TP
+\fB\fIname\fP\fP
+The new name to assign 
+.SS "EAPI unsigned char edje_edit_spectra_stop_color_get (Evas_Object * obj, const char * spectra, int stop_number, int * r, int * g, int * b, int * a, int * d)"
+.PP
+Get the colors of the given stop. 
+.PP
+\fBReturns:\fP
+.RS 4
+1 on success, 0 otherwise 
+.RE
+.PP
+
+.PP
+\fBParameters: \fP
+.in +1c
+.TP
+\fB\fIobj\fP\fP
+The edje object 
+.TP
+\fB\fIspectra\fP\fP
+The name of the spectra 
+.TP
+\fB\fIstop_number\fP\fP
+The number of the stop 
+.TP
+\fB\fIr\fP\fP
+Where to store the red color value 
+.TP
+\fB\fIg\fP\fP
+Where to store the green color value 
+.TP
+\fB\fIb\fP\fP
+Where to store the blue color value 
+.TP
+\fB\fIa\fP\fP
+Where to store the alpha color value 
+.TP
+\fB\fId\fP\fP
+Where to store the delta stop value 
+.SS "EAPI unsigned char edje_edit_spectra_stop_color_set (Evas_Object * obj, const char * spectra, int stop_number, int r, int g, int b, int a, int d)"
+.PP
+Set the colors of the given stop. 
+.PP
+\fBReturns:\fP
+.RS 4
+1 on success, 0 otherwise 
+.RE
+.PP
+
+.PP
+\fBParameters: \fP
+.in +1c
+.TP
+\fB\fIobj\fP\fP
+The edje object 
+.TP
+\fB\fIspectra\fP\fP
+The name of the spectra 
+.TP
+\fB\fIstop_number\fP\fP
+The number of the stop 
+.TP
+\fB\fIr\fP\fP
+The red color value to set 
+.TP
+\fB\fIg\fP\fP
+The green color value to set 
+.TP
+\fB\fIb\fP\fP
+The blue color value to set 
+.TP
+\fB\fIa\fP\fP
+The alpha color value to set 
+.TP
+\fB\fId\fP\fP
+The delta stop value to set 
+.SS "EAPI int edje_edit_spectra_stop_num_get (Evas_Object * obj, const char * spectra)"
+.PP
+Get the number of stops in the given spectra. 
+.PP
+\fBReturns:\fP
+.RS 4
+The number of stops, or 0 on errors 
+.RE
+.PP
+
+.PP
+\fBParameters: \fP
+.in +1c
+.TP
+\fB\fIobj\fP\fP
+The edje object 
+.TP
+\fB\fIspectra\fP\fP
+The name of the spectra 
+.SS "EAPI unsigned char edje_edit_spectra_stop_num_set (Evas_Object * obj, const char * spectra, int num)"
+.PP
+Set the number of stops in the given spectra. 
+.PP
+\fBReturns:\fP
+.RS 4
+1 on success, 0 otherwise 
+.RE
+.PP
+
+.PP
+\fBParameters: \fP
+.in +1c
+.TP
+\fB\fIobj\fP\fP
+The edje object 
+.TP
+\fB\fIspectra\fP\fP
+The name of the spectra 
+.TP
+\fB\fInum\fP\fP
+The number of stops you want 
+.SS "EAPI Evas_List* edje_edit_spectrum_list_get (Evas_Object * obj)"
+.PP
+Get the list of all the spectrum in the given edje object. 
+.PP
+Use \fBedje_edit_string_list_free()\fP when you don't need it anymore.
+.PP
+\fBReturns:\fP
+.RS 4
+An Evas_List* of string(char *) containing all the spectra names. 
+.RE
+.PP
+
+.PP
+\fBParameters: \fP
+.in +1c
+.TP
+\fB\fIobj\fP\fP
+The edje object 
 .SS "EAPI void edje_edit_state_add (Evas_Object * obj, const char * part, const char * name)"
 .PP
 Create a new state to the give part. 
@@ -2616,6 +3188,342 @@ The name of the part
 .TP
 \fB\fIstate\fP\fP
 The name of the state to check (including the state value) 
+.SS "EAPI int edje_edit_state_fill_origin_offset_x_get (Evas_Object * obj, const char * part, const char * state)"
+.PP
+Get the fill origin offset x value of a part state. 
+.PP
+\fBReturns:\fP
+.RS 4
+The fill origin offset x relative to area 
+.RE
+.PP
+
+.PP
+\fBParameters: \fP
+.in +1c
+.TP
+\fB\fIobj\fP\fP
+The edje object 
+.TP
+\fB\fIpart\fP\fP
+The name of the part 
+.TP
+\fB\fIstate\fP\fP
+The name of the 'part state' (ex. 'default 0.00') 
+.SS "EAPI void edje_edit_state_fill_origin_offset_x_set (Evas_Object * obj, const char * part, const char * state, double x)"
+.PP
+Set the fill origin offset x value of a part state. 
+.PP
+
+.PP
+\fBParameters: \fP
+.in +1c
+.TP
+\fB\fIobj\fP\fP
+The edje object 
+.TP
+\fB\fIpart\fP\fP
+The name of the part 
+.TP
+\fB\fIstate\fP\fP
+The name of the 'part state' (ex. 'default 0.00') 
+.TP
+\fB\fIx\fP\fP
+The new value to set 
+.SS "EAPI int edje_edit_state_fill_origin_offset_y_get (Evas_Object * obj, const char * part, const char * state)"
+.PP
+Get the fill origin offset y value of a part state. 
+.PP
+\fBReturns:\fP
+.RS 4
+The fill origin offset y relative to area 
+.RE
+.PP
+
+.PP
+\fBParameters: \fP
+.in +1c
+.TP
+\fB\fIobj\fP\fP
+The edje object 
+.TP
+\fB\fIpart\fP\fP
+The name of the part 
+.TP
+\fB\fIstate\fP\fP
+The name of the 'part state' (ex. 'default 0.00') 
+.SS "EAPI void edje_edit_state_fill_origin_offset_y_set (Evas_Object * obj, const char * part, const char * state, double y)"
+.PP
+Set the fill origin offset x value of a part state. 
+.PP
+
+.PP
+\fBParameters: \fP
+.in +1c
+.TP
+\fB\fIobj\fP\fP
+The edje object 
+.TP
+\fB\fIpart\fP\fP
+The name of the part 
+.TP
+\fB\fIstate\fP\fP
+The name of the 'part state' (ex. 'default 0.00') 
+.TP
+\fB\fIy\fP\fP
+The new value to set 
+.SS "EAPI double edje_edit_state_fill_origin_relative_x_get (Evas_Object * obj, const char * part, const char * state)"
+.PP
+Get the fill origin relative x value of a part state. 
+.PP
+\fBReturns:\fP
+.RS 4
+The fill offset x relative to area 
+.RE
+.PP
+
+.PP
+\fBParameters: \fP
+.in +1c
+.TP
+\fB\fIobj\fP\fP
+The edje object 
+.TP
+\fB\fIpart\fP\fP
+The name of the part 
+.TP
+\fB\fIstate\fP\fP
+The name of the 'part state' (ex. 'default 0.00') 
+.SS "EAPI void edje_edit_state_fill_origin_relative_x_set (Evas_Object * obj, const char * part, const char * state, double x)"
+.PP
+Set the fill origin relative x value of a part state. 
+.PP
+
+.PP
+\fBParameters: \fP
+.in +1c
+.TP
+\fB\fIobj\fP\fP
+The edje object 
+.TP
+\fB\fIpart\fP\fP
+The name of the part 
+.TP
+\fB\fIstate\fP\fP
+The name of the 'part state' (ex. 'default 0.00') 
+.TP
+\fB\fIx\fP\fP
+The new value to set 
+.SS "EAPI double edje_edit_state_fill_origin_relative_y_get (Evas_Object * obj, const char * part, const char * state)"
+.PP
+Get the fill origin relative y value of a part state. 
+.PP
+\fBReturns:\fP
+.RS 4
+The fill origin y relative to area 
+.RE
+.PP
+
+.PP
+\fBParameters: \fP
+.in +1c
+.TP
+\fB\fIobj\fP\fP
+The edje object 
+.TP
+\fB\fIpart\fP\fP
+The name of the part 
+.TP
+\fB\fIstate\fP\fP
+The name of the 'part state' (ex. 'default 0.00') 
+.SS "EAPI void edje_edit_state_fill_origin_relative_y_set (Evas_Object * obj, const char * part, const char * state, double x)"
+.PP
+Set the fill origin relative y value of a part state. 
+.PP
+
+.PP
+\fBParameters: \fP
+.in +1c
+.TP
+\fB\fIobj\fP\fP
+The edje object 
+.TP
+\fB\fIpart\fP\fP
+The name of the part 
+.TP
+\fB\fIstate\fP\fP
+The name of the 'part state' (ex. 'default 0.00') 
+.TP
+\fB\fIx\fP\fP
+The new value to set 
+.SS "EAPI int edje_edit_state_fill_size_offset_x_get (Evas_Object * obj, const char * part, const char * state)"
+.PP
+Get the fill size offset x value of a part state. 
+.PP
+\fBReturns:\fP
+.RS 4
+The fill size offset x relative to area 
+.RE
+.PP
+
+.PP
+\fBParameters: \fP
+.in +1c
+.TP
+\fB\fIobj\fP\fP
+The edje object 
+.TP
+\fB\fIpart\fP\fP
+The name of the part 
+.TP
+\fB\fIstate\fP\fP
+The name of the 'part state' (ex. 'default 0.00') 
+.SS "EAPI void edje_edit_state_fill_size_offset_x_set (Evas_Object * obj, const char * part, const char * state, double x)"
+.PP
+Set the fill size offset x value of a part state. 
+.PP
+
+.PP
+\fBParameters: \fP
+.in +1c
+.TP
+\fB\fIobj\fP\fP
+The edje object 
+.TP
+\fB\fIpart\fP\fP
+The name of the part 
+.TP
+\fB\fIstate\fP\fP
+The name of the 'part state' (ex. 'default 0.00') 
+.TP
+\fB\fIx\fP\fP
+The new value to set 
+.SS "EAPI int edje_edit_state_fill_size_offset_y_get (Evas_Object * obj, const char * part, const char * state)"
+.PP
+Get the fill size offset y value of a part state. 
+.PP
+\fBReturns:\fP
+.RS 4
+The fill size offset y relative to area 
+.RE
+.PP
+
+.PP
+\fBParameters: \fP
+.in +1c
+.TP
+\fB\fIobj\fP\fP
+The edje object 
+.TP
+\fB\fIpart\fP\fP
+The name of the part 
+.TP
+\fB\fIstate\fP\fP
+The name of the 'part state' (ex. 'default 0.00') 
+.SS "EAPI void edje_edit_state_fill_size_offset_y_set (Evas_Object * obj, const char * part, const char * state, double y)"
+.PP
+Set the fill size offset x value of a part state. 
+.PP
+
+.PP
+\fBParameters: \fP
+.in +1c
+.TP
+\fB\fIobj\fP\fP
+The edje object 
+.TP
+\fB\fIpart\fP\fP
+The name of the part 
+.TP
+\fB\fIstate\fP\fP
+The name of the 'part state' (ex. 'default 0.00') 
+.TP
+\fB\fIy\fP\fP
+The new value to set 
+.SS "EAPI double edje_edit_state_fill_size_relative_x_get (Evas_Object * obj, const char * part, const char * state)"
+.PP
+Get the fill size relative x value of a part state. 
+.PP
+\fBReturns:\fP
+.RS 4
+The fill size offset x relative to area 
+.RE
+.PP
+
+.PP
+\fBParameters: \fP
+.in +1c
+.TP
+\fB\fIobj\fP\fP
+The edje object 
+.TP
+\fB\fIpart\fP\fP
+The name of the part 
+.TP
+\fB\fIstate\fP\fP
+The name of the 'part state' (ex. 'default 0.00') 
+.SS "EAPI void edje_edit_state_fill_size_relative_x_set (Evas_Object * obj, const char * part, const char * state, double x)"
+.PP
+Set the fill size relative x value of a part state. 
+.PP
+
+.PP
+\fBParameters: \fP
+.in +1c
+.TP
+\fB\fIobj\fP\fP
+The edje object 
+.TP
+\fB\fIpart\fP\fP
+The name of the part 
+.TP
+\fB\fIstate\fP\fP
+The name of the 'part state' (ex. 'default 0.00') 
+.TP
+\fB\fIx\fP\fP
+The new value to set 
+.SS "EAPI double edje_edit_state_fill_size_relative_y_get (Evas_Object * obj, const char * part, const char * state)"
+.PP
+Get the fill size relative y value of a part state. 
+.PP
+\fBReturns:\fP
+.RS 4
+The fill size y relative to area 
+.RE
+.PP
+
+.PP
+\fBParameters: \fP
+.in +1c
+.TP
+\fB\fIobj\fP\fP
+The edje object 
+.TP
+\fB\fIpart\fP\fP
+The name of the part 
+.TP
+\fB\fIstate\fP\fP
+The name of the 'part state' (ex. 'default 0.00') 
+.SS "EAPI void edje_edit_state_fill_size_relative_y_set (Evas_Object * obj, const char * part, const char * state, double x)"
+.PP
+Set the fill size relative y value of a part state. 
+.PP
+
+.PP
+\fBParameters: \fP
+.in +1c
+.TP
+\fB\fIobj\fP\fP
+The edje object 
+.TP
+\fB\fIpart\fP\fP
+The name of the part 
+.TP
+\fB\fIstate\fP\fP
+The name of the 'part state' (ex. 'default 0.00') 
+.TP
+\fB\fIx\fP\fP
+The new value to set 
 .SS "EAPI const char* edje_edit_state_font_get (Evas_Object * obj, const char * part, const char * state)"
 .PP
 Get font name for a given part state. 
@@ -2660,6 +3568,480 @@ The name of the 'part state' (ex. 'default 0.00')
 .TP
 \fB\fIfont\fP\fP
 The name of the font to use in the given part state 
+.SS "EAPI int edje_edit_state_gradient_rel1_offset_x_get (Evas_Object * obj, const char * part, const char * state)"
+.PP
+Get the gradien rel1 offset x value. 
+.PP
+\fBReturns:\fP
+.RS 4
+The gradient rel1 offset x value 
+.RE
+.PP
+
+.PP
+\fBParameters: \fP
+.in +1c
+.TP
+\fB\fIobj\fP\fP
+The edje object 
+.TP
+\fB\fIpart\fP\fP
+The name of the part 
+.TP
+\fB\fIstate\fP\fP
+The name of the 'part state' (ex. 'default 0.00') 
+.SS "EAPI unsigned char edje_edit_state_gradient_rel1_offset_x_set (Evas_Object * obj, const char * part, const char * state, int val)"
+.PP
+Set the gradien rel1 offset x value. 
+.PP
+\fBReturns:\fP
+.RS 4
+1 on success, 0 otherwise 
+.RE
+.PP
+
+.PP
+\fBParameters: \fP
+.in +1c
+.TP
+\fB\fIobj\fP\fP
+The edje object 
+.TP
+\fB\fIpart\fP\fP
+The name of the part 
+.TP
+\fB\fIstate\fP\fP
+The name of the 'part state' (ex. 'default 0.00') 
+.SS "EAPI int edje_edit_state_gradient_rel1_offset_y_get (Evas_Object * obj, const char * part, const char * state)"
+.PP
+Get the gradien rel1 offset y value. 
+.PP
+\fBReturns:\fP
+.RS 4
+The gradient rel1 offset y value 
+.RE
+.PP
+
+.PP
+\fBParameters: \fP
+.in +1c
+.TP
+\fB\fIobj\fP\fP
+The edje object 
+.TP
+\fB\fIpart\fP\fP
+The name of the part 
+.TP
+\fB\fIstate\fP\fP
+The name of the 'part state' (ex. 'default 0.00') 
+.SS "EAPI unsigned char edje_edit_state_gradient_rel1_offset_y_set (Evas_Object * obj, const char * part, const char * state, int val)"
+.PP
+Set the gradien rel1 offset y value. 
+.PP
+\fBReturns:\fP
+.RS 4
+1 on success, 0 otherwise 
+.RE
+.PP
+
+.PP
+\fBParameters: \fP
+.in +1c
+.TP
+\fB\fIobj\fP\fP
+The edje object 
+.TP
+\fB\fIpart\fP\fP
+The name of the part 
+.TP
+\fB\fIstate\fP\fP
+The name of the 'part state' (ex. 'default 0.00') 
+.SS "EAPI double edje_edit_state_gradient_rel1_relative_x_get (Evas_Object * obj, const char * part, const char * state)"
+.PP
+Get the gradien rel1 relative x value. 
+.PP
+\fBReturns:\fP
+.RS 4
+The gradien rel1 relative x value 
+.RE
+.PP
+
+.PP
+\fBParameters: \fP
+.in +1c
+.TP
+\fB\fIobj\fP\fP
+The edje object 
+.TP
+\fB\fIpart\fP\fP
+The name of the part 
+.TP
+\fB\fIstate\fP\fP
+The name of the 'part state' (ex. 'default 0.00') 
+.SS "EAPI unsigned char edje_edit_state_gradient_rel1_relative_x_set (Evas_Object * obj, const char * part, const char * state, double val)"
+.PP
+Set the gradien rel1 relative x value. 
+.PP
+\fBReturns:\fP
+.RS 4
+1 on success, 0 otherwise 
+.RE
+.PP
+
+.PP
+\fBParameters: \fP
+.in +1c
+.TP
+\fB\fIobj\fP\fP
+The edje object 
+.TP
+\fB\fIpart\fP\fP
+The name of the part 
+.TP
+\fB\fIstate\fP\fP
+The name of the 'part state' (ex. 'default 0.00') 
+.SS "EAPI double edje_edit_state_gradient_rel1_relative_y_get (Evas_Object * obj, const char * part, const char * state)"
+.PP
+Get the gradien rel1 relative y value. 
+.PP
+\fBReturns:\fP
+.RS 4
+The gradien rel1 relative y value 
+.RE
+.PP
+
+.PP
+\fBParameters: \fP
+.in +1c
+.TP
+\fB\fIobj\fP\fP
+The edje object 
+.TP
+\fB\fIpart\fP\fP
+The name of the part 
+.TP
+\fB\fIstate\fP\fP
+The name of the 'part state' (ex. 'default 0.00') 
+.SS "EAPI unsigned char edje_edit_state_gradient_rel1_relative_y_set (Evas_Object * obj, const char * part, const char * state, double val)"
+.PP
+Set the gradien rel1 relative y value. 
+.PP
+\fBReturns:\fP
+.RS 4
+1 on success, 0 otherwise 
+.RE
+.PP
+
+.PP
+\fBParameters: \fP
+.in +1c
+.TP
+\fB\fIobj\fP\fP
+The edje object 
+.TP
+\fB\fIpart\fP\fP
+The name of the part 
+.TP
+\fB\fIstate\fP\fP
+The name of the 'part state' (ex. 'default 0.00') 
+.SS "EAPI int edje_edit_state_gradient_rel2_offset_x_get (Evas_Object * obj, const char * part, const char * state)"
+.PP
+Get the gradien rel2 offset x value. 
+.PP
+\fBReturns:\fP
+.RS 4
+The gradient rel2 offset x value 
+.RE
+.PP
+
+.PP
+\fBParameters: \fP
+.in +1c
+.TP
+\fB\fIobj\fP\fP
+The edje object 
+.TP
+\fB\fIpart\fP\fP
+The name of the part 
+.TP
+\fB\fIstate\fP\fP
+The name of the 'part state' (ex. 'default 0.00') 
+.SS "EAPI unsigned char edje_edit_state_gradient_rel2_offset_x_set (Evas_Object * obj, const char * part, const char * state, int val)"
+.PP
+Set the gradien rel2 offset x value. 
+.PP
+\fBReturns:\fP
+.RS 4
+1 on success, 0 otherwise 
+.RE
+.PP
+
+.PP
+\fBParameters: \fP
+.in +1c
+.TP
+\fB\fIobj\fP\fP
+The edje object 
+.TP
+\fB\fIpart\fP\fP
+The name of the part 
+.TP
+\fB\fIstate\fP\fP
+The name of the 'part state' (ex. 'default 0.00') 
+.SS "EAPI int edje_edit_state_gradient_rel2_offset_y_get (Evas_Object * obj, const char * part, const char * state)"
+.PP
+Get the gradien rel2 offset y value. 
+.PP
+\fBReturns:\fP
+.RS 4
+The gradient rel2 offset y value 
+.RE
+.PP
+
+.PP
+\fBParameters: \fP
+.in +1c
+.TP
+\fB\fIobj\fP\fP
+The edje object 
+.TP
+\fB\fIpart\fP\fP
+The name of the part 
+.TP
+\fB\fIstate\fP\fP
+The name of the 'part state' (ex. 'default 0.00') 
+.SS "EAPI unsigned char edje_edit_state_gradient_rel2_offset_y_set (Evas_Object * obj, const char * part, const char * state, int val)"
+.PP
+Set the gradien rel2 offset y value. 
+.PP
+\fBReturns:\fP
+.RS 4
+1 on success, 0 otherwise 
+.RE
+.PP
+
+.PP
+\fBParameters: \fP
+.in +1c
+.TP
+\fB\fIobj\fP\fP
+The edje object 
+.TP
+\fB\fIpart\fP\fP
+The name of the part 
+.TP
+\fB\fIstate\fP\fP
+The name of the 'part state' (ex. 'default 0.00') 
+.SS "EAPI double edje_edit_state_gradient_rel2_relative_x_get (Evas_Object * obj, const char * part, const char * state)"
+.PP
+Get the gradien rel2 relative x value. 
+.PP
+\fBReturns:\fP
+.RS 4
+The gradien rel2 relative x value 
+.RE
+.PP
+
+.PP
+\fBParameters: \fP
+.in +1c
+.TP
+\fB\fIobj\fP\fP
+The edje object 
+.TP
+\fB\fIpart\fP\fP
+The name of the part 
+.TP
+\fB\fIstate\fP\fP
+The name of the 'part state' (ex. 'default 0.00') 
+.SS "EAPI unsigned char edje_edit_state_gradient_rel2_relative_x_set (Evas_Object * obj, const char * part, const char * state, double val)"
+.PP
+Set the gradien rel2 relative x value. 
+.PP
+\fBReturns:\fP
+.RS 4
+1 on success, 0 otherwise 
+.RE
+.PP
+
+.PP
+\fBParameters: \fP
+.in +1c
+.TP
+\fB\fIobj\fP\fP
+The edje object 
+.TP
+\fB\fIpart\fP\fP
+The name of the part 
+.TP
+\fB\fIstate\fP\fP
+The name of the 'part state' (ex. 'default 0.00') 
+.SS "EAPI double edje_edit_state_gradient_rel2_relative_y_get (Evas_Object * obj, const char * part, const char * state)"
+.PP
+Get the gradien rel2 relative y value. 
+.PP
+\fBReturns:\fP
+.RS 4
+The gradien rel2 relative y value 
+.RE
+.PP
+
+.PP
+\fBParameters: \fP
+.in +1c
+.TP
+\fB\fIobj\fP\fP
+The edje object 
+.TP
+\fB\fIpart\fP\fP
+The name of the part 
+.TP
+\fB\fIstate\fP\fP
+The name of the 'part state' (ex. 'default 0.00') 
+.SS "EAPI unsigned char edje_edit_state_gradient_rel2_relative_y_set (Evas_Object * obj, const char * part, const char * state, double val)"
+.PP
+Set the gradien rel2 relative y value. 
+.PP
+\fBReturns:\fP
+.RS 4
+1 on success, 0 otherwise 
+.RE
+.PP
+
+.PP
+\fBParameters: \fP
+.in +1c
+.TP
+\fB\fIobj\fP\fP
+The edje object 
+.TP
+\fB\fIpart\fP\fP
+The name of the part 
+.TP
+\fB\fIstate\fP\fP
+The name of the 'part state' (ex. 'default 0.00') 
+.SS "EAPI const char* edje_edit_state_gradient_spectra_get (Evas_Object * obj, const char * part, const char * state)"
+.PP
+Get the spectra used by part state. 
+.PP
+Remember to free the string with \fBedje_edit_string_free()\fP 
+.PP
+\fBReturns:\fP
+.RS 4
+The spectra name used in state 
+.RE
+.PP
+
+.PP
+\fBParameters: \fP
+.in +1c
+.TP
+\fB\fIobj\fP\fP
+The edje object 
+.TP
+\fB\fIpart\fP\fP
+The name of the part 
+.TP
+\fB\fIstate\fP\fP
+The name of the 'part state' (ex. 'default 0.00') 
+.SS "EAPI unsigned char edje_edit_state_gradient_spectra_set (Evas_Object * obj, const char * part, const char * state, const char * spectra)"
+.PP
+Set the spectra used by part state. 
+.PP
+\fBReturns:\fP
+.RS 4
+1 on success, 0 otherwise 
+.RE
+.PP
+
+.PP
+\fBParameters: \fP
+.in +1c
+.TP
+\fB\fIobj\fP\fP
+The edje object 
+.TP
+\fB\fIpart\fP\fP
+The name of the part 
+.TP
+\fB\fIstate\fP\fP
+The name of the 'part state' (ex. 'default 0.00') 
+.TP
+\fB\fIspectra\fP\fP
+The spectra name to assign 
+.SS "EAPI const char* edje_edit_state_gradient_type_get (Evas_Object * obj, const char * part, const char * state)"
+.PP
+Get the type of gradient. 
+.PP
+Remember to free the string with \fBedje_edit_string_free()\fP. 
+.PP
+\fBReturns:\fP
+.RS 4
+The type of gradient used in state 
+.RE
+.PP
+
+.PP
+\fBParameters: \fP
+.in +1c
+.TP
+\fB\fIobj\fP\fP
+The edje object 
+.TP
+\fB\fIpart\fP\fP
+The name of the part 
+.TP
+\fB\fIstate\fP\fP
+The name of the 'part state' (ex. 'default 0.00') 
+.SS "EAPI unsigned char edje_edit_state_gradient_type_set (Evas_Object * obj, const char * part, const char * state, const char * type)"
+.PP
+Set the type of gradient. 
+.PP
+Gradient type can be on of the following: linear, linear.diag, linear.codiag, radial, rectangular, angular, sinusoidal
+.PP
+\fBReturns:\fP
+.RS 4
+1 on success, 0 otherwise 
+.RE
+.PP
+
+.PP
+\fBParameters: \fP
+.in +1c
+.TP
+\fB\fIobj\fP\fP
+The edje object 
+.TP
+\fB\fIpart\fP\fP
+The name of the part 
+.TP
+\fB\fIstate\fP\fP
+The name of the 'part state' (ex. 'default 0.00') 
+.TP
+\fB\fItype\fP\fP
+The type of gradient to use 
+.SS "EAPI unsigned char edje_edit_state_gradient_use_fill_get (Evas_Object * obj, const char * part, const char * state)"
+.PP
+Get if the current gradient use the fill properties or the gradient_rel as params. 
+.PP
+\fBReturns:\fP
+.RS 4
+1 if use fill, 0 if use gradient_rel 
+.RE
+.PP
+
+.PP
+\fBParameters: \fP
+.in +1c
+.TP
+\fB\fIobj\fP\fP
+The edje object 
+.TP
+\fB\fIpart\fP\fP
+The name of the part 
+.TP
+\fB\fIstate\fP\fP
+The name of the 'part state' (ex. 'default 0.00') 
 .SS "EAPI void edje_edit_state_image_border_get (Evas_Object * obj, const char * part, const char * state, int * l, int * r, int * t, int * b)"
 .PP
 Get the image border of a part state. 
@@ -3698,6 +5080,48 @@ The name of the part
 .TP
 \fB\fIstate\fP\fP
 The name of the 'part state' (ex. 'default 0.00') 
+.SS "EAPI unsigned char edje_edit_state_visible_get (Evas_Object * obj, const char * part, const char * state)"
+.PP
+Get the visibility of a part state. 
+.PP
+\fBReturns:\fP
+.RS 4
+TRUE if the state is visible 
+.RE
+.PP
+
+.PP
+\fBParameters: \fP
+.in +1c
+.TP
+\fB\fIobj\fP\fP
+The edje object 
+.TP
+\fB\fIpart\fP\fP
+The name of the part 
+.TP
+\fB\fIstate\fP\fP
+The name of the 'part state' (ex. 'default 0.00') 
+.SS "EAPI void edje_edit_state_visible_set (Evas_Object * obj, const char * part, const char * state, unsigned char visible)"
+.PP
+Set the visibility of a part state. 
+.PP
+
+.PP
+\fBParameters: \fP
+.in +1c
+.TP
+\fB\fIobj\fP\fP
+The edje object 
+.TP
+\fB\fIpart\fP\fP
+The name of the part 
+.TP
+\fB\fIstate\fP\fP
+The name of the 'part state' (ex. 'default 0.00') 
+.TP
+\fB\fIvisible\fP\fP
+TRUE to set the state visible 
 .SS "EAPI void edje_edit_string_free (const char * str)"
 .PP
 Free a generic string (char *) allocated by an edje_edit_*_get() function. 

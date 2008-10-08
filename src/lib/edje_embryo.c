@@ -2,7 +2,6 @@
  * vim:ts=8:sw=3:sts=8:noexpandtab:cino=>5n-3f0^-2{2
  */
 
-#include "Edje.h"
 #include "edje_private.h"
 
 /*
@@ -80,6 +79,8 @@
  * Direction:get_drag_dir(part_id)
  * get_drag(part_id, &Float:dx, &Float:&dy)
  * set_drag(part_id, Float:dx, Float:dy)
+ * get_drag_size(part_id, &Float:dx, &Float:&dy)
+ * set_drag_size(part_id, Float:dx, Float:dy)
  * set_text(part_id, str[])
  * get_text(part_id, dst[], maxlen)
  * get_min_size(w, h)
@@ -179,54 +180,6 @@
  * ADD/DEL CUSTOM OBJECTS UNDER SOLE EMBRYO SCRIPT CONTROL
  *
  */
-
-#define CHKPARAM(n) if (params[0] != (sizeof(Embryo_Cell) * (n))) return 0;
-#define GETSTR(str, par) { \
-   Embryo_Cell *___cptr; \
-   int ___l; \
-   str = NULL; \
-   if ((___cptr = embryo_data_address_get(ep, (par)))) { \
-   ___l = embryo_data_string_length_get(ep, ___cptr); \
-   if (((str) = alloca(___l + 1))) \
-   embryo_data_string_get(ep, ___cptr, (str));}}
-#define GETSTREVAS(str, par) { \
-   if ((str)) { \
-	if ((par) && (!strcmp((par), (str)))) return 0; \
-	if ((par)) evas_stringshare_del((par)); \
-	(par) = (char *)evas_stringshare_add((str)); } \
-   else (par) = NULL; }
-#define GETFLOAT(val, par) { \
-   float *___cptr; \
-   if ((___cptr = (float *)embryo_data_address_get(ep, (par)))) { \
-   val = *___cptr;}}
-#define GETINT(val, par) { \
-   int *___cptr; \
-   if ((___cptr = (int *)embryo_data_address_get(ep, (par)))) { \
-   val = *___cptr;}}
-#define SETSTR(str, par) { \
-   Embryo_Cell *___cptr; \
-   if ((___cptr = embryo_data_address_get(ep, (par)))) { \
-   embryo_data_string_set(ep, str, ___cptr);}}
-#define SETSTRALLOCATE(s) { \
-   if (s) { \
-	if (strlen((s)) < params[4]) { \
-	    SETSTR((s), params[3]); } \
-	else { \
-	     char *ss; \
-	     ss = alloca(strlen((s)) + 1); \
-	     strcpy(ss, (s)); \
-	     ss[params[4] - 2] = 0; \
-	     SETSTR(ss, params[3]); }} \
-   else \
-      SETSTR("", params[3]);}
-#define SETFLOAT(val, par) { \
-   float *___cptr; \
-   if ((___cptr = (float *)embryo_data_address_get(ep, (par)))) { \
-   *___cptr = (float)val;}}
-#define SETINT(val, par) { \
-   int *___cptr; \
-   if ((___cptr = (int *)embryo_data_address_get(ep, (par)))) { \
-   *___cptr = (int)val;}}
 
 /* get_int(id) */
 static Embryo_Cell
@@ -795,6 +748,17 @@ _edje_embryo_fn_get_mouse(Embryo_Program *ep, Embryo_Cell *params)
    return 0;
 }
 
+/* get_mouse_buttons() */
+static Embryo_Cell
+_edje_embryo_fn_get_mouse_buttons(Embryo_Program *ep, Embryo_Cell *params)
+{
+   Edje *ed;
+
+   CHKPARAM(0);
+   ed = embryo_program_data_get(ep);
+   return evas_pointer_button_down_mask_get(ed->evas);
+}
+
 /* emit(sig[], src[]) */
 static Embryo_Cell
 _edje_embryo_fn_emit(Embryo_Program *ep, Embryo_Cell *params)
@@ -993,6 +957,46 @@ _edje_embryo_fn_set_drag(Embryo_Program *ep, Embryo_Cell *params)
    if (part_id < 0) return 0;
    rp = ed->table_parts[part_id % ed->table_parts_size];
    edje_object_part_drag_value_set(ed->obj, rp->part->name,
+				   (double)EMBRYO_CELL_TO_FLOAT(params[2]),
+				   (double)EMBRYO_CELL_TO_FLOAT(params[3]));
+   return(0);
+}
+
+/* get_drag_size(part_id, &Float:dx, &Float:dy) */
+static Embryo_Cell
+_edje_embryo_fn_get_drag_size(Embryo_Program *ep, Embryo_Cell *params)
+{
+   Edje *ed;
+   int part_id = 0;
+   Edje_Real_Part *rp;
+   double dx = 0.0, dy = 0.0;
+
+   CHKPARAM(3);
+   ed = embryo_program_data_get(ep);
+   part_id = params[1];
+   if (part_id < 0) return 0;
+   rp = ed->table_parts[part_id % ed->table_parts_size];
+   edje_object_part_drag_size_get(ed->obj, rp->part->name, &dx, &dy);
+   SETFLOAT(dx, params[2]);
+   SETFLOAT(dy, params[3]);
+
+   return 0;
+}
+
+/* set_drag_size(part_id, Float:dx, Float:dy) */
+static Embryo_Cell
+_edje_embryo_fn_set_drag_size(Embryo_Program *ep, Embryo_Cell *params)
+{
+   Edje *ed;
+   int part_id = 0;
+   Edje_Real_Part *rp;
+
+   CHKPARAM(3);
+   ed = embryo_program_data_get(ep);
+   part_id = params[1];
+   if (part_id < 0) return 0;
+   rp = ed->table_parts[part_id % ed->table_parts_size];
+   edje_object_part_drag_size_set(ed->obj, rp->part->name,
 				   (double)EMBRYO_CELL_TO_FLOAT(params[2]),
 				   (double)EMBRYO_CELL_TO_FLOAT(params[3]));
    return(0);
@@ -2216,6 +2220,8 @@ _edje_embryo_script_init(Edje *ed)
    embryo_program_native_call_add(ep, "get_drag_dir", _edje_embryo_fn_get_drag_dir);
    embryo_program_native_call_add(ep, "get_drag", _edje_embryo_fn_get_drag);
    embryo_program_native_call_add(ep, "set_drag", _edje_embryo_fn_set_drag);
+   embryo_program_native_call_add(ep, "get_drag_size", _edje_embryo_fn_get_drag_size);
+   embryo_program_native_call_add(ep, "set_drag_size", _edje_embryo_fn_set_drag_size);
    embryo_program_native_call_add(ep, "set_text", _edje_embryo_fn_set_text);
    embryo_program_native_call_add(ep, "get_text", _edje_embryo_fn_get_text);
    embryo_program_native_call_add(ep, "get_min_size", _edje_embryo_fn_get_min_size);
@@ -2229,6 +2235,7 @@ _edje_embryo_script_init(Edje *ed)
    embryo_program_native_call_add(ep, "get_drag_page", _edje_embryo_fn_get_drag_page);
    embryo_program_native_call_add(ep, "set_drag_page", _edje_embryo_fn_set_drag_page);
    embryo_program_native_call_add(ep, "get_mouse", _edje_embryo_fn_get_mouse);
+   embryo_program_native_call_add(ep, "get_mouse_buttons", _edje_embryo_fn_get_mouse_buttons);
    embryo_program_native_call_add(ep, "stop_program", _edje_embryo_fn_stop_program);
    embryo_program_native_call_add(ep, "stop_programs_on", _edje_embryo_fn_stop_programs_on);
    embryo_program_native_call_add(ep, "set_min_size", _edje_embryo_fn_set_min_size);

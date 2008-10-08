@@ -2,12 +2,6 @@
  * vim:ts=8:sw=3:sts=8:noexpandtab:cino=>5n-3f0^-2{2
  */
 
-#ifdef _WIN32
-# include <share.h>
-# include <sys/stat.h>
-#endif /* _WIN32 */
-
-
 #include "edje_cc.h"
 
 typedef struct _Part_Lookup Part_Lookup;
@@ -56,7 +50,6 @@ struct _Code_Lookup
    int   val;
 };
 
-static void data_queue_image_pc_lookup(Edje_Part_Collection *pc, char *name, char *ptr, int len);
 static void data_process_string(Edje_Part_Collection *pc, const char *prefix, char *s, void (*func)(Edje_Part_Collection *pc, char *name, char *ptr, int len));
 
 Edje_File *edje_file = NULL;
@@ -95,6 +88,19 @@ static Evas_List *spectrum_slave_lookups= NULL;
    unlink(file); \
    exit(-1);
 
+static void
+error_and_abort(Eet_File *ef, const char *fmt, ...)
+{
+   va_list ap;
+
+   fprintf(stderr, "%s: Error. ", progname);
+
+   va_start(ap, fmt);
+   vfprintf(stderr, fmt, ap);
+   va_end(ap);
+   ABORT_WRITE(ef, file_out);
+}
+
 void
 data_setup(void)
 {
@@ -122,26 +128,19 @@ check_image_part_desc (Edje_Part_Collection *pc, Edje_Part *ep,
 
    return;
    if (epd->image.id == -1)
-     {
-	fprintf(stderr, "%s: Error. collection %i: image attributes missing "
-	      "for part \"%s\", description \"%s\" %f\n",
-	      progname, pc->id, ep->name, epd->state.name, epd->state.value);
-	ABORT_WRITE(ef, file_out);
-     }
+     error_and_abort(ef, "Collection %i: image attributes missing for "
+		     "part \"%s\", description \"%s\" %f\n",
+		     pc->id, ep->name, epd->state.name, epd->state.value);
 
    for (l = epd->image.tween_list; l; l = l->next)
      {
 	Edje_Part_Image_Id *iid = l->data;
 
 	if (iid->id == -1)
-	  {
-	     fprintf(stderr, "%s: Error. collection %i: tween image id missing "
-		   "for part \"%s\", description \"%s\" %f\n",
-		   progname, pc->id, ep->name, epd->state.name,
-		   epd->state.value);
-	     ABORT_WRITE(ef, file_out);
-	  }
-     }
+	  error_and_abort(ef, "Collection %i: tween image id missing for "
+			  "part \"%s\", description \"%s\" %f\n",
+			  pc->id, ep->name, epd->state.name, epd->state.value);
+    }
 }
 
 static void
@@ -151,11 +150,8 @@ check_part (Edje_Part_Collection *pc, Edje_Part *ep, Eet_File *ef)
    Evas_List *l;
 
    if (!epd)
-     {
-	fprintf(stderr, "%s: Error. collection %i: default description missing "
-	      "for part \"%s\"\n", progname, pc->id, ep->name);
-	ABORT_WRITE(ef, file_out);
-     }
+     error_and_abort(ef, "Collection %i: default description missing "
+		     "for part \"%s\"\n", pc->id, ep->name);
 
    if (ep->type == EDJE_PART_TYPE_IMAGE)
      {
@@ -177,12 +173,8 @@ check_program (Edje_Part_Collection *pc, Edje_Program *ep, Eet_File *ef)
       case EDJE_ACTION_TYPE_DRAG_VAL_STEP:
       case EDJE_ACTION_TYPE_DRAG_VAL_PAGE:
 	 if (!ep->targets)
-	   {
-	      fprintf(stderr, "%s: Error. collection %i: "
-		    "target missing in program %s\n",
-		    progname, pc->id, ep->name);
-	      ABORT_WRITE(ef, file_out);
-	   }
+	   error_and_abort(ef, "Collection %i: target missing in program "
+			   "\"%s\"\n", pc->id, ep->name);
 	 break;
       default:
 	 break;
@@ -193,47 +185,17 @@ static void
 check_spectrum (Edje_Spectrum_Directory_Entry *se, Eet_File *ef)
 {
    if (!se->entry)
-     fprintf(stderr, "%s: Error. Spectrum missing a name.\n", progname);
+     error_and_abort(ef, "Spectrum missing a name.\n");
    else if (!se->color_list)
-     fprintf(stderr, "%s: Error. Spectrum %s is empty. At least one color must be given.", progname, se->entry);
-   else
-     return;
-
-   ABORT_WRITE(ef, file_out);
+     error_and_abort(ef, "Spectrum %s is empty. At least one color must be "
+		     "given.", se->entry);
 }
 
-void
-data_write(void)
+static int
+data_write_header(Eet_File *ef)
 {
-   Eet_File *ef;
-   Evas_List *l;
-   int bytes;
-   int input_bytes;
-   int total_bytes;
-   int src_bytes;
-   int fmap_bytes;
-   int input_raw_bytes;
-   int image_num;
-   int font_num;
-   int collection_num;
-   int i;
+   int bytes = 0;
 
-   bytes = 0;
-   input_bytes = 0;
-   total_bytes = 0;
-   src_bytes = 0;
-   fmap_bytes = 0;
-   input_raw_bytes = 0;
-   image_num = 0;
-   font_num = 0;
-   collection_num = 0;
-   ef = eet_open(file_out, EET_FILE_MODE_WRITE);
-   if (!ef)
-     {
-	fprintf(stderr, "%s: Error. unable to open \"%s\" for writing output\n",
-		progname, file_out);
-	exit(-1);
-     }
    if (edje_file)
      {
 
@@ -248,19 +210,26 @@ data_write(void)
 	  }
 	bytes = eet_data_write(ef, edd_edje_file, "edje_file", edje_file, 1);
 	if (bytes <= 0)
-	  {
-	     fprintf(stderr, "%s: Error. unable to write \"edje_file\" entry to \"%s\" \n",
-		     progname, file_out);
-	     ABORT_WRITE(ef, file_out);
-	  }
-	else
-	  total_bytes += bytes;
+	  error_and_abort(ef, "Unable to write \"edje_file\" entry to \"%s\" \n",
+			  file_out);
      }
+
    if (verbose)
      {
 	printf("%s: Wrote %9i bytes (%4iKb) for \"edje_file\" header\n",
 	       progname, bytes, (bytes + 512) / 1024);
      }
+
+   return bytes;
+}
+
+static int
+data_write_fonts(Eet_File *ef, int *font_num, int *input_bytes, int *input_raw_bytes)
+{
+   Evas_List *l;;
+   int bytes = 0;
+   int total_bytes = 0;
+
    for (l = fonts; l; l = l->next)
      {
 	Font *fn;
@@ -282,11 +251,8 @@ data_write(void)
 	     if (fdata)
 	       {
 		  if (fread(fdata, pos, 1, f) != 1)
-		    {
-		       fprintf(stderr, "%s: Error. unable to read all of font file \"%s\"\n",
-			       progname, fn->file);
-		       ABORT_WRITE(ef, file_out);
-		    }
+		    error_and_abort(ef, "Unable to read all of font "
+				    "file \"%s\"\n", fn->file);
 		  fsize = pos;
 	       }
 	     fclose(f);
@@ -310,11 +276,8 @@ data_write(void)
 		       if (fdata)
 			 {
 			    if (fread(fdata, pos, 1, f) != 1)
-			      {
-				 fprintf(stderr, "%s: Error. unable to read all of font file \"%s\"\n",
-					 progname, buf);
-				 ABORT_WRITE(ef, file_out);
-			      }
+			      error_and_abort(ef, "Unable to read all of font "
+					      "file \"%s\"\n", buf);
 			    fsize = pos;
 			 }
 		       fclose(f);
@@ -324,9 +287,8 @@ data_write(void)
 	  }
 	if (!fdata)
 	  {
-	     fprintf(stderr, "%s: Error. unable to load font part \"%s\" entry to %s \n",
-		     progname, fn->file, file_out);
-	     ABORT_WRITE(ef, file_out);
+	     error_and_abort(ef, "Unable to load font part \"%s\" entry "
+			     "to %s \n", fn->file, file_out);
 	  }
 	else
 	  {
@@ -335,18 +297,14 @@ data_write(void)
 	     snprintf(buf, sizeof(buf), "fonts/%s", fn->name);
 	     bytes = eet_write(ef, buf, fdata, fsize, 1);
 	     if (bytes <= 0)
-	       {
-		  fprintf(stderr, "%s: Error. unable to write font part \"%s\" as \"%s\" part entry to %s \n",
-			  progname, fn->file, buf, file_out);
-		  ABORT_WRITE(ef, file_out);
-	       }
-	     else
-	       {
-		  font_num++;
-		  total_bytes += bytes;
-		  input_bytes += fsize;
-		  input_raw_bytes += fsize;
-	       }
+	       error_and_abort(ef, "Unable to write font part \"%s\" as \"%s\" "
+			       "part entry to %s \n", fn->file, buf, file_out);
+
+	     *font_num += 1;
+	     total_bytes += bytes;
+	     *input_bytes += fsize;
+	     *input_raw_bytes += fsize;
+
 	     if (verbose)
 	       {
 		  printf("%s: Wrote %9i bytes (%4iKb) for \"%s\" font entry \"%s\" compress: [real: %2.1f%%]\n",
@@ -357,6 +315,17 @@ data_write(void)
 	     free(fdata);
 	  }
      }
+
+   return total_bytes;
+}
+
+static int
+data_write_images(Eet_File *ef, int *image_num, int *input_bytes, int *input_raw_bytes)
+{
+   Evas_List *l;
+   int bytes = 0;
+   int total_bytes = 0;
+
    if ((edje_file) && (edje_file->image_dir))
      {
 	Ecore_Evas *ee;
@@ -364,12 +333,12 @@ data_write(void)
 
 	ecore_init();
 	ecore_evas_init();
+
 	ee = ecore_evas_buffer_new(1, 1);
 	if (!ee)
-	  {
-	     fprintf(stderr, "Error. cannot create buffer engine canvas for image load.\n");
-	     ABORT_WRITE(ef, file_out);
-	  }
+	  error_and_abort(ef, "Cannot create buffer engine canvas for image "
+			  "load.\n");
+
 	evas = ecore_evas_get(ee);
 	for (l = edje_file->image_dir->entries; l; l = l->next)
 	  {
@@ -480,23 +449,22 @@ data_write(void)
 							   im_alpha,
 							   0, qual, 1);
 			    if (bytes <= 0)
-			      {
-				 fprintf(stderr, "%s: Error. unable to write image part \"%s\" as \"%s\" part entry to %s\n",
-					 progname, img->entry, buf, file_out);
-				 ABORT_WRITE(ef, file_out);
-			      }
-			    else
-			      {
-				 image_num++;
-				 total_bytes += bytes;
-			      }
+			      error_and_abort(ef, "Unable to write image part "
+					      "\"%s\" as \"%s\" part entry to "
+					      "%s\n", img->entry, buf,
+					      file_out);
+
+			    *image_num += 1;
+			    total_bytes += bytes;
 			 }
 		       else
 			 {
-			    fprintf(stderr, "%s: Error. unable to load image for image part \"%s\" as \"%s\" part entry to %s\n",
-				    progname, img->entry, buf, file_out);
-			    ABORT_WRITE(ef, file_out);
+			    error_and_abort(ef, "Unable to load image for "
+					    "image part \"%s\" as \"%s\" part "
+					    "entry to %s\n", img->entry, buf,
+					    file_out);
 			 }
+
 		       if (verbose)
 			 {
 			    struct stat st;
@@ -505,8 +473,8 @@ data_write(void)
 			    evas_object_image_file_get(im, &file, NULL);
 			    if ((file) && (stat(file, &st) != 0))
 			      st.st_size = 0;
-			    input_bytes += st.st_size;
-			    input_raw_bytes += im_w * im_h * 4;
+			    *input_bytes += st.st_size;
+			    *input_raw_bytes += im_w * im_h * 4;
 			    printf("%s: Wrote %9i bytes (%4iKb) for \"%s\" image entry \"%s\" compress: [raw: %2.1f%%] [real: %2.1f%%]\n",
 				   progname, bytes, (bytes + 512) / 1024, buf, img->entry,
 				   100 - (100 * (double)bytes) / ((double)(im_w * im_h * 4)),
@@ -517,9 +485,8 @@ data_write(void)
 		    }
 		  else
 		    {
-		       fprintf(stderr, "%s: Error. unable to load image for image \"%s\" part entry to %s. Missing PNG or JPEG loader modules for Evas or file does not exist, or is not readable.\n",
-			       progname, img->entry, file_out);
-		       ABORT_WRITE(ef, file_out);
+		       error_and_abort(ef, "Unable to load image for image \"%s\" part entry to %s. Missing PNG or JPEG loader modules for Evas or file does not exist, or is not readable.\n",
+				       img->entry, file_out);
 		    }
 	       }
 	  }
@@ -528,31 +495,49 @@ data_write(void)
 	ecore_shutdown();
      }
 
+   return total_bytes;
+}
+
+static void
+check_groups_names(Eet_File *ef)
+{
+   Evas_List *l;
+
+   if (!edje_file->collection_dir)
+     return;
+
    /* check that all groups have names */
-   if (edje_file->collection_dir)
+   for (l = edje_file->collection_dir->entries; l; l = l->next)
      {
-	for (l = edje_file->collection_dir->entries; l; l = l->next)
-	  {
-	     Edje_Part_Collection_Directory_Entry *de;
-	     de = l->data;
-	     if (!de->entry)
-	       {
-		  fprintf(stderr, "%s: Error. collection %i: name missing.\n",
-			progname, de->id);
-		  ABORT_WRITE(ef, file_out);
-	       }
-	  }
+	Edje_Part_Collection_Directory_Entry *de;
+	de = l->data;
+	if (!de->entry)
+	  error_and_abort(ef, "Collection %i: name missing.\n", de->id);
      }
+}
+
+static void
+check_spectra(Eet_File *ef)
+{
+   Evas_List *l;
+
+   if (!edje_file->spectrum_dir)
+     return;
+
    /* check that all spectra are valid */
-   if (edje_file->spectrum_dir)
+   for (l = edje_file->spectrum_dir->entries; l; l = l->next)
      {
-	for (l = edje_file->spectrum_dir->entries; l; l = l->next)
-	  {
-	     Edje_Spectrum_Directory_Entry *se;
-	     se = l->data;
-	     check_spectrum(se, ef);
-	  }
+	Edje_Spectrum_Directory_Entry *se;
+	se = l->data;
+	check_spectrum(se, ef);
      }
+}
+
+static void
+check_groups(Eet_File *ef)
+{
+   Evas_List *l;
+
    /* sanity checks for parts and programs */
    for (l = edje_collections; l; l = l->next)
      {
@@ -561,10 +546,19 @@ data_write(void)
 
 	pc = l->data;
 	for (ll = pc->parts; ll; ll = ll->next)
-	  check_part (pc, ll->data, ef);
+	  check_part(pc, ll->data, ef);
 	for (ll = pc->programs; ll; ll = ll->next)
-	  check_program (pc, ll->data, ef);
+	  check_program(pc, ll->data, ef);
      }
+}
+
+static int
+data_write_groups(Eet_File *ef, int *collection_num)
+{
+   Evas_List *l;
+   int bytes = 0;
+   int total_bytes = 0;
+
    for (l = edje_collections; l; l = l->next)
      {
 	Edje_Part_Collection *pc;
@@ -574,218 +568,237 @@ data_write(void)
 	snprintf(buf, sizeof(buf), "collections/%i", pc->id);
 	bytes = eet_data_write(ef, edd_edje_part_collection, buf, pc, 1);
 	if (bytes <= 0)
-	  {
-	     fprintf(stderr, "%s: Error. unable to write \"%s\" part entry to %s \n",
-		     progname, buf, file_out);
-	     ABORT_WRITE(ef, file_out);
-	  }
-	else
-	  {
-	     collection_num++;
-	     total_bytes += bytes;
-	  }
+	  error_and_abort(ef, "Error. Unable to write \"%s\" part entry "
+			  "to %s\n", buf, file_out);
+
+	*collection_num += 1;
+	total_bytes += bytes;
+
 	if (verbose)
 	  {
 	     printf("%s: Wrote %9i bytes (%4iKb) for \"%s\" collection entry\n",
 		    progname, bytes, (bytes + 512) / 1024, buf);
 	  }
      }
-   for (i = 0, l = codes; l; l = l->next, i++)
+
+   return total_bytes;
+}
+
+static void
+create_script_file(Eet_File *ef, const char *filename, const Code *cd)
+{
+   FILE *f = fopen(filename, "wb");
+   if (!f)
+     error_and_abort(ef, "Unable to open temp file \"%s\" for script "
+		     "compilation.\n", filename);
+
+   Evas_List *ll;
+
+   fprintf(f, "#include <edje>\n");
+   int ln = 2;
+
+   if (cd->shared)
      {
-	Code *cd;
-	int ln = 0;
-
-	cd = l->data;
-	if ((cd->shared) || (cd->programs))
+	while (ln < (cd->l1 - 1))
 	  {
-	     char tmpn[4096];
-	     int fd;
-#ifdef _WIN32
-	     char *tmpdir;
-#endif /* _WIN32 */
+	     fprintf(f, " \n");
+	     ln++;
+	  }
+	{
+	   char *sp;
+	   int hash = 0;
+	   int newlined = 0;
 
-#ifdef _WIN32
-	     tmpdir = getenv("TMP");
-	     if (!tmpdir) tmpdir = getenv("TEMP");
-	     if (!tmpdir) tmpdir = getenv("USERPROFILE");
-	     if (!tmpdir) tmpdir = getenv("WINDIR");
-	     if (tmpdir)
-               {
-                  snprintf(tmpn, _MAX_PATH, "%s/edje_cc.sma-tmp-XXXXXX", tmpdir);
-# ifdef __MINGW32__
-                  if (_mktemp(tmpn))
-                    fd = _sopen(tmpn, _O_RDWR | _O_BINARY | _O_CREAT, _SH_DENYNO, _S_IREAD | _S_IWRITE);
-# else
-                  if (!_mktemp_s(tmpn, _MAX_PATH))
-                    _sopen_s(&fd, tmpn, _O_RDWR | _O_BINARY | _O_CREAT, _SH_DENYNO, _S_IREAD | _S_IWRITE);
-# endif /* __MINGW32__ */
-                  else
-                    fd = -1;
-               }
-             else
-               fd= -1;
-#else
-	     strcpy(tmpn, "/tmp/edje_cc.sma-tmp-XXXXXX");
-	     fd = mkstemp(tmpn);
-#endif /* _WIN32 */
-	     if (fd >= 0)
+	   for (sp = cd->shared; *sp; sp++)
+	     {
+		if ((sp[0] == '#') && (newlined))
+		  {
+		     hash = 1;
+		  }
+		newlined = 0;
+		if (sp[0] == '\n') newlined = 1;
+		if (!hash) fputc(sp[0], f);
+		else if (sp[0] == '\n') hash = 0;
+	     }
+	   fputc('\n', f);
+	}
+	ln += cd->l2 - cd->l1 + 1;
+     }
+   for (ll = cd->programs; ll; ll = ll->next)
+     {
+	Code_Program *cp;
+
+	cp = ll->data;
+	if (cp->script)
+	  {
+	     while (ln < (cp->l1 - 1))
 	       {
-		  FILE *f;
-		  char buf[4096];
-		  char tmpo[4096];
-		  int ret;
-
-		  f = fopen(tmpn, "w");
-		  if (f)
-		    {
-		       Evas_List *ll;
-
-		       fprintf(f, "#include <edje>\n");
-		       ln = 2;
-		       if (cd->shared)
-			 {
-			    while (ln < (cd->l1 - 1))
-			      {
-				 fprintf(f, " \n");
-				 ln++;
-			      }
-			      {
-				 char *sp;
-				 int hash = 0;
-				 int newlined = 0;
-
-				 for (sp = cd->shared; *sp; sp++)
-				   {
-				      if ((sp[0] == '#') && (newlined))
-					{
-					   hash = 1;
-					}
-				      newlined = 0;
-				      if (sp[0] == '\n') newlined = 1;
-				      if (!hash) fputc(sp[0], f);
-				      else if (sp[0] == '\n') hash = 0;
-				   }
-				 fputc('\n', f);
-			      }
-			    ln += cd->l2 - cd->l1 + 1;
-			 }
-		       for (ll = cd->programs; ll; ll = ll->next)
-			 {
-			    Code_Program *cp;
-
-			    cp = ll->data;
-			    if (cp->script)
-			      {
-				 while (ln < (cp->l1 - 1))
-				   {
-				      fprintf(f, " \n");
-				      ln++;
-				   }
-				 /* FIXME: this prototype needs to be */
-				 /* formalised and set in stone */
-				 fprintf(f, "public _p%i(sig[], src[]) {", cp->id);
-				   {
-				      char *sp;
-				      int hash = 0;
-				      int newlined = 0;
-
-				      for (sp = cp->script; *sp; sp++)
-					{
-					   if ((sp[0] == '#') && (newlined))
-					     {
-						hash = 1;
-					     }
-					   newlined = 0;
-					   if (sp[0] == '\n') newlined = 1;
-					   if (!hash) fputc(sp[0], f);
-					   else if (sp[0] == '\n') hash = 0;
-					}
-				   }
-				 fprintf(f, "}");
-				 ln += cp->l2 - cp->l1 + 1;
-			      }
-			 }
-		       fclose(f);
-		    }
-		  close(fd);
-#ifdef _WIN32
-                  tmpdir = getenv("TMP");
-                  if (!tmpdir) tmpdir = getenv("TEMP");
-                  if (!tmpdir) tmpdir = getenv("USERPROFILE");
-                  if (!tmpdir) tmpdir = getenv("WINDIR");
-                  if (tmpdir)
-                    {
-                       snprintf(tmpo, _MAX_PATH, "%s/edje_cc.amx-tmp-XXXXXX", tmpdir);
-# ifdef __MINGW32__
-                       if (_mktemp(tmpo))
-                         fd = _sopen(tmpo, _O_RDWR | _O_BINARY | _O_CREAT, _SH_DENYNO, _S_IREAD | _S_IWRITE);
-# else
-                       if (!_mktemp_s(tmpo, _MAX_PATH))
-                         _sopen_s(&fd, tmpo, _O_RDWR | _O_BINARY | _O_CREAT, _SH_DENYNO, _S_IREAD | _S_IWRITE);
-# endif /* __MINGW32__ */
-                       else
-                         fd = -1;
-                    }
-                  else
-                    fd= -1;
-#else
-		  strcpy(tmpo, "/tmp/edje_cc.amx-tmp-XXXXXX");
-		  fd = mkstemp(tmpo);
-#endif /* _WIN32 */
-		  if (fd >= 0)
-		    {
-		       snprintf(buf, sizeof(buf),
-				"embryo_cc -i %s/include -o %s %s",
-				e_prefix_data_get(), tmpo, tmpn);
-		       ret = system(buf);
-		       /* accept warnings in the embryo code */
-		       if (ret < 0 || ret > 1)
-			 {
-			    fprintf(stderr, "%s: Warning. Compiling script code not clean.\n",
-				    progname);
-			    ABORT_WRITE(ef, file_out);
-			 }
-		       close(fd);
-		    }
-		  f = fopen(tmpo, "rb");
-		  if (f)
-		    {
-		       int size;
-		       void *data;
-
-		       fseek(f, 0, SEEK_END);
-		       size = ftell(f);
-		       rewind(f);
-		       if (size > 0)
-			 {
-			    int bt;
-
-			    data = malloc(size);
-			    if (data)
-			      {
-				 if (fread(data, size, 1, f) != 1)
-				   {
-				      fprintf(stderr, "%s: Error. unable to read all of script object \"%s\"\n",
-					      progname, tmpo);
-				      ABORT_WRITE(ef, file_out);
-				   }
-				 snprintf(buf, sizeof(buf), "scripts/%i", i);
-				 bt = eet_write(ef, buf, data, size, 1);
-				 free(data);
-			      }
-			 }
-		       fclose(f);
-		    }
-		  unlink(tmpn);
-		  unlink(tmpo);
+		  fprintf(f, " \n");
+		  ln++;
 	       }
+	     /* FIXME: this prototype needs to be */
+	     /* formalised and set in stone */
+	     fprintf(f, "public _p%i(sig[], src[]) {", cp->id);
+	     {
+		char *sp;
+		int hash = 0;
+		int newlined = 0;
+
+		for (sp = cp->script; *sp; sp++)
+		  {
+		     if ((sp[0] == '#') && (newlined))
+		       {
+			  hash = 1;
+		       }
+		     newlined = 0;
+		     if (sp[0] == '\n') newlined = 1;
+		     if (!hash) fputc(sp[0], f);
+		     else if (sp[0] == '\n') hash = 0;
+		  }
+	     }
+	     fprintf(f, "}");
+	     ln += cp->l2 - cp->l1 + 1;
 	  }
      }
+
+   fclose(f);
+}
+
+static void
+compile_script_file(Eet_File *ef, const char *source, const char *output,
+		    int script_num)
+{
+   FILE *f;
+   char buf[4096];
+   int ret;
+
+   snprintf(buf, sizeof(buf),
+	    "embryo_cc -i %s/include -o %s %s",
+	    e_prefix_data_get(), output, source);
+   ret = system(buf);
+
+   /* accept warnings in the embryo code */
+   if (ret < 0 || ret > 1)
+     error_and_abort(ef, "Compiling script code not clean.\n");
+
+   f = fopen(output, "rb");
+   if (!f)
+     error_and_abort(ef, "Unable to open script object \"%s\" for reading.\n",
+		     output);
+
+   fseek(f, 0, SEEK_END);
+   int size = ftell(f);
+   rewind(f);
+
+   if (size > 0)
+     {
+	int bt;
+	void *data = malloc(size);
+
+	if (data)
+	  {
+	     if (fread(data, size, 1, f) != 1)
+	       error_and_abort(ef, "Unable to read all of script object "
+			       "\"%s\"\n", output);
+
+	     snprintf(buf, sizeof(buf), "scripts/%i", script_num);
+	     bt = eet_write(ef, buf, data, size, 1);
+	     free(data);
+	  }
+     }
+
+   fclose(f);
+}
+
+static void
+data_write_scripts(Eet_File *ef)
+{
+   Evas_List *l;
+   int i;
+
+#ifdef HAVE_EVIL
+   char *tmpdir = evil_tmpdir_get();
+#else
+   char *tmpdir = "/tmp";
+#endif
+
+   for (i = 0, l = codes; l; l = l->next, i++)
+     {
+	int fd;
+	Code *cd = l->data;
+
+	if ((!cd->shared) && (!cd->programs))
+	  continue;
+
+	char tmpn[4096];
+	snprintf(tmpn, PATH_MAX, "%s/edje_cc.sma-tmp-XXXXXX", tmpdir);
+	fd = mkstemp(tmpn);
+	if (fd < 0)
+	  error_and_abort(ef, "Unable to open temp file \"%s\" for script "
+			  "compilation.\n", tmpn);
+
+	create_script_file(ef, tmpn, cd);
+	close(fd);
+
+	char tmpo[4096];
+	snprintf(tmpo, PATH_MAX, "%s/edje_cc.amx-tmp-XXXXXX", tmpdir);
+	fd = mkstemp(tmpo);
+	if (fd < 0)
+	  {
+	     unlink(tmpn);
+	     error_and_abort(ef, "Unable to open temp file \"%s\" for script "
+			     "compilation.\n", tmpn);
+	  }
+
+	compile_script_file(ef, tmpn, tmpo, i);
+	close(fd);
+
+	unlink(tmpn);
+	unlink(tmpo);
+     }
+}
+
+void
+data_write(void)
+{
+   Eet_File *ef;
+   int input_bytes = 0;
+   int total_bytes = 0;
+   int src_bytes = 0;
+   int fmap_bytes = 0;
+   int input_raw_bytes = 0;
+   int image_num = 0;
+   int font_num = 0;
+   int collection_num = 0;
+
+   ef = eet_open(file_out, EET_FILE_MODE_WRITE);
+   if (!ef)
+     {
+	fprintf(stderr, "%s: Error. Unable to open \"%s\" for writing output\n",
+		progname, file_out);
+	exit(-1);
+     }
+
+   total_bytes += data_write_header(ef);
+   total_bytes += data_write_fonts(ef, &font_num, &input_bytes,
+				   &input_raw_bytes);
+   total_bytes += data_write_images(ef, &image_num, &input_bytes,
+				    &input_raw_bytes);
+
+   check_groups_names(ef);
+   check_spectra(ef);
+   check_groups(ef);
+
+   total_bytes += data_write_groups(ef, &collection_num);
+   data_write_scripts(ef);
+
    src_bytes = source_append(ef);
    total_bytes += src_bytes;
    fmap_bytes = source_fontmap_save(ef, fonts);
    total_bytes += fmap_bytes;
+
    eet_close(ef);
+
    if (verbose)
      {
 	struct stat st;
@@ -955,7 +968,7 @@ data_process_lookups(void)
 	  }
 	if (!l)
 	  {
-	     fprintf(stderr, "%s: Error. unable to find part name %s\n",
+	     fprintf(stderr, "%s: Error. Unable to find part name \"%s\".\n",
 		     progname, pl->name);
 	     exit(-1);
 	  }
@@ -983,7 +996,7 @@ data_process_lookups(void)
 	  }
 	if (!l)
 	  {
-	     fprintf(stderr, "%s: Error. unable to find program name %s\n",
+	     fprintf(stderr, "%s: Error. Unable to find program name \"%s\".\n",
 		     progname, pl->name);
 	     exit(-1);
 	  }
@@ -1008,7 +1021,7 @@ data_process_lookups(void)
           }
         if (!l)
           {
-             fprintf(stderr, "%s: Error. unable to find group name %s\n",
+             fprintf(stderr, "%s: Error. Unable to find group name \"%s\".\n",
                      progname, gl->name);
              exit(-1);
           }
@@ -1046,7 +1059,7 @@ data_process_lookups(void)
 
 	if (!l)
 	  {
-	     fprintf(stderr, "%s: Error. unable to find image name %s\n",
+	     fprintf(stderr, "%s: Error. Unable to find image name \"%s\".\n",
 		     progname, il->name);
 	     exit(-1);
 	  }
@@ -1261,12 +1274,6 @@ _data_queue_image_pc_lookup(Edje_Part_Collection *pc, char *name, char *ptr, int
    data_queue_image_lookup(name, &(cl->val));
 
    code_lookups = evas_list_append(code_lookups, cl);
-}
-
-static void
-_data_queue_spectrum_pc_lookup(Edje_Part_Collection *pc, char *name, int *dest)
-{
-   data_queue_spectrum_lookup(name, dest);
 }
 
 void

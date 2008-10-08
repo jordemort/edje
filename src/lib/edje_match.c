@@ -1,8 +1,7 @@
-#include <stdlib.h>
-#include <stddef.h>
-#include <Evas.h>
+/*
+ * vim:ts=8:sw=3:sts=8:noexpandtab:cino=>5n-3f0^-2{2
+ */
 
-#include "Edje.h"
 #include "edje_private.h"
 
 /* States manipulations. */
@@ -68,10 +67,12 @@ _edje_match_states_alloc(Edje_Patterns *ppat, int n)
    ALIGN(struct_size);
    struct_size += states_has_size;
 
-   l = calloc(1, n * struct_size);
+   l = malloc(n * struct_size);
    if (!l) return 0;
 
    ppat->states = l;
+   ppat->states->size = 0;
+
    states = (unsigned char *) (l + n);
    has = states + states_size;
 
@@ -79,6 +80,9 @@ _edje_match_states_alloc(Edje_Patterns *ppat, int n)
      {
         l[i].states = (Edje_State *) states;
         l[i].has = (_Bool *) has;
+
+	memset(l[i].has, 0, has_size);
+
         states += states_has_size;
         has += states_has_size;
      }
@@ -96,7 +100,7 @@ _edje_match_states_insert(Edje_States    *list,
 
    i = (idx * (patterns_max_length + 1)) + pos;
    
-   if (list->size > i)
+   if (i < list->size)
      {
 	if (list->has[i]) return;
      }

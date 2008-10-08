@@ -2,15 +2,14 @@
  * vim:ts=8:sw=3:sts=8:noexpandtab:cino=>5n-3f0^-2{2
  */
 
-#include "Edje.h"
 #include "edje_private.h"
 
 void _edje_collection_free_part_description_free(Edje_Part_Description *desc, unsigned int free_strings);
 static Evas_Bool _edje_file_collection_hash_foreach(const Evas_Hash *hash, const char *key, void *data, void *fdata);
 #ifdef EDJE_PROGRAM_CACHE
-static int  _edje_collection_free_prog_cache_matches_free_cb(Evas_Hash *hash, const char *key, void *data, void *fdata);
+static Evas_Bool  _edje_collection_free_prog_cache_matches_free_cb(const Evas_Hash *hash, const char *key, void *data, void *fdata);
 #endif
-static int _edje_object_file_set_internal(Evas_Object *obj, const char *file, const char *part, Evas_List *group_path);
+static int _edje_object_file_set_internal(Evas_Object *obj, const char *file, const char *group, Evas_List *group_path);
 static void _cb_signal_repeat(void *data, Evas_Object *obj, const char *signal, const char *source);
 
 static Evas_List *_edje_swallows_collect(Edje *ed);
@@ -21,7 +20,7 @@ static Evas_List *_edje_swallows_collect(Edje *ed);
 /** Sets the EET file and group to load @a obj from
  * @param obj A valid Evas_Object handle
  * @param file The path to the EET file
- * @param part The group name in the Edje
+ * @param group The group name in the Edje
  * @return 0 on Error\n
  * 1 on Success and sets EDJE_LOAD_ERROR_NONE
  *
@@ -30,27 +29,27 @@ static Evas_List *_edje_swallows_collect(Edje *ed);
  * specifies the file and group name to load @a obj from.
  */
 EAPI int
-edje_object_file_set(Evas_Object *obj, const char *file, const char *part)
+edje_object_file_set(Evas_Object *obj, const char *file, const char *group)
 {
-   return _edje_object_file_set_internal(obj, file, part, NULL);
+   return _edje_object_file_set_internal(obj, file, group, NULL);
 }
 
 /* FIXDOC: Verify/expand doc. */
 /** Get the file and group name that @a obj was loaded from
  * @param obj A valid Evas_Object handle
  * @param file A pointer to store a pointer to the filename in
- * @param part A pointer to store a pointer to the group name in
+ * @param group A pointer to store a pointer to the group name in
  *
  * This gets the EET file location and group for the given Evas_Object.
  * If @a obj is either not an edje file, or has not had its file/group set
- * using edje_object_file_set(), then both @a file and @a part will be set
+ * using edje_object_file_set(), then both @a file and @a group will be set
  * to NULL.
  *
- * It is valid to pass in NULL for either @a file or @a part if you are not
+ * It is valid to pass in NULL for either @a file or @a group if you are not
  * interested in one of the values.
  */
 EAPI void
-edje_object_file_get(Evas_Object *obj, const char **file, const char **part)
+edje_object_file_get(const Evas_Object *obj, const char **file, const char **group)
 {
    Edje *ed;
 
@@ -58,11 +57,11 @@ edje_object_file_get(Evas_Object *obj, const char **file, const char **part)
    if (!ed)
      {
 	if (file) *file = NULL;
-	if (part) *part = NULL;
+	if (group) *group = NULL;
 	return;
      }
    if (file) *file = ed->path;
-   if (part) *part = ed->part;
+   if (group) *group = ed->group;
 }
 
 /* FIXDOC: Verify. return error? */
@@ -80,7 +79,7 @@ edje_object_file_get(Evas_Object *obj, const char **file, const char **part)
  * 7: Incompatible File
  */
 EAPI int
-edje_object_load_error_get(Evas_Object *obj)
+edje_object_load_error_get(const Evas_Object *obj)
 {
    Edje *ed;
 
@@ -200,10 +199,13 @@ edje_file_data_get(const char *file, const char *key)
    if (key)
      {
 	edf = _edje_cache_file_coll_open(file, NULL, &error_ret, NULL);
-	if ((edf != NULL) && (edf->data_cache != NULL))
+	if (edf != NULL)
 	  {
-	     str = evas_hash_find(edf->data_cache, key);
-	     if (str) str = strdup(str);
+	     if (edf->data_cache != NULL)
+	       {
+		  str = evas_hash_find(edf->data_cache, key);
+		  if (str) str = strdup(str);
+	       }
 	     _edje_cache_file_unref(edf);
 	  }
      }
@@ -230,7 +232,7 @@ _edje_programs_patterns_init(Edje *ed)
 }
 
 static int
-_edje_object_file_set_internal(Evas_Object *obj, const char *file, const char *part, Evas_List *group_path)
+_edje_object_file_set_internal(Evas_Object *obj, const char *file, const char *group, Evas_List *group_path)
 {
    Edje *ed;
    int n;
@@ -241,335 +243,344 @@ _edje_object_file_set_internal(Evas_Object *obj, const char *file, const char *p
    ed = _edje_fetch(obj);
    if (!ed) return 0;
    if (!file) file = "";
-   if (!part) part = "";
+   if (!group) group = "";
    if (((ed->path) && (!strcmp(file, ed->path))) &&
-	(ed->part) && (!strcmp(part, ed->part)))
+	(ed->group) && (!strcmp(group, ed->group)))
      return 1;
 
    old_swallows = _edje_swallows_collect(ed);
 
+   if (_edje_script_only(ed)) _edje_script_only_shutdown(ed);
    _edje_file_del(ed);
 
    if (ed->path) evas_stringshare_del(ed->path);
-   if (ed->part) evas_stringshare_del(ed->part);
+   if (ed->group) evas_stringshare_del(ed->group);
    ed->path = evas_stringshare_add(file);
-   ed->part = evas_stringshare_add(part);
+   ed->group = evas_stringshare_add(group);
 
    ed->load_error = EDJE_LOAD_ERROR_NONE;
-   _edje_file_add(ed);
+  _edje_file_add(ed);
 
    _edje_textblock_styles_add(ed);
    _edje_textblock_style_all_update(ed);
 
    if (ed->collection)
      {
-	Evas_List *l;
-	int i;
-	int errors = 0;
-
-	/* colorclass stuff */
-	for (l = ed->collection->parts; (l && ! errors); l = l->next)
+	if (ed->collection->script_only)
 	  {
-	     Edje_Part *ep;
-	     Evas_List *hist = NULL;
-
-	     /* Register any color classes in this parts descriptions. */
-	     ep = l->data;
-	     if ((ep->default_desc) && (ep->default_desc->color_class))
-	       _edje_color_class_member_add(ed, ep->default_desc->color_class);
-	     for (hist = ep->other_desc; hist; hist = hist->next)
-	       {
-		  Edje_Part_Description *desc;
-
-		  desc = hist->data;
-		  if (desc->color_class)
-                    _edje_color_class_member_add(ed, desc->color_class);
-	       }
+	     ed->load_error = EDJE_LOAD_ERROR_NONE;
+	     _edje_script_only_init(ed);
 	  }
-	/* build real parts */
-	for (n = 0, l = ed->collection->parts; l; l = l->next, n++)
+	else
 	  {
-	     Edje_Part *ep;
-	     Edje_Real_Part *rp;
+	     Evas_List *l;
+	     int i;
+	     int errors = 0;
 
-	     ep = l->data;
-	     rp = calloc(1, sizeof(Edje_Real_Part));
-	     if (!rp)
+	     /* colorclass stuff */
+	     for (l = ed->collection->parts; (l && ! errors); l = l->next)
 	       {
-		  ed->load_error = EDJE_LOAD_ERROR_RESOURCE_ALLOCATION_FAILED;
-	          return 0;
-	       }
-	     rp->edje = ed;
-	     _edje_ref(rp->edje);
-	     rp->part = ep;
-	     parts = evas_list_append(parts, rp);
-	     rp->param1.description = ep->default_desc;
-	     rp->chosen_description = rp->param1.description;
-	     if (!rp->param1.description)
-               printf("EDJE ERROR: no default part description!\n");
-	     if (ep->type == EDJE_PART_TYPE_RECTANGLE)
-	       rp->object = evas_object_rectangle_add(ed->evas);
-	     else if (ep->type == EDJE_PART_TYPE_IMAGE)
-	       rp->object = evas_object_image_add(ed->evas);
-	     else if (ep->type == EDJE_PART_TYPE_TEXT)
-	       {
-		  _edje_text_part_on_add(ed, rp);
-		  rp->object = evas_object_text_add(ed->evas);
-		  evas_object_text_font_source_set(rp->object, ed->path);
-	       }
-	     else if (ep->type == EDJE_PART_TYPE_SWALLOW || ep->type == EDJE_PART_TYPE_GROUP)
-	       {
-		  rp->object = evas_object_rectangle_add(ed->evas);
-		  evas_object_color_set(rp->object, 0, 0, 0, 0);
-		  evas_object_pass_events_set(rp->object, 1);
-		  evas_object_pointer_mode_set(rp->object, EVAS_OBJECT_POINTER_MODE_NOGRAB);
-	       }
-	     else if (ep->type == EDJE_PART_TYPE_TEXTBLOCK)
-	       rp->object = evas_object_textblock_add(ed->evas);
-	     else if (ep->type == EDJE_PART_TYPE_GRADIENT)
-	       rp->object = evas_object_gradient_add(ed->evas);
-	     else
-               printf("EDJE ERROR: wrong part type %i!\n", ep->type);
-	     if (rp->object)
-	       {
-		  evas_object_smart_member_add(rp->object, ed->obj);
-		  evas_object_layer_set(rp->object, evas_object_layer_get(ed->obj));
-		  if (ep->type != EDJE_PART_TYPE_SWALLOW && ep->type != EDJE_PART_TYPE_GROUP)
+		  Edje_Part *ep;
+		  Evas_List *hist = NULL;
+		  
+		  /* Register any color classes in this parts descriptions. */
+		  ep = l->data;
+		  if ((ep->default_desc) && (ep->default_desc->color_class))
+		    _edje_color_class_member_add(ed, ep->default_desc->color_class);
+		  for (hist = ep->other_desc; hist; hist = hist->next)
 		    {
-		       if (ep->mouse_events)
-			 {
-			    _edje_callbacks_add(rp->object, ed, rp);
-			    if (ep->repeat_events)
-			      evas_object_repeat_events_set(rp->object, 1);
-
-			    if (ep->pointer_mode != EVAS_OBJECT_POINTER_MODE_AUTOGRAB)
-			      evas_object_pointer_mode_set(rp->object, ep->pointer_mode);
-			 }
-		       else
-			 {
-			    evas_object_pass_events_set(rp->object, 1);
-			    evas_object_pointer_mode_set(rp->object, EVAS_OBJECT_POINTER_MODE_NOGRAB);
-			 }
-		       if (ep->precise_is_inside)
-		         evas_object_precise_is_inside_set(rp->object, 1);
+		       Edje_Part_Description *desc;
+		       
+		       desc = hist->data;
+		       if (desc->color_class)
+			 _edje_color_class_member_add(ed, desc->color_class);
 		    }
-		  if (rp->part->clip_to_id < 0)
-		    evas_object_clip_set(rp->object, ed->clipper);
 	       }
-	     rp->drag.step.x = ep->dragable.step_x;
-	     rp->drag.step.y = ep->dragable.step_y;
-	     rp->gradient_id = -1;
-	  }
-	if (n > 0)
-	  {
-	     Edje_Real_Part *rp;
-	     ed->table_parts = malloc(sizeof(Edje_Real_Part *) * n);
-	     ed->table_parts_size = n;
-	     /* FIXME: check malloc return */
-	     n = 0;
-	     for (l = parts; l; l = l->next)
+	     /* build real parts */
+	     for (n = 0, l = ed->collection->parts; l; l = l->next, n++)
 	       {
-		  rp = l->data;
-		  ed->table_parts[n] = rp;
-		  n++;
+		  Edje_Part *ep;
+		  Edje_Real_Part *rp;
+		  
+		  ep = l->data;
+		  rp = calloc(1, sizeof(Edje_Real_Part));
+		  if (!rp)
+		    {
+		       ed->load_error = EDJE_LOAD_ERROR_RESOURCE_ALLOCATION_FAILED;
+		       return 0;
+		    }
+		  rp->edje = ed;
+		  _edje_ref(rp->edje);
+		  rp->part = ep;
+		  parts = evas_list_append(parts, rp);
+		  rp->param1.description = ep->default_desc;
+		  rp->chosen_description = rp->param1.description;
+		  if (!rp->param1.description)
+		    printf("EDJE ERROR: no default part description!\n");
+		  if (ep->type == EDJE_PART_TYPE_RECTANGLE)
+		    rp->object = evas_object_rectangle_add(ed->evas);
+		  else if (ep->type == EDJE_PART_TYPE_IMAGE)
+		    rp->object = evas_object_image_add(ed->evas);
+		  else if (ep->type == EDJE_PART_TYPE_TEXT)
+		    {
+		       _edje_text_part_on_add(ed, rp);
+		       rp->object = evas_object_text_add(ed->evas);
+		       evas_object_text_font_source_set(rp->object, ed->path);
+		    }
+		  else if (ep->type == EDJE_PART_TYPE_SWALLOW || ep->type == EDJE_PART_TYPE_GROUP)
+		    {
+		       rp->object = evas_object_rectangle_add(ed->evas);
+		       evas_object_color_set(rp->object, 0, 0, 0, 0);
+		       evas_object_pass_events_set(rp->object, 1);
+		       evas_object_pointer_mode_set(rp->object, EVAS_OBJECT_POINTER_MODE_NOGRAB);
+		    }
+		  else if (ep->type == EDJE_PART_TYPE_TEXTBLOCK)
+		    rp->object = evas_object_textblock_add(ed->evas);
+		  else if (ep->type == EDJE_PART_TYPE_GRADIENT)
+		    rp->object = evas_object_gradient_add(ed->evas);
+		  else
+		    printf("EDJE ERROR: wrong part type %i!\n", ep->type);
+		  if (rp->object)
+		    {
+		       evas_object_smart_member_add(rp->object, ed->obj);
+//		       evas_object_layer_set(rp->object, evas_object_layer_get(ed->obj));
+		       if (ep->type != EDJE_PART_TYPE_SWALLOW && ep->type != EDJE_PART_TYPE_GROUP)
+			 {
+			    if (ep->mouse_events)
+			      {
+				 _edje_callbacks_add(rp->object, ed, rp);
+				 if (ep->repeat_events)
+				   evas_object_repeat_events_set(rp->object, 1);
+				 
+				 if (ep->pointer_mode != EVAS_OBJECT_POINTER_MODE_AUTOGRAB)
+				   evas_object_pointer_mode_set(rp->object, ep->pointer_mode);
+			      }
+			    else
+			      {
+				 evas_object_pass_events_set(rp->object, 1);
+				 evas_object_pointer_mode_set(rp->object, EVAS_OBJECT_POINTER_MODE_NOGRAB);
+			      }
+			    if (ep->precise_is_inside)
+			      evas_object_precise_is_inside_set(rp->object, 1);
+			 }
+		       if (rp->part->clip_to_id < 0)
+			 evas_object_clip_set(rp->object, ed->clipper);
+		    }
+		  rp->drag.step.x = ep->dragable.step_x;
+		  rp->drag.step.y = ep->dragable.step_y;
+		  rp->gradient_id = -1;
 	       }
-	     evas_list_free(parts);
+	     if (n > 0)
+	       {
+		  Edje_Real_Part *rp;
+		  ed->table_parts = malloc(sizeof(Edje_Real_Part *) * n);
+		  ed->table_parts_size = n;
+		  /* FIXME: check malloc return */
+		  n = 0;
+		  for (l = parts; l; l = l->next)
+		    {
+		       rp = l->data;
+		       ed->table_parts[n] = rp;
+		       n++;
+		    }
+		  evas_list_free(parts);
+		  for (i = 0; i < ed->table_parts_size; i++)
+		    {
+		       rp = ed->table_parts[i];
+		       if (rp->param1.description->rel1.id_x >= 0)
+			 rp->param1.rel1_to_x = ed->table_parts[rp->param1.description->rel1.id_x % ed->table_parts_size];
+		       if (rp->param1.description->rel1.id_y >= 0)
+			 rp->param1.rel1_to_y = ed->table_parts[rp->param1.description->rel1.id_y % ed->table_parts_size];
+		       if (rp->param1.description->rel2.id_x >= 0)
+			 rp->param1.rel2_to_x = ed->table_parts[rp->param1.description->rel2.id_x % ed->table_parts_size];
+		       if (rp->param1.description->rel2.id_y >= 0)
+			 rp->param1.rel2_to_y = ed->table_parts[rp->param1.description->rel2.id_y % ed->table_parts_size];
+		       _edje_text_part_on_add_clippers(ed, rp);
+		       if (rp->part->clip_to_id >= 0)
+			 {
+			    rp->clip_to = ed->table_parts[rp->part->clip_to_id % ed->table_parts_size];
+			    if (rp->clip_to)
+			      {
+				 evas_object_pass_events_set(rp->clip_to->object, 1);
+				 evas_object_pointer_mode_set(rp->clip_to->object, EVAS_OBJECT_POINTER_MODE_NOGRAB);
+				 evas_object_clip_set(rp->object, rp->clip_to->object);
+			      }
+			 }
+		       if (rp->part->dragable.confine_id >= 0)
+			 rp->confine_to = ed->table_parts[rp->part->dragable.confine_id % ed->table_parts_size];
+		       
+		       /* replay events for dragable */
+		       if (rp->part->dragable.events_id >= 0)
+			 {
+			    rp->events_to =
+			      ed->table_parts[rp->part->dragable.events_id % ed->table_parts_size];
+			    /* events_to may be used only with dragable */
+			    if (!rp->events_to->part->dragable.x &&
+				!rp->events_to->part->dragable.y)
+			      rp->events_to = NULL;
+			 }
+		       
+		       rp->swallow_params.min.w = 0;
+		       rp->swallow_params.min.w = 0;
+		       rp->swallow_params.max.w = -1;
+		       rp->swallow_params.max.h = -1;
+		       
+		       if (ed->file->feature_ver < 1)
+			 {
+			    rp->param1.description->text.id_source = -1;
+			    rp->param1.description->text.id_text_source = -1;
+			 }
+		       if (rp->param1.description->text.id_source >= 0)
+			 rp->text.source = ed->table_parts[rp->param1.description->text.id_source % ed->table_parts_size];
+		       if (rp->param1.description->text.id_text_source >= 0)
+			 rp->text.text_source = ed->table_parts[rp->param1.description->text.id_text_source % ed->table_parts_size];
+		    }
+	       }
+	     
+	     _edje_programs_patterns_init(ed);
+	     
+	     n = evas_list_count(ed->collection->programs);
+	     if (n > 0)
+	       {
+		  /* FIXME: keeping a table AND a list is just bad - nuke list */
+		  ed->table_programs = malloc(sizeof(Edje_Program *) * n);
+		  ed->table_programs_size = n;
+		  /* FIXME: check malloc return */
+		  n = 0;
+		  for (l = ed->collection->programs; l; l = l->next)
+		    {
+		       Edje_Program *pr;
+		       
+		       pr = l->data;
+		       ed->table_programs[n] = pr;
+		       n++;
+		    }
+	       }
+	     _edje_ref(ed);
+	     _edje_block(ed);
+	     _edje_freeze(ed);
+	     if (ed->collection->script) _edje_embryo_script_init(ed);
+	     _edje_var_init(ed);
 	     for (i = 0; i < ed->table_parts_size; i++)
 	       {
+		  Edje_Real_Part *rp;
+		  
 		  rp = ed->table_parts[i];
-		  if (rp->param1.description->rel1.id_x >= 0)
-		    rp->param1.rel1_to_x = ed->table_parts[rp->param1.description->rel1.id_x % ed->table_parts_size];
-		  if (rp->param1.description->rel1.id_y >= 0)
-		    rp->param1.rel1_to_y = ed->table_parts[rp->param1.description->rel1.id_y % ed->table_parts_size];
-		  if (rp->param1.description->rel2.id_x >= 0)
-		    rp->param1.rel2_to_x = ed->table_parts[rp->param1.description->rel2.id_x % ed->table_parts_size];
-		  if (rp->param1.description->rel2.id_y >= 0)
-		    rp->param1.rel2_to_y = ed->table_parts[rp->param1.description->rel2.id_y % ed->table_parts_size];
-		  _edje_text_part_on_add_clippers(ed, rp);
-		  if (rp->part->clip_to_id >= 0)
+		  evas_object_show(rp->object);
+		  if (_edje_block_break(ed)) break;
+		  if (rp->part->dragable.x < 0) rp->drag.val.x = 1.0;
+		  if (rp->part->dragable.y < 0) rp->drag.val.x = 1.0;
+		  _edje_dragable_pos_set(ed, rp, rp->drag.val.x, rp->drag.val.y);
+	       }
+	     ed->dirty = 1;
+	     if ((evas_object_clipees_get(ed->clipper)) &&
+		 (evas_object_visible_get(obj)))
+	       evas_object_show(ed->clipper);
+	     
+	     /* instantiate 'internal swallows' */
+	     for (i = 0; i < ed->table_parts_size; i++)
+	       {
+		  Edje_Real_Part *rp;
+		  
+		  rp = ed->table_parts[i];
+		  if (rp->part->type != EDJE_PART_TYPE_GROUP) continue;
+		  if (rp->part->source)
 		    {
-		       rp->clip_to = ed->table_parts[rp->part->clip_to_id % ed->table_parts_size];
-		       if (rp->clip_to)
+		       Evas_List *l;
+		       Evas_Object *child_obj;
+		       Edje *child_ed;
+		       const char *group_path_entry = evas_stringshare_add(rp->part->source);
+		       if (!group_path)
 			 {
-			    evas_object_pass_events_set(rp->clip_to->object, 1);
-			    evas_object_pointer_mode_set(rp->clip_to->object, EVAS_OBJECT_POINTER_MODE_NOGRAB);
-			    evas_object_clip_set(rp->object, rp->clip_to->object);
+			    group_path = evas_list_append(NULL, evas_stringshare_add(group));
+			    group_path_started = 1;
 			 }
-		    }
-		  if (rp->part->dragable.confine_id >= 0)
-		    rp->confine_to = ed->table_parts[rp->part->dragable.confine_id % ed->table_parts_size];
-
-		  /* replay events for dragable */
-		  if (rp->part->dragable.events_id >= 0)
-		    {
-		       rp->events_to =
-			  ed->table_parts[rp->part->dragable.events_id % ed->table_parts_size];
-		       /* events_to may be used only with dragable */
-		       if (!rp->events_to->part->dragable.x &&
-			   !rp->events_to->part->dragable.y)
-			 rp->events_to = NULL;
-		    }
-
-		  rp->swallow_params.min.w = 0;
-		  rp->swallow_params.min.w = 0;
-		  rp->swallow_params.max.w = -1;
-		  rp->swallow_params.max.h = -1;
-
-		  if (ed->file->feature_ver < 1)
-		    {
-		       rp->param1.description->text.id_source = -1;
-		       rp->param1.description->text.id_text_source = -1;
-		    }
-		  if (rp->param1.description->text.id_source >= 0)
-		    rp->text.source = ed->table_parts[rp->param1.description->text.id_source % ed->table_parts_size];
-		  if (rp->param1.description->text.id_text_source >= 0)
-		    rp->text.text_source = ed->table_parts[rp->param1.description->text.id_text_source % ed->table_parts_size];
-	       }
-	  }
-
-	_edje_programs_patterns_init(ed);
-
-	n = evas_list_count(ed->collection->programs);
-	if (n > 0)
-	  {
-	     /* FIXME: keeping a table AND a list is just bad - nuke list */
-	     ed->table_programs = malloc(sizeof(Edje_Program *) * n);
-	     ed->table_programs_size = n;
-	     /* FIXME: check malloc return */
-	     n = 0;
-	     for (l = ed->collection->programs; l; l = l->next)
-	       {
-		  Edje_Program *pr;
-
-		  pr = l->data;
-		  ed->table_programs[n] = pr;
-		  n++;
-	       }
-	  }
-	_edje_ref(ed);
-	_edje_block(ed);
-	_edje_freeze(ed);
-	if (ed->collection->script) _edje_embryo_script_init(ed);
-	_edje_var_init(ed);
-	for (i = 0; i < ed->table_parts_size; i++)
-	  {
-	     Edje_Real_Part *rp;
-
-	     rp = ed->table_parts[i];
-	     evas_object_show(rp->object);
-	     if (_edje_block_break(ed)) break;
-	     if (rp->part->dragable.x < 0) rp->drag.val.x = 1.0;
-	     if (rp->part->dragable.y < 0) rp->drag.val.x = 1.0;
-	     _edje_dragable_pos_set(ed, rp, rp->drag.val.x, rp->drag.val.y);
-	  }
-	ed->dirty = 1;
-	if ((evas_object_clipees_get(ed->clipper)) &&
-	    (evas_object_visible_get(obj)))
-	  evas_object_show(ed->clipper);
-
-	/* instantiate 'internal swallows' */
-	for (i = 0; i < ed->table_parts_size; i++)
-	  {
-	     Edje_Real_Part *rp;
-
-	     rp = ed->table_parts[i];
-	     if (rp->part->type != EDJE_PART_TYPE_GROUP) continue;
-	     if (rp->part->source)
-	       {
-		  Evas_List *l;
-		  Evas_Object *child_obj;
-		  Edje *child_ed;
-		  const char *group_path_entry = evas_stringshare_add(rp->part->source);
-		  if (!group_path)
-		    {
-		       group_path = evas_list_append(NULL, evas_stringshare_add(part));
-		       group_path_started = 1;
-		    }
-		  /* make sure that this group isn't already in the tree of parents */
-		  for (l = group_path; l; l = l->next)
-		    {
-		       if (l->data == group_path_entry)
+		       /* make sure that this group isn't already in the tree of parents */
+		       for (l = group_path; l; l = l->next)
+			 {
+			    if (l->data == group_path_entry)
+			      {
+				 _edje_thaw(ed);
+				 _edje_unblock(ed);
+				 _edje_unref(ed);
+				 _edje_file_del(ed);
+				 evas_stringshare_del(group_path_entry);
+				 if (group_path_started)
+				   {
+				      evas_stringshare_del(group_path->data);
+				      evas_list_free(group_path);
+				   }
+				 ed->load_error = EDJE_LOAD_ERROR_RECURSIVE_REFERENCE;
+				 return 0;
+			      }
+			 }
+		       
+		       child_obj = edje_object_add(ed->evas);
+		       group_path = evas_list_append(group_path, group_path_entry);
+		       if (!_edje_object_file_set_internal(child_obj, file, rp->part->source, group_path))
 			 {
 			    _edje_thaw(ed);
 			    _edje_unblock(ed);
 			    _edje_unref(ed);
 			    _edje_file_del(ed);
-			    evas_stringshare_del(group_path_entry);
+			    
 			    if (group_path_started)
 			      {
-				 evas_stringshare_del(group_path->data);
-				 evas_list_free(group_path);
+				 while (group_path)
+				   {
+				      evas_stringshare_del(group_path->data);
+				      group_path = evas_list_remove_list(group_path, group_path);
+				   }
 			      }
-			    ed->load_error = EDJE_LOAD_ERROR_RECURSIVE_REFERENCE;
+			    ed->load_error = edje_object_load_error_get(child_obj);
 			    return 0;
 			 }
+		       child_ed = _edje_fetch(child_obj);
+		       child_ed->parent = evas_stringshare_add(rp->part->name);
+		       
+		       group_path = evas_list_remove(group_path, group_path_entry);
+		       evas_stringshare_del(group_path_entry);
+		       
+		       edje_object_signal_callback_add(child_obj, "*", "*", _cb_signal_repeat, obj);
+		       _edje_real_part_swallow(rp, child_obj);
 		    }
-
-		  child_obj = edje_object_add(ed->evas);
-		  group_path = evas_list_append(group_path, group_path_entry);
-		  if (!_edje_object_file_set_internal(child_obj, file, rp->part->source, group_path))
+	       }
+	     
+	     if (group_path_started)
+	       {
+		  while (group_path)
 		    {
-		       _edje_thaw(ed);
-		       _edje_unblock(ed);
-		       _edje_unref(ed);
-		       _edje_file_del(ed);
-
-		       if (group_path_started)
-			 {
-			    while (group_path)
-			      {
-				 evas_stringshare_del(group_path->data);
-				 group_path = evas_list_remove_list(group_path, group_path);
-			      }
-			 }
-		       ed->load_error = edje_object_load_error_get(child_obj);
-		       return 0;
+		       evas_stringshare_del(group_path->data);
+		       group_path = evas_list_remove_list(group_path, group_path);
 		    }
-		  child_ed = _edje_fetch(child_obj);
-		  child_ed->parent = evas_stringshare_add(rp->part->name);
-
-		  group_path = evas_list_remove(group_path, group_path_entry);
-		  evas_stringshare_del(group_path_entry);
-
-		  edje_object_signal_callback_add(child_obj, "*", "*", _cb_signal_repeat, obj);
-		  _edje_real_part_swallow(rp, child_obj);
 	       }
-	  }
-
-	if (group_path_started)
-	  {
-	     while (group_path)
+	     
+	     /* reswallow any swallows that existed before setting the file */
+	     if (old_swallows)
 	       {
-		  evas_stringshare_del(group_path->data);
-		  group_path = evas_list_remove_list(group_path, group_path);
+		  while (old_swallows)
+		    {
+		       const char *name;
+		       Evas_Object *swallow;
+		       
+		       name = old_swallows->data;
+		       old_swallows = evas_list_remove_list(old_swallows, old_swallows);
+		       
+		       swallow = old_swallows->data;
+		       old_swallows = evas_list_remove_list(old_swallows, old_swallows);
+		       
+		       edje_object_part_swallow(obj, name, swallow);
+		       evas_stringshare_del(name);
+		    }
 	       }
+	     
+	     _edje_recalc(ed);
+	     _edje_thaw(ed);
+	     _edje_unblock(ed);
+	     _edje_unref(ed);
+	     ed->load_error = EDJE_LOAD_ERROR_NONE;
+	     _edje_emit(ed, "load", NULL);
 	  }
-
-	/* reswallow any swallows that existed before setting the file */
-	if (old_swallows)
-	  {
-	     while (old_swallows)
-	       {
-		  const char *name;
-		  Evas_Object *swallow;
-
-		  name = old_swallows->data;
-		  old_swallows = evas_list_remove_list(old_swallows, old_swallows);
-
-		  swallow = old_swallows->data;
-		  old_swallows = evas_list_remove_list(old_swallows, old_swallows);
-
-		  edje_object_part_swallow(obj, name, swallow);
-		  evas_stringshare_del(name);
-	       }
-	  }
-
-	_edje_recalc(ed);
-	_edje_thaw(ed);
-	_edje_unblock(ed);
-	_edje_unref(ed);
-	ed->load_error = EDJE_LOAD_ERROR_NONE;
-	_edje_emit(ed, "load", NULL);
 	return 1;
      }
    else
@@ -582,7 +593,7 @@ void
 _edje_file_add(Edje *ed)
 {
    if (_edje_edd_edje_file == NULL) return;
-   ed->file = _edje_cache_file_coll_open(ed->path, ed->part,
+   ed->file = _edje_cache_file_coll_open(ed->path, ed->group,
 					 &(ed->load_error),
 					 &(ed->collection));
 
@@ -989,7 +1000,7 @@ _edje_file_collection_hash_foreach(const Evas_Hash *hash, const char *key, void 
 }
 
 #ifdef EDJE_PROGRAM_CACHE
-static int
+static Evas_Bool
 _edje_collection_free_prog_cache_matches_free_cb(const Evas_Hash *hash, const char *key, void *data, void *fdata)
 {
    evas_list_free((Evas_List *)data);
@@ -1005,19 +1016,21 @@ _cb_signal_repeat(void *data, Evas_Object *obj, const char *signal, const char *
    Evas_Object	*parent;
    Edje		*ed;
    char		 new_src[4096]; /* XXX is this max reasonable? */
-   int		 length_parent;
+   int		 length_parent = 0;
    int		 length_source;
 
    parent = data;
    ed = _edje_fetch(obj);
    if (!ed) return;
    /* Replace snprint("%s%c%s") == memcpy + *new_src + memcat */
-   length_parent = strlen(ed->parent);
+   if (ed->parent)
+     length_parent = strlen(ed->parent);
    length_source = strlen(source);
    if (length_source + length_parent + 2 > sizeof(new_src))
      return ;
 
-   memcpy(new_src, ed->parent, length_parent);
+   if (ed->parent)
+     memcpy(new_src, ed->parent, length_parent);
    new_src[length_parent] = EDJE_PART_PATH_SEPARATOR;
    memcpy(new_src + length_parent + 1, source, length_source + 1);
 

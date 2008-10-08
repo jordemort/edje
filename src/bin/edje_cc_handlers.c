@@ -70,6 +70,7 @@ static void ob_collections(void);
 
 static void ob_collections_group(void);
 static void st_collections_group_name(void);
+static void st_collections_group_script_only(void);
 static void st_collections_group_alias(void);
 static void st_collections_group_min(void);
 static void st_collections_group_max(void);
@@ -84,6 +85,7 @@ static void st_collections_group_parts_part_effect(void);
 static void st_collections_group_parts_part_mouse_events(void);
 static void st_collections_group_parts_part_repeat_events(void);
 static void st_collections_group_parts_part_ignore_flags(void);
+static void st_collections_group_parts_part_scale(void);
 static void st_collections_group_parts_part_pointer_mode(void);
 static void st_collections_group_parts_part_precise_is_inside(void);
 static void st_collections_group_parts_part_use_alternate_font_metrics(void);
@@ -192,6 +194,7 @@ New_Statement_Handler statement_handlers[] =
      {"collections.color_classes.color_class.color2", st_color_class_color2}, /* dup */
      {"collections.color_classes.color_class.color3", st_color_class_color3}, /* dup */
      {"collections.group.name", st_collections_group_name},
+     {"collections.group.script_only", st_collections_group_script_only},
      {"collections.group.alias", st_collections_group_alias},
      {"collections.group.min", st_collections_group_min},
      {"collections.group.max", st_collections_group_max},
@@ -224,6 +227,7 @@ New_Statement_Handler statement_handlers[] =
      {"collections.group.parts.part.mouse_events", st_collections_group_parts_part_mouse_events},
      {"collections.group.parts.part.repeat_events", st_collections_group_parts_part_repeat_events},
      {"collections.group.parts.part.ignore_flags", st_collections_group_parts_part_ignore_flags},
+     {"collections.group.parts.part.scale", st_collections_group_parts_part_scale},
      {"collections.group.parts.part.pointer_mode", st_collections_group_parts_part_pointer_mode},
      {"collections.group.parts.part.precise_is_inside", st_collections_group_parts_part_precise_is_inside},
      {"collections.group.parts.part.use_alternate_font_metrics", st_collections_group_parts_part_use_alternate_font_metrics},
@@ -747,7 +751,7 @@ st_data_file(void)
    di->key = parse_str(0);
    filename = parse_str(1);
 
-   fd = open(filename, O_RDONLY);
+   fd = open(filename, O_RDONLY | O_BINARY);
    if (fd < 0)
      {
         fprintf(stderr, "%s: Error. %s:%i when opening file \"%s\": \"%s\"\n",
@@ -763,7 +767,7 @@ st_data_file(void)
      }
 
    data = mmap(NULL, buf.st_size, PROT_READ, MAP_SHARED, fd, 0);
-   if (!data)
+   if (data == MAP_FAILED)
      {
         fprintf(stderr, "%s: Error. %s:%i when mapping file \"%s\": \"%s\"\n",
                 progname, file_in, line, filename, strerror(errno));
@@ -1190,7 +1194,7 @@ ob_collections_group(void)
    Edje_Part_Collection_Directory_Entry *de;
    Edje_Part_Collection *pc;
    Code *cd;
-
+   
    de = mem_alloc(SZ(Edje_Part_Collection_Directory_Entry));
    edje_file->collection_dir->entries = evas_list_append(edje_file->collection_dir->entries, de);
    de->id = evas_list_count(edje_file->collection_dir->entries) - 1;
@@ -1218,11 +1222,69 @@ static void
 st_collections_group_name(void)
 {
    Edje_Part_Collection_Directory_Entry *de;
-
+   Evas_List *l;
+   
    check_arg_count(1);
 
    de = evas_list_data(evas_list_last(edje_file->collection_dir->entries));
    de->entry = parse_str(0);
+   for (l = edje_file->collection_dir->entries; l; l = l->next)
+     {
+	Edje_Part_Collection_Directory_Entry *de_other;
+	
+	de_other = l->data;
+	if ((de_other != de) && (de_other->entry) && 
+	    (!strcmp(de->entry, de_other->entry)))
+	  {
+	     Edje_Part_Collection *pc;
+	     Code *cd;
+	     int i;
+	     
+	     pc = evas_list_nth(edje_collections, de_other->id);
+	     cd = evas_list_nth(codes, de_other->id);
+	     
+	     edje_file->collection_dir->entries = 
+	       evas_list_remove(edje_file->collection_dir->entries, de_other);
+	     edje_collections = 
+	       evas_list_remove(edje_collections, pc);
+	     codes =
+	       evas_list_remove(codes, cd);
+	     
+	     for (i = 0, l = edje_file->collection_dir->entries; l; l = l->next, i++)
+	       {
+		  de_other = l->data;
+		  de_other->id = i;
+	       }
+	     for (i = 0, l = edje_collections; l; l = l->next, i++)
+	       {
+		  pc = l->data;
+		  pc->id = i;
+	       }
+	     break;
+	  }
+     }
+}
+
+/**
+    @page edcref
+    @property
+        script_only
+    @parameters
+        [on/off]
+    @effect
+        The flag (on/off) as to if this group is defined ONLY by script
+        callbacks such as init(), resize() and shutdown()
+    @endproperty
+*/
+static void
+st_collections_group_script_only(void)
+{
+   Edje_Part_Collection *pc;
+
+   check_arg_count(1);
+
+   pc = evas_list_data(evas_list_last(edje_collections));
+   pc->script_only = parse_bool(0);
 }
 
 /**
@@ -1416,6 +1478,7 @@ ob_collections_group_parts_part(void)
    ep->mouse_events = 1;
    ep->repeat_events = 0;
    ep->ignore_flags = EVAS_EVENT_FLAG_NONE;
+   ep->scale = 0;
    ep->pointer_mode = EVAS_OBJECT_POINTER_MODE_AUTOGRAB;
    ep->precise_is_inside = 0;
    ep->use_alternate_font_metrics = 0;
@@ -1584,6 +1647,35 @@ st_collections_group_parts_part_ignore_flags(void)
 				  "NONE", EVAS_EVENT_FLAG_NONE,
 				  "ON_HOLD", EVAS_EVENT_FLAG_ON_HOLD,
 				  NULL);
+}
+
+/**
+    @page edcref
+    @property
+        scale
+    @parameters
+        [1 or 0]
+    @effect
+        Specifies whether the part will scale its size with an edje scaling
+        factor. By default scale is off (0) and the default scale factor is
+        1.0 - that means no scaling. This would be used to scale properties
+        such as font size, min/max size of the part, and possibly can be used
+        to scale based on DPI of the target device. The reason to be selective
+        is that some things work well being scaled, others do not, so the
+        designer gets to choose what works best.
+    @endproperty
+*/
+static void
+st_collections_group_parts_part_scale(void)
+{
+   Edje_Part_Collection *pc;
+   Edje_Part *ep;
+
+   check_arg_count(1);
+
+   pc = evas_list_data(evas_list_last(edje_collections));
+   ep = evas_list_data(evas_list_last(pc->parts));
+   ep->scale = parse_bool(0);
 }
 
 /**
@@ -3883,7 +3975,7 @@ st_collections_group_parts_part_description_text_elipsis(void)
     @page edcref
 
     @block
-        text
+        gradient
     @context
         part {
             description {
@@ -4136,6 +4228,35 @@ st_collections_group_parts_part_description_gradient_rel2_offset(void)
      }
 }
 
+/**
+    @page edcref
+    @block
+        program
+    @context
+        group {
+            programs {
+               ..
+                  program {
+                     name: "programname";
+                     signal: "signalname";
+                     source: "partname";
+                     in: 0.3 0.0;
+                     action: STATE_SET "statename" state_value;
+                     transition: LINEAR 0.5;
+                     target: "partname";
+                     target: "anotherpart";
+                     after: "programname";
+                     after: "anotherprogram";
+                  }
+               ..
+            }
+        }
+    @description
+        Programs define how your interface reacts to events.
+        Programs can change the state of parts, react to events or trigger
+        other events.
+    @endblock
+*/
 static void
 ob_collections_group_programs_program(void)
 {
@@ -4150,6 +4271,16 @@ ob_collections_group_programs_program(void)
    ep->after = NULL;
 }
 
+/**
+    @page edcref
+    @property
+        name
+    @parameters
+        [program name]
+    @effect
+        Symbolic name of program as a unique identifier.
+    @endproperty
+*/
 static void
 st_collections_group_programs_program_name(void)
 {
@@ -4179,6 +4310,20 @@ st_collections_group_programs_program_name(void)
      }
 }
 
+/**
+    @page edcref
+    @property
+        signal
+    @parameters
+        [signal name]
+    @effect
+        Specifies signal(s) that should cause the program to run. The signal
+        received must match the specified source to run.
+        Signals may be globbed, but only one signal keyword per program
+        may be used. ex: signal: "mouse,clicked,*"; (clicking any mouse button
+        that matches source starts program).
+    @endproperty
+*/
 static void
 st_collections_group_programs_program_signal(void)
 {
@@ -4192,6 +4337,18 @@ st_collections_group_programs_program_signal(void)
    ep->signal = parse_str(0);
 }
 
+/**
+    @page edcref
+    @property
+        source
+    @parameters
+        [source name]
+    @effect
+        Source of accepted signal. Sources may be globbed, but only one source
+        keyword per program may be used. ex:source: "button-*"; (Signals from
+        any part or program named "button-*" are accepted)
+    @endproperty
+*/
 static void
 st_collections_group_programs_program_source(void)
 {
@@ -4205,6 +4362,17 @@ st_collections_group_programs_program_source(void)
    ep->source = parse_str(0);
 }
 
+/**
+    @page edcref
+    @property
+        in
+    @parameters
+        [from] [range]
+    @effect
+        Wait 'from' seconds before executing the program. And add a random
+        number of seconds (from 0 to 'range') to the total waiting time.
+    @endproperty
+*/
 static void
 st_collections_group_programs_program_in(void)
 {
@@ -4219,6 +4387,21 @@ st_collections_group_programs_program_in(void)
    ep->in.range = parse_float_range(1, 0.0, 999999999.0);
 }
 
+/**
+    @page edcref
+    @property
+        action
+    @parameters
+        [type] [param1] [param2]
+    @effect
+        Action to be performed by the program. Valid actions are: STATE_SET,
+        ACTION_STOP, SIGNAL_EMIT, DRAG_VAL_SET, DRAG_VAL_STEP and DRAG_VAL_PAGE.
+        Only one action can be specified per program. Examples:\n
+           action: STATE_SET "statename" 0.5;\n
+           action: ACTION_STOP "programname";\n
+           action: SIGNAL_EMIT "signalname" "emitter";
+    @endproperty
+*/
 static void
 st_collections_group_programs_program_action(void)
 {
@@ -4274,6 +4457,19 @@ st_collections_group_programs_program_action(void)
    }
 }
 
+/**
+    @page edcref
+    @property
+        transition
+    @parameters
+        [type] [length]
+    @effect
+        Defines how transistions occur using STATE_SET action.\n
+        Where 'type' is the style of the transistion and 'length' is a double
+        specifying the number of seconds in which to preform the transistion.\n
+        Valid types are: LINEAR, SINUSOIDAL, ACCELERATE, and DECELERATE.
+    @endproperty
+*/
 static void
 st_collections_group_programs_program_transition(void)
 {
@@ -4293,6 +4489,18 @@ st_collections_group_programs_program_transition(void)
    ep->tween.time = parse_float_range(1, 0.0, 999999999.0);
 }
 
+/**
+    @page edcref
+    @property
+        target
+    @parameters
+        [target]
+    @effect
+        Program or part on which the specified action acts. Multiple target
+        keywords may be specified, one per target. SIGNAL_EMITs do not have
+        targets.
+    @endproperty
+*/
 static void
 st_collections_group_programs_program_target(void)
 {
@@ -4332,6 +4540,18 @@ st_collections_group_programs_program_target(void)
      }
 }
 
+/**
+    @page edcref
+    @property
+        after
+    @parameters
+        [after]
+    @effect
+        Specifies a program to run after the current program completes. The
+        source and signal parameters of a program run as an "after" are ignored.
+        Multiple "after" statements can be specified per program.
+    @endproperty
+*/
 static void
 st_collections_group_programs_program_after(void)
 {

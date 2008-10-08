@@ -4,14 +4,19 @@
 #include <Evas.h>
 
 #ifdef EAPI
-#undef EAPI
+# undef EAPI
 #endif
-#ifdef _MSC_VER
-# ifdef BUILDING_DLL
-#  define EAPI __declspec(dllexport)
+
+#ifdef _WIN32
+# ifdef EFL_EDJE_BUILD
+#  ifdef DLL_EXPORT
+#   define EAPI __declspec(dllexport)
+#  else
+#   define EAPI
+#  endif /* ! DLL_EXPORT */
 # else
 #  define EAPI __declspec(dllimport)
-# endif
+# endif /* ! EFL_EDJE_BUILD */
 #else
 # ifdef __GNUC__
 #  if __GNUC__ >= 4
@@ -23,6 +28,14 @@
 #  define EAPI
 # endif
 #endif
+
+
+enum {
+   EDJE_EDIT_IMAGE_COMP_RAW,
+   EDJE_EDIT_IMAGE_COMP_USER,
+   EDJE_EDIT_IMAGE_COMP_COMP,
+   EDJE_EDIT_IMAGE_COMP_LOSSY
+};
 
 /**
  * @file
@@ -202,6 +215,53 @@ edje_edit_group_max_h_set(
    Evas_Object *obj,       ///< The edje object
    int h                   ///< The new group maximum height in pixel
 );
+
+//@}
+/******************************************************************************/
+/**************************   DATA API   **************************************/
+/******************************************************************************/
+/** @name Data API
+ *  Functions to deal with data embedded in the edje (see @ref edcref).
+ */ //@{
+
+/** Retrieves a list with the item names inside the data block **/
+EAPI Evas_List *          ///@return An Evas_List* of string (char *)containing all the data names.
+edje_edit_data_list_get(
+   Evas_Object *obj       ///< The edje object
+);
+
+/**Create a new data object in the given edje
+ * If another data with the same name exists nothing is created and FALSE is returned.
+ */
+EAPI unsigned char         ///@return TRUE on success
+edje_edit_data_add(
+   Evas_Object *obj,       ///< The edje object
+   const char *itemname,   ///< The name for the new data
+   const char *value       ///< The value for the new data
+);
+
+/**Delete the given data object from edje */
+EAPI unsigned char         ///@return TRUE on success
+edje_edit_data_del(
+   Evas_Object *obj,       ///< The edje object
+   const char *itemname    ///< The name of the data to remove
+);
+
+/** Get the data associated with the given itemname **/
+EAPI const char *         ///@return The data value
+edje_edit_data_value_get(
+   Evas_Object * obj,     ///< The edje object
+   char *itemname         ///< The name of the data item
+);
+
+/** Set the data associated with the given itemname **/
+EAPI unsigned char        ///@return TRUE on success
+edje_edit_data_value_set(
+   Evas_Object * obj,     ///< The edje object
+   const char *itemname,        ///< The name of the data item
+   const char *value            ///< The new value to set
+);
+
 
 //@}
 /******************************************************************************/
@@ -404,7 +464,7 @@ edje_edit_part_ignore_flags_set(
 /**************************   STATES API   ************************************/
 /******************************************************************************/
 /** @name States API
- *  Description of gen api 2.
+ *  Functions to deal with part states (see @ref edcref).
  */ //@{
 
 /**Get the list of all the states in the given part.*/
@@ -846,13 +906,166 @@ edje_edit_state_aspect_pref_set(
    unsigned char pref      ///< The new aspect preference to set (0=none, 1=vertical, 2=horizontal, 3=both)
 );
 
+/**Get the fill origin relative x value of a part state.*/
+EAPI double                ///@return The fill offset x relative to area
+edje_edit_state_fill_origin_relative_x_get(
+   Evas_Object *obj,       ///< The edje object
+   const char *part,       ///< The name of the part
+   const char *state       ///< The name of the 'part state' (ex. "default 0.00")
+);
+
+/**Get the fill origin relative y value of a part state.*/
+EAPI double                ///@return The fill origin y relative to area
+edje_edit_state_fill_origin_relative_y_get(
+   Evas_Object *obj,       ///< The edje object
+   const char *part,       ///< The name of the part
+   const char *state       ///< The name of the 'part state' (ex. "default 0.00")
+);
+
+/**Get the fill origin offset x value of a part state.*/
+EAPI int                   ///@return The fill origin offset x relative to area
+edje_edit_state_fill_origin_offset_x_get(
+   Evas_Object *obj,       ///< The edje object
+   const char *part,       ///< The name of the part
+   const char *state       ///< The name of the 'part state' (ex. "default 0.00")
+);
+
+/**Get the fill origin offset y value of a part state.*/
+EAPI int                   ///@return The fill origin offset y relative to area
+edje_edit_state_fill_origin_offset_y_get(
+   Evas_Object *obj,       ///< The edje object
+   const char *part,       ///< The name of the part
+   const char *state       ///< The name of the 'part state' (ex. "default 0.00")
+);
+
+/**Set the fill origin relative x value of a part state.*/
+EAPI void
+edje_edit_state_fill_origin_relative_x_set(
+   Evas_Object *obj,       ///< The edje object
+   const char *part,       ///< The name of the part
+   const char *state,      ///< The name of the 'part state' (ex. "default 0.00")
+   double x                ///< The new value to set
+);
+
+/**Set the fill origin relative y value of a part state.*/
+EAPI void
+edje_edit_state_fill_origin_relative_y_set(
+   Evas_Object *obj,       ///< The edje object
+   const char *part,       ///< The name of the part
+   const char *state,      ///< The name of the 'part state' (ex. "default 0.00")
+   double x                ///< The new value to set
+);
+
+/**Set the fill origin offset x value of a part state.*/
+EAPI void
+edje_edit_state_fill_origin_offset_x_set(
+   Evas_Object *obj,       ///< The edje object
+   const char *part,       ///< The name of the part
+   const char *state,      ///< The name of the 'part state' (ex. "default 0.00")
+   double x                ///< The new value to set
+);
+
+/**Set the fill origin offset x value of a part state.*/
+EAPI void
+edje_edit_state_fill_origin_offset_y_set(
+   Evas_Object *obj,       ///< The edje object
+   const char *part,       ///< The name of the part
+   const char *state,      ///< The name of the 'part state' (ex. "default 0.00")
+   double y                ///< The new value to set
+);
+
+/**Get the fill size relative x value of a part state.*/
+EAPI double                ///@return The fill size offset x relative to area
+edje_edit_state_fill_size_relative_x_get(
+   Evas_Object *obj,       ///< The edje object
+   const char *part,       ///< The name of the part
+   const char *state       ///< The name of the 'part state' (ex. "default 0.00")
+);
+
+/**Get the fill size relative y value of a part state.*/
+EAPI double                ///@return The fill size y relative to area
+edje_edit_state_fill_size_relative_y_get(
+   Evas_Object *obj,       ///< The edje object
+   const char *part,       ///< The name of the part
+   const char *state       ///< The name of the 'part state' (ex. "default 0.00")
+);
+
+/**Get the fill size offset x value of a part state.*/
+EAPI int                    ///@return The fill size offset x relative to area
+edje_edit_state_fill_size_offset_x_get(
+   Evas_Object *obj,       ///< The edje object
+   const char *part,       ///< The name of the part
+   const char *state       ///< The name of the 'part state' (ex. "default 0.00")
+);
+
+/**Get the fill size offset y value of a part state.*/
+EAPI int                    ///@return The fill size offset y relative to area
+edje_edit_state_fill_size_offset_y_get(
+   Evas_Object *obj,       ///< The edje object
+   const char *part,       ///< The name of the part
+   const char *state       ///< The name of the 'part state' (ex. "default 0.00")
+);
+
+/**Set the fill size relative x value of a part state.*/
+EAPI void
+edje_edit_state_fill_size_relative_x_set(
+   Evas_Object *obj,       ///< The edje object
+   const char *part,       ///< The name of the part
+   const char *state,      ///< The name of the 'part state' (ex. "default 0.00")
+   double x                ///< The new value to set
+);
+
+/**Set the fill size relative y value of a part state.*/
+EAPI void
+edje_edit_state_fill_size_relative_y_set(
+   Evas_Object *obj,       ///< The edje object
+   const char *part,       ///< The name of the part
+   const char *state,      ///< The name of the 'part state' (ex. "default 0.00")
+   double x                ///< The new value to set
+);
+
+/**Set the fill size offset x value of a part state.*/
+EAPI void
+edje_edit_state_fill_size_offset_x_set(
+   Evas_Object *obj,       ///< The edje object
+   const char *part,       ///< The name of the part
+   const char *state,      ///< The name of the 'part state' (ex. "default 0.00")
+   double x                ///< The new value to set
+);
+
+/**Set the fill size offset x value of a part state.*/
+EAPI void
+edje_edit_state_fill_size_offset_y_set(
+   Evas_Object *obj,       ///< The edje object
+   const char *part,       ///< The name of the part
+   const char *state,      ///< The name of the 'part state' (ex. "default 0.00")
+   double y                ///< The new value to set
+);
+
+/**Get the visibility of a part state.*/
+EAPI unsigned char         ///@return TRUE if the state is visible
+edje_edit_state_visible_get(
+   Evas_Object *obj,       ///< The edje object
+   const char *part,       ///< The name of the part
+   const char *state       ///< The name of the 'part state' (ex. "default 0.00")
+);
+
+/**Set the visibility of a part state.*/
+EAPI void
+edje_edit_state_visible_set(
+   Evas_Object *obj,       ///< The edje object
+   const char *part,       ///< The name of the part
+   const char *state,      ///< The name of the 'part state' (ex. "default 0.00")
+   unsigned char visible   ///< TRUE to set the state visible
+);
+
 
 //@}
 /******************************************************************************/
 /**************************   TEXT API   ************************************/
 /******************************************************************************/
 /** @name Text API
- *  Description of gen api 2.
+ *  Functions to deal with text objects (see @ref edcref).
  */ //@{
 
 /**Get the text of a part state. Remember to free the returned string with edje_edit_string_free(). */
@@ -924,11 +1137,9 @@ edje_edit_state_text_align_y_set(
 );
 
 /**Get the list of all the fonts in the given edje.
- * @return An Evas_List* of string (char *)containing all the fonts names found
- * in the edje file.
- * Use edje_edit_string_list_free() when you don't need it anymore.
+ * Use edje_edit_string_list_free() when you don't need the list anymore.
  */
-EAPI Evas_List *          ///@return A string list of all the fonts found in the edje file
+EAPI Evas_List *          ///@return An Evas_List* of string (char *)containing all the fonts names found in the edje file.
 edje_edit_fonts_list_get(
    Evas_Object *obj       ///< The edje object
 );
@@ -965,15 +1176,13 @@ edje_edit_state_font_set(
 /**************************   IMAGES API   ************************************/
 /******************************************************************************/
 /** @name Images API
- *  Description of gen api 2.
+ *  Functions to deal with image objects (see @ref edcref).
  */ //@{
 
 /**Get the list of all the images in the given edje.
- * @return An Evas_List* of string (char *)containing all the images names found
- * in the edje file.
- * Use edje_edit_string_list_free() when you don't need it anymore.
+ * Use edje_edit_string_list_free() when you don't need the list anymore.
  */
-EAPI Evas_List *          ///@return A string list containing all the images found in the edje file
+EAPI Evas_List *          ///@return An Evas_List* of string (char *)containing all the images names found in the edje file.
 edje_edit_images_list_get(
    Evas_Object *obj       ///< The edje object
 );
@@ -1017,6 +1226,20 @@ EAPI int                   ///< The ID of the givan image name
 edje_edit_image_id_get(
    Evas_Object *obj,       ///< The edje object
    const char *image_name
+);
+
+/**Get compression type for the given image.*/
+EAPI int                  ///@return One of EDJE_EDIT_IMAGE_COMP_RAW, EDJE_EDIT_IMAGE_COMP_USER, EDJE_EDIT_IMAGE_COMP_COMP or EDJE_EDIT_IMAGE_COMP_LOSSY
+edje_edit_image_compression_type_get(
+   Evas_Object *obj,      ///< The edje object
+   const char *image      ///< The name of the image
+);
+
+/**Get compression rate for the given image.*/
+EAPI int                  ///@return the compression rate if the image is EDJE_EDIT_IMAGE_COMP_LOSSY. Or < 0 on errors
+edje_edit_image_compression_rate_get(
+   Evas_Object *obj,      ///< The edje object
+   const char *image      ///< The name of the image
 );
 
 /**Get the image border of a part state. Pass NULL to any of [r,g,b,a] to get only the others.*/
@@ -1078,10 +1301,278 @@ edje_edit_state_tween_del(
 
 //@}
 /******************************************************************************/
+/*************************   SPECTRUM API   ***********************************/
+/******************************************************************************/
+/** @name Spectrum API
+ *  Functions to manage spectrum (see @ref edcref).
+ */ //@{
+
+/**Get the list of all the spectrum in the given edje object.
+ * Use edje_edit_string_list_free() when you don't need it anymore.
+ */
+EAPI Evas_List *           ///@return An Evas_List* of string(char *) containing all the spectra names.
+edje_edit_spectrum_list_get(
+   Evas_Object *obj        ///< The edje object
+);
+
+/**Add a new spectra in the given edje object.*/
+EAPI unsigned char         ///@return 1 on success, 0 otherwise
+edje_edit_spectra_add(
+   Evas_Object *obj,       ///< The edje object
+   const char* name        ///< The name of the new spectra
+);
+
+/**Delete the given spectra from the edje object.*/
+EAPI unsigned char         ///@return 1 on success, 0 otherwise
+edje_edit_spectra_del(
+   Evas_Object *obj,       ///< The edje object
+   const char* spectra     ///< The name of the spectra to delete
+);
+
+/**Change the name of the given spectra.*/
+EAPI unsigned char         ///@return 1 on success, 0 otherwise
+edje_edit_spectra_name_set(
+   Evas_Object *obj,       ///< The edje object
+   const char* spectra,    ///< The current name of the spectra
+   const char* name        ///< The new name to assign
+);
+
+/**Get the number of stops in the given spectra.*/
+EAPI int                   ///@return The number of stops, or 0 on errors
+edje_edit_spectra_stop_num_get(
+   Evas_Object *obj,       ///< The edje object
+   const char* spectra     ///< The name of the spectra
+);
+
+/**Set the number of stops in the given spectra.*/
+EAPI unsigned char         ///@return 1 on success, 0 otherwise
+edje_edit_spectra_stop_num_set(
+   Evas_Object *obj,       ///< The edje object
+   const char* spectra,    ///< The name of the spectra
+   int num                 ///< The number of stops you want
+);
+
+/**Get the colors of the given stop.*/
+EAPI unsigned char         ///@return 1 on success, 0 otherwise
+edje_edit_spectra_stop_color_get(
+   Evas_Object *obj,       ///< The edje object
+   const char* spectra,    ///< The name of the spectra
+   int stop_number,        ///< The number of the stop
+   int *r,                 ///< Where to store the red color value
+   int *g,                 ///< Where to store the green color value
+   int *b,                 ///< Where to store the blue color value
+   int *a,                 ///< Where to store the alpha color value
+   int *d                  ///< Where to store the delta stop value
+);
+
+/**Set the colors of the given stop.*/
+EAPI unsigned char         ///@return 1 on success, 0 otherwise
+edje_edit_spectra_stop_color_set(
+   Evas_Object *obj,       ///< The edje object
+   const char* spectra,    ///< The name of the spectra
+   int stop_number,        ///< The number of the stop
+   int r,                  ///< The red color value to set
+   int g,                  ///< The green color value to set
+   int b,                  ///< The blue color value to set
+   int a,                  ///< The alpha color value to set
+   int d                   ///< The delta stop value to set
+);
+
+
+//@}
+/******************************************************************************/
+/*************************   GRADIENT API   ***********************************/
+/******************************************************************************/
+/** @name Gradient API
+ *  Functions to deal with gradient objects (see @ref edcref).
+ */ //@{
+
+/**Get the type of gradient. Remember to free the string with edje_edit_string_free().*/
+EAPI const char *          ///@return The type of gradient used in state
+edje_edit_state_gradient_type_get(
+   Evas_Object *obj,       ///< The edje object
+   const char *part,       ///< The name of the part
+   const char *state       ///< The name of the 'part state' (ex. "default 0.00")
+);
+
+/**Set the type of gradient.
+ * Gradient type can be on of the following: linear, linear.diag, linear.codiag, radial, rectangular, angular, sinusoidal
+ */
+EAPI unsigned char         ///@return 1 on success, 0 otherwise
+edje_edit_state_gradient_type_set(
+   Evas_Object *obj,       ///< The edje object
+   const char *part,       ///< The name of the part
+   const char *state,      ///< The name of the 'part state' (ex. "default 0.00")
+   const char *type        ///< The type of gradient to use
+);
+
+/**Get if the current gradient use the fill properties or the gradient_rel as params.*/
+EAPI unsigned char         ///@return 1 if use fill, 0 if use gradient_rel
+edje_edit_state_gradient_use_fill_get(
+   Evas_Object *obj,       ///< The edje object
+   const char *part,       ///< The name of the part
+   const char *state       ///< The name of the 'part state' (ex. "default 0.00")
+);
+
+/**Get the spectra used by part state. Remember to free the string with edje_edit_string_free()*/
+EAPI const char *          ///@return The spectra name used in state
+edje_edit_state_gradient_spectra_get(
+   Evas_Object *obj,       ///< The edje object
+   const char *part,       ///< The name of the part
+   const char *state       ///< The name of the 'part state' (ex. "default 0.00")
+);
+
+/**Set the spectra used by part state.*/
+EAPI unsigned char         ///@return 1 on success, 0 otherwise
+edje_edit_state_gradient_spectra_set(
+   Evas_Object *obj,       ///< The edje object
+   const char *part,       ///< The name of the part
+   const char *state,      ///< The name of the 'part state' (ex. "default 0.00")
+   const char* spectra     ///< The spectra name to assign
+);
+
+/**Get the gradien rel1 relative x value */
+EAPI double                ///@return The gradien rel1 relative x value
+edje_edit_state_gradient_rel1_relative_x_get(
+   Evas_Object *obj,       ///< The edje object
+   const char *part,       ///< The name of the part
+   const char *state       ///< The name of the 'part state' (ex. "default 0.00")
+);
+
+/**Get the gradien rel1 relative y value */
+EAPI double                ///@return The gradien rel1 relative y value
+edje_edit_state_gradient_rel1_relative_y_get(
+   Evas_Object *obj,       ///< The edje object
+   const char *part,       ///< The name of the part
+   const char *state       ///< The name of the 'part state' (ex. "default 0.00")
+);
+
+/**Get the gradien rel2 relative x value */
+EAPI double                ///@return The gradien rel2 relative x value
+edje_edit_state_gradient_rel2_relative_x_get(
+   Evas_Object *obj,       ///< The edje object
+   const char *part,       ///< The name of the part
+   const char *state       ///< The name of the 'part state' (ex. "default 0.00")
+);
+
+/**Get the gradien rel2 relative y value */
+EAPI double                ///@return The gradien rel2 relative y value
+edje_edit_state_gradient_rel2_relative_y_get(
+   Evas_Object *obj,       ///< The edje object
+   const char *part,       ///< The name of the part
+   const char *state       ///< The name of the 'part state' (ex. "default 0.00")
+);
+
+/**Set the gradien rel1 relative x value */
+EAPI unsigned char         ///@return 1 on success, 0 otherwise
+edje_edit_state_gradient_rel1_relative_x_set(
+   Evas_Object *obj,       ///< The edje object
+   const char *part,       ///< The name of the part
+   const char *state,      ///< The name of the 'part state' (ex. "default 0.00")
+   double val
+);
+
+/**Set the gradien rel1 relative y value */
+EAPI unsigned char         ///@return 1 on success, 0 otherwise
+edje_edit_state_gradient_rel1_relative_y_set(
+   Evas_Object *obj,       ///< The edje object
+   const char *part,       ///< The name of the part
+   const char *state,      ///< The name of the 'part state' (ex. "default 0.00")
+   double val
+);
+
+/**Set the gradien rel2 relative x value */
+EAPI unsigned char         ///@return 1 on success, 0 otherwise
+edje_edit_state_gradient_rel2_relative_x_set(
+   Evas_Object *obj,       ///< The edje object
+   const char *part,       ///< The name of the part
+   const char *state,      ///< The name of the 'part state' (ex. "default 0.00")
+   double val
+);
+
+/**Set the gradien rel2 relative y value */
+EAPI unsigned char         ///@return 1 on success, 0 otherwise
+edje_edit_state_gradient_rel2_relative_y_set(
+   Evas_Object *obj,       ///< The edje object
+   const char *part,       ///< The name of the part
+   const char *state,      ///< The name of the 'part state' (ex. "default 0.00")
+   double val
+);
+
+/**Get the gradien rel1 offset x value */
+EAPI int                   ///@return The gradient rel1 offset x value
+edje_edit_state_gradient_rel1_offset_x_get(
+   Evas_Object *obj,       ///< The edje object
+   const char *part,       ///< The name of the part
+   const char *state       ///< The name of the 'part state' (ex. "default 0.00")
+);
+
+/**Get the gradien rel1 offset y value */
+EAPI int                   ///@return The gradient rel1 offset y value
+edje_edit_state_gradient_rel1_offset_y_get(
+   Evas_Object *obj,       ///< The edje object
+   const char *part,       ///< The name of the part
+   const char *state       ///< The name of the 'part state' (ex. "default 0.00")
+);
+
+/**Get the gradien rel2 offset x value */
+EAPI int                   ///@return The gradient rel2 offset x value
+edje_edit_state_gradient_rel2_offset_x_get(
+   Evas_Object *obj,       ///< The edje object
+   const char *part,       ///< The name of the part
+   const char *state       ///< The name of the 'part state' (ex. "default 0.00")
+);
+
+/**Get the gradien rel2 offset y value */
+EAPI int                   ///@return The gradient rel2 offset y value
+edje_edit_state_gradient_rel2_offset_y_get(
+   Evas_Object *obj,       ///< The edje object
+   const char *part,       ///< The name of the part
+   const char *state       ///< The name of the 'part state' (ex. "default 0.00")
+);
+
+/**Set the gradien rel1 offset x value */
+EAPI unsigned char         ///@return 1 on success, 0 otherwise
+edje_edit_state_gradient_rel1_offset_x_set(
+   Evas_Object *obj,       ///< The edje object
+   const char *part,       ///< The name of the part
+   const char *state,      ///< The name of the 'part state' (ex. "default 0.00")
+   int val
+);
+
+/**Set the gradien rel1 offset y value */
+EAPI unsigned char         ///@return 1 on success, 0 otherwise
+edje_edit_state_gradient_rel1_offset_y_set(
+   Evas_Object *obj,       ///< The edje object
+   const char *part,       ///< The name of the part
+   const char *state,      ///< The name of the 'part state' (ex. "default 0.00")
+   int val
+);
+
+/**Set the gradien rel2 offset x value */
+EAPI unsigned char         ///@return 1 on success, 0 otherwise
+edje_edit_state_gradient_rel2_offset_x_set(
+   Evas_Object *obj,       ///< The edje object
+   const char *part,       ///< The name of the part
+   const char *state,      ///< The name of the 'part state' (ex. "default 0.00")
+   int val
+);
+
+/**Set the gradien rel2 offset y value */
+EAPI unsigned char         ///@return 1 on success, 0 otherwise
+edje_edit_state_gradient_rel2_offset_y_set(
+   Evas_Object *obj,       ///< The edje object
+   const char *part,       ///< The name of the part
+   const char *state,      ///< The name of the 'part state' (ex. "default 0.00")
+   int val
+);
+
+//@}
+/******************************************************************************/
 /*************************   PROGRAMS API   ***********************************/
 /******************************************************************************/
 /** @name Programs API
- *  Description of gen api 2.
+ *  Functions to deal with programs (see @ref edcref).
  */ //@{
 
 /**Get the list of all the programs in the given edje object.
@@ -1389,7 +1880,7 @@ edje_edit_program_transition_time_set(
 /**************************   SCRIPTS API   ***********************************/
 /******************************************************************************/
 /** @name Scripts API
- *  Description of gen api 2.
+ *  Functions to deal with embryo scripts (see @ref edcref).
  */ //@{
 EAPI const char* edje_edit_script_get(Evas_Object *obj);
 
