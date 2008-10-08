@@ -44,7 +44,7 @@ ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/configure.in
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
-mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
+mkinstalldirs = $(install_sh) -d
 CONFIG_HEADER = $(top_builddir)/config.h
 CONFIG_CLEAN_FILES =
 am__vpath_adj_setup = srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`;
@@ -56,12 +56,16 @@ am__strip_dir = `echo $$p | sed -e 's|^.*/||'`;
 am__installdirs = "$(DESTDIR)$(libdir)" "$(DESTDIR)$(includedir)"
 libLTLIBRARIES_INSTALL = $(INSTALL)
 LTLIBRARIES = $(lib_LTLIBRARIES)
-am_libedje_la_OBJECTS = edje_calc.lo edje_callbacks.lo edje_data.lo \
-	edje_embryo.lo edje_load.lo edje_main.lo edje_misc.lo \
-	edje_program.lo edje_smart.lo edje_text.lo edje_util.lo \
-	edje_var.lo edje_container.lo edje_message_queue.lo \
-	edje_cache.lo edje_match.lo edje_textblock_styles.lo \
-	edje_edit.lo
+am_libedje_la_OBJECTS = libedje_la-edje_calc.lo \
+	libedje_la-edje_callbacks.lo libedje_la-edje_data.lo \
+	libedje_la-edje_embryo.lo libedje_la-edje_load.lo \
+	libedje_la-edje_main.lo libedje_la-edje_misc.lo \
+	libedje_la-edje_program.lo libedje_la-edje_smart.lo \
+	libedje_la-edje_text.lo libedje_la-edje_util.lo \
+	libedje_la-edje_var.lo libedje_la-edje_container.lo \
+	libedje_la-edje_message_queue.lo libedje_la-edje_cache.lo \
+	libedje_la-edje_match.lo libedje_la-edje_textblock_styles.lo \
+	libedje_la-edje_edit.lo libedje_la-edje_script_only.lo
 libedje_la_OBJECTS = $(am_libedje_la_OBJECTS)
 DEFAULT_INCLUDES = -I. -I$(srcdir) -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/depcomp
@@ -96,8 +100,6 @@ BUILD_EDJE_CC_FALSE = @BUILD_EDJE_CC_FALSE@
 BUILD_EDJE_CC_TRUE = @BUILD_EDJE_CC_TRUE@
 BUILD_EDJE_DECC_FALSE = @BUILD_EDJE_DECC_FALSE@
 BUILD_EDJE_DECC_TRUE = @BUILD_EDJE_DECC_TRUE@
-BUILD_EDJE_THUMB_FALSE = @BUILD_EDJE_THUMB_FALSE@
-BUILD_EDJE_THUMB_TRUE = @BUILD_EDJE_THUMB_TRUE@
 CC = @CC@
 CCDEPMODE = @CCDEPMODE@
 CFLAGS = @CFLAGS@
@@ -112,14 +114,24 @@ ECHO = @ECHO@
 ECHO_C = @ECHO_C@
 ECHO_N = @ECHO_N@
 ECHO_T = @ECHO_T@
+ECORE_EVAS_CFLAGS = @ECORE_EVAS_CFLAGS@
+ECORE_EVAS_LIBS = @ECORE_EVAS_LIBS@
+ECORE_FILE_CFLAGS = @ECORE_FILE_CFLAGS@
+ECORE_FILE_LIBS = @ECORE_FILE_LIBS@
 EDJE_CC_PRG = @EDJE_CC_PRG@
 EDJE_CFLAGS = @EDJE_CFLAGS@
 EDJE_DECC_PRG = @EDJE_DECC_PRG@
 EDJE_LIBS = @EDJE_LIBS@
+EDJE_PROGRAM_CACHE_FALSE = @EDJE_PROGRAM_CACHE_FALSE@
+EDJE_PROGRAM_CACHE_TRUE = @EDJE_PROGRAM_CACHE_TRUE@
 EDJE_RECC_PRG = @EDJE_RECC_PRG@
 EGREP = @EGREP@
+EVIL_CFLAGS = @EVIL_CFLAGS@
+EVIL_LIBS = @EVIL_LIBS@
 EXEEXT = @EXEEXT@
 GREP = @GREP@
+HAVE_PYTHON_FALSE = @HAVE_PYTHON_FALSE@
+HAVE_PYTHON_TRUE = @HAVE_PYTHON_TRUE@
 INSTALL_DATA = @INSTALL_DATA@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@
 INSTALL_SCRIPT = @INSTALL_SCRIPT@
@@ -142,12 +154,18 @@ PACKAGE_TARNAME = @PACKAGE_TARNAME@
 PACKAGE_VERSION = @PACKAGE_VERSION@
 PATH_SEPARATOR = @PATH_SEPARATOR@
 PKG_CONFIG = @PKG_CONFIG@
+PYTHON = @PYTHON@
+PYTHON_EXEC_PREFIX = @PYTHON_EXEC_PREFIX@
+PYTHON_PLATFORM = @PYTHON_PLATFORM@
+PYTHON_PREFIX = @PYTHON_PREFIX@
+PYTHON_VERSION = @PYTHON_VERSION@
 RANLIB = @RANLIB@
 SED = @SED@
 SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
 STRIP = @STRIP@
 VERSION = @VERSION@
+WIN32_CFLAGS = @WIN32_CFLAGS@
 ac_ct_CC = @ac_ct_CC@
 am__fastdepCC_FALSE = @am__fastdepCC_FALSE@
 am__fastdepCC_TRUE = @am__fastdepCC_TRUE@
@@ -162,12 +180,10 @@ build_alias = @build_alias@
 build_cpu = @build_cpu@
 build_os = @build_os@
 build_vendor = @build_vendor@
-create_shared_lib = @create_shared_lib@
 datadir = @datadir@
 datarootdir = @datarootdir@
 docdir = @docdir@
 dvidir = @dvidir@
-edje_decc_lib = @edje_decc_lib@
 exec_prefix = @exec_prefix@
 host = @host@
 host_alias = @host_alias@
@@ -182,13 +198,19 @@ libdir = @libdir@
 libexecdir = @libexecdir@
 localedir = @localedir@
 localstatedir = @localstatedir@
+lt_enable_auto_import = @lt_enable_auto_import@
+lt_no_undefined = @lt_no_undefined@
 mandir = @mandir@
 mkdir_p = @mkdir_p@
 oldincludedir = @oldincludedir@
 pdfdir = @pdfdir@
+pkgpyexecdir = @pkgpyexecdir@
+pkgpythondir = @pkgpythondir@
 prefix = @prefix@
 program_transform_name = @program_transform_name@
 psdir = @psdir@
+pyexecdir = @pyexecdir@
+pythondir = @pythondir@
 sbindir = @sbindir@
 sharedstatedir = @sharedstatedir@
 sysconfdir = @sysconfdir@
@@ -204,7 +226,8 @@ AM_CPPFLAGS = \
 -DPACKAGE_BIN_DIR=\"$(bindir)\" \
 -DPACKAGE_LIB_DIR=\"$(libdir)\" \
 -DPACKAGE_DATA_DIR=\"$(datadir)/$(PACKAGE)\" \
-@EDJE_CFLAGS@
+@EDJE_CFLAGS@ \
+@EVIL_CFLAGS@
 
 lib_LTLIBRARIES = \
 libedje.la
@@ -233,11 +256,13 @@ edje_private.h \
 edje_cache.c \
 edje_match.c \
 edje_textblock_styles.c \
-edje_edit.c
+edje_edit.c \
+edje_script_only.c
 
-libedje_la_LIBADD = -lm @EDJE_LIBS@
+libedje_la_CFLAGS = @WIN32_CFLAGS@
+libedje_la_LIBADD = @EDJE_LIBS@ -lm
 libedje_la_DEPENDENCIES = $(top_builddir)/config.h
-libedje_la_LDFLAGS = @create_shared_lib@ -version-info @version_info@
+libedje_la_LDFLAGS = @lt_no_undefined@ @lt_enable_auto_import@ -version-info @version_info@
 all: all-am
 
 .SUFFIXES:
@@ -307,24 +332,25 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/edje_cache.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/edje_calc.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/edje_callbacks.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/edje_container.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/edje_data.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/edje_edit.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/edje_embryo.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/edje_load.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/edje_main.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/edje_match.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/edje_message_queue.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/edje_misc.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/edje_program.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/edje_smart.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/edje_text.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/edje_textblock_styles.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/edje_util.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/edje_var.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libedje_la-edje_cache.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libedje_la-edje_calc.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libedje_la-edje_callbacks.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libedje_la-edje_container.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libedje_la-edje_data.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libedje_la-edje_edit.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libedje_la-edje_embryo.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libedje_la-edje_load.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libedje_la-edje_main.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libedje_la-edje_match.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libedje_la-edje_message_queue.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libedje_la-edje_misc.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libedje_la-edje_program.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libedje_la-edje_script_only.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libedje_la-edje_smart.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libedje_la-edje_text.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libedje_la-edje_textblock_styles.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libedje_la-edje_util.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libedje_la-edje_var.Plo@am__quote@
 
 .c.o:
 @am__fastdepCC_TRUE@	if $(COMPILE) -MT $@ -MD -MP -MF "$(DEPDIR)/$*.Tpo" -c -o $@ $<; \
@@ -346,6 +372,139 @@ distclean-compile:
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$<' object='$@' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LTCOMPILE) -c -o $@ $<
+
+libedje_la-edje_calc.lo: edje_calc.c
+@am__fastdepCC_TRUE@	if $(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libedje_la_CFLAGS) $(CFLAGS) -MT libedje_la-edje_calc.lo -MD -MP -MF "$(DEPDIR)/libedje_la-edje_calc.Tpo" -c -o libedje_la-edje_calc.lo `test -f 'edje_calc.c' || echo '$(srcdir)/'`edje_calc.c; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/libedje_la-edje_calc.Tpo" "$(DEPDIR)/libedje_la-edje_calc.Plo"; else rm -f "$(DEPDIR)/libedje_la-edje_calc.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='edje_calc.c' object='libedje_la-edje_calc.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libedje_la_CFLAGS) $(CFLAGS) -c -o libedje_la-edje_calc.lo `test -f 'edje_calc.c' || echo '$(srcdir)/'`edje_calc.c
+
+libedje_la-edje_callbacks.lo: edje_callbacks.c
+@am__fastdepCC_TRUE@	if $(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libedje_la_CFLAGS) $(CFLAGS) -MT libedje_la-edje_callbacks.lo -MD -MP -MF "$(DEPDIR)/libedje_la-edje_callbacks.Tpo" -c -o libedje_la-edje_callbacks.lo `test -f 'edje_callbacks.c' || echo '$(srcdir)/'`edje_callbacks.c; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/libedje_la-edje_callbacks.Tpo" "$(DEPDIR)/libedje_la-edje_callbacks.Plo"; else rm -f "$(DEPDIR)/libedje_la-edje_callbacks.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='edje_callbacks.c' object='libedje_la-edje_callbacks.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libedje_la_CFLAGS) $(CFLAGS) -c -o libedje_la-edje_callbacks.lo `test -f 'edje_callbacks.c' || echo '$(srcdir)/'`edje_callbacks.c
+
+libedje_la-edje_data.lo: edje_data.c
+@am__fastdepCC_TRUE@	if $(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libedje_la_CFLAGS) $(CFLAGS) -MT libedje_la-edje_data.lo -MD -MP -MF "$(DEPDIR)/libedje_la-edje_data.Tpo" -c -o libedje_la-edje_data.lo `test -f 'edje_data.c' || echo '$(srcdir)/'`edje_data.c; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/libedje_la-edje_data.Tpo" "$(DEPDIR)/libedje_la-edje_data.Plo"; else rm -f "$(DEPDIR)/libedje_la-edje_data.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='edje_data.c' object='libedje_la-edje_data.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libedje_la_CFLAGS) $(CFLAGS) -c -o libedje_la-edje_data.lo `test -f 'edje_data.c' || echo '$(srcdir)/'`edje_data.c
+
+libedje_la-edje_embryo.lo: edje_embryo.c
+@am__fastdepCC_TRUE@	if $(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libedje_la_CFLAGS) $(CFLAGS) -MT libedje_la-edje_embryo.lo -MD -MP -MF "$(DEPDIR)/libedje_la-edje_embryo.Tpo" -c -o libedje_la-edje_embryo.lo `test -f 'edje_embryo.c' || echo '$(srcdir)/'`edje_embryo.c; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/libedje_la-edje_embryo.Tpo" "$(DEPDIR)/libedje_la-edje_embryo.Plo"; else rm -f "$(DEPDIR)/libedje_la-edje_embryo.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='edje_embryo.c' object='libedje_la-edje_embryo.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libedje_la_CFLAGS) $(CFLAGS) -c -o libedje_la-edje_embryo.lo `test -f 'edje_embryo.c' || echo '$(srcdir)/'`edje_embryo.c
+
+libedje_la-edje_load.lo: edje_load.c
+@am__fastdepCC_TRUE@	if $(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libedje_la_CFLAGS) $(CFLAGS) -MT libedje_la-edje_load.lo -MD -MP -MF "$(DEPDIR)/libedje_la-edje_load.Tpo" -c -o libedje_la-edje_load.lo `test -f 'edje_load.c' || echo '$(srcdir)/'`edje_load.c; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/libedje_la-edje_load.Tpo" "$(DEPDIR)/libedje_la-edje_load.Plo"; else rm -f "$(DEPDIR)/libedje_la-edje_load.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='edje_load.c' object='libedje_la-edje_load.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libedje_la_CFLAGS) $(CFLAGS) -c -o libedje_la-edje_load.lo `test -f 'edje_load.c' || echo '$(srcdir)/'`edje_load.c
+
+libedje_la-edje_main.lo: edje_main.c
+@am__fastdepCC_TRUE@	if $(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libedje_la_CFLAGS) $(CFLAGS) -MT libedje_la-edje_main.lo -MD -MP -MF "$(DEPDIR)/libedje_la-edje_main.Tpo" -c -o libedje_la-edje_main.lo `test -f 'edje_main.c' || echo '$(srcdir)/'`edje_main.c; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/libedje_la-edje_main.Tpo" "$(DEPDIR)/libedje_la-edje_main.Plo"; else rm -f "$(DEPDIR)/libedje_la-edje_main.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='edje_main.c' object='libedje_la-edje_main.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libedje_la_CFLAGS) $(CFLAGS) -c -o libedje_la-edje_main.lo `test -f 'edje_main.c' || echo '$(srcdir)/'`edje_main.c
+
+libedje_la-edje_misc.lo: edje_misc.c
+@am__fastdepCC_TRUE@	if $(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libedje_la_CFLAGS) $(CFLAGS) -MT libedje_la-edje_misc.lo -MD -MP -MF "$(DEPDIR)/libedje_la-edje_misc.Tpo" -c -o libedje_la-edje_misc.lo `test -f 'edje_misc.c' || echo '$(srcdir)/'`edje_misc.c; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/libedje_la-edje_misc.Tpo" "$(DEPDIR)/libedje_la-edje_misc.Plo"; else rm -f "$(DEPDIR)/libedje_la-edje_misc.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='edje_misc.c' object='libedje_la-edje_misc.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libedje_la_CFLAGS) $(CFLAGS) -c -o libedje_la-edje_misc.lo `test -f 'edje_misc.c' || echo '$(srcdir)/'`edje_misc.c
+
+libedje_la-edje_program.lo: edje_program.c
+@am__fastdepCC_TRUE@	if $(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libedje_la_CFLAGS) $(CFLAGS) -MT libedje_la-edje_program.lo -MD -MP -MF "$(DEPDIR)/libedje_la-edje_program.Tpo" -c -o libedje_la-edje_program.lo `test -f 'edje_program.c' || echo '$(srcdir)/'`edje_program.c; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/libedje_la-edje_program.Tpo" "$(DEPDIR)/libedje_la-edje_program.Plo"; else rm -f "$(DEPDIR)/libedje_la-edje_program.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='edje_program.c' object='libedje_la-edje_program.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libedje_la_CFLAGS) $(CFLAGS) -c -o libedje_la-edje_program.lo `test -f 'edje_program.c' || echo '$(srcdir)/'`edje_program.c
+
+libedje_la-edje_smart.lo: edje_smart.c
+@am__fastdepCC_TRUE@	if $(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libedje_la_CFLAGS) $(CFLAGS) -MT libedje_la-edje_smart.lo -MD -MP -MF "$(DEPDIR)/libedje_la-edje_smart.Tpo" -c -o libedje_la-edje_smart.lo `test -f 'edje_smart.c' || echo '$(srcdir)/'`edje_smart.c; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/libedje_la-edje_smart.Tpo" "$(DEPDIR)/libedje_la-edje_smart.Plo"; else rm -f "$(DEPDIR)/libedje_la-edje_smart.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='edje_smart.c' object='libedje_la-edje_smart.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libedje_la_CFLAGS) $(CFLAGS) -c -o libedje_la-edje_smart.lo `test -f 'edje_smart.c' || echo '$(srcdir)/'`edje_smart.c
+
+libedje_la-edje_text.lo: edje_text.c
+@am__fastdepCC_TRUE@	if $(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libedje_la_CFLAGS) $(CFLAGS) -MT libedje_la-edje_text.lo -MD -MP -MF "$(DEPDIR)/libedje_la-edje_text.Tpo" -c -o libedje_la-edje_text.lo `test -f 'edje_text.c' || echo '$(srcdir)/'`edje_text.c; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/libedje_la-edje_text.Tpo" "$(DEPDIR)/libedje_la-edje_text.Plo"; else rm -f "$(DEPDIR)/libedje_la-edje_text.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='edje_text.c' object='libedje_la-edje_text.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libedje_la_CFLAGS) $(CFLAGS) -c -o libedje_la-edje_text.lo `test -f 'edje_text.c' || echo '$(srcdir)/'`edje_text.c
+
+libedje_la-edje_util.lo: edje_util.c
+@am__fastdepCC_TRUE@	if $(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libedje_la_CFLAGS) $(CFLAGS) -MT libedje_la-edje_util.lo -MD -MP -MF "$(DEPDIR)/libedje_la-edje_util.Tpo" -c -o libedje_la-edje_util.lo `test -f 'edje_util.c' || echo '$(srcdir)/'`edje_util.c; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/libedje_la-edje_util.Tpo" "$(DEPDIR)/libedje_la-edje_util.Plo"; else rm -f "$(DEPDIR)/libedje_la-edje_util.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='edje_util.c' object='libedje_la-edje_util.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libedje_la_CFLAGS) $(CFLAGS) -c -o libedje_la-edje_util.lo `test -f 'edje_util.c' || echo '$(srcdir)/'`edje_util.c
+
+libedje_la-edje_var.lo: edje_var.c
+@am__fastdepCC_TRUE@	if $(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libedje_la_CFLAGS) $(CFLAGS) -MT libedje_la-edje_var.lo -MD -MP -MF "$(DEPDIR)/libedje_la-edje_var.Tpo" -c -o libedje_la-edje_var.lo `test -f 'edje_var.c' || echo '$(srcdir)/'`edje_var.c; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/libedje_la-edje_var.Tpo" "$(DEPDIR)/libedje_la-edje_var.Plo"; else rm -f "$(DEPDIR)/libedje_la-edje_var.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='edje_var.c' object='libedje_la-edje_var.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libedje_la_CFLAGS) $(CFLAGS) -c -o libedje_la-edje_var.lo `test -f 'edje_var.c' || echo '$(srcdir)/'`edje_var.c
+
+libedje_la-edje_container.lo: edje_container.c
+@am__fastdepCC_TRUE@	if $(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libedje_la_CFLAGS) $(CFLAGS) -MT libedje_la-edje_container.lo -MD -MP -MF "$(DEPDIR)/libedje_la-edje_container.Tpo" -c -o libedje_la-edje_container.lo `test -f 'edje_container.c' || echo '$(srcdir)/'`edje_container.c; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/libedje_la-edje_container.Tpo" "$(DEPDIR)/libedje_la-edje_container.Plo"; else rm -f "$(DEPDIR)/libedje_la-edje_container.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='edje_container.c' object='libedje_la-edje_container.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libedje_la_CFLAGS) $(CFLAGS) -c -o libedje_la-edje_container.lo `test -f 'edje_container.c' || echo '$(srcdir)/'`edje_container.c
+
+libedje_la-edje_message_queue.lo: edje_message_queue.c
+@am__fastdepCC_TRUE@	if $(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libedje_la_CFLAGS) $(CFLAGS) -MT libedje_la-edje_message_queue.lo -MD -MP -MF "$(DEPDIR)/libedje_la-edje_message_queue.Tpo" -c -o libedje_la-edje_message_queue.lo `test -f 'edje_message_queue.c' || echo '$(srcdir)/'`edje_message_queue.c; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/libedje_la-edje_message_queue.Tpo" "$(DEPDIR)/libedje_la-edje_message_queue.Plo"; else rm -f "$(DEPDIR)/libedje_la-edje_message_queue.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='edje_message_queue.c' object='libedje_la-edje_message_queue.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libedje_la_CFLAGS) $(CFLAGS) -c -o libedje_la-edje_message_queue.lo `test -f 'edje_message_queue.c' || echo '$(srcdir)/'`edje_message_queue.c
+
+libedje_la-edje_cache.lo: edje_cache.c
+@am__fastdepCC_TRUE@	if $(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libedje_la_CFLAGS) $(CFLAGS) -MT libedje_la-edje_cache.lo -MD -MP -MF "$(DEPDIR)/libedje_la-edje_cache.Tpo" -c -o libedje_la-edje_cache.lo `test -f 'edje_cache.c' || echo '$(srcdir)/'`edje_cache.c; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/libedje_la-edje_cache.Tpo" "$(DEPDIR)/libedje_la-edje_cache.Plo"; else rm -f "$(DEPDIR)/libedje_la-edje_cache.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='edje_cache.c' object='libedje_la-edje_cache.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libedje_la_CFLAGS) $(CFLAGS) -c -o libedje_la-edje_cache.lo `test -f 'edje_cache.c' || echo '$(srcdir)/'`edje_cache.c
+
+libedje_la-edje_match.lo: edje_match.c
+@am__fastdepCC_TRUE@	if $(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libedje_la_CFLAGS) $(CFLAGS) -MT libedje_la-edje_match.lo -MD -MP -MF "$(DEPDIR)/libedje_la-edje_match.Tpo" -c -o libedje_la-edje_match.lo `test -f 'edje_match.c' || echo '$(srcdir)/'`edje_match.c; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/libedje_la-edje_match.Tpo" "$(DEPDIR)/libedje_la-edje_match.Plo"; else rm -f "$(DEPDIR)/libedje_la-edje_match.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='edje_match.c' object='libedje_la-edje_match.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libedje_la_CFLAGS) $(CFLAGS) -c -o libedje_la-edje_match.lo `test -f 'edje_match.c' || echo '$(srcdir)/'`edje_match.c
+
+libedje_la-edje_textblock_styles.lo: edje_textblock_styles.c
+@am__fastdepCC_TRUE@	if $(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libedje_la_CFLAGS) $(CFLAGS) -MT libedje_la-edje_textblock_styles.lo -MD -MP -MF "$(DEPDIR)/libedje_la-edje_textblock_styles.Tpo" -c -o libedje_la-edje_textblock_styles.lo `test -f 'edje_textblock_styles.c' || echo '$(srcdir)/'`edje_textblock_styles.c; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/libedje_la-edje_textblock_styles.Tpo" "$(DEPDIR)/libedje_la-edje_textblock_styles.Plo"; else rm -f "$(DEPDIR)/libedje_la-edje_textblock_styles.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='edje_textblock_styles.c' object='libedje_la-edje_textblock_styles.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libedje_la_CFLAGS) $(CFLAGS) -c -o libedje_la-edje_textblock_styles.lo `test -f 'edje_textblock_styles.c' || echo '$(srcdir)/'`edje_textblock_styles.c
+
+libedje_la-edje_edit.lo: edje_edit.c
+@am__fastdepCC_TRUE@	if $(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libedje_la_CFLAGS) $(CFLAGS) -MT libedje_la-edje_edit.lo -MD -MP -MF "$(DEPDIR)/libedje_la-edje_edit.Tpo" -c -o libedje_la-edje_edit.lo `test -f 'edje_edit.c' || echo '$(srcdir)/'`edje_edit.c; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/libedje_la-edje_edit.Tpo" "$(DEPDIR)/libedje_la-edje_edit.Plo"; else rm -f "$(DEPDIR)/libedje_la-edje_edit.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='edje_edit.c' object='libedje_la-edje_edit.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libedje_la_CFLAGS) $(CFLAGS) -c -o libedje_la-edje_edit.lo `test -f 'edje_edit.c' || echo '$(srcdir)/'`edje_edit.c
+
+libedje_la-edje_script_only.lo: edje_script_only.c
+@am__fastdepCC_TRUE@	if $(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libedje_la_CFLAGS) $(CFLAGS) -MT libedje_la-edje_script_only.lo -MD -MP -MF "$(DEPDIR)/libedje_la-edje_script_only.Tpo" -c -o libedje_la-edje_script_only.lo `test -f 'edje_script_only.c' || echo '$(srcdir)/'`edje_script_only.c; \
+@am__fastdepCC_TRUE@	then mv -f "$(DEPDIR)/libedje_la-edje_script_only.Tpo" "$(DEPDIR)/libedje_la-edje_script_only.Plo"; else rm -f "$(DEPDIR)/libedje_la-edje_script_only.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='edje_script_only.c' object='libedje_la-edje_script_only.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL) --tag=CC --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libedje_la_CFLAGS) $(CFLAGS) -c -o libedje_la-edje_script_only.lo `test -f 'edje_script_only.c' || echo '$(srcdir)/'`edje_script_only.c
 
 mostlyclean-libtool:
 	-rm -f *.lo

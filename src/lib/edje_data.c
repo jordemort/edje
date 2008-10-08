@@ -1,4 +1,7 @@
-#include "Edje.h"
+/*
+ * vim:ts=8:sw=3:sts=8:noexpandtab:cino=>5n-3f0^-2{2
+ */
+
 #include "edje_private.h"
 
 EAPI Eet_Data_Descriptor *_edje_edd_edje_file = NULL;
@@ -78,15 +81,15 @@ _edje_edd_setup(void)
    eddc.version = EET_DATA_DESCRIPTOR_CLASS_VERSION;
    eddc.func.mem_alloc = NULL;
    eddc.func.mem_free = NULL;
-   eddc.func.str_alloc = evas_stringshare_add;
+   eddc.func.str_alloc = (char *(*)(const char *))evas_stringshare_add;
    eddc.func.str_free = evas_stringshare_del;
-   eddc.func.list_next = evas_list_next;
-   eddc.func.list_append = evas_list_append;
-   eddc.func.list_data = evas_list_data;
-   eddc.func.list_free = evas_list_free;
-   eddc.func.hash_foreach = evas_hash_foreach;
-   eddc.func.hash_add = evas_hash_add;
-   eddc.func.hash_free = evas_hash_free;
+   eddc.func.list_next = (void *(*)(void *))evas_list_next;
+   eddc.func.list_append = (void *(*)(void *, void *))evas_list_append;
+   eddc.func.list_data = (void *(*)(void *))evas_list_data;
+   eddc.func.list_free = (void *(*)(void *))evas_list_free;
+   eddc.func.hash_foreach = (void (*)(void *, int (*)(void *, const char *, void *, void *), void *))evas_hash_foreach;
+   eddc.func.hash_add = (void *(*)(void *, const char *, void *))evas_hash_add;
+   eddc.func.hash_free = (void (*)(void *))evas_hash_free;
    eddc.func.str_direct_alloc = _edje_str_direct_alloc;
    eddc.func.str_direct_free = _edje_str_direct_free;
 
@@ -354,13 +357,14 @@ _edje_edd_setup(void)
      eet_data_descriptor3_new(&eddc);
    EET_DATA_DESCRIPTOR_ADD_BASIC(_edje_edd_edje_part, Edje_Part, "name", name, EET_T_STRING);
    EET_DATA_DESCRIPTOR_ADD_BASIC(_edje_edd_edje_part, Edje_Part, "id", id, EET_T_INT);
-   EET_DATA_DESCRIPTOR_ADD_BASIC(_edje_edd_edje_part, Edje_Part, "type", type, EET_T_CHAR);
-   EET_DATA_DESCRIPTOR_ADD_BASIC(_edje_edd_edje_part, Edje_Part, "effect", effect, EET_T_CHAR);
-   EET_DATA_DESCRIPTOR_ADD_BASIC(_edje_edd_edje_part, Edje_Part, "mouse_events", mouse_events, EET_T_CHAR);
-   EET_DATA_DESCRIPTOR_ADD_BASIC(_edje_edd_edje_part, Edje_Part, "repeat_events", repeat_events, EET_T_CHAR);
+   EET_DATA_DESCRIPTOR_ADD_BASIC(_edje_edd_edje_part, Edje_Part, "type", type, EET_T_UCHAR);
+   EET_DATA_DESCRIPTOR_ADD_BASIC(_edje_edd_edje_part, Edje_Part, "effect", effect, EET_T_UCHAR);
+   EET_DATA_DESCRIPTOR_ADD_BASIC(_edje_edd_edje_part, Edje_Part, "mouse_events", mouse_events, EET_T_UCHAR);
+   EET_DATA_DESCRIPTOR_ADD_BASIC(_edje_edd_edje_part, Edje_Part, "repeat_events", repeat_events, EET_T_UCHAR);
    EET_DATA_DESCRIPTOR_ADD_BASIC(_edje_edd_edje_part, Edje_Part, "ignore_flags", ignore_flags, EET_T_INT);
-   EET_DATA_DESCRIPTOR_ADD_BASIC(_edje_edd_edje_part, Edje_Part, "pointer_mode", pointer_mode, EET_T_CHAR);
-   EET_DATA_DESCRIPTOR_ADD_BASIC(_edje_edd_edje_part, Edje_Part, "precise_is_inside", precise_is_inside, EET_T_CHAR);
+   EET_DATA_DESCRIPTOR_ADD_BASIC(_edje_edd_edje_part, Edje_Part, "scale", scale, EET_T_UCHAR);
+   EET_DATA_DESCRIPTOR_ADD_BASIC(_edje_edd_edje_part, Edje_Part, "pointer_mode", pointer_mode, EET_T_UCHAR);
+   EET_DATA_DESCRIPTOR_ADD_BASIC(_edje_edd_edje_part, Edje_Part, "precise_is_inside", precise_is_inside, EET_T_UCHAR);
    EET_DATA_DESCRIPTOR_ADD_BASIC(_edje_edd_edje_part, Edje_Part, "clip_to_id", clip_to_id, EET_T_INT);
    EET_DATA_DESCRIPTOR_ADD_BASIC(_edje_edd_edje_part, Edje_Part, "use_alternate_font_metrics", use_alternate_font_metrics, EET_T_UCHAR);
    EET_DATA_DESCRIPTOR_ADD_SUB(_edje_edd_edje_part, Edje_Part, "default_desc", default_desc, _edje_edd_edje_part_description);
@@ -387,4 +391,5 @@ _edje_edd_setup(void)
    EET_DATA_DESCRIPTOR_ADD_BASIC(_edje_edd_edje_part_collection, Edje_Part_Collection, "prop.max.w", prop.max.w, EET_T_INT);
    EET_DATA_DESCRIPTOR_ADD_BASIC(_edje_edd_edje_part_collection, Edje_Part_Collection, "prop.max.h", prop.max.h, EET_T_INT);
    EET_DATA_DESCRIPTOR_ADD_BASIC(_edje_edd_edje_part_collection, Edje_Part_Collection, "id", id, EET_T_INT);
+   EET_DATA_DESCRIPTOR_ADD_BASIC(_edje_edd_edje_part_collection, Edje_Part_Collection, "script_only", script_only, EET_T_UCHAR);
 }

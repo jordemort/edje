@@ -1,3 +1,41 @@
+/* ************************** */
+/* This is for script-only objects */
+/* ************************** */
+
+native e_obj_del(obj);
+
+native e_obj_rect_add();
+
+native e_obj_show(obj);
+native e_obj_hide(obj);
+native e_obj_move(obj, x, y);
+native e_obj_resize(obj, w, h);
+native e_obj_geometry_set(obj, x, y, w, h);
+native e_obj_geometry_get(obj, &x, &y, &w, &h);
+native e_obj_color_set(obj, r, g, b, a);
+native e_obj_color_get(obj, &r, &g, &b, &a);
+
+/* threw this in for debug... but need it */
+native e_signal_emit(sig[], src[]);
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* ************************** */
+/* The below is for non-script-only objects. these calls will not work for */
+/* script-only objects. above are for script-only. perhaps this will be */
+/* deprecated sometime? or merged to the above partly? */
+/* ************************** */
+
 /* Edje exported calls */
 
 /************************************************/
@@ -90,6 +128,8 @@ native       run_program      (program_id);
 native       get_drag_dir     (part_id);
 native       get_drag         (part_id, &Float:dx, &Float:dy);
 native       set_drag         (part_id, Float:dx, Float:dy);
+native       get_drag_size    (part_id, &Float:dx, &Float:dy);
+native       set_drag_size    (part_id, Float:dx, Float:dy);
 native       get_drag_step    (part_id, &Float:dx, &Float:dy);
 native       set_drag_step    (part_id, Float:dx, Float:dy);
 native       get_drag_page    (part_id, &Float:dx, &Float:dy);
@@ -104,6 +144,7 @@ native       set_text_class   (class[], font[], Float:size);
 native       get_text_class   (class[], font[], &Float:size);
 native       get_geometry     (part_id, &x, &y, &w, &h);
 native       get_mouse        (&x, &y);
+native       get_mouse_buttons();
 native       stop_program     (program_id);
 native       stop_programs_on (part_id);
 native       set_min_size     (Float:w, Float:h);

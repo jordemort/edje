@@ -2,15 +2,26 @@
 #define _EDJE_PRIVATE_H
 
 #ifdef HAVE_CONFIG_H
-#include <config.h>
+# include <config.h>
 #endif
 
-#include <Evas.h>
-#include <Ecore.h>
-#include <Eet.h>
-#include <Embryo.h>
-
+#include <stdlib.h>
+#include <stdio.h>
+#include <stddef.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
+#include <string.h>
+#include <limits.h>
 #include <math.h>
+#include <time.h>
+#include <assert.h>
+#include <locale.h>
+#include <errno.h>
+
+#ifdef HAVE_STDINT_H
+#include <stdint.h>
+#endif
 
 #ifdef HAVE_ALLOCA_H
 # include <alloca.h>
@@ -29,35 +40,20 @@ extern "C"
 void *alloca (size_t);
 #endif
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <unistd.h>
-#include <string.h>
-#include <limits.h>
-
-
-#ifdef EAPI
-#undef EAPI
+#ifdef HAVE_EVIL
+# include <Evil.h>
 #endif
-#ifdef _MSC_VER
-# ifdef BUILDING_DLL
-#  define EAPI __declspec(dllexport)
-# else
-#  define EAPI __declspec(dllimport)
-# endif
-#else
-# ifdef __GNUC__
-#  if __GNUC__ >= 4
-#   define EAPI __attribute__ ((visibility("default")))
-#  else
-#   define EAPI
-#  endif
-# else
-#  define EAPI
-# endif
-#endif
+
+#include <Evas.h>
+#include <Ecore.h>
+#include <Ecore_Str.h>
+#include <Ecore_Job.h>
+#include <Eet.h>
+#include <Embryo.h>
+
+#include "Edje.h"
+#include "Edje_Edit.h"
+
 
 #ifdef __GNUC__
 # if __GNUC__ >= 4
@@ -95,12 +91,6 @@ void *alloca (size_t);
  * ? recursions, unsafe callbacks outside Edje etc. with freeze, ref/unref and block/unblock and break_programs needs to be redesigned & fixed
  * ? all unsafe calls that may result in callbacks must be marked and dealt with
  */
-
-
-/* Cache result of program glob matches - this uses up extra ram with the gain
- * of faster program matching if a part has LOTS of programs.
-#define EDJE_PROGRAM_CACHE
-*/
 
 struct _Edje_Position_Scale
 {
@@ -457,6 +447,8 @@ struct _Edje_Part_Collection
    Embryo_Program   *script; /* all the embryo script code for this group */
 
    const char       *part;
+   
+   unsigned char    script_only;
 };
 
 struct _Edje_Part
@@ -479,17 +471,18 @@ struct _Edje_Part
       /* davinchi */
       int		  events_id; /* If it is used as scrollbar */
 
-      char                x; /* can u click & drag this bit in x dir */
-      char                y; /* can u click & drag this bit in y dir */
+      signed char         x; /* can u click & drag this bit in x dir */
+      signed char         y; /* can u click & drag this bit in y dir */
    } dragable;
    unsigned char          type; /* what type (image, rect, text) */
    unsigned char          effect; /* 0 = plain... */
    unsigned char          mouse_events; /* it will affect/respond to mouse events */
    unsigned char          repeat_events; /* it will repeat events to objects below */
    Evas_Event_Flags       ignore_flags;
+   unsigned char          scale; /* should certain properties scale with edje scale factor? */
    unsigned char          precise_is_inside;
    unsigned char          use_alternate_font_metrics;
-   char                   pointer_mode;
+   unsigned char          pointer_mode;
 };
 
 struct _Edje_Part_Image_Id
@@ -624,7 +617,7 @@ typedef struct _Edje_Signals_Sources_Patterns Edje_Signals_Sources_Patterns;
 struct _Edje
 {
    const char           *path;
-   const char           *part;
+   const char           *group;
    const char           *parent;
 
    Evas_Coord            x, y, w, h;
@@ -645,6 +638,7 @@ struct _Edje
    /* for faster lookups to avoid nth list walks */
    Edje_Real_Part      **table_parts;
    Edje_Program        **table_programs;
+   void                 *script_only_data;
    int                   table_programs_size;
    int                   table_parts_size;
 
@@ -1003,6 +997,9 @@ extern Evas_List       *_edje_animators;
 extern Evas_List       *_edje_edjes;
 
 extern char            *_edje_fontset_append;
+extern double           _edje_scale;
+extern int              _edje_freeze_val;
+extern int              _edje_freeze_calc_count;
 
 void  _edje_part_pos_set(Edje *ed, Edje_Real_Part *ep, int mode, double pos);
 Edje_Part_Description *_edje_part_description_find(Edje *ed, Edje_Real_Part *rp, const char *name, double val);
@@ -1074,7 +1071,7 @@ void              _edje_text_class_member_del(Edje *ed, const char *text_class);
 void              _edje_text_class_members_free(void);
 void              _edje_text_class_hash_free(void);
 
-Edje             *_edje_fetch(Evas_Object *obj);
+Edje             *_edje_fetch(const Evas_Object *obj);
 int               _edje_freeze(Edje *ed);
 int               _edje_thaw(Edje *ed);
 int               _edje_block(Edje *ed);
@@ -1145,6 +1142,7 @@ void          _edje_message_cb_set          (Edje *ed, void (*func) (void *data,
 Edje_Message *_edje_message_new             (Edje *ed, Edje_Queue queue, Edje_Message_Type type, int id);
 void          _edje_message_free            (Edje_Message *em);
 void          _edje_message_send            (Edje *ed, Edje_Queue queue, Edje_Message_Type type, int id, void *emsg);
+void          _edje_message_parameters_push (Edje_Message *em);
 void          _edje_message_process         (Edje_Message *em);
 void          _edje_message_queue_process   (void);
 void          _edje_message_queue_clear     (void);
@@ -1163,4 +1161,61 @@ void _edje_cache_file_unref(Edje_File *edf);
 
 void _edje_embryo_globals_init(Edje *ed);
 
+#define CHKPARAM(n) if (params[0] != (sizeof(Embryo_Cell) * (n))) return -1;
+#define GETSTR(str, par) { \
+   Embryo_Cell *___cptr; \
+   int ___l; \
+   str = NULL; \
+   if ((___cptr = embryo_data_address_get(ep, (par)))) { \
+      ___l = embryo_data_string_length_get(ep, ___cptr); \
+      if (((str) = alloca(___l + 1))) \
+	embryo_data_string_get(ep, ___cptr, (str)); } }
+#define GETSTREVAS(str, par) { \
+   if ((str)) { \
+      if ((par) && (!strcmp((par), (str)))) return 0; \
+      if ((par)) evas_stringshare_del((par)); \
+      (par) = (char *)evas_stringshare_add((str)); } \
+   else (par) = NULL; }
+#define GETFLOAT(val, par) { \
+   float *___cptr; \
+   if ((___cptr = (float *)embryo_data_address_get(ep, (par)))) { \
+      val = *___cptr; } }
+#define GETINT(val, par) { \
+   int *___cptr; \
+   if ((___cptr = (int *)embryo_data_address_get(ep, (par)))) { \
+      val = *___cptr; } }
+#define SETSTR(str, par) { \
+   Embryo_Cell *___cptr; \
+   if ((___cptr = embryo_data_address_get(ep, (par)))) { \
+      embryo_data_string_set(ep, str, ___cptr); } }
+#define SETSTRALLOCATE(s) { \
+   if (s) { \
+      if (strlen((s)) < params[4]) { \
+	 SETSTR((s), params[3]); } \
+      else { \
+	 char *ss; \
+	 ss = alloca(strlen((s)) + 1); \
+	 strcpy(ss, (s)); \
+	 ss[params[4] - 2] = 0; \
+	 SETSTR(ss, params[3]); } } \
+   else \
+     SETSTR("", params[3]); }
+#define SETFLOAT(val, par) { \
+   float *___cptr; \
+   if ((___cptr = (float *)embryo_data_address_get(ep, (par)))) { \
+      *___cptr = (float)val; } }
+#define SETINT(val, par) { \
+   int *___cptr; \
+   if ((___cptr = (int *)embryo_data_address_get(ep, (par)))) { \
+      *___cptr = (int)val; } }
+
+int _edje_script_only(Edje *ed);
+void _edje_script_only_init(Edje *ed);
+void _edje_script_only_shutdown(Edje *ed);
+void _edje_script_only_show(Edje *ed);
+void _edje_script_only_hide(Edje *ed);
+void _edje_script_only_move(Edje *ed);
+void _edje_script_only_resize(Edje *ed);
+void _edje_script_only_message(Edje *ed, Edje_Message *em);
+    
 #endif

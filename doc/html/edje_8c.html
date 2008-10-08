@@ -25,6 +25,7 @@
       <td class='nav'><a class='nav' href="index.html">Main Page</a></td>
       <td class="nav"><a class="nav" href="edje_8c.html">Edje API</a></td>
       <td class="nav"><a class="nav" href="edcref.html">EDC Reference</a></td>
+      <td class="nav"><a class="nav" href="Edje__Edit_8h.html">Edje Edit API</a></td>
       <td class="nav"><a class="nav" href="todo.html">Todo</a></td>
      </tr>
     </table>
@@ -110,33 +111,33 @@ These routines are used for Edje.
 <tr><td class="memItemLeft" nowrap align="right" valign="top">EAPI Evas_Object *&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="edje_8c.html#aee005c25b8da7ee407942122ccae0c7">edje_object_add</a> (Evas *evas)</td></tr>
 
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Constructs the Edje object.  <a href="#aee005c25b8da7ee407942122ccae0c7"></a><br></td></tr>
-<tr><td class="memItemLeft" nowrap align="right" valign="top">EAPI const char *&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="edje_8c.html#0d734122a228b8a9e4e4e9f4e3200c96">edje_object_data_get</a> (Evas_Object *obj, const char *key)</td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">EAPI const char *&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="edje_8c.html#959c28ae7decd1d128b939af9388e2bf">edje_object_data_get</a> (const Evas_Object *obj, const char *key)</td></tr>
 
-<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Get Edje object data.  <a href="#0d734122a228b8a9e4e4e9f4e3200c96"></a><br></td></tr>
-<tr><td class="memItemLeft" nowrap align="right" valign="top">EAPI int&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="edje_8c.html#3709153c22d46631f53f585d6ae4113b">edje_object_file_set</a> (Evas_Object *obj, const char *file, const char *part)</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Get Edje object data.  <a href="#959c28ae7decd1d128b939af9388e2bf"></a><br></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">EAPI int&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="edje_8c.html#e9490c19c5866f6c96de4e4562c73fa1">edje_object_file_set</a> (Evas_Object *obj, const char *file, const char *group)</td></tr>
 
-<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Sets the EET file and group to load <em>obj</em> from.  <a href="#3709153c22d46631f53f585d6ae4113b"></a><br></td></tr>
-<tr><td class="memItemLeft" nowrap align="right" valign="top">EAPI void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="edje_8c.html#cfed0fd5e5509a53e946b11cf4ce7ff9">edje_object_file_get</a> (Evas_Object *obj, const char **file, const char **part)</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Sets the EET file and group to load <em>obj</em> from.  <a href="#e9490c19c5866f6c96de4e4562c73fa1"></a><br></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">EAPI void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="edje_8c.html#db677a9ce0453154b163e2d0577202bc">edje_object_file_get</a> (const Evas_Object *obj, const char **file, const char **group)</td></tr>
 
-<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Get the file and group name that <em>obj</em> was loaded from.  <a href="#cfed0fd5e5509a53e946b11cf4ce7ff9"></a><br></td></tr>
-<tr><td class="memItemLeft" nowrap align="right" valign="top">EAPI int&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="edje_8c.html#b1ebd5eb7c55222f5fafdefbba1c515f">edje_object_load_error_get</a> (Evas_Object *obj)</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Get the file and group name that <em>obj</em> was loaded from.  <a href="#db677a9ce0453154b163e2d0577202bc"></a><br></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">EAPI int&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="edje_8c.html#af4ad8de9c2f4de0ae9c617e8a54285f">edje_object_load_error_get</a> (const Evas_Object *obj)</td></tr>
 
-<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Gets the Edje load error.  <a href="#b1ebd5eb7c55222f5fafdefbba1c515f"></a><br></td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Gets the Edje load error.  <a href="#af4ad8de9c2f4de0ae9c617e8a54285f"></a><br></td></tr>
 <tr><td class="memItemLeft" nowrap align="right" valign="top">EAPI void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="edje_8c.html#700d424448139fa85a09906b67dbd62c">edje_object_signal_emit</a> (Evas_Object *obj, const char *emission, const char *source)</td></tr>
 
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Send a signal to the Edje object.  <a href="#700d424448139fa85a09906b67dbd62c"></a><br></td></tr>
 <tr><td class="memItemLeft" nowrap align="right" valign="top">EAPI void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="edje_8c.html#33aad219f49881b046279abca29ace12">edje_object_play_set</a> (Evas_Object *obj, int play)</td></tr>
 
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Set the Edje to play or pause.  <a href="#33aad219f49881b046279abca29ace12"></a><br></td></tr>
-<tr><td class="memItemLeft" nowrap align="right" valign="top">EAPI int&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="edje_8c.html#65651e53be864ac806c90eb56705656d">edje_object_play_get</a> (Evas_Object *obj)</td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">EAPI int&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="edje_8c.html#a443758c58213227353e67dfc63f11b8">edje_object_play_get</a> (const Evas_Object *obj)</td></tr>
 
-<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Get the Edje play/pause state.  <a href="#65651e53be864ac806c90eb56705656d"></a><br></td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Get the Edje play/pause state.  <a href="#a443758c58213227353e67dfc63f11b8"></a><br></td></tr>
 <tr><td class="memItemLeft" nowrap align="right" valign="top">EAPI void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="edje_8c.html#616158629343e89a3ed333d87100f95b">edje_object_animation_set</a> (Evas_Object *obj, int on)</td></tr>
 
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Set Animation state.  <a href="#616158629343e89a3ed333d87100f95b"></a><br></td></tr>
-<tr><td class="memItemLeft" nowrap align="right" valign="top">EAPI int&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="edje_8c.html#3f165b957c4ce7789bab0f96b83ab85c">edje_object_animation_get</a> (Evas_Object *obj)</td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">EAPI int&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="edje_8c.html#c68bec4d120bf3b5870add82f9ee7d77">edje_object_animation_get</a> (const Evas_Object *obj)</td></tr>
 
-<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Get the animation state.  <a href="#3f165b957c4ce7789bab0f96b83ab85c"></a><br></td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Get the animation state.  <a href="#c68bec4d120bf3b5870add82f9ee7d77"></a><br></td></tr>
 <tr><td class="memItemLeft" nowrap align="right" valign="top">EAPI int&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="edje_8c.html#d5a18a94f5d960ec048344405c427e66">edje_object_freeze</a> (Evas_Object *obj)</td></tr>
 
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Freeze object.  <a href="#d5a18a94f5d960ec048344405c427e66"></a><br></td></tr>
@@ -151,12 +152,12 @@ These routines are used for Edje.
 <tr><td class="memItemLeft" nowrap align="right" valign="top">EAPI void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="edje_8c.html#ab2beb131b3faf5a3b687ab7d16ec10d">edje_object_text_class_set</a> (Evas_Object *obj, const char *text_class, const char *font, Evas_Font_Size size)</td></tr>
 
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Sets Edje text class.  <a href="#ab2beb131b3faf5a3b687ab7d16ec10d"></a><br></td></tr>
-<tr><td class="memItemLeft" nowrap align="right" valign="top">EAPI void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="edje_8c.html#5aa26bbe4846410db16f053ce8e0c834">edje_object_size_min_get</a> (Evas_Object *obj, Evas_Coord *minw, Evas_Coord *minh)</td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">EAPI void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="edje_8c.html#f7225a2ffab55e03781cdfe05dd224d7">edje_object_size_min_get</a> (const Evas_Object *obj, Evas_Coord *minw, Evas_Coord *minh)</td></tr>
 
-<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Get the minimum size for an object.  <a href="#5aa26bbe4846410db16f053ce8e0c834"></a><br></td></tr>
-<tr><td class="memItemLeft" nowrap align="right" valign="top">EAPI void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="edje_8c.html#19cb732b87093408ff1bbe58fe7b7241">edje_object_size_max_get</a> (Evas_Object *obj, Evas_Coord *maxw, Evas_Coord *maxh)</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Get the minimum size for an object.  <a href="#f7225a2ffab55e03781cdfe05dd224d7"></a><br></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">EAPI void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="edje_8c.html#49a974bf805e601215eafc2b8fe02499">edje_object_size_max_get</a> (const Evas_Object *obj, Evas_Coord *maxw, Evas_Coord *maxh)</td></tr>
 
-<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Get the maximum size for an object.  <a href="#19cb732b87093408ff1bbe58fe7b7241"></a><br></td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Get the maximum size for an object.  <a href="#49a974bf805e601215eafc2b8fe02499"></a><br></td></tr>
 <tr><td class="memItemLeft" nowrap align="right" valign="top">EAPI void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="edje_8c.html#f699be7f8a8ea7bbbc24f4d930997449">edje_object_calc_force</a> (Evas_Object *obj)</td></tr>
 
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Force a Size/Geometry calculation.  <a href="#f699be7f8a8ea7bbbc24f4d930997449"></a><br></td></tr>
@@ -166,60 +167,60 @@ These routines are used for Edje.
 <tr><td class="memItemLeft" nowrap align="right" valign="top">EAPI void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="edje_8c.html#18bd6fd0f71c23b2d75a7ff3c9c9d52c">edje_object_size_min_restricted_calc</a> (Evas_Object *obj, Evas_Coord *minw, Evas_Coord *minh, Evas_Coord restrictedw, Evas_Coord restrictedh)</td></tr>
 
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Calculate minimum size.  <a href="#18bd6fd0f71c23b2d75a7ff3c9c9d52c"></a><br></td></tr>
-<tr><td class="memItemLeft" nowrap align="right" valign="top">EAPI int&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="edje_8c.html#64963b6f7ec23963b7b029b5bf5beaa3">edje_object_part_exists</a> (Evas_Object *obj, const char *part)</td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">EAPI int&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="edje_8c.html#2ec15720e1bd74a08219fc9783b13a10">edje_object_part_exists</a> (const Evas_Object *obj, const char *part)</td></tr>
 
-<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Check if Edje part exists.  <a href="#64963b6f7ec23963b7b029b5bf5beaa3"></a><br></td></tr>
-<tr><td class="memItemLeft" nowrap align="right" valign="top">EAPI Evas_Object *&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="edje_8c.html#86be1d194d87fefc7e1174062b4cd6dc">edje_object_part_object_get</a> (Evas_Object *obj, const char *part)</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Check if Edje part exists.  <a href="#2ec15720e1bd74a08219fc9783b13a10"></a><br></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">EAPI const Evas_Object *&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="edje_8c.html#4da8210aa22421a77f938e1e91aac204">edje_object_part_object_get</a> (const Evas_Object *obj, const char *part)</td></tr>
 
-<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Gets the Evas_Object corresponding to a given part.  <a href="#86be1d194d87fefc7e1174062b4cd6dc"></a><br></td></tr>
-<tr><td class="memItemLeft" nowrap align="right" valign="top">EAPI void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="edje_8c.html#696bddc95393a6f087c1d64f655a0547">edje_object_part_geometry_get</a> (Evas_Object *obj, const char *part, Evas_Coord *x, Evas_Coord *y, Evas_Coord *w, Evas_Coord *h)</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Gets the Evas_Object corresponding to a given part.  <a href="#4da8210aa22421a77f938e1e91aac204"></a><br></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">EAPI void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="edje_8c.html#e4e3c709b838efac0ed3f522a2a05df8">edje_object_part_geometry_get</a> (const Evas_Object *obj, const char *part, Evas_Coord *x, Evas_Coord *y, Evas_Coord *w, Evas_Coord *h)</td></tr>
 
-<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Get the geometry of an Edje part.  <a href="#696bddc95393a6f087c1d64f655a0547"></a><br></td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Get the geometry of an Edje part.  <a href="#e4e3c709b838efac0ed3f522a2a05df8"></a><br></td></tr>
 <tr><td class="memItemLeft" nowrap align="right" valign="top">EAPI void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="edje_8c.html#a1da7ccccfcf650d09e0f72523481cca">edje_object_part_text_set</a> (Evas_Object *obj, const char *part, const char *text)</td></tr>
 
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Sets the text for an object part.  <a href="#a1da7ccccfcf650d09e0f72523481cca"></a><br></td></tr>
-<tr><td class="memItemLeft" nowrap align="right" valign="top">EAPI const char *&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="edje_8c.html#01cea6fb68ea1f695d49f8b3827a90e5">edje_object_part_text_get</a> (Evas_Object *obj, const char *part)</td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">EAPI const char *&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="edje_8c.html#3c7c136de9ba058a11d617572ff3facb">edje_object_part_text_get</a> (const Evas_Object *obj, const char *part)</td></tr>
 
-<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Returns the text of the object part.  <a href="#01cea6fb68ea1f695d49f8b3827a90e5"></a><br></td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Returns the text of the object part.  <a href="#3c7c136de9ba058a11d617572ff3facb"></a><br></td></tr>
 <tr><td class="memItemLeft" nowrap align="right" valign="top">EAPI void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="edje_8c.html#abb8e70c45e77960e06af627d7e9f553">edje_object_part_swallow</a> (Evas_Object *obj, const char *part, Evas_Object *obj_swallow)</td></tr>
 
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Swallows an object into the edje.  <a href="#abb8e70c45e77960e06af627d7e9f553"></a><br></td></tr>
 <tr><td class="memItemLeft" nowrap align="right" valign="top">EAPI void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="edje_8c.html#da07a85a52034271c85f36ecdd7c441c">edje_object_part_unswallow</a> (Evas_Object *obj, Evas_Object *obj_swallow)</td></tr>
 
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Unswallow an object.  <a href="#da07a85a52034271c85f36ecdd7c441c"></a><br></td></tr>
-<tr><td class="memItemLeft" nowrap align="right" valign="top">EAPI Evas_Object *&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="edje_8c.html#bd8203b0ee5ac1bd00a71d847698518e">edje_object_part_swallow_get</a> (Evas_Object *obj, const char *part)</td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">EAPI Evas_Object *&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="edje_8c.html#f4e345aafbfa1c098bf9644cdc447f77">edje_object_part_swallow_get</a> (const Evas_Object *obj, const char *part)</td></tr>
 
-<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Get the object currently swallowed by a part.  <a href="#bd8203b0ee5ac1bd00a71d847698518e"></a><br></td></tr>
-<tr><td class="memItemLeft" nowrap align="right" valign="top">EAPI const char *&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="edje_8c.html#635a1035b99465cbf9c456cb977481b6">edje_object_part_state_get</a> (Evas_Object *obj, const char *part, double *val_ret)</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Get the object currently swallowed by a part.  <a href="#f4e345aafbfa1c098bf9644cdc447f77"></a><br></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">EAPI const char *&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="edje_8c.html#2071dd0923b6aae9e989ffa777860079">edje_object_part_state_get</a> (const Evas_Object *obj, const char *part, double *val_ret)</td></tr>
 
-<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Returns the state of the Edje part.  <a href="#635a1035b99465cbf9c456cb977481b6"></a><br></td></tr>
-<tr><td class="memItemLeft" nowrap align="right" valign="top">EAPI int&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="edje_8c.html#6ef29926ac179b5ce65fefd416db704a">edje_object_part_drag_dir_get</a> (Evas_Object *obj, const char *part)</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Returns the state of the Edje part.  <a href="#2071dd0923b6aae9e989ffa777860079"></a><br></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">EAPI int&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="edje_8c.html#578c49b5550f53851a331685fd450ae0">edje_object_part_drag_dir_get</a> (const Evas_Object *obj, const char *part)</td></tr>
 
-<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Determine dragable directions.  <a href="#6ef29926ac179b5ce65fefd416db704a"></a><br></td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Determine dragable directions.  <a href="#578c49b5550f53851a331685fd450ae0"></a><br></td></tr>
 <tr><td class="memItemLeft" nowrap align="right" valign="top">EAPI void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="edje_8c.html#15e856d8fe5132b6ef266fc37188d298">edje_object_part_drag_value_set</a> (Evas_Object *obj, const char *part, double dx, double dy)</td></tr>
 
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Set the dragable object location.  <a href="#15e856d8fe5132b6ef266fc37188d298"></a><br></td></tr>
-<tr><td class="memItemLeft" nowrap align="right" valign="top">EAPI void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="edje_8c.html#456e823a1e9455d7f83da9c32bc2228e">edje_object_part_drag_value_get</a> (Evas_Object *obj, const char *part, double *dx, double *dy)</td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">EAPI void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="edje_8c.html#07b42d98c80b3482e2090f62f67a1ab3">edje_object_part_drag_value_get</a> (const Evas_Object *obj, const char *part, double *dx, double *dy)</td></tr>
 
-<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Get the dragable object location.  <a href="#456e823a1e9455d7f83da9c32bc2228e"></a><br></td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Get the dragable object location.  <a href="#07b42d98c80b3482e2090f62f67a1ab3"></a><br></td></tr>
 <tr><td class="memItemLeft" nowrap align="right" valign="top">EAPI void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="edje_8c.html#00dcca126990d2aa56525dda82d193d0">edje_object_part_drag_size_set</a> (Evas_Object *obj, const char *part, double dw, double dh)</td></tr>
 
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Set the dragable object size.  <a href="#00dcca126990d2aa56525dda82d193d0"></a><br></td></tr>
-<tr><td class="memItemLeft" nowrap align="right" valign="top">EAPI void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="edje_8c.html#9d1a711dc57d8fff521ce7a7c53c19bd">edje_object_part_drag_size_get</a> (Evas_Object *obj, const char *part, double *dw, double *dh)</td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">EAPI void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="edje_8c.html#a618103f98e785e6ac8617c5f4bd22c0">edje_object_part_drag_size_get</a> (const Evas_Object *obj, const char *part, double *dw, double *dh)</td></tr>
 
-<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Get the dragable object size.  <a href="#9d1a711dc57d8fff521ce7a7c53c19bd"></a><br></td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Get the dragable object size.  <a href="#a618103f98e785e6ac8617c5f4bd22c0"></a><br></td></tr>
 <tr><td class="memItemLeft" nowrap align="right" valign="top">EAPI void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="edje_8c.html#bdcb3b14acc7735a6669b4f6b17d56af">edje_object_part_drag_step_set</a> (Evas_Object *obj, const char *part, double dx, double dy)</td></tr>
 
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Sets the drag step increment.  <a href="#bdcb3b14acc7735a6669b4f6b17d56af"></a><br></td></tr>
-<tr><td class="memItemLeft" nowrap align="right" valign="top">EAPI void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="edje_8c.html#6e90318a0427b3f1b6a035a9fb77109d">edje_object_part_drag_step_get</a> (Evas_Object *obj, const char *part, double *dx, double *dy)</td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">EAPI void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="edje_8c.html#03a46b16e3ea258f45964bec92c9938d">edje_object_part_drag_step_get</a> (const Evas_Object *obj, const char *part, double *dx, double *dy)</td></tr>
 
-<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Gets the drag step increment values.  <a href="#6e90318a0427b3f1b6a035a9fb77109d"></a><br></td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Gets the drag step increment values.  <a href="#03a46b16e3ea258f45964bec92c9938d"></a><br></td></tr>
 <tr><td class="memItemLeft" nowrap align="right" valign="top">EAPI void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="edje_8c.html#f20c8c7847cf3b0c8337f0568736d412">edje_object_part_drag_page_set</a> (Evas_Object *obj, const char *part, double dx, double dy)</td></tr>
 
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Sets the page step increments.  <a href="#f20c8c7847cf3b0c8337f0568736d412"></a><br></td></tr>
-<tr><td class="memItemLeft" nowrap align="right" valign="top">EAPI void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="edje_8c.html#512441eb69084c6f8674c30a15e5e687">edje_object_part_drag_page_get</a> (Evas_Object *obj, const char *part, double *dx, double *dy)</td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">EAPI void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="edje_8c.html#947b114b24834e74ca1eba11d1319eb1">edje_object_part_drag_page_get</a> (const Evas_Object *obj, const char *part, double *dx, double *dy)</td></tr>
 
-<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Gets the page step increments.  <a href="#512441eb69084c6f8674c30a15e5e687"></a><br></td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Gets the page step increments.  <a href="#947b114b24834e74ca1eba11d1319eb1"></a><br></td></tr>
 <tr><td class="memItemLeft" nowrap align="right" valign="top">EAPI void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="edje_8c.html#ef0b060a7e024d17bb4354d5e3ec52db">edje_object_part_drag_step</a> (Evas_Object *obj, const char *part, double dx, double dy)</td></tr>
 
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Steps the dragable x,y steps.  <a href="#ef0b060a7e024d17bb4354d5e3ec52db"></a><br></td></tr>
@@ -739,7 +740,7 @@ Sets the global frametime in seconds, by default this is 1/30.
 Freeze all Edje objects in the current process. 
 <p>
 See <a class="el" href="edje_8c.html#d5a18a94f5d960ec048344405c427e66" title="Freeze object.">edje_object_freeze()</a> for more. 
-<p>References <a class="el" href="edje_8c-source.html#l03551">edje_object_freeze()</a>.</p>
+<p>References <a class="el" href="edje_8c-source.html#l03646">edje_object_freeze()</a>.</p>
 
 </div>
 </div><p>
@@ -794,14 +795,14 @@ Constructs the Edje object.
 Creates the Edje smart object, returning the Evas_Object handle. 
 </div>
 </div><p>
-<a class="anchor" name="3f165b957c4ce7789bab0f96b83ab85c"></a><!-- doxytag: member="edje.c::edje_object_animation_get" ref="3f165b957c4ce7789bab0f96b83ab85c" args="(Evas_Object *obj)" -->
+<a class="anchor" name="c68bec4d120bf3b5870add82f9ee7d77"></a><!-- doxytag: member="edje.c::edje_object_animation_get" ref="c68bec4d120bf3b5870add82f9ee7d77" args="(const Evas_Object *obj)" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
           <td class="memname">EAPI int edje_object_animation_get           </td>
           <td>(</td>
-          <td class="paramtype">Evas_Object *&nbsp;</td>
+          <td class="paramtype">const Evas_Object *&nbsp;</td>
           <td class="paramname"> <em>obj</em>          </td>
           <td>&nbsp;)&nbsp;</td>
           <td width="100%"></td>
@@ -1043,14 +1044,14 @@ Sets the color values for an object level color class. This will cause all edje 
 The first color is the object, the second is the text outline, and the third is the text shadow. (Note that the second two only apply to text parts) 
 </div>
 </div><p>
-<a class="anchor" name="0d734122a228b8a9e4e4e9f4e3200c96"></a><!-- doxytag: member="edje.c::edje_object_data_get" ref="0d734122a228b8a9e4e4e9f4e3200c96" args="(Evas_Object *obj, const char *key)" -->
+<a class="anchor" name="959c28ae7decd1d128b939af9388e2bf"></a><!-- doxytag: member="edje.c::edje_object_data_get" ref="959c28ae7decd1d128b939af9388e2bf" args="(const Evas_Object *obj, const char *key)" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
           <td class="memname">EAPI const char * edje_object_data_get           </td>
           <td>(</td>
-          <td class="paramtype">Evas_Object *&nbsp;</td>
+          <td class="paramtype">const Evas_Object *&nbsp;</td>
           <td class="paramname"> <em>obj</em>, </td>
         </tr>
         <tr>
@@ -1092,14 +1093,14 @@ In EDC this comes from a data block within the group block that <em>obj</em> was
 </pre></div> 
 </div>
 </div><p>
-<a class="anchor" name="cfed0fd5e5509a53e946b11cf4ce7ff9"></a><!-- doxytag: member="edje.c::edje_object_file_get" ref="cfed0fd5e5509a53e946b11cf4ce7ff9" args="(Evas_Object *obj, const char **file, const char **part)" -->
+<a class="anchor" name="db677a9ce0453154b163e2d0577202bc"></a><!-- doxytag: member="edje.c::edje_object_file_get" ref="db677a9ce0453154b163e2d0577202bc" args="(const Evas_Object *obj, const char **file, const char **group)" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
           <td class="memname">EAPI void edje_object_file_get           </td>
           <td>(</td>
-          <td class="paramtype">Evas_Object *&nbsp;</td>
+          <td class="paramtype">const Evas_Object *&nbsp;</td>
           <td class="paramname"> <em>obj</em>, </td>
         </tr>
         <tr>
@@ -1112,7 +1113,7 @@ In EDC this comes from a data block within the group block that <em>obj</em> was
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">const char **&nbsp;</td>
-          <td class="paramname"> <em>part</em></td><td>&nbsp;</td>
+          <td class="paramname"> <em>group</em></td><td>&nbsp;</td>
         </tr>
         <tr>
           <td></td>
@@ -1130,14 +1131,14 @@ Get the file and group name that <em>obj</em> was loaded from.
   <table border="0" cellspacing="2" cellpadding="0">
     <tr><td valign="top"></td><td valign="top"><em>obj</em>&nbsp;</td><td>A valid Evas_Object handle </td></tr>
     <tr><td valign="top"></td><td valign="top"><em>file</em>&nbsp;</td><td>A pointer to store a pointer to the filename in </td></tr>
-    <tr><td valign="top"></td><td valign="top"><em>part</em>&nbsp;</td><td>A pointer to store a pointer to the group name in</td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>group</em>&nbsp;</td><td>A pointer to store a pointer to the group name in</td></tr>
   </table>
 </dl>
-This gets the EET file location and group for the given Evas_Object. If <em>obj</em> is either not an edje file, or has not had its file/group set using <a class="el" href="edje_8c.html#3709153c22d46631f53f585d6ae4113b" title="Sets the EET file and group to load obj from.">edje_object_file_set()</a>, then both <em>file</em> and <em>part</em> will be set to NULL.<p>
-It is valid to pass in NULL for either <em>file</em> or <em>part</em> if you are not interested in one of the values. 
+This gets the EET file location and group for the given Evas_Object. If <em>obj</em> is either not an edje file, or has not had its file/group set using <a class="el" href="edje_8c.html#e9490c19c5866f6c96de4e4562c73fa1" title="Sets the EET file and group to load obj from.">edje_object_file_set()</a>, then both <em>file</em> and <em>group</em> will be set to NULL.<p>
+It is valid to pass in NULL for either <em>file</em> or <em>group</em> if you are not interested in one of the values. 
 </div>
 </div><p>
-<a class="anchor" name="3709153c22d46631f53f585d6ae4113b"></a><!-- doxytag: member="edje.c::edje_object_file_set" ref="3709153c22d46631f53f585d6ae4113b" args="(Evas_Object *obj, const char *file, const char *part)" -->
+<a class="anchor" name="e9490c19c5866f6c96de4e4562c73fa1"></a><!-- doxytag: member="edje.c::edje_object_file_set" ref="e9490c19c5866f6c96de4e4562c73fa1" args="(Evas_Object *obj, const char *file, const char *group)" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
@@ -1157,7 +1158,7 @@ It is valid to pass in NULL for either <em>file</em> or <em>part</em> if you are
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">const char *&nbsp;</td>
-          <td class="paramname"> <em>part</em></td><td>&nbsp;</td>
+          <td class="paramname"> <em>group</em></td><td>&nbsp;</td>
         </tr>
         <tr>
           <td></td>
@@ -1175,7 +1176,7 @@ Sets the EET file and group to load <em>obj</em> from.
   <table border="0" cellspacing="2" cellpadding="0">
     <tr><td valign="top"></td><td valign="top"><em>obj</em>&nbsp;</td><td>A valid Evas_Object handle </td></tr>
     <tr><td valign="top"></td><td valign="top"><em>file</em>&nbsp;</td><td>The path to the EET file </td></tr>
-    <tr><td valign="top"></td><td valign="top"><em>part</em>&nbsp;</td><td>The group name in the Edje </td></tr>
+    <tr><td valign="top"></td><td valign="top"><em>group</em>&nbsp;</td><td>The group name in the Edje </td></tr>
   </table>
 </dl>
 <dl class="return" compact><dt><b>Returns:</b></dt><dd>0 on Error<br>
@@ -1210,18 +1211,18 @@ Freeze object.
 <dl class="return" compact><dt><b>Returns:</b></dt><dd>The frozen state<br>
  0 on Error</dd></dl>
 This puts all changes on hold. Successive freezes will nest, requiring an equal number of thaws. 
-<p>Referenced by <a class="el" href="edje_8c-source.html#l03460">edje_freeze()</a>.</p>
+<p>Referenced by <a class="el" href="edje_8c-source.html#l03488">edje_freeze()</a>.</p>
 
 </div>
 </div><p>
-<a class="anchor" name="b1ebd5eb7c55222f5fafdefbba1c515f"></a><!-- doxytag: member="edje.c::edje_object_load_error_get" ref="b1ebd5eb7c55222f5fafdefbba1c515f" args="(Evas_Object *obj)" -->
+<a class="anchor" name="af4ad8de9c2f4de0ae9c617e8a54285f"></a><!-- doxytag: member="edje.c::edje_object_load_error_get" ref="af4ad8de9c2f4de0ae9c617e8a54285f" args="(const Evas_Object *obj)" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
           <td class="memname">EAPI int edje_object_load_error_get           </td>
           <td>(</td>
-          <td class="paramtype">Evas_Object *&nbsp;</td>
+          <td class="paramtype">const Evas_Object *&nbsp;</td>
           <td class="paramname"> <em>obj</em>          </td>
           <td>&nbsp;)&nbsp;</td>
           <td width="100%"></td>
@@ -1250,14 +1251,14 @@ Gets the Edje load error.
 
 </div>
 </div><p>
-<a class="anchor" name="6ef29926ac179b5ce65fefd416db704a"></a><!-- doxytag: member="edje.c::edje_object_part_drag_dir_get" ref="6ef29926ac179b5ce65fefd416db704a" args="(Evas_Object *obj, const char *part)" -->
+<a class="anchor" name="578c49b5550f53851a331685fd450ae0"></a><!-- doxytag: member="edje.c::edje_object_part_drag_dir_get" ref="578c49b5550f53851a331685fd450ae0" args="(const Evas_Object *obj, const char *part)" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
           <td class="memname">EAPI int edje_object_part_drag_dir_get           </td>
           <td>(</td>
-          <td class="paramtype">Evas_Object *&nbsp;</td>
+          <td class="paramtype">const Evas_Object *&nbsp;</td>
           <td class="paramname"> <em>obj</em>, </td>
         </tr>
         <tr>
@@ -1343,14 +1344,14 @@ Pages x,y where the increment is defined by edje_object_part_drag_page_set.<br>
  WARNING: Paging is bugged! 
 </div>
 </div><p>
-<a class="anchor" name="512441eb69084c6f8674c30a15e5e687"></a><!-- doxytag: member="edje.c::edje_object_part_drag_page_get" ref="512441eb69084c6f8674c30a15e5e687" args="(Evas_Object *obj, const char *part, double *dx, double *dy)" -->
+<a class="anchor" name="947b114b24834e74ca1eba11d1319eb1"></a><!-- doxytag: member="edje.c::edje_object_part_drag_page_get" ref="947b114b24834e74ca1eba11d1319eb1" args="(const Evas_Object *obj, const char *part, double *dx, double *dy)" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
           <td class="memname">EAPI void edje_object_part_drag_page_get           </td>
           <td>(</td>
-          <td class="paramtype">Evas_Object *&nbsp;</td>
+          <td class="paramtype">const Evas_Object *&nbsp;</td>
           <td class="paramname"> <em>obj</em>, </td>
         </tr>
         <tr>
@@ -1445,14 +1446,14 @@ Sets the page step increments.
 Sets the x,y page step increment values. 
 </div>
 </div><p>
-<a class="anchor" name="9d1a711dc57d8fff521ce7a7c53c19bd"></a><!-- doxytag: member="edje.c::edje_object_part_drag_size_get" ref="9d1a711dc57d8fff521ce7a7c53c19bd" args="(Evas_Object *obj, const char *part, double *dw, double *dh)" -->
+<a class="anchor" name="a618103f98e785e6ac8617c5f4bd22c0"></a><!-- doxytag: member="edje.c::edje_object_part_drag_size_get" ref="a618103f98e785e6ac8617c5f4bd22c0" args="(const Evas_Object *obj, const char *part, double *dw, double *dh)" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
           <td class="memname">EAPI void edje_object_part_drag_size_get           </td>
           <td>(</td>
-          <td class="paramtype">Evas_Object *&nbsp;</td>
+          <td class="paramtype">const Evas_Object *&nbsp;</td>
           <td class="paramname"> <em>obj</em>, </td>
         </tr>
         <tr>
@@ -1598,14 +1599,14 @@ Steps the dragable x,y steps.
 Steps x,y where the step increment is the amount set by edje_object_part_drag_step_set. 
 </div>
 </div><p>
-<a class="anchor" name="6e90318a0427b3f1b6a035a9fb77109d"></a><!-- doxytag: member="edje.c::edje_object_part_drag_step_get" ref="6e90318a0427b3f1b6a035a9fb77109d" args="(Evas_Object *obj, const char *part, double *dx, double *dy)" -->
+<a class="anchor" name="03a46b16e3ea258f45964bec92c9938d"></a><!-- doxytag: member="edje.c::edje_object_part_drag_step_get" ref="03a46b16e3ea258f45964bec92c9938d" args="(const Evas_Object *obj, const char *part, double *dx, double *dy)" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
           <td class="memname">EAPI void edje_object_part_drag_step_get           </td>
           <td>(</td>
-          <td class="paramtype">Evas_Object *&nbsp;</td>
+          <td class="paramtype">const Evas_Object *&nbsp;</td>
           <td class="paramname"> <em>obj</em>, </td>
         </tr>
         <tr>
@@ -1700,14 +1701,14 @@ Sets the drag step increment.
 Sets the x,y step increments for a dragable object. 
 </div>
 </div><p>
-<a class="anchor" name="456e823a1e9455d7f83da9c32bc2228e"></a><!-- doxytag: member="edje.c::edje_object_part_drag_value_get" ref="456e823a1e9455d7f83da9c32bc2228e" args="(Evas_Object *obj, const char *part, double *dx, double *dy)" -->
+<a class="anchor" name="07b42d98c80b3482e2090f62f67a1ab3"></a><!-- doxytag: member="edje.c::edje_object_part_drag_value_get" ref="07b42d98c80b3482e2090f62f67a1ab3" args="(const Evas_Object *obj, const char *part, double *dx, double *dy)" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
           <td class="memname">EAPI void edje_object_part_drag_value_get           </td>
           <td>(</td>
-          <td class="paramtype">Evas_Object *&nbsp;</td>
+          <td class="paramtype">const Evas_Object *&nbsp;</td>
           <td class="paramname"> <em>obj</em>, </td>
         </tr>
         <tr>
@@ -1802,14 +1803,14 @@ Set the dragable object location.
 Places the dragable object at the given location. 
 </div>
 </div><p>
-<a class="anchor" name="64963b6f7ec23963b7b029b5bf5beaa3"></a><!-- doxytag: member="edje.c::edje_object_part_exists" ref="64963b6f7ec23963b7b029b5bf5beaa3" args="(Evas_Object *obj, const char *part)" -->
+<a class="anchor" name="2ec15720e1bd74a08219fc9783b13a10"></a><!-- doxytag: member="edje.c::edje_object_part_exists" ref="2ec15720e1bd74a08219fc9783b13a10" args="(const Evas_Object *obj, const char *part)" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
           <td class="memname">EAPI int edje_object_part_exists           </td>
           <td>(</td>
-          <td class="paramtype">Evas_Object *&nbsp;</td>
+          <td class="paramtype">const Evas_Object *&nbsp;</td>
           <td class="paramname"> <em>obj</em>, </td>
         </tr>
         <tr>
@@ -1841,14 +1842,14 @@ Check if Edje part exists.
 
 </div>
 </div><p>
-<a class="anchor" name="696bddc95393a6f087c1d64f655a0547"></a><!-- doxytag: member="edje.c::edje_object_part_geometry_get" ref="696bddc95393a6f087c1d64f655a0547" args="(Evas_Object *obj, const char *part, Evas_Coord *x, Evas_Coord *y, Evas_Coord *w, Evas_Coord *h)" -->
+<a class="anchor" name="e4e3c709b838efac0ed3f522a2a05df8"></a><!-- doxytag: member="edje.c::edje_object_part_geometry_get" ref="e4e3c709b838efac0ed3f522a2a05df8" args="(const Evas_Object *obj, const char *part, Evas_Coord *x, Evas_Coord *y, Evas_Coord *w, Evas_Coord *h)" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
           <td class="memname">EAPI void edje_object_part_geometry_get           </td>
           <td>(</td>
-          <td class="paramtype">Evas_Object *&nbsp;</td>
+          <td class="paramtype">const Evas_Object *&nbsp;</td>
           <td class="paramname"> <em>obj</em>, </td>
         </tr>
         <tr>
@@ -1907,14 +1908,14 @@ Gets the geometry of an Edje part<p>
 It is valid to pass NULL as any of <em>x</em>, <em>y</em>, <em>w</em> or <em>h</em>, whose values you are uninterested in. 
 </div>
 </div><p>
-<a class="anchor" name="86be1d194d87fefc7e1174062b4cd6dc"></a><!-- doxytag: member="edje.c::edje_object_part_object_get" ref="86be1d194d87fefc7e1174062b4cd6dc" args="(Evas_Object *obj, const char *part)" -->
+<a class="anchor" name="4da8210aa22421a77f938e1e91aac204"></a><!-- doxytag: member="edje.c::edje_object_part_object_get" ref="4da8210aa22421a77f938e1e91aac204" args="(const Evas_Object *obj, const char *part)" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">EAPI Evas_Object * edje_object_part_object_get           </td>
+          <td class="memname">EAPI const Evas_Object * edje_object_part_object_get           </td>
           <td>(</td>
-          <td class="paramtype">Evas_Object *&nbsp;</td>
+          <td class="paramtype">const Evas_Object *&nbsp;</td>
           <td class="paramname"> <em>obj</em>, </td>
         </tr>
         <tr>
@@ -1946,14 +1947,14 @@ You should never modify the state of the returned object (with evas_object_move(
 
 </div>
 </div><p>
-<a class="anchor" name="635a1035b99465cbf9c456cb977481b6"></a><!-- doxytag: member="edje.c::edje_object_part_state_get" ref="635a1035b99465cbf9c456cb977481b6" args="(Evas_Object *obj, const char *part, double *val_ret)" -->
+<a class="anchor" name="2071dd0923b6aae9e989ffa777860079"></a><!-- doxytag: member="edje.c::edje_object_part_state_get" ref="2071dd0923b6aae9e989ffa777860079" args="(const Evas_Object *obj, const char *part, double *val_ret)" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
           <td class="memname">EAPI const char * edje_object_part_state_get           </td>
           <td>(</td>
-          <td class="paramtype">Evas_Object *&nbsp;</td>
+          <td class="paramtype">const Evas_Object *&nbsp;</td>
           <td class="paramname"> <em>obj</em>, </td>
         </tr>
         <tr>
@@ -2038,14 +2039,14 @@ Swallows the object into the edje part so that all geometry changes for the part
 If an object has already been swallowed into this part, then it will first be unswallowed before the new object is swallowed. 
 </div>
 </div><p>
-<a class="anchor" name="bd8203b0ee5ac1bd00a71d847698518e"></a><!-- doxytag: member="edje.c::edje_object_part_swallow_get" ref="bd8203b0ee5ac1bd00a71d847698518e" args="(Evas_Object *obj, const char *part)" -->
+<a class="anchor" name="f4e345aafbfa1c098bf9644cdc447f77"></a><!-- doxytag: member="edje.c::edje_object_part_swallow_get" ref="f4e345aafbfa1c098bf9644cdc447f77" args="(const Evas_Object *obj, const char *part)" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
           <td class="memname">EAPI Evas_Object * edje_object_part_swallow_get           </td>
           <td>(</td>
-          <td class="paramtype">Evas_Object *&nbsp;</td>
+          <td class="paramtype">const Evas_Object *&nbsp;</td>
           <td class="paramname"> <em>obj</em>, </td>
         </tr>
         <tr>
@@ -2076,14 +2077,14 @@ Get the object currently swallowed by a part.
 
 </div>
 </div><p>
-<a class="anchor" name="01cea6fb68ea1f695d49f8b3827a90e5"></a><!-- doxytag: member="edje.c::edje_object_part_text_get" ref="01cea6fb68ea1f695d49f8b3827a90e5" args="(Evas_Object *obj, const char *part)" -->
+<a class="anchor" name="3c7c136de9ba058a11d617572ff3facb"></a><!-- doxytag: member="edje.c::edje_object_part_text_get" ref="3c7c136de9ba058a11d617572ff3facb" args="(const Evas_Object *obj, const char *part)" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
           <td class="memname">EAPI const char * edje_object_part_text_get           </td>
           <td>(</td>
-          <td class="paramtype">Evas_Object *&nbsp;</td>
+          <td class="paramtype">const Evas_Object *&nbsp;</td>
           <td class="paramname"> <em>obj</em>, </td>
         </tr>
         <tr>
@@ -2195,14 +2196,14 @@ Unswallow an object.
 Causes the edje to regurgitate a previously swallowed object. :) 
 </div>
 </div><p>
-<a class="anchor" name="65651e53be864ac806c90eb56705656d"></a><!-- doxytag: member="edje.c::edje_object_play_get" ref="65651e53be864ac806c90eb56705656d" args="(Evas_Object *obj)" -->
+<a class="anchor" name="a443758c58213227353e67dfc63f11b8"></a><!-- doxytag: member="edje.c::edje_object_play_get" ref="a443758c58213227353e67dfc63f11b8" args="(const Evas_Object *obj)" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
           <td class="memname">EAPI int edje_object_play_get           </td>
           <td>(</td>
-          <td class="paramtype">Evas_Object *&nbsp;</td>
+          <td class="paramtype">const Evas_Object *&nbsp;</td>
           <td class="paramname"> <em>obj</em>          </td>
           <td>&nbsp;)&nbsp;</td>
           <td width="100%"></td>
@@ -2444,14 +2445,14 @@ will trigger a program whose edc is:<p>
 FIXME should this signal be sent to children also? 
 </div>
 </div><p>
-<a class="anchor" name="19cb732b87093408ff1bbe58fe7b7241"></a><!-- doxytag: member="edje.c::edje_object_size_max_get" ref="19cb732b87093408ff1bbe58fe7b7241" args="(Evas_Object *obj, Evas_Coord *maxw, Evas_Coord *maxh)" -->
+<a class="anchor" name="49a974bf805e601215eafc2b8fe02499"></a><!-- doxytag: member="edje.c::edje_object_size_max_get" ref="49a974bf805e601215eafc2b8fe02499" args="(const Evas_Object *obj, Evas_Coord *maxw, Evas_Coord *maxh)" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
           <td class="memname">EAPI void edje_object_size_max_get           </td>
           <td>(</td>
-          <td class="paramtype">Evas_Object *&nbsp;</td>
+          <td class="paramtype">const Evas_Object *&nbsp;</td>
           <td class="paramname"> <em>obj</em>, </td>
         </tr>
         <tr>
@@ -2530,18 +2531,18 @@ Calculate minimum size.
   </table>
 </dl>
 Calculates the object's minimum size ?! 
-<p>References <a class="el" href="edje_8c-source.html#l04579">edje_object_size_min_restricted_calc()</a>.</p>
+<p>References <a class="el" href="edje_8c-source.html#l04681">edje_object_size_min_restricted_calc()</a>.</p>
 
 </div>
 </div><p>
-<a class="anchor" name="5aa26bbe4846410db16f053ce8e0c834"></a><!-- doxytag: member="edje.c::edje_object_size_min_get" ref="5aa26bbe4846410db16f053ce8e0c834" args="(Evas_Object *obj, Evas_Coord *minw, Evas_Coord *minh)" -->
+<a class="anchor" name="f7225a2ffab55e03781cdfe05dd224d7"></a><!-- doxytag: member="edje.c::edje_object_size_min_get" ref="f7225a2ffab55e03781cdfe05dd224d7" args="(const Evas_Object *obj, Evas_Coord *minw, Evas_Coord *minh)" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
           <td class="memname">EAPI void edje_object_size_min_get           </td>
           <td>(</td>
-          <td class="paramtype">Evas_Object *&nbsp;</td>
+          <td class="paramtype">const Evas_Object *&nbsp;</td>
           <td class="paramname"> <em>obj</em>, </td>
         </tr>
         <tr>
@@ -2634,7 +2635,7 @@ Calculate minimum size.
   </table>
 </dl>
 Calculates the object's minimum size ?! 
-<p>Referenced by <a class="el" href="edje_8c-source.html#l04564">edje_object_size_min_calc()</a>.</p>
+<p>Referenced by <a class="el" href="edje_8c-source.html#l04666">edje_object_size_min_calc()</a>.</p>
 
 </div>
 </div><p>
@@ -2716,7 +2717,7 @@ Thaw object.
 <dl class="return" compact><dt><b>Returns:</b></dt><dd>The frozen state<br>
  0 on Error</dd></dl>
 This allows frozen changes to occur. 
-<p>Referenced by <a class="el" href="edje_8c-source.html#l03473">edje_thaw()</a>.</p>
+<p>Referenced by <a class="el" href="edje_8c-source.html#l03531">edje_thaw()</a>.</p>
 
 </div>
 </div><p>
@@ -2855,7 +2856,7 @@ This sets updates all edje members which belong to this text class with the new 
 Thaw all Edje objects in the current process. 
 <p>
 See <a class="el" href="edje_8c.html#aacbe9411555a39261a7fe883b502149" title="Thaw object.">edje_object_thaw()</a> for more. 
-<p>References <a class="el" href="edje_8c-source.html#l03576">edje_object_thaw()</a>.</p>
+<p>References <a class="el" href="edje_8c-source.html#l03671">edje_object_thaw()</a>.</p>
 
 </div>
 </div><p>
@@ -2863,6 +2864,6 @@ See <a class="el" href="edje_8c.html#aacbe9411555a39261a7fe883b502149" title="Th
   </div>
   <hr />
   <p class="tiny">Copyright &copy; Enlightenment.org</p>
-  <p class="tiny">Edje Documentation Generated: Mon May 19 09:44:57 2008</p>
+  <p class="tiny">Edje Documentation Generated: Thu Sep 25 12:30:41 2008</p>
  </body>
 </html>

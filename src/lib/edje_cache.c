@@ -2,7 +2,6 @@
  * vim:ts=8:sw=3:sts=8:noexpandtab:cino=>5n-3f0^-2{2
  */
 
-#include "Edje.h"
 #include "edje_private.h"
 
 static Evas_Hash   *_edje_file_hash = NULL;
@@ -134,13 +133,11 @@ _edje_file_open(const char *file, const char *coll, int *error_ret, Edje_Part_Co
 
    _edje_textblock_style_parse_and_fix(edf);
 
-   for (l = edf->data; l; l = evas_list_remove(l, l->data))
+   for (l = edf->data; l; l = l->next)
      {
 	Edje_Data *di = l->data;
 	edf->data_cache = evas_hash_add(edf->data_cache, evas_stringshare_add(di->key), di->value);
-	free(di);
      }
-   edf->data = NULL;
 
    if (coll)
      {

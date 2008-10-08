@@ -25,6 +25,7 @@
       <td class='nav'><a class='nav' href="index.html">Main Page</a></td>
       <td class="nav"><a class="nav" href="edje_8c.html">Edje API</a></td>
       <td class="nav"><a class="nav" href="edcref.html">EDC Reference</a></td>
+      <td class="nav"><a class="nav" href="Edje__Edit_8h.html">Edje Edit API</a></td>
       <td class="nav"><a class="nav" href="todo.html">Todo</a></td>
      </tr>
     </table>
@@ -63,7 +64,7 @@ Example: print all the part in a loaded edje_object <div class="fragment"><pre c
 Example: Change the color of a rect inside an edje file <div class="fragment"><pre class="fragment"> Evas_Object *edje;
 
  edje = <a class="code" href="edje_8c.html#aee005c25b8da7ee407942122ccae0c7" title="Constructs the Edje object.">edje_object_add</a>(evas);
- <a class="code" href="edje_8c.html#3709153c22d46631f53f585d6ae4113b" title="Sets the EET file and group to load obj from.">edje_object_file_set</a>(edje,<span class="stringliteral">"edj/file/name"</span>, <span class="stringliteral">"group to load"</span>);
+ <a class="code" href="edje_8c.html#e9490c19c5866f6c96de4e4562c73fa1" title="Sets the EET file and group to load obj from.">edje_object_file_set</a>(edje,<span class="stringliteral">"edj/file/name"</span>, <span class="stringliteral">"group to load"</span>);
  <a class="code" href="Edje__Edit_8h.html#1976386a7b41757abafaa873f50b5d03" title="Set the color of a part state.">edje_edit_state_color_set</a>(edje, <span class="stringliteral">"MyRectName"</span>, <span class="stringliteral">"default 0.00"</span>, 255, 255, 0, 255);
  <a class="code" href="Edje__Edit_8h.html#baf201d9fe977ae1fc6ae53d3604532c" title="Save the modified edje object back to his file.">edje_edit_save</a>(edje);
 </pre></div> 
@@ -123,6 +124,23 @@ Example: Change the color of a rect inside an edje file <div class="fragment"><p
 <tr><td class="memItemLeft" nowrap align="right" valign="top">EAPI void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="Edje__Edit_8h.html#b020e4856d4c4bc5dce6fc9f61ee0820">edje_edit_group_max_h_set</a> (Evas_Object *obj, int h)</td></tr>
 
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Set the group max height.  <a href="#b020e4856d4c4bc5dce6fc9f61ee0820"></a><br></td></tr>
+<tr><td colspan="2"><div class="groupHeader">Data API</div></td></tr>
+<tr><td colspan="2"><div class="groupText">Functions to deal with data embedded in the edje (see <a class="el" href="edcref.html">Edje Data Collection reference</a>). <br><br></div></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">EAPI Evas_List *&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="Edje__Edit_8h.html#1f1353ee94a8d098e0bf861eee2af00b">edje_edit_data_list_get</a> (Evas_Object *obj)</td></tr>
+
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Retrieves a list with the item names inside the data block.  <a href="#1f1353ee94a8d098e0bf861eee2af00b"></a><br></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">EAPI unsigned char&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="Edje__Edit_8h.html#81514ba9ac7a5a5515a98dc264f4f640">edje_edit_data_add</a> (Evas_Object *obj, const char *itemname, const char *value)</td></tr>
+
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Create a new data object in the given edje If another data with the same name exists nothing is created and FALSE is returned.  <a href="#81514ba9ac7a5a5515a98dc264f4f640"></a><br></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">EAPI unsigned char&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="Edje__Edit_8h.html#3a01a48d7428564e527b7765f9668b87">edje_edit_data_del</a> (Evas_Object *obj, const char *itemname)</td></tr>
+
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Delete the given data object from edje.  <a href="#3a01a48d7428564e527b7765f9668b87"></a><br></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">EAPI const char *&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="Edje__Edit_8h.html#21c3b16c86ce9fc8d985db433ab8d051">edje_edit_data_value_get</a> (Evas_Object *obj, char *itemname)</td></tr>
+
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Get the data associated with the given itemname.  <a href="#21c3b16c86ce9fc8d985db433ab8d051"></a><br></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">EAPI unsigned char&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="Edje__Edit_8h.html#a7784df3e2ad7c4650441422ad5ec6ad">edje_edit_data_value_set</a> (Evas_Object *obj, const char *itemname, const char *value)</td></tr>
+
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Set the data associated with the given itemname.  <a href="#a7784df3e2ad7c4650441422ad5ec6ad"></a><br></td></tr>
 <tr><td colspan="2"><div class="groupHeader">Parts API</div></td></tr>
 <tr><td colspan="2"><div class="groupText">Functions to deal with part objects (see <a class="el" href="edcref.html">Edje Data Collection reference</a>). <br><br></div></td></tr>
 <tr><td class="memItemLeft" nowrap align="right" valign="top">EAPI Evas_List *&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="Edje__Edit_8h.html#a74f630561a477243a4ea8d4338ac00f">edje_edit_parts_list_get</a> (Evas_Object *obj)</td></tr>
@@ -192,7 +210,7 @@ Example: Change the color of a rect inside an edje file <div class="fragment"><p
 
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Set repeat_events for part.  <a href="#60cb251ce48a47aea6ecd19961073ab0"></a><br></td></tr>
 <tr><td colspan="2"><div class="groupHeader">States API</div></td></tr>
-<tr><td colspan="2"><div class="groupText">Description of gen api 2. <br><br></div></td></tr>
+<tr><td colspan="2"><div class="groupText">Functions to deal with part states (see <a class="el" href="edcref.html">Edje Data Collection reference</a>). <br><br></div></td></tr>
 <tr><td class="memItemLeft" nowrap align="right" valign="top">EAPI Evas_List *&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="Edje__Edit_8h.html#f5be63a364f57b230ae9deb97195436d">edje_edit_part_states_list_get</a> (Evas_Object *obj, const char *part)</td></tr>
 
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Get the list of all the states in the given part.  <a href="#f5be63a364f57b230ae9deb97195436d"></a><br></td></tr>
@@ -352,8 +370,62 @@ Example: Change the color of a rect inside an edje file <div class="fragment"><p
 <tr><td class="memItemLeft" nowrap align="right" valign="top">EAPI void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="Edje__Edit_8h.html#35c97e859c74ff12cc3a1ba793b5782e">edje_edit_state_aspect_pref_set</a> (Evas_Object *obj, const char *part, const char *state, unsigned char pref)</td></tr>
 
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Set the aspect preference value of a part state.  <a href="#35c97e859c74ff12cc3a1ba793b5782e"></a><br></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">EAPI double&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="Edje__Edit_8h.html#f9e2d50dc43ac85aaaa95f16456b9ad9">edje_edit_state_fill_origin_relative_x_get</a> (Evas_Object *obj, const char *part, const char *state)</td></tr>
+
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Get the fill origin relative x value of a part state.  <a href="#f9e2d50dc43ac85aaaa95f16456b9ad9"></a><br></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">EAPI double&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="Edje__Edit_8h.html#eebbc292f504a0a8f6c4b7a743df7531">edje_edit_state_fill_origin_relative_y_get</a> (Evas_Object *obj, const char *part, const char *state)</td></tr>
+
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Get the fill origin relative y value of a part state.  <a href="#eebbc292f504a0a8f6c4b7a743df7531"></a><br></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">EAPI int&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="Edje__Edit_8h.html#9f6fcddf065153a5bb561acf0b094ae4">edje_edit_state_fill_origin_offset_x_get</a> (Evas_Object *obj, const char *part, const char *state)</td></tr>
+
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Get the fill origin offset x value of a part state.  <a href="#9f6fcddf065153a5bb561acf0b094ae4"></a><br></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">EAPI int&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="Edje__Edit_8h.html#677cda549bea25d2b808cd56be40455b">edje_edit_state_fill_origin_offset_y_get</a> (Evas_Object *obj, const char *part, const char *state)</td></tr>
+
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Get the fill origin offset y value of a part state.  <a href="#677cda549bea25d2b808cd56be40455b"></a><br></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">EAPI void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="Edje__Edit_8h.html#7711ea533231d267c7726bc5f310fbad">edje_edit_state_fill_origin_relative_x_set</a> (Evas_Object *obj, const char *part, const char *state, double x)</td></tr>
+
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Set the fill origin relative x value of a part state.  <a href="#7711ea533231d267c7726bc5f310fbad"></a><br></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">EAPI void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="Edje__Edit_8h.html#5da74d113108fe30b117f14561d7278b">edje_edit_state_fill_origin_relative_y_set</a> (Evas_Object *obj, const char *part, const char *state, double x)</td></tr>
+
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Set the fill origin relative y value of a part state.  <a href="#5da74d113108fe30b117f14561d7278b"></a><br></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">EAPI void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="Edje__Edit_8h.html#0bd52ede863dcc0cad1e6d0549a26259">edje_edit_state_fill_origin_offset_x_set</a> (Evas_Object *obj, const char *part, const char *state, double x)</td></tr>
+
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Set the fill origin offset x value of a part state.  <a href="#0bd52ede863dcc0cad1e6d0549a26259"></a><br></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">EAPI void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="Edje__Edit_8h.html#b4ed8eadf03abeb4ba237a309bf7b161">edje_edit_state_fill_origin_offset_y_set</a> (Evas_Object *obj, const char *part, const char *state, double y)</td></tr>
+
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Set the fill origin offset x value of a part state.  <a href="#b4ed8eadf03abeb4ba237a309bf7b161"></a><br></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">EAPI double&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="Edje__Edit_8h.html#048a05ff4ad4bbc226c0ee3d73a05787">edje_edit_state_fill_size_relative_x_get</a> (Evas_Object *obj, const char *part, const char *state)</td></tr>
+
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Get the fill size relative x value of a part state.  <a href="#048a05ff4ad4bbc226c0ee3d73a05787"></a><br></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">EAPI double&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="Edje__Edit_8h.html#e95493da60efcf044a63d4ddd10c2612">edje_edit_state_fill_size_relative_y_get</a> (Evas_Object *obj, const char *part, const char *state)</td></tr>
+
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Get the fill size relative y value of a part state.  <a href="#e95493da60efcf044a63d4ddd10c2612"></a><br></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">EAPI int&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="Edje__Edit_8h.html#a0bdf305adad1be614ff06ce59578a18">edje_edit_state_fill_size_offset_x_get</a> (Evas_Object *obj, const char *part, const char *state)</td></tr>
+
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Get the fill size offset x value of a part state.  <a href="#a0bdf305adad1be614ff06ce59578a18"></a><br></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">EAPI int&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="Edje__Edit_8h.html#c1fda23343850638c8def96dc2a6471d">edje_edit_state_fill_size_offset_y_get</a> (Evas_Object *obj, const char *part, const char *state)</td></tr>
+
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Get the fill size offset y value of a part state.  <a href="#c1fda23343850638c8def96dc2a6471d"></a><br></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">EAPI void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="Edje__Edit_8h.html#f8a1e6a48216a2f9ca57b86c79de9a2f">edje_edit_state_fill_size_relative_x_set</a> (Evas_Object *obj, const char *part, const char *state, double x)</td></tr>
+
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Set the fill size relative x value of a part state.  <a href="#f8a1e6a48216a2f9ca57b86c79de9a2f"></a><br></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">EAPI void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="Edje__Edit_8h.html#ed3c3032888d2ca39d714af6de60df1f">edje_edit_state_fill_size_relative_y_set</a> (Evas_Object *obj, const char *part, const char *state, double x)</td></tr>
+
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Set the fill size relative y value of a part state.  <a href="#ed3c3032888d2ca39d714af6de60df1f"></a><br></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">EAPI void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="Edje__Edit_8h.html#95aab762385e4219c439a3a309ea4dea">edje_edit_state_fill_size_offset_x_set</a> (Evas_Object *obj, const char *part, const char *state, double x)</td></tr>
+
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Set the fill size offset x value of a part state.  <a href="#95aab762385e4219c439a3a309ea4dea"></a><br></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">EAPI void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="Edje__Edit_8h.html#16468c62997ede989126dcf52f0075b8">edje_edit_state_fill_size_offset_y_set</a> (Evas_Object *obj, const char *part, const char *state, double y)</td></tr>
+
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Set the fill size offset x value of a part state.  <a href="#16468c62997ede989126dcf52f0075b8"></a><br></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">EAPI unsigned char&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="Edje__Edit_8h.html#fdc25cb31eba35585cd211e43362e4d2">edje_edit_state_visible_get</a> (Evas_Object *obj, const char *part, const char *state)</td></tr>
+
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Get the visibility of a part state.  <a href="#fdc25cb31eba35585cd211e43362e4d2"></a><br></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">EAPI void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="Edje__Edit_8h.html#d9ea779347c623785acfa4e2a8bcf76b">edje_edit_state_visible_set</a> (Evas_Object *obj, const char *part, const char *state, unsigned char visible)</td></tr>
+
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Set the visibility of a part state.  <a href="#d9ea779347c623785acfa4e2a8bcf76b"></a><br></td></tr>
 <tr><td colspan="2"><div class="groupHeader">Text API</div></td></tr>
-<tr><td colspan="2"><div class="groupText">Description of gen api 2. <br><br></div></td></tr>
+<tr><td colspan="2"><div class="groupText">Functions to deal with text objects (see <a class="el" href="edcref.html">Edje Data Collection reference</a>). <br><br></div></td></tr>
 <tr><td class="memItemLeft" nowrap align="right" valign="top">EAPI const char *&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="Edje__Edit_8h.html#05150ba7f516a5b909c83de289a9878c">edje_edit_state_text_get</a> (Evas_Object *obj, const char *part, const char *state)</td></tr>
 
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Get the text of a part state.  <a href="#05150ba7f516a5b909c83de289a9878c"></a><br></td></tr>
@@ -391,7 +463,7 @@ Example: Change the color of a rect inside an edje file <div class="fragment"><p
 
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Set font name for a given part state.  <a href="#ab4161c56e6fab686eb9ff7e56a99fc7"></a><br></td></tr>
 <tr><td colspan="2"><div class="groupHeader">Images API</div></td></tr>
-<tr><td colspan="2"><div class="groupText">Description of gen api 2. <br><br></div></td></tr>
+<tr><td colspan="2"><div class="groupText">Functions to deal with image objects (see <a class="el" href="edcref.html">Edje Data Collection reference</a>). <br><br></div></td></tr>
 <tr><td class="memItemLeft" nowrap align="right" valign="top">EAPI Evas_List *&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="Edje__Edit_8h.html#b7826bc948490ca86eff8fb2f0cc6a0f">edje_edit_images_list_get</a> (Evas_Object *obj)</td></tr>
 
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Get the list of all the images in the given edje.  <a href="#b7826bc948490ca86eff8fb2f0cc6a0f"></a><br></td></tr>
@@ -407,6 +479,12 @@ Example: Change the color of a rect inside an edje file <div class="fragment"><p
 <tr><td class="memItemLeft" nowrap align="right" valign="top">EAPI int&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="Edje__Edit_8h.html#9ea7619fbd5b17da787aa29be28b14f6">edje_edit_image_id_get</a> (Evas_Object *obj, const char *image_name)</td></tr>
 
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Get image id for a given image name.  <a href="#9ea7619fbd5b17da787aa29be28b14f6"></a><br></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">EAPI int&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="Edje__Edit_8h.html#b4bc7326e21956cfb0ae1f645dce173e">edje_edit_image_compression_type_get</a> (Evas_Object *obj, const char *image)</td></tr>
+
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Get compression type for the given image.  <a href="#b4bc7326e21956cfb0ae1f645dce173e"></a><br></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">EAPI int&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="Edje__Edit_8h.html#db5eb315a3dcba981b01ceb31afcde33">edje_edit_image_compression_rate_get</a> (Evas_Object *obj, const char *image)</td></tr>
+
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Get compression rate for the given image.  <a href="#db5eb315a3dcba981b01ceb31afcde33"></a><br></td></tr>
 <tr><td class="memItemLeft" nowrap align="right" valign="top">EAPI void&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="Edje__Edit_8h.html#2a413823e46b5fd434bfa860edc83734">edje_edit_state_image_border_get</a> (Evas_Object *obj, const char *part, const char *state, int *l, int *r, int *t, int *b)</td></tr>
 
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Get the image border of a part state.  <a href="#2a413823e46b5fd434bfa860edc83734"></a><br></td></tr>
@@ -422,8 +500,99 @@ Example: Change the color of a rect inside an edje file <div class="fragment"><p
 <tr><td class="memItemLeft" nowrap align="right" valign="top">EAPI unsigned char&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="Edje__Edit_8h.html#ad7ada01be3bad13ea63439207725f80">edje_edit_state_tween_del</a> (Evas_Object *obj, const char *part, const char *state, const char *tween)</td></tr>
 
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Remove the first tween with the given name.  <a href="#ad7ada01be3bad13ea63439207725f80"></a><br></td></tr>
+<tr><td colspan="2"><div class="groupHeader">Spectrum API</div></td></tr>
+<tr><td colspan="2"><div class="groupText">Functions to manage spectrum (see <a class="el" href="edcref.html">Edje Data Collection reference</a>). <br><br></div></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">EAPI Evas_List *&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="Edje__Edit_8h.html#988a3ca94a9bf72807d85a99117d2139">edje_edit_spectrum_list_get</a> (Evas_Object *obj)</td></tr>
+
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Get the list of all the spectrum in the given edje object.  <a href="#988a3ca94a9bf72807d85a99117d2139"></a><br></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">EAPI unsigned char&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="Edje__Edit_8h.html#740e6ffb093f25396bbf9f6ea8cbc734">edje_edit_spectra_add</a> (Evas_Object *obj, const char *name)</td></tr>
+
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Add a new spectra in the given edje object.  <a href="#740e6ffb093f25396bbf9f6ea8cbc734"></a><br></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">EAPI unsigned char&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="Edje__Edit_8h.html#ff7841a11974c106ca2b6f01cb02d95d">edje_edit_spectra_del</a> (Evas_Object *obj, const char *spectra)</td></tr>
+
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Delete the given spectra from the edje object.  <a href="#ff7841a11974c106ca2b6f01cb02d95d"></a><br></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">EAPI unsigned char&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="Edje__Edit_8h.html#aedc7772baddc4c894fded1da22b14f3">edje_edit_spectra_name_set</a> (Evas_Object *obj, const char *spectra, const char *name)</td></tr>
+
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Change the name of the given spectra.  <a href="#aedc7772baddc4c894fded1da22b14f3"></a><br></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">EAPI int&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="Edje__Edit_8h.html#3df47d9ff511a8288a1bb0de129b61d3">edje_edit_spectra_stop_num_get</a> (Evas_Object *obj, const char *spectra)</td></tr>
+
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Get the number of stops in the given spectra.  <a href="#3df47d9ff511a8288a1bb0de129b61d3"></a><br></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">EAPI unsigned char&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="Edje__Edit_8h.html#63b45d031bd0e0b1c0f8f7c38eea91d3">edje_edit_spectra_stop_num_set</a> (Evas_Object *obj, const char *spectra, int num)</td></tr>
+
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Set the number of stops in the given spectra.  <a href="#63b45d031bd0e0b1c0f8f7c38eea91d3"></a><br></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">EAPI unsigned char&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="Edje__Edit_8h.html#5179fcfc3ad616609798fff82a16ccae">edje_edit_spectra_stop_color_get</a> (Evas_Object *obj, const char *spectra, int stop_number, int *r, int *g, int *b, int *a, int *d)</td></tr>
+
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Get the colors of the given stop.  <a href="#5179fcfc3ad616609798fff82a16ccae"></a><br></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">EAPI unsigned char&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="Edje__Edit_8h.html#8d522585b9981576a660de307f68b6a1">edje_edit_spectra_stop_color_set</a> (Evas_Object *obj, const char *spectra, int stop_number, int r, int g, int b, int a, int d)</td></tr>
+
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Set the colors of the given stop.  <a href="#8d522585b9981576a660de307f68b6a1"></a><br></td></tr>
+<tr><td colspan="2"><div class="groupHeader">Gradient API</div></td></tr>
+<tr><td colspan="2"><div class="groupText">Functions to deal with gradient objects (see <a class="el" href="edcref.html">Edje Data Collection reference</a>). <br><br></div></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">EAPI const char *&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="Edje__Edit_8h.html#b6efdb641e7b86d1374a9bf92eb90448">edje_edit_state_gradient_type_get</a> (Evas_Object *obj, const char *part, const char *state)</td></tr>
+
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Get the type of gradient.  <a href="#b6efdb641e7b86d1374a9bf92eb90448"></a><br></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">EAPI unsigned char&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="Edje__Edit_8h.html#f9e2c732849e995cbf5f292aed16e1a8">edje_edit_state_gradient_type_set</a> (Evas_Object *obj, const char *part, const char *state, const char *type)</td></tr>
+
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Set the type of gradient.  <a href="#f9e2c732849e995cbf5f292aed16e1a8"></a><br></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">EAPI unsigned char&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="Edje__Edit_8h.html#430d12e4c7f9e697304a6f23821d0400">edje_edit_state_gradient_use_fill_get</a> (Evas_Object *obj, const char *part, const char *state)</td></tr>
+
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Get if the current gradient use the fill properties or the gradient_rel as params.  <a href="#430d12e4c7f9e697304a6f23821d0400"></a><br></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">EAPI const char *&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="Edje__Edit_8h.html#c3912df5296ba395e48217ff97c1e2de">edje_edit_state_gradient_spectra_get</a> (Evas_Object *obj, const char *part, const char *state)</td></tr>
+
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Get the spectra used by part state.  <a href="#c3912df5296ba395e48217ff97c1e2de"></a><br></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">EAPI unsigned char&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="Edje__Edit_8h.html#8d4ac47fa2a196fdb616971c2ebc8737">edje_edit_state_gradient_spectra_set</a> (Evas_Object *obj, const char *part, const char *state, const char *spectra)</td></tr>
+
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Set the spectra used by part state.  <a href="#8d4ac47fa2a196fdb616971c2ebc8737"></a><br></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">EAPI double&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="Edje__Edit_8h.html#2ab76c1b2a0ad3109f221506061db829">edje_edit_state_gradient_rel1_relative_x_get</a> (Evas_Object *obj, const char *part, const char *state)</td></tr>
+
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Get the gradien rel1 relative x value.  <a href="#2ab76c1b2a0ad3109f221506061db829"></a><br></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">EAPI double&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="Edje__Edit_8h.html#3c4aae65d8aef1c56562008982e0c6b1">edje_edit_state_gradient_rel1_relative_y_get</a> (Evas_Object *obj, const char *part, const char *state)</td></tr>
+
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Get the gradien rel1 relative y value.  <a href="#3c4aae65d8aef1c56562008982e0c6b1"></a><br></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">EAPI double&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="Edje__Edit_8h.html#e2ebd676193599e95cf45d77f8ed99b3">edje_edit_state_gradient_rel2_relative_x_get</a> (Evas_Object *obj, const char *part, const char *state)</td></tr>
+
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Get the gradien rel2 relative x value.  <a href="#e2ebd676193599e95cf45d77f8ed99b3"></a><br></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">EAPI double&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="Edje__Edit_8h.html#043bc79e1dfc0c8bf9cf88c60c98c01d">edje_edit_state_gradient_rel2_relative_y_get</a> (Evas_Object *obj, const char *part, const char *state)</td></tr>
+
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Get the gradien rel2 relative y value.  <a href="#043bc79e1dfc0c8bf9cf88c60c98c01d"></a><br></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">EAPI unsigned char&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="Edje__Edit_8h.html#46655b1cf61fc40e3947cad2d18f2507">edje_edit_state_gradient_rel1_relative_x_set</a> (Evas_Object *obj, const char *part, const char *state, double val)</td></tr>
+
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Set the gradien rel1 relative x value.  <a href="#46655b1cf61fc40e3947cad2d18f2507"></a><br></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">EAPI unsigned char&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="Edje__Edit_8h.html#72046eb3b4a81f8a602c53a16f00f2ee">edje_edit_state_gradient_rel1_relative_y_set</a> (Evas_Object *obj, const char *part, const char *state, double val)</td></tr>
+
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Set the gradien rel1 relative y value.  <a href="#72046eb3b4a81f8a602c53a16f00f2ee"></a><br></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">EAPI unsigned char&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="Edje__Edit_8h.html#557b93bef0d215ffec60d1e0e59a8fff">edje_edit_state_gradient_rel2_relative_x_set</a> (Evas_Object *obj, const char *part, const char *state, double val)</td></tr>
+
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Set the gradien rel2 relative x value.  <a href="#557b93bef0d215ffec60d1e0e59a8fff"></a><br></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">EAPI unsigned char&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="Edje__Edit_8h.html#f6a5a58797df063ed8229a4e3497afef">edje_edit_state_gradient_rel2_relative_y_set</a> (Evas_Object *obj, const char *part, const char *state, double val)</td></tr>
+
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Set the gradien rel2 relative y value.  <a href="#f6a5a58797df063ed8229a4e3497afef"></a><br></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">EAPI int&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="Edje__Edit_8h.html#07804cc994c3ea2385e6f381b8c96c00">edje_edit_state_gradient_rel1_offset_x_get</a> (Evas_Object *obj, const char *part, const char *state)</td></tr>
+
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Get the gradien rel1 offset x value.  <a href="#07804cc994c3ea2385e6f381b8c96c00"></a><br></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">EAPI int&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="Edje__Edit_8h.html#de559acddbd95d79f79ed75cdcabd5cc">edje_edit_state_gradient_rel1_offset_y_get</a> (Evas_Object *obj, const char *part, const char *state)</td></tr>
+
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Get the gradien rel1 offset y value.  <a href="#de559acddbd95d79f79ed75cdcabd5cc"></a><br></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">EAPI int&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="Edje__Edit_8h.html#ece12ee63bded0be50bfe67fc7b577c0">edje_edit_state_gradient_rel2_offset_x_get</a> (Evas_Object *obj, const char *part, const char *state)</td></tr>
+
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Get the gradien rel2 offset x value.  <a href="#ece12ee63bded0be50bfe67fc7b577c0"></a><br></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">EAPI int&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="Edje__Edit_8h.html#51c242ace0ee117483682d3852de54f9">edje_edit_state_gradient_rel2_offset_y_get</a> (Evas_Object *obj, const char *part, const char *state)</td></tr>
+
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Get the gradien rel2 offset y value.  <a href="#51c242ace0ee117483682d3852de54f9"></a><br></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">EAPI unsigned char&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="Edje__Edit_8h.html#7e4bc27994cf0832b09a1edec26435b3">edje_edit_state_gradient_rel1_offset_x_set</a> (Evas_Object *obj, const char *part, const char *state, int val)</td></tr>
+
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Set the gradien rel1 offset x value.  <a href="#7e4bc27994cf0832b09a1edec26435b3"></a><br></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">EAPI unsigned char&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="Edje__Edit_8h.html#a7716d2c37d877a7e0705c8bc1a6d25f">edje_edit_state_gradient_rel1_offset_y_set</a> (Evas_Object *obj, const char *part, const char *state, int val)</td></tr>
+
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Set the gradien rel1 offset y value.  <a href="#a7716d2c37d877a7e0705c8bc1a6d25f"></a><br></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">EAPI unsigned char&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="Edje__Edit_8h.html#a1bf9164edaaa2bedfca1c5eeb34ae7f">edje_edit_state_gradient_rel2_offset_x_set</a> (Evas_Object *obj, const char *part, const char *state, int val)</td></tr>
+
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Set the gradien rel2 offset x value.  <a href="#a1bf9164edaaa2bedfca1c5eeb34ae7f"></a><br></td></tr>
+<tr><td class="memItemLeft" nowrap align="right" valign="top">EAPI unsigned char&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="Edje__Edit_8h.html#e8ae75b1aa99391e0a85468a4799090b">edje_edit_state_gradient_rel2_offset_y_set</a> (Evas_Object *obj, const char *part, const char *state, int val)</td></tr>
+
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Set the gradien rel2 offset y value.  <a href="#e8ae75b1aa99391e0a85468a4799090b"></a><br></td></tr>
 <tr><td colspan="2"><div class="groupHeader">Programs API</div></td></tr>
-<tr><td colspan="2"><div class="groupText">Description of gen api 2. <br><br></div></td></tr>
+<tr><td colspan="2"><div class="groupText">Functions to deal with programs (see <a class="el" href="edcref.html">Edje Data Collection reference</a>). <br><br></div></td></tr>
 <tr><td class="memItemLeft" nowrap align="right" valign="top">EAPI Evas_List *&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="Edje__Edit_8h.html#693857059e9d891934c9e6f39652d923">edje_edit_programs_list_get</a> (Evas_Object *obj)</td></tr>
 
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Get the list of all the programs in the given edje object.  <a href="#693857059e9d891934c9e6f39652d923"></a><br></td></tr>
@@ -527,12 +696,212 @@ Example: Change the color of a rect inside an edje file <div class="fragment"><p
 
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Set the duration of the transition in seconds.  <a href="#01c4a454d909ef20f1352a3de2abd43f"></a><br></td></tr>
 <tr><td colspan="2"><div class="groupHeader">Scripts API</div></td></tr>
-<tr><td colspan="2"><div class="groupText">Description of gen api 2. <br><br></div></td></tr>
+<tr><td colspan="2"><div class="groupText">Functions to deal with embryo scripts (see <a class="el" href="edcref.html">Edje Data Collection reference</a>). <br><br></div></td></tr>
 <tr><td class="memItemLeft" nowrap align="right" valign="top"><a class="anchor" name="73e9b0439f2e3300a43c6f507063ccbc"></a><!-- doxytag: member="Edje_Edit.h::edje_edit_script_get" ref="73e9b0439f2e3300a43c6f507063ccbc" args="(Evas_Object *obj)" -->
 EAPI const char *&nbsp;</td><td class="memItemRight" valign="bottom"><b>edje_edit_script_get</b> (Evas_Object *obj)</td></tr>
 
 </table>
 <hr><h2>Function Documentation</h2>
+<a class="anchor" name="81514ba9ac7a5a5515a98dc264f4f640"></a><!-- doxytag: member="Edje_Edit.h::edje_edit_data_add" ref="81514ba9ac7a5a5515a98dc264f4f640" args="(Evas_Object *obj, const char *itemname, const char *value)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">EAPI unsigned char edje_edit_data_add           </td>
+          <td>(</td>
+          <td class="paramtype">Evas_Object *&nbsp;</td>
+          <td class="paramname"> <em>obj</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&nbsp;</td>
+          <td class="paramname"> <em>itemname</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&nbsp;</td>
+          <td class="paramname"> <em>value</em></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td width="100%"></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+Create a new data object in the given edje If another data with the same name exists nothing is created and FALSE is returned. 
+<p>
+<dl class="return" compact><dt><b>Returns:</b></dt><dd>TRUE on success </dd></dl>
+<dl compact><dt><b>Parameters: </b></dt><dd>
+<table border="0" cellspacing="2" cellpadding="0">
+<tr><td valign="top"><em>obj</em>&nbsp;</td><td>
+The edje object </td></tr>
+<tr><td valign="top"><em>itemname</em>&nbsp;</td><td>
+The name for the new data </td></tr>
+<tr><td valign="top"><em>value</em>&nbsp;</td><td>
+The value for the new data </td></tr>
+</table>
+</dl>
+</div>
+</div><p>
+<a class="anchor" name="3a01a48d7428564e527b7765f9668b87"></a><!-- doxytag: member="Edje_Edit.h::edje_edit_data_del" ref="3a01a48d7428564e527b7765f9668b87" args="(Evas_Object *obj, const char *itemname)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">EAPI unsigned char edje_edit_data_del           </td>
+          <td>(</td>
+          <td class="paramtype">Evas_Object *&nbsp;</td>
+          <td class="paramname"> <em>obj</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&nbsp;</td>
+          <td class="paramname"> <em>itemname</em></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td width="100%"></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+Delete the given data object from edje. 
+<p>
+<dl class="return" compact><dt><b>Returns:</b></dt><dd>TRUE on success </dd></dl>
+<dl compact><dt><b>Parameters: </b></dt><dd>
+<table border="0" cellspacing="2" cellpadding="0">
+<tr><td valign="top"><em>obj</em>&nbsp;</td><td>
+The edje object </td></tr>
+<tr><td valign="top"><em>itemname</em>&nbsp;</td><td>
+The name of the data to remove </td></tr>
+</table>
+</dl>
+</div>
+</div><p>
+<a class="anchor" name="1f1353ee94a8d098e0bf861eee2af00b"></a><!-- doxytag: member="Edje_Edit.h::edje_edit_data_list_get" ref="1f1353ee94a8d098e0bf861eee2af00b" args="(Evas_Object *obj)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">EAPI Evas_List* edje_edit_data_list_get           </td>
+          <td>(</td>
+          <td class="paramtype">Evas_Object *&nbsp;</td>
+          <td class="paramname"> <em>obj</em>          </td>
+          <td>&nbsp;)&nbsp;</td>
+          <td width="100%"></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+Retrieves a list with the item names inside the data block. 
+<p>
+<dl class="return" compact><dt><b>Returns:</b></dt><dd>An Evas_List* of string (char *)containing all the data names. </dd></dl>
+<dl compact><dt><b>Parameters: </b></dt><dd>
+<table border="0" cellspacing="2" cellpadding="0">
+<tr><td valign="top"><em>obj</em>&nbsp;</td><td>
+The edje object </td></tr>
+</table>
+</dl>
+</div>
+</div><p>
+<a class="anchor" name="21c3b16c86ce9fc8d985db433ab8d051"></a><!-- doxytag: member="Edje_Edit.h::edje_edit_data_value_get" ref="21c3b16c86ce9fc8d985db433ab8d051" args="(Evas_Object *obj, char *itemname)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">EAPI const char* edje_edit_data_value_get           </td>
+          <td>(</td>
+          <td class="paramtype">Evas_Object *&nbsp;</td>
+          <td class="paramname"> <em>obj</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">char *&nbsp;</td>
+          <td class="paramname"> <em>itemname</em></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td width="100%"></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+Get the data associated with the given itemname. 
+<p>
+<dl class="return" compact><dt><b>Returns:</b></dt><dd>The data value </dd></dl>
+<dl compact><dt><b>Parameters: </b></dt><dd>
+<table border="0" cellspacing="2" cellpadding="0">
+<tr><td valign="top"><em>obj</em>&nbsp;</td><td>
+The edje object </td></tr>
+<tr><td valign="top"><em>itemname</em>&nbsp;</td><td>
+The name of the data item </td></tr>
+</table>
+</dl>
+</div>
+</div><p>
+<a class="anchor" name="a7784df3e2ad7c4650441422ad5ec6ad"></a><!-- doxytag: member="Edje_Edit.h::edje_edit_data_value_set" ref="a7784df3e2ad7c4650441422ad5ec6ad" args="(Evas_Object *obj, const char *itemname, const char *value)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">EAPI unsigned char edje_edit_data_value_set           </td>
+          <td>(</td>
+          <td class="paramtype">Evas_Object *&nbsp;</td>
+          <td class="paramname"> <em>obj</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&nbsp;</td>
+          <td class="paramname"> <em>itemname</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&nbsp;</td>
+          <td class="paramname"> <em>value</em></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td width="100%"></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+Set the data associated with the given itemname. 
+<p>
+<dl class="return" compact><dt><b>Returns:</b></dt><dd>TRUE on success </dd></dl>
+<dl compact><dt><b>Parameters: </b></dt><dd>
+<table border="0" cellspacing="2" cellpadding="0">
+<tr><td valign="top"><em>obj</em>&nbsp;</td><td>
+The edje object </td></tr>
+<tr><td valign="top"><em>itemname</em>&nbsp;</td><td>
+The name of the data item </td></tr>
+<tr><td valign="top"><em>value</em>&nbsp;</td><td>
+The new value to set </td></tr>
+</table>
+</dl>
+</div>
+</div><p>
 <a class="anchor" name="7f04b332dd312e36b58be93ae1e3adaa"></a><!-- doxytag: member="Edje_Edit.h::edje_edit_font_add" ref="7f04b332dd312e36b58be93ae1e3adaa" args="(Evas_Object *obj, const char *path)" -->
 <div class="memitem">
 <div class="memproto">
@@ -591,8 +960,7 @@ The file path to load the ttf font from </td></tr>
 <p>
 Get the list of all the fonts in the given edje. 
 <p>
-<dl class="return" compact><dt><b>Returns:</b></dt><dd>An Evas_List* of string (char *)containing all the fonts names found in the edje file. Use <a class="el" href="Edje__Edit_8h.html#68ea52098aa643bf273436cf04e92ccf" title="Free a generic Evas_List of (char *) allocated by an edje_edit_*_get() function.">edje_edit_string_list_free()</a> when you don't need it anymore.<p>
-A string list of all the fonts found in the edje file </dd></dl>
+Use <a class="el" href="Edje__Edit_8h.html#68ea52098aa643bf273436cf04e92ccf" title="Free a generic Evas_List of (char *) allocated by an edje_edit_*_get() function.">edje_edit_string_list_free()</a> when you don't need the list anymore.<dl class="return" compact><dt><b>Returns:</b></dt><dd>An Evas_List* of string (char *)containing all the fonts names found in the edje file. </dd></dl>
 <dl compact><dt><b>Parameters: </b></dt><dd>
 <table border="0" cellspacing="2" cellpadding="0">
 <tr><td valign="top"><em>obj</em>&nbsp;</td><td>
@@ -1049,6 +1417,84 @@ The name of the image file to include in the edje </td></tr>
 </dl>
 </div>
 </div><p>
+<a class="anchor" name="db5eb315a3dcba981b01ceb31afcde33"></a><!-- doxytag: member="Edje_Edit.h::edje_edit_image_compression_rate_get" ref="db5eb315a3dcba981b01ceb31afcde33" args="(Evas_Object *obj, const char *image)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">EAPI int edje_edit_image_compression_rate_get           </td>
+          <td>(</td>
+          <td class="paramtype">Evas_Object *&nbsp;</td>
+          <td class="paramname"> <em>obj</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&nbsp;</td>
+          <td class="paramname"> <em>image</em></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td width="100%"></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+Get compression rate for the given image. 
+<p>
+<dl class="return" compact><dt><b>Returns:</b></dt><dd>the compression rate if the image is EDJE_EDIT_IMAGE_COMP_LOSSY. Or &lt; 0 on errors </dd></dl>
+<dl compact><dt><b>Parameters: </b></dt><dd>
+<table border="0" cellspacing="2" cellpadding="0">
+<tr><td valign="top"><em>obj</em>&nbsp;</td><td>
+The edje object </td></tr>
+<tr><td valign="top"><em>image</em>&nbsp;</td><td>
+The name of the image </td></tr>
+</table>
+</dl>
+</div>
+</div><p>
+<a class="anchor" name="b4bc7326e21956cfb0ae1f645dce173e"></a><!-- doxytag: member="Edje_Edit.h::edje_edit_image_compression_type_get" ref="b4bc7326e21956cfb0ae1f645dce173e" args="(Evas_Object *obj, const char *image)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">EAPI int edje_edit_image_compression_type_get           </td>
+          <td>(</td>
+          <td class="paramtype">Evas_Object *&nbsp;</td>
+          <td class="paramname"> <em>obj</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&nbsp;</td>
+          <td class="paramname"> <em>image</em></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td width="100%"></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+Get compression type for the given image. 
+<p>
+<dl class="return" compact><dt><b>Returns:</b></dt><dd>One of EDJE_EDIT_IMAGE_COMP_RAW, EDJE_EDIT_IMAGE_COMP_USER, EDJE_EDIT_IMAGE_COMP_COMP or EDJE_EDIT_IMAGE_COMP_LOSSY </dd></dl>
+<dl compact><dt><b>Parameters: </b></dt><dd>
+<table border="0" cellspacing="2" cellpadding="0">
+<tr><td valign="top"><em>obj</em>&nbsp;</td><td>
+The edje object </td></tr>
+<tr><td valign="top"><em>image</em>&nbsp;</td><td>
+The name of the image </td></tr>
+</table>
+</dl>
+</div>
+</div><p>
 <a class="anchor" name="9ea7619fbd5b17da787aa29be28b14f6"></a><!-- doxytag: member="Edje_Edit.h::edje_edit_image_id_get" ref="9ea7619fbd5b17da787aa29be28b14f6" args="(Evas_Object *obj, const char *image_name)" -->
 <div class="memitem">
 <div class="memproto">
@@ -1104,8 +1550,7 @@ The edje object </td></tr>
 <p>
 Get the list of all the images in the given edje. 
 <p>
-<dl class="return" compact><dt><b>Returns:</b></dt><dd>An Evas_List* of string (char *)containing all the images names found in the edje file. Use <a class="el" href="Edje__Edit_8h.html#68ea52098aa643bf273436cf04e92ccf" title="Free a generic Evas_List of (char *) allocated by an edje_edit_*_get() function.">edje_edit_string_list_free()</a> when you don't need it anymore.<p>
-A string list containing all the images found in the edje file </dd></dl>
+Use <a class="el" href="Edje__Edit_8h.html#68ea52098aa643bf273436cf04e92ccf" title="Free a generic Evas_List of (char *) allocated by an edje_edit_*_get() function.">edje_edit_string_list_free()</a> when you don't need the list anymore.<dl class="return" compact><dt><b>Returns:</b></dt><dd>An Evas_List* of string (char *)containing all the images names found in the edje file. </dd></dl>
 <dl compact><dt><b>Parameters: </b></dt><dd>
 <table border="0" cellspacing="2" cellpadding="0">
 <tr><td valign="top"><em>obj</em>&nbsp;</td><td>
@@ -3554,6 +3999,419 @@ The edje object to save </td></tr>
 </dl>
 </div>
 </div><p>
+<a class="anchor" name="740e6ffb093f25396bbf9f6ea8cbc734"></a><!-- doxytag: member="Edje_Edit.h::edje_edit_spectra_add" ref="740e6ffb093f25396bbf9f6ea8cbc734" args="(Evas_Object *obj, const char *name)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">EAPI unsigned char edje_edit_spectra_add           </td>
+          <td>(</td>
+          <td class="paramtype">Evas_Object *&nbsp;</td>
+          <td class="paramname"> <em>obj</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&nbsp;</td>
+          <td class="paramname"> <em>name</em></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td width="100%"></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+Add a new spectra in the given edje object. 
+<p>
+<dl class="return" compact><dt><b>Returns:</b></dt><dd>1 on success, 0 otherwise </dd></dl>
+<dl compact><dt><b>Parameters: </b></dt><dd>
+<table border="0" cellspacing="2" cellpadding="0">
+<tr><td valign="top"><em>obj</em>&nbsp;</td><td>
+The edje object </td></tr>
+<tr><td valign="top"><em>name</em>&nbsp;</td><td>
+The name of the new spectra </td></tr>
+</table>
+</dl>
+</div>
+</div><p>
+<a class="anchor" name="ff7841a11974c106ca2b6f01cb02d95d"></a><!-- doxytag: member="Edje_Edit.h::edje_edit_spectra_del" ref="ff7841a11974c106ca2b6f01cb02d95d" args="(Evas_Object *obj, const char *spectra)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">EAPI unsigned char edje_edit_spectra_del           </td>
+          <td>(</td>
+          <td class="paramtype">Evas_Object *&nbsp;</td>
+          <td class="paramname"> <em>obj</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&nbsp;</td>
+          <td class="paramname"> <em>spectra</em></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td width="100%"></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+Delete the given spectra from the edje object. 
+<p>
+<dl class="return" compact><dt><b>Returns:</b></dt><dd>1 on success, 0 otherwise </dd></dl>
+<dl compact><dt><b>Parameters: </b></dt><dd>
+<table border="0" cellspacing="2" cellpadding="0">
+<tr><td valign="top"><em>obj</em>&nbsp;</td><td>
+The edje object </td></tr>
+<tr><td valign="top"><em>spectra</em>&nbsp;</td><td>
+The name of the spectra to delete </td></tr>
+</table>
+</dl>
+</div>
+</div><p>
+<a class="anchor" name="aedc7772baddc4c894fded1da22b14f3"></a><!-- doxytag: member="Edje_Edit.h::edje_edit_spectra_name_set" ref="aedc7772baddc4c894fded1da22b14f3" args="(Evas_Object *obj, const char *spectra, const char *name)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">EAPI unsigned char edje_edit_spectra_name_set           </td>
+          <td>(</td>
+          <td class="paramtype">Evas_Object *&nbsp;</td>
+          <td class="paramname"> <em>obj</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&nbsp;</td>
+          <td class="paramname"> <em>spectra</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&nbsp;</td>
+          <td class="paramname"> <em>name</em></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td width="100%"></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+Change the name of the given spectra. 
+<p>
+<dl class="return" compact><dt><b>Returns:</b></dt><dd>1 on success, 0 otherwise </dd></dl>
+<dl compact><dt><b>Parameters: </b></dt><dd>
+<table border="0" cellspacing="2" cellpadding="0">
+<tr><td valign="top"><em>obj</em>&nbsp;</td><td>
+The edje object </td></tr>
+<tr><td valign="top"><em>spectra</em>&nbsp;</td><td>
+The current name of the spectra </td></tr>
+<tr><td valign="top"><em>name</em>&nbsp;</td><td>
+The new name to assign </td></tr>
+</table>
+</dl>
+</div>
+</div><p>
+<a class="anchor" name="5179fcfc3ad616609798fff82a16ccae"></a><!-- doxytag: member="Edje_Edit.h::edje_edit_spectra_stop_color_get" ref="5179fcfc3ad616609798fff82a16ccae" args="(Evas_Object *obj, const char *spectra, int stop_number, int *r, int *g, int *b, int *a, int *d)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">EAPI unsigned char edje_edit_spectra_stop_color_get           </td>
+          <td>(</td>
+          <td class="paramtype">Evas_Object *&nbsp;</td>
+          <td class="paramname"> <em>obj</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&nbsp;</td>
+          <td class="paramname"> <em>spectra</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&nbsp;</td>
+          <td class="paramname"> <em>stop_number</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int *&nbsp;</td>
+          <td class="paramname"> <em>r</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int *&nbsp;</td>
+          <td class="paramname"> <em>g</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int *&nbsp;</td>
+          <td class="paramname"> <em>b</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int *&nbsp;</td>
+          <td class="paramname"> <em>a</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int *&nbsp;</td>
+          <td class="paramname"> <em>d</em></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td width="100%"></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+Get the colors of the given stop. 
+<p>
+<dl class="return" compact><dt><b>Returns:</b></dt><dd>1 on success, 0 otherwise </dd></dl>
+<dl compact><dt><b>Parameters: </b></dt><dd>
+<table border="0" cellspacing="2" cellpadding="0">
+<tr><td valign="top"><em>obj</em>&nbsp;</td><td>
+The edje object </td></tr>
+<tr><td valign="top"><em>spectra</em>&nbsp;</td><td>
+The name of the spectra </td></tr>
+<tr><td valign="top"><em>stop_number</em>&nbsp;</td><td>
+The number of the stop </td></tr>
+<tr><td valign="top"><em>r</em>&nbsp;</td><td>
+Where to store the red color value </td></tr>
+<tr><td valign="top"><em>g</em>&nbsp;</td><td>
+Where to store the green color value </td></tr>
+<tr><td valign="top"><em>b</em>&nbsp;</td><td>
+Where to store the blue color value </td></tr>
+<tr><td valign="top"><em>a</em>&nbsp;</td><td>
+Where to store the alpha color value </td></tr>
+<tr><td valign="top"><em>d</em>&nbsp;</td><td>
+Where to store the delta stop value </td></tr>
+</table>
+</dl>
+</div>
+</div><p>
+<a class="anchor" name="8d522585b9981576a660de307f68b6a1"></a><!-- doxytag: member="Edje_Edit.h::edje_edit_spectra_stop_color_set" ref="8d522585b9981576a660de307f68b6a1" args="(Evas_Object *obj, const char *spectra, int stop_number, int r, int g, int b, int a, int d)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">EAPI unsigned char edje_edit_spectra_stop_color_set           </td>
+          <td>(</td>
+          <td class="paramtype">Evas_Object *&nbsp;</td>
+          <td class="paramname"> <em>obj</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&nbsp;</td>
+          <td class="paramname"> <em>spectra</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&nbsp;</td>
+          <td class="paramname"> <em>stop_number</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&nbsp;</td>
+          <td class="paramname"> <em>r</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&nbsp;</td>
+          <td class="paramname"> <em>g</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&nbsp;</td>
+          <td class="paramname"> <em>b</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&nbsp;</td>
+          <td class="paramname"> <em>a</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&nbsp;</td>
+          <td class="paramname"> <em>d</em></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td width="100%"></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+Set the colors of the given stop. 
+<p>
+<dl class="return" compact><dt><b>Returns:</b></dt><dd>1 on success, 0 otherwise </dd></dl>
+<dl compact><dt><b>Parameters: </b></dt><dd>
+<table border="0" cellspacing="2" cellpadding="0">
+<tr><td valign="top"><em>obj</em>&nbsp;</td><td>
+The edje object </td></tr>
+<tr><td valign="top"><em>spectra</em>&nbsp;</td><td>
+The name of the spectra </td></tr>
+<tr><td valign="top"><em>stop_number</em>&nbsp;</td><td>
+The number of the stop </td></tr>
+<tr><td valign="top"><em>r</em>&nbsp;</td><td>
+The red color value to set </td></tr>
+<tr><td valign="top"><em>g</em>&nbsp;</td><td>
+The green color value to set </td></tr>
+<tr><td valign="top"><em>b</em>&nbsp;</td><td>
+The blue color value to set </td></tr>
+<tr><td valign="top"><em>a</em>&nbsp;</td><td>
+The alpha color value to set </td></tr>
+<tr><td valign="top"><em>d</em>&nbsp;</td><td>
+The delta stop value to set </td></tr>
+</table>
+</dl>
+</div>
+</div><p>
+<a class="anchor" name="3df47d9ff511a8288a1bb0de129b61d3"></a><!-- doxytag: member="Edje_Edit.h::edje_edit_spectra_stop_num_get" ref="3df47d9ff511a8288a1bb0de129b61d3" args="(Evas_Object *obj, const char *spectra)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">EAPI int edje_edit_spectra_stop_num_get           </td>
+          <td>(</td>
+          <td class="paramtype">Evas_Object *&nbsp;</td>
+          <td class="paramname"> <em>obj</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&nbsp;</td>
+          <td class="paramname"> <em>spectra</em></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td width="100%"></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+Get the number of stops in the given spectra. 
+<p>
+<dl class="return" compact><dt><b>Returns:</b></dt><dd>The number of stops, or 0 on errors </dd></dl>
+<dl compact><dt><b>Parameters: </b></dt><dd>
+<table border="0" cellspacing="2" cellpadding="0">
+<tr><td valign="top"><em>obj</em>&nbsp;</td><td>
+The edje object </td></tr>
+<tr><td valign="top"><em>spectra</em>&nbsp;</td><td>
+The name of the spectra </td></tr>
+</table>
+</dl>
+</div>
+</div><p>
+<a class="anchor" name="63b45d031bd0e0b1c0f8f7c38eea91d3"></a><!-- doxytag: member="Edje_Edit.h::edje_edit_spectra_stop_num_set" ref="63b45d031bd0e0b1c0f8f7c38eea91d3" args="(Evas_Object *obj, const char *spectra, int num)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">EAPI unsigned char edje_edit_spectra_stop_num_set           </td>
+          <td>(</td>
+          <td class="paramtype">Evas_Object *&nbsp;</td>
+          <td class="paramname"> <em>obj</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&nbsp;</td>
+          <td class="paramname"> <em>spectra</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&nbsp;</td>
+          <td class="paramname"> <em>num</em></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td width="100%"></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+Set the number of stops in the given spectra. 
+<p>
+<dl class="return" compact><dt><b>Returns:</b></dt><dd>1 on success, 0 otherwise </dd></dl>
+<dl compact><dt><b>Parameters: </b></dt><dd>
+<table border="0" cellspacing="2" cellpadding="0">
+<tr><td valign="top"><em>obj</em>&nbsp;</td><td>
+The edje object </td></tr>
+<tr><td valign="top"><em>spectra</em>&nbsp;</td><td>
+The name of the spectra </td></tr>
+<tr><td valign="top"><em>num</em>&nbsp;</td><td>
+The number of stops you want </td></tr>
+</table>
+</dl>
+</div>
+</div><p>
+<a class="anchor" name="988a3ca94a9bf72807d85a99117d2139"></a><!-- doxytag: member="Edje_Edit.h::edje_edit_spectrum_list_get" ref="988a3ca94a9bf72807d85a99117d2139" args="(Evas_Object *obj)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">EAPI Evas_List* edje_edit_spectrum_list_get           </td>
+          <td>(</td>
+          <td class="paramtype">Evas_Object *&nbsp;</td>
+          <td class="paramname"> <em>obj</em>          </td>
+          <td>&nbsp;)&nbsp;</td>
+          <td width="100%"></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+Get the list of all the spectrum in the given edje object. 
+<p>
+Use <a class="el" href="Edje__Edit_8h.html#68ea52098aa643bf273436cf04e92ccf" title="Free a generic Evas_List of (char *) allocated by an edje_edit_*_get() function.">edje_edit_string_list_free()</a> when you don't need it anymore.<dl class="return" compact><dt><b>Returns:</b></dt><dd>An Evas_List* of string(char *) containing all the spectra names. </dd></dl>
+<dl compact><dt><b>Parameters: </b></dt><dd>
+<table border="0" cellspacing="2" cellpadding="0">
+<tr><td valign="top"><em>obj</em>&nbsp;</td><td>
+The edje object </td></tr>
+</table>
+</dl>
+</div>
+</div><p>
 <a class="anchor" name="7ce80c988b83d06cf9eec1a4000548bd"></a><!-- doxytag: member="Edje_Edit.h::edje_edit_state_add" ref="7ce80c988b83d06cf9eec1a4000548bd" args="(Evas_Object *obj, const char *part, const char *name)" -->
 <div class="memitem">
 <div class="memproto">
@@ -4665,6 +5523,814 @@ The name of the state to check (including the state value) </td></tr>
 </dl>
 </div>
 </div><p>
+<a class="anchor" name="9f6fcddf065153a5bb561acf0b094ae4"></a><!-- doxytag: member="Edje_Edit.h::edje_edit_state_fill_origin_offset_x_get" ref="9f6fcddf065153a5bb561acf0b094ae4" args="(Evas_Object *obj, const char *part, const char *state)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">EAPI int edje_edit_state_fill_origin_offset_x_get           </td>
+          <td>(</td>
+          <td class="paramtype">Evas_Object *&nbsp;</td>
+          <td class="paramname"> <em>obj</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&nbsp;</td>
+          <td class="paramname"> <em>part</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&nbsp;</td>
+          <td class="paramname"> <em>state</em></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td width="100%"></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+Get the fill origin offset x value of a part state. 
+<p>
+<dl class="return" compact><dt><b>Returns:</b></dt><dd>The fill origin offset x relative to area </dd></dl>
+<dl compact><dt><b>Parameters: </b></dt><dd>
+<table border="0" cellspacing="2" cellpadding="0">
+<tr><td valign="top"><em>obj</em>&nbsp;</td><td>
+The edje object </td></tr>
+<tr><td valign="top"><em>part</em>&nbsp;</td><td>
+The name of the part </td></tr>
+<tr><td valign="top"><em>state</em>&nbsp;</td><td>
+The name of the 'part state' (ex. "default 0.00") </td></tr>
+</table>
+</dl>
+</div>
+</div><p>
+<a class="anchor" name="0bd52ede863dcc0cad1e6d0549a26259"></a><!-- doxytag: member="Edje_Edit.h::edje_edit_state_fill_origin_offset_x_set" ref="0bd52ede863dcc0cad1e6d0549a26259" args="(Evas_Object *obj, const char *part, const char *state, double x)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">EAPI void edje_edit_state_fill_origin_offset_x_set           </td>
+          <td>(</td>
+          <td class="paramtype">Evas_Object *&nbsp;</td>
+          <td class="paramname"> <em>obj</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&nbsp;</td>
+          <td class="paramname"> <em>part</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&nbsp;</td>
+          <td class="paramname"> <em>state</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&nbsp;</td>
+          <td class="paramname"> <em>x</em></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td width="100%"></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+Set the fill origin offset x value of a part state. 
+<p>
+<dl compact><dt><b>Parameters: </b></dt><dd>
+<table border="0" cellspacing="2" cellpadding="0">
+<tr><td valign="top"><em>obj</em>&nbsp;</td><td>
+The edje object </td></tr>
+<tr><td valign="top"><em>part</em>&nbsp;</td><td>
+The name of the part </td></tr>
+<tr><td valign="top"><em>state</em>&nbsp;</td><td>
+The name of the 'part state' (ex. "default 0.00") </td></tr>
+<tr><td valign="top"><em>x</em>&nbsp;</td><td>
+The new value to set </td></tr>
+</table>
+</dl>
+</div>
+</div><p>
+<a class="anchor" name="677cda549bea25d2b808cd56be40455b"></a><!-- doxytag: member="Edje_Edit.h::edje_edit_state_fill_origin_offset_y_get" ref="677cda549bea25d2b808cd56be40455b" args="(Evas_Object *obj, const char *part, const char *state)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">EAPI int edje_edit_state_fill_origin_offset_y_get           </td>
+          <td>(</td>
+          <td class="paramtype">Evas_Object *&nbsp;</td>
+          <td class="paramname"> <em>obj</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&nbsp;</td>
+          <td class="paramname"> <em>part</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&nbsp;</td>
+          <td class="paramname"> <em>state</em></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td width="100%"></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+Get the fill origin offset y value of a part state. 
+<p>
+<dl class="return" compact><dt><b>Returns:</b></dt><dd>The fill origin offset y relative to area </dd></dl>
+<dl compact><dt><b>Parameters: </b></dt><dd>
+<table border="0" cellspacing="2" cellpadding="0">
+<tr><td valign="top"><em>obj</em>&nbsp;</td><td>
+The edje object </td></tr>
+<tr><td valign="top"><em>part</em>&nbsp;</td><td>
+The name of the part </td></tr>
+<tr><td valign="top"><em>state</em>&nbsp;</td><td>
+The name of the 'part state' (ex. "default 0.00") </td></tr>
+</table>
+</dl>
+</div>
+</div><p>
+<a class="anchor" name="b4ed8eadf03abeb4ba237a309bf7b161"></a><!-- doxytag: member="Edje_Edit.h::edje_edit_state_fill_origin_offset_y_set" ref="b4ed8eadf03abeb4ba237a309bf7b161" args="(Evas_Object *obj, const char *part, const char *state, double y)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">EAPI void edje_edit_state_fill_origin_offset_y_set           </td>
+          <td>(</td>
+          <td class="paramtype">Evas_Object *&nbsp;</td>
+          <td class="paramname"> <em>obj</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&nbsp;</td>
+          <td class="paramname"> <em>part</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&nbsp;</td>
+          <td class="paramname"> <em>state</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&nbsp;</td>
+          <td class="paramname"> <em>y</em></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td width="100%"></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+Set the fill origin offset x value of a part state. 
+<p>
+<dl compact><dt><b>Parameters: </b></dt><dd>
+<table border="0" cellspacing="2" cellpadding="0">
+<tr><td valign="top"><em>obj</em>&nbsp;</td><td>
+The edje object </td></tr>
+<tr><td valign="top"><em>part</em>&nbsp;</td><td>
+The name of the part </td></tr>
+<tr><td valign="top"><em>state</em>&nbsp;</td><td>
+The name of the 'part state' (ex. "default 0.00") </td></tr>
+<tr><td valign="top"><em>y</em>&nbsp;</td><td>
+The new value to set </td></tr>
+</table>
+</dl>
+</div>
+</div><p>
+<a class="anchor" name="f9e2d50dc43ac85aaaa95f16456b9ad9"></a><!-- doxytag: member="Edje_Edit.h::edje_edit_state_fill_origin_relative_x_get" ref="f9e2d50dc43ac85aaaa95f16456b9ad9" args="(Evas_Object *obj, const char *part, const char *state)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">EAPI double edje_edit_state_fill_origin_relative_x_get           </td>
+          <td>(</td>
+          <td class="paramtype">Evas_Object *&nbsp;</td>
+          <td class="paramname"> <em>obj</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&nbsp;</td>
+          <td class="paramname"> <em>part</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&nbsp;</td>
+          <td class="paramname"> <em>state</em></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td width="100%"></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+Get the fill origin relative x value of a part state. 
+<p>
+<dl class="return" compact><dt><b>Returns:</b></dt><dd>The fill offset x relative to area </dd></dl>
+<dl compact><dt><b>Parameters: </b></dt><dd>
+<table border="0" cellspacing="2" cellpadding="0">
+<tr><td valign="top"><em>obj</em>&nbsp;</td><td>
+The edje object </td></tr>
+<tr><td valign="top"><em>part</em>&nbsp;</td><td>
+The name of the part </td></tr>
+<tr><td valign="top"><em>state</em>&nbsp;</td><td>
+The name of the 'part state' (ex. "default 0.00") </td></tr>
+</table>
+</dl>
+</div>
+</div><p>
+<a class="anchor" name="7711ea533231d267c7726bc5f310fbad"></a><!-- doxytag: member="Edje_Edit.h::edje_edit_state_fill_origin_relative_x_set" ref="7711ea533231d267c7726bc5f310fbad" args="(Evas_Object *obj, const char *part, const char *state, double x)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">EAPI void edje_edit_state_fill_origin_relative_x_set           </td>
+          <td>(</td>
+          <td class="paramtype">Evas_Object *&nbsp;</td>
+          <td class="paramname"> <em>obj</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&nbsp;</td>
+          <td class="paramname"> <em>part</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&nbsp;</td>
+          <td class="paramname"> <em>state</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&nbsp;</td>
+          <td class="paramname"> <em>x</em></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td width="100%"></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+Set the fill origin relative x value of a part state. 
+<p>
+<dl compact><dt><b>Parameters: </b></dt><dd>
+<table border="0" cellspacing="2" cellpadding="0">
+<tr><td valign="top"><em>obj</em>&nbsp;</td><td>
+The edje object </td></tr>
+<tr><td valign="top"><em>part</em>&nbsp;</td><td>
+The name of the part </td></tr>
+<tr><td valign="top"><em>state</em>&nbsp;</td><td>
+The name of the 'part state' (ex. "default 0.00") </td></tr>
+<tr><td valign="top"><em>x</em>&nbsp;</td><td>
+The new value to set </td></tr>
+</table>
+</dl>
+</div>
+</div><p>
+<a class="anchor" name="eebbc292f504a0a8f6c4b7a743df7531"></a><!-- doxytag: member="Edje_Edit.h::edje_edit_state_fill_origin_relative_y_get" ref="eebbc292f504a0a8f6c4b7a743df7531" args="(Evas_Object *obj, const char *part, const char *state)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">EAPI double edje_edit_state_fill_origin_relative_y_get           </td>
+          <td>(</td>
+          <td class="paramtype">Evas_Object *&nbsp;</td>
+          <td class="paramname"> <em>obj</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&nbsp;</td>
+          <td class="paramname"> <em>part</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&nbsp;</td>
+          <td class="paramname"> <em>state</em></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td width="100%"></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+Get the fill origin relative y value of a part state. 
+<p>
+<dl class="return" compact><dt><b>Returns:</b></dt><dd>The fill origin y relative to area </dd></dl>
+<dl compact><dt><b>Parameters: </b></dt><dd>
+<table border="0" cellspacing="2" cellpadding="0">
+<tr><td valign="top"><em>obj</em>&nbsp;</td><td>
+The edje object </td></tr>
+<tr><td valign="top"><em>part</em>&nbsp;</td><td>
+The name of the part </td></tr>
+<tr><td valign="top"><em>state</em>&nbsp;</td><td>
+The name of the 'part state' (ex. "default 0.00") </td></tr>
+</table>
+</dl>
+</div>
+</div><p>
+<a class="anchor" name="5da74d113108fe30b117f14561d7278b"></a><!-- doxytag: member="Edje_Edit.h::edje_edit_state_fill_origin_relative_y_set" ref="5da74d113108fe30b117f14561d7278b" args="(Evas_Object *obj, const char *part, const char *state, double x)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">EAPI void edje_edit_state_fill_origin_relative_y_set           </td>
+          <td>(</td>
+          <td class="paramtype">Evas_Object *&nbsp;</td>
+          <td class="paramname"> <em>obj</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&nbsp;</td>
+          <td class="paramname"> <em>part</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&nbsp;</td>
+          <td class="paramname"> <em>state</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&nbsp;</td>
+          <td class="paramname"> <em>x</em></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td width="100%"></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+Set the fill origin relative y value of a part state. 
+<p>
+<dl compact><dt><b>Parameters: </b></dt><dd>
+<table border="0" cellspacing="2" cellpadding="0">
+<tr><td valign="top"><em>obj</em>&nbsp;</td><td>
+The edje object </td></tr>
+<tr><td valign="top"><em>part</em>&nbsp;</td><td>
+The name of the part </td></tr>
+<tr><td valign="top"><em>state</em>&nbsp;</td><td>
+The name of the 'part state' (ex. "default 0.00") </td></tr>
+<tr><td valign="top"><em>x</em>&nbsp;</td><td>
+The new value to set </td></tr>
+</table>
+</dl>
+</div>
+</div><p>
+<a class="anchor" name="a0bdf305adad1be614ff06ce59578a18"></a><!-- doxytag: member="Edje_Edit.h::edje_edit_state_fill_size_offset_x_get" ref="a0bdf305adad1be614ff06ce59578a18" args="(Evas_Object *obj, const char *part, const char *state)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">EAPI int edje_edit_state_fill_size_offset_x_get           </td>
+          <td>(</td>
+          <td class="paramtype">Evas_Object *&nbsp;</td>
+          <td class="paramname"> <em>obj</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&nbsp;</td>
+          <td class="paramname"> <em>part</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&nbsp;</td>
+          <td class="paramname"> <em>state</em></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td width="100%"></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+Get the fill size offset x value of a part state. 
+<p>
+<dl class="return" compact><dt><b>Returns:</b></dt><dd>The fill size offset x relative to area </dd></dl>
+<dl compact><dt><b>Parameters: </b></dt><dd>
+<table border="0" cellspacing="2" cellpadding="0">
+<tr><td valign="top"><em>obj</em>&nbsp;</td><td>
+The edje object </td></tr>
+<tr><td valign="top"><em>part</em>&nbsp;</td><td>
+The name of the part </td></tr>
+<tr><td valign="top"><em>state</em>&nbsp;</td><td>
+The name of the 'part state' (ex. "default 0.00") </td></tr>
+</table>
+</dl>
+</div>
+</div><p>
+<a class="anchor" name="95aab762385e4219c439a3a309ea4dea"></a><!-- doxytag: member="Edje_Edit.h::edje_edit_state_fill_size_offset_x_set" ref="95aab762385e4219c439a3a309ea4dea" args="(Evas_Object *obj, const char *part, const char *state, double x)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">EAPI void edje_edit_state_fill_size_offset_x_set           </td>
+          <td>(</td>
+          <td class="paramtype">Evas_Object *&nbsp;</td>
+          <td class="paramname"> <em>obj</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&nbsp;</td>
+          <td class="paramname"> <em>part</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&nbsp;</td>
+          <td class="paramname"> <em>state</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&nbsp;</td>
+          <td class="paramname"> <em>x</em></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td width="100%"></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+Set the fill size offset x value of a part state. 
+<p>
+<dl compact><dt><b>Parameters: </b></dt><dd>
+<table border="0" cellspacing="2" cellpadding="0">
+<tr><td valign="top"><em>obj</em>&nbsp;</td><td>
+The edje object </td></tr>
+<tr><td valign="top"><em>part</em>&nbsp;</td><td>
+The name of the part </td></tr>
+<tr><td valign="top"><em>state</em>&nbsp;</td><td>
+The name of the 'part state' (ex. "default 0.00") </td></tr>
+<tr><td valign="top"><em>x</em>&nbsp;</td><td>
+The new value to set </td></tr>
+</table>
+</dl>
+</div>
+</div><p>
+<a class="anchor" name="c1fda23343850638c8def96dc2a6471d"></a><!-- doxytag: member="Edje_Edit.h::edje_edit_state_fill_size_offset_y_get" ref="c1fda23343850638c8def96dc2a6471d" args="(Evas_Object *obj, const char *part, const char *state)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">EAPI int edje_edit_state_fill_size_offset_y_get           </td>
+          <td>(</td>
+          <td class="paramtype">Evas_Object *&nbsp;</td>
+          <td class="paramname"> <em>obj</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&nbsp;</td>
+          <td class="paramname"> <em>part</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&nbsp;</td>
+          <td class="paramname"> <em>state</em></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td width="100%"></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+Get the fill size offset y value of a part state. 
+<p>
+<dl class="return" compact><dt><b>Returns:</b></dt><dd>The fill size offset y relative to area </dd></dl>
+<dl compact><dt><b>Parameters: </b></dt><dd>
+<table border="0" cellspacing="2" cellpadding="0">
+<tr><td valign="top"><em>obj</em>&nbsp;</td><td>
+The edje object </td></tr>
+<tr><td valign="top"><em>part</em>&nbsp;</td><td>
+The name of the part </td></tr>
+<tr><td valign="top"><em>state</em>&nbsp;</td><td>
+The name of the 'part state' (ex. "default 0.00") </td></tr>
+</table>
+</dl>
+</div>
+</div><p>
+<a class="anchor" name="16468c62997ede989126dcf52f0075b8"></a><!-- doxytag: member="Edje_Edit.h::edje_edit_state_fill_size_offset_y_set" ref="16468c62997ede989126dcf52f0075b8" args="(Evas_Object *obj, const char *part, const char *state, double y)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">EAPI void edje_edit_state_fill_size_offset_y_set           </td>
+          <td>(</td>
+          <td class="paramtype">Evas_Object *&nbsp;</td>
+          <td class="paramname"> <em>obj</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&nbsp;</td>
+          <td class="paramname"> <em>part</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&nbsp;</td>
+          <td class="paramname"> <em>state</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&nbsp;</td>
+          <td class="paramname"> <em>y</em></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td width="100%"></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+Set the fill size offset x value of a part state. 
+<p>
+<dl compact><dt><b>Parameters: </b></dt><dd>
+<table border="0" cellspacing="2" cellpadding="0">
+<tr><td valign="top"><em>obj</em>&nbsp;</td><td>
+The edje object </td></tr>
+<tr><td valign="top"><em>part</em>&nbsp;</td><td>
+The name of the part </td></tr>
+<tr><td valign="top"><em>state</em>&nbsp;</td><td>
+The name of the 'part state' (ex. "default 0.00") </td></tr>
+<tr><td valign="top"><em>y</em>&nbsp;</td><td>
+The new value to set </td></tr>
+</table>
+</dl>
+</div>
+</div><p>
+<a class="anchor" name="048a05ff4ad4bbc226c0ee3d73a05787"></a><!-- doxytag: member="Edje_Edit.h::edje_edit_state_fill_size_relative_x_get" ref="048a05ff4ad4bbc226c0ee3d73a05787" args="(Evas_Object *obj, const char *part, const char *state)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">EAPI double edje_edit_state_fill_size_relative_x_get           </td>
+          <td>(</td>
+          <td class="paramtype">Evas_Object *&nbsp;</td>
+          <td class="paramname"> <em>obj</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&nbsp;</td>
+          <td class="paramname"> <em>part</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&nbsp;</td>
+          <td class="paramname"> <em>state</em></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td width="100%"></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+Get the fill size relative x value of a part state. 
+<p>
+<dl class="return" compact><dt><b>Returns:</b></dt><dd>The fill size offset x relative to area </dd></dl>
+<dl compact><dt><b>Parameters: </b></dt><dd>
+<table border="0" cellspacing="2" cellpadding="0">
+<tr><td valign="top"><em>obj</em>&nbsp;</td><td>
+The edje object </td></tr>
+<tr><td valign="top"><em>part</em>&nbsp;</td><td>
+The name of the part </td></tr>
+<tr><td valign="top"><em>state</em>&nbsp;</td><td>
+The name of the 'part state' (ex. "default 0.00") </td></tr>
+</table>
+</dl>
+</div>
+</div><p>
+<a class="anchor" name="f8a1e6a48216a2f9ca57b86c79de9a2f"></a><!-- doxytag: member="Edje_Edit.h::edje_edit_state_fill_size_relative_x_set" ref="f8a1e6a48216a2f9ca57b86c79de9a2f" args="(Evas_Object *obj, const char *part, const char *state, double x)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">EAPI void edje_edit_state_fill_size_relative_x_set           </td>
+          <td>(</td>
+          <td class="paramtype">Evas_Object *&nbsp;</td>
+          <td class="paramname"> <em>obj</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&nbsp;</td>
+          <td class="paramname"> <em>part</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&nbsp;</td>
+          <td class="paramname"> <em>state</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&nbsp;</td>
+          <td class="paramname"> <em>x</em></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td width="100%"></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+Set the fill size relative x value of a part state. 
+<p>
+<dl compact><dt><b>Parameters: </b></dt><dd>
+<table border="0" cellspacing="2" cellpadding="0">
+<tr><td valign="top"><em>obj</em>&nbsp;</td><td>
+The edje object </td></tr>
+<tr><td valign="top"><em>part</em>&nbsp;</td><td>
+The name of the part </td></tr>
+<tr><td valign="top"><em>state</em>&nbsp;</td><td>
+The name of the 'part state' (ex. "default 0.00") </td></tr>
+<tr><td valign="top"><em>x</em>&nbsp;</td><td>
+The new value to set </td></tr>
+</table>
+</dl>
+</div>
+</div><p>
+<a class="anchor" name="e95493da60efcf044a63d4ddd10c2612"></a><!-- doxytag: member="Edje_Edit.h::edje_edit_state_fill_size_relative_y_get" ref="e95493da60efcf044a63d4ddd10c2612" args="(Evas_Object *obj, const char *part, const char *state)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">EAPI double edje_edit_state_fill_size_relative_y_get           </td>
+          <td>(</td>
+          <td class="paramtype">Evas_Object *&nbsp;</td>
+          <td class="paramname"> <em>obj</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&nbsp;</td>
+          <td class="paramname"> <em>part</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&nbsp;</td>
+          <td class="paramname"> <em>state</em></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td width="100%"></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+Get the fill size relative y value of a part state. 
+<p>
+<dl class="return" compact><dt><b>Returns:</b></dt><dd>The fill size y relative to area </dd></dl>
+<dl compact><dt><b>Parameters: </b></dt><dd>
+<table border="0" cellspacing="2" cellpadding="0">
+<tr><td valign="top"><em>obj</em>&nbsp;</td><td>
+The edje object </td></tr>
+<tr><td valign="top"><em>part</em>&nbsp;</td><td>
+The name of the part </td></tr>
+<tr><td valign="top"><em>state</em>&nbsp;</td><td>
+The name of the 'part state' (ex. "default 0.00") </td></tr>
+</table>
+</dl>
+</div>
+</div><p>
+<a class="anchor" name="ed3c3032888d2ca39d714af6de60df1f"></a><!-- doxytag: member="Edje_Edit.h::edje_edit_state_fill_size_relative_y_set" ref="ed3c3032888d2ca39d714af6de60df1f" args="(Evas_Object *obj, const char *part, const char *state, double x)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">EAPI void edje_edit_state_fill_size_relative_y_set           </td>
+          <td>(</td>
+          <td class="paramtype">Evas_Object *&nbsp;</td>
+          <td class="paramname"> <em>obj</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&nbsp;</td>
+          <td class="paramname"> <em>part</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&nbsp;</td>
+          <td class="paramname"> <em>state</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&nbsp;</td>
+          <td class="paramname"> <em>x</em></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td width="100%"></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+Set the fill size relative y value of a part state. 
+<p>
+<dl compact><dt><b>Parameters: </b></dt><dd>
+<table border="0" cellspacing="2" cellpadding="0">
+<tr><td valign="top"><em>obj</em>&nbsp;</td><td>
+The edje object </td></tr>
+<tr><td valign="top"><em>part</em>&nbsp;</td><td>
+The name of the part </td></tr>
+<tr><td valign="top"><em>state</em>&nbsp;</td><td>
+The name of the 'part state' (ex. "default 0.00") </td></tr>
+<tr><td valign="top"><em>x</em>&nbsp;</td><td>
+The new value to set </td></tr>
+</table>
+</dl>
+</div>
+</div><p>
 <a class="anchor" name="555ef3b9d7db82cceb9b76aa8d6543cf"></a><!-- doxytag: member="Edje_Edit.h::edje_edit_state_font_get" ref="555ef3b9d7db82cceb9b76aa8d6543cf" args="(Evas_Object *obj, const char *part, const char *state)" -->
 <div class="memitem">
 <div class="memproto">
@@ -4762,6 +6428,1057 @@ The name of the part </td></tr>
 The name of the 'part state' (ex. "default 0.00") </td></tr>
 <tr><td valign="top"><em>font</em>&nbsp;</td><td>
 The name of the font to use in the given part state </td></tr>
+</table>
+</dl>
+</div>
+</div><p>
+<a class="anchor" name="07804cc994c3ea2385e6f381b8c96c00"></a><!-- doxytag: member="Edje_Edit.h::edje_edit_state_gradient_rel1_offset_x_get" ref="07804cc994c3ea2385e6f381b8c96c00" args="(Evas_Object *obj, const char *part, const char *state)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">EAPI int edje_edit_state_gradient_rel1_offset_x_get           </td>
+          <td>(</td>
+          <td class="paramtype">Evas_Object *&nbsp;</td>
+          <td class="paramname"> <em>obj</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&nbsp;</td>
+          <td class="paramname"> <em>part</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&nbsp;</td>
+          <td class="paramname"> <em>state</em></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td width="100%"></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+Get the gradien rel1 offset x value. 
+<p>
+<dl class="return" compact><dt><b>Returns:</b></dt><dd>The gradient rel1 offset x value </dd></dl>
+<dl compact><dt><b>Parameters: </b></dt><dd>
+<table border="0" cellspacing="2" cellpadding="0">
+<tr><td valign="top"><em>obj</em>&nbsp;</td><td>
+The edje object </td></tr>
+<tr><td valign="top"><em>part</em>&nbsp;</td><td>
+The name of the part </td></tr>
+<tr><td valign="top"><em>state</em>&nbsp;</td><td>
+The name of the 'part state' (ex. "default 0.00") </td></tr>
+</table>
+</dl>
+</div>
+</div><p>
+<a class="anchor" name="7e4bc27994cf0832b09a1edec26435b3"></a><!-- doxytag: member="Edje_Edit.h::edje_edit_state_gradient_rel1_offset_x_set" ref="7e4bc27994cf0832b09a1edec26435b3" args="(Evas_Object *obj, const char *part, const char *state, int val)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">EAPI unsigned char edje_edit_state_gradient_rel1_offset_x_set           </td>
+          <td>(</td>
+          <td class="paramtype">Evas_Object *&nbsp;</td>
+          <td class="paramname"> <em>obj</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&nbsp;</td>
+          <td class="paramname"> <em>part</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&nbsp;</td>
+          <td class="paramname"> <em>state</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&nbsp;</td>
+          <td class="paramname"> <em>val</em></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td width="100%"></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+Set the gradien rel1 offset x value. 
+<p>
+<dl class="return" compact><dt><b>Returns:</b></dt><dd>1 on success, 0 otherwise </dd></dl>
+<dl compact><dt><b>Parameters: </b></dt><dd>
+<table border="0" cellspacing="2" cellpadding="0">
+<tr><td valign="top"><em>obj</em>&nbsp;</td><td>
+The edje object </td></tr>
+<tr><td valign="top"><em>part</em>&nbsp;</td><td>
+The name of the part </td></tr>
+<tr><td valign="top"><em>state</em>&nbsp;</td><td>
+The name of the 'part state' (ex. "default 0.00") </td></tr>
+</table>
+</dl>
+</div>
+</div><p>
+<a class="anchor" name="de559acddbd95d79f79ed75cdcabd5cc"></a><!-- doxytag: member="Edje_Edit.h::edje_edit_state_gradient_rel1_offset_y_get" ref="de559acddbd95d79f79ed75cdcabd5cc" args="(Evas_Object *obj, const char *part, const char *state)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">EAPI int edje_edit_state_gradient_rel1_offset_y_get           </td>
+          <td>(</td>
+          <td class="paramtype">Evas_Object *&nbsp;</td>
+          <td class="paramname"> <em>obj</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&nbsp;</td>
+          <td class="paramname"> <em>part</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&nbsp;</td>
+          <td class="paramname"> <em>state</em></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td width="100%"></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+Get the gradien rel1 offset y value. 
+<p>
+<dl class="return" compact><dt><b>Returns:</b></dt><dd>The gradient rel1 offset y value </dd></dl>
+<dl compact><dt><b>Parameters: </b></dt><dd>
+<table border="0" cellspacing="2" cellpadding="0">
+<tr><td valign="top"><em>obj</em>&nbsp;</td><td>
+The edje object </td></tr>
+<tr><td valign="top"><em>part</em>&nbsp;</td><td>
+The name of the part </td></tr>
+<tr><td valign="top"><em>state</em>&nbsp;</td><td>
+The name of the 'part state' (ex. "default 0.00") </td></tr>
+</table>
+</dl>
+</div>
+</div><p>
+<a class="anchor" name="a7716d2c37d877a7e0705c8bc1a6d25f"></a><!-- doxytag: member="Edje_Edit.h::edje_edit_state_gradient_rel1_offset_y_set" ref="a7716d2c37d877a7e0705c8bc1a6d25f" args="(Evas_Object *obj, const char *part, const char *state, int val)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">EAPI unsigned char edje_edit_state_gradient_rel1_offset_y_set           </td>
+          <td>(</td>
+          <td class="paramtype">Evas_Object *&nbsp;</td>
+          <td class="paramname"> <em>obj</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&nbsp;</td>
+          <td class="paramname"> <em>part</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&nbsp;</td>
+          <td class="paramname"> <em>state</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&nbsp;</td>
+          <td class="paramname"> <em>val</em></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td width="100%"></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+Set the gradien rel1 offset y value. 
+<p>
+<dl class="return" compact><dt><b>Returns:</b></dt><dd>1 on success, 0 otherwise </dd></dl>
+<dl compact><dt><b>Parameters: </b></dt><dd>
+<table border="0" cellspacing="2" cellpadding="0">
+<tr><td valign="top"><em>obj</em>&nbsp;</td><td>
+The edje object </td></tr>
+<tr><td valign="top"><em>part</em>&nbsp;</td><td>
+The name of the part </td></tr>
+<tr><td valign="top"><em>state</em>&nbsp;</td><td>
+The name of the 'part state' (ex. "default 0.00") </td></tr>
+</table>
+</dl>
+</div>
+</div><p>
+<a class="anchor" name="2ab76c1b2a0ad3109f221506061db829"></a><!-- doxytag: member="Edje_Edit.h::edje_edit_state_gradient_rel1_relative_x_get" ref="2ab76c1b2a0ad3109f221506061db829" args="(Evas_Object *obj, const char *part, const char *state)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">EAPI double edje_edit_state_gradient_rel1_relative_x_get           </td>
+          <td>(</td>
+          <td class="paramtype">Evas_Object *&nbsp;</td>
+          <td class="paramname"> <em>obj</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&nbsp;</td>
+          <td class="paramname"> <em>part</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&nbsp;</td>
+          <td class="paramname"> <em>state</em></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td width="100%"></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+Get the gradien rel1 relative x value. 
+<p>
+<dl class="return" compact><dt><b>Returns:</b></dt><dd>The gradien rel1 relative x value </dd></dl>
+<dl compact><dt><b>Parameters: </b></dt><dd>
+<table border="0" cellspacing="2" cellpadding="0">
+<tr><td valign="top"><em>obj</em>&nbsp;</td><td>
+The edje object </td></tr>
+<tr><td valign="top"><em>part</em>&nbsp;</td><td>
+The name of the part </td></tr>
+<tr><td valign="top"><em>state</em>&nbsp;</td><td>
+The name of the 'part state' (ex. "default 0.00") </td></tr>
+</table>
+</dl>
+</div>
+</div><p>
+<a class="anchor" name="46655b1cf61fc40e3947cad2d18f2507"></a><!-- doxytag: member="Edje_Edit.h::edje_edit_state_gradient_rel1_relative_x_set" ref="46655b1cf61fc40e3947cad2d18f2507" args="(Evas_Object *obj, const char *part, const char *state, double val)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">EAPI unsigned char edje_edit_state_gradient_rel1_relative_x_set           </td>
+          <td>(</td>
+          <td class="paramtype">Evas_Object *&nbsp;</td>
+          <td class="paramname"> <em>obj</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&nbsp;</td>
+          <td class="paramname"> <em>part</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&nbsp;</td>
+          <td class="paramname"> <em>state</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&nbsp;</td>
+          <td class="paramname"> <em>val</em></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td width="100%"></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+Set the gradien rel1 relative x value. 
+<p>
+<dl class="return" compact><dt><b>Returns:</b></dt><dd>1 on success, 0 otherwise </dd></dl>
+<dl compact><dt><b>Parameters: </b></dt><dd>
+<table border="0" cellspacing="2" cellpadding="0">
+<tr><td valign="top"><em>obj</em>&nbsp;</td><td>
+The edje object </td></tr>
+<tr><td valign="top"><em>part</em>&nbsp;</td><td>
+The name of the part </td></tr>
+<tr><td valign="top"><em>state</em>&nbsp;</td><td>
+The name of the 'part state' (ex. "default 0.00") </td></tr>
+</table>
+</dl>
+</div>
+</div><p>
+<a class="anchor" name="3c4aae65d8aef1c56562008982e0c6b1"></a><!-- doxytag: member="Edje_Edit.h::edje_edit_state_gradient_rel1_relative_y_get" ref="3c4aae65d8aef1c56562008982e0c6b1" args="(Evas_Object *obj, const char *part, const char *state)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">EAPI double edje_edit_state_gradient_rel1_relative_y_get           </td>
+          <td>(</td>
+          <td class="paramtype">Evas_Object *&nbsp;</td>
+          <td class="paramname"> <em>obj</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&nbsp;</td>
+          <td class="paramname"> <em>part</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&nbsp;</td>
+          <td class="paramname"> <em>state</em></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td width="100%"></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+Get the gradien rel1 relative y value. 
+<p>
+<dl class="return" compact><dt><b>Returns:</b></dt><dd>The gradien rel1 relative y value </dd></dl>
+<dl compact><dt><b>Parameters: </b></dt><dd>
+<table border="0" cellspacing="2" cellpadding="0">
+<tr><td valign="top"><em>obj</em>&nbsp;</td><td>
+The edje object </td></tr>
+<tr><td valign="top"><em>part</em>&nbsp;</td><td>
+The name of the part </td></tr>
+<tr><td valign="top"><em>state</em>&nbsp;</td><td>
+The name of the 'part state' (ex. "default 0.00") </td></tr>
+</table>
+</dl>
+</div>
+</div><p>
+<a class="anchor" name="72046eb3b4a81f8a602c53a16f00f2ee"></a><!-- doxytag: member="Edje_Edit.h::edje_edit_state_gradient_rel1_relative_y_set" ref="72046eb3b4a81f8a602c53a16f00f2ee" args="(Evas_Object *obj, const char *part, const char *state, double val)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">EAPI unsigned char edje_edit_state_gradient_rel1_relative_y_set           </td>
+          <td>(</td>
+          <td class="paramtype">Evas_Object *&nbsp;</td>
+          <td class="paramname"> <em>obj</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&nbsp;</td>
+          <td class="paramname"> <em>part</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&nbsp;</td>
+          <td class="paramname"> <em>state</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&nbsp;</td>
+          <td class="paramname"> <em>val</em></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td width="100%"></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+Set the gradien rel1 relative y value. 
+<p>
+<dl class="return" compact><dt><b>Returns:</b></dt><dd>1 on success, 0 otherwise </dd></dl>
+<dl compact><dt><b>Parameters: </b></dt><dd>
+<table border="0" cellspacing="2" cellpadding="0">
+<tr><td valign="top"><em>obj</em>&nbsp;</td><td>
+The edje object </td></tr>
+<tr><td valign="top"><em>part</em>&nbsp;</td><td>
+The name of the part </td></tr>
+<tr><td valign="top"><em>state</em>&nbsp;</td><td>
+The name of the 'part state' (ex. "default 0.00") </td></tr>
+</table>
+</dl>
+</div>
+</div><p>
+<a class="anchor" name="ece12ee63bded0be50bfe67fc7b577c0"></a><!-- doxytag: member="Edje_Edit.h::edje_edit_state_gradient_rel2_offset_x_get" ref="ece12ee63bded0be50bfe67fc7b577c0" args="(Evas_Object *obj, const char *part, const char *state)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">EAPI int edje_edit_state_gradient_rel2_offset_x_get           </td>
+          <td>(</td>
+          <td class="paramtype">Evas_Object *&nbsp;</td>
+          <td class="paramname"> <em>obj</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&nbsp;</td>
+          <td class="paramname"> <em>part</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&nbsp;</td>
+          <td class="paramname"> <em>state</em></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td width="100%"></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+Get the gradien rel2 offset x value. 
+<p>
+<dl class="return" compact><dt><b>Returns:</b></dt><dd>The gradient rel2 offset x value </dd></dl>
+<dl compact><dt><b>Parameters: </b></dt><dd>
+<table border="0" cellspacing="2" cellpadding="0">
+<tr><td valign="top"><em>obj</em>&nbsp;</td><td>
+The edje object </td></tr>
+<tr><td valign="top"><em>part</em>&nbsp;</td><td>
+The name of the part </td></tr>
+<tr><td valign="top"><em>state</em>&nbsp;</td><td>
+The name of the 'part state' (ex. "default 0.00") </td></tr>
+</table>
+</dl>
+</div>
+</div><p>
+<a class="anchor" name="a1bf9164edaaa2bedfca1c5eeb34ae7f"></a><!-- doxytag: member="Edje_Edit.h::edje_edit_state_gradient_rel2_offset_x_set" ref="a1bf9164edaaa2bedfca1c5eeb34ae7f" args="(Evas_Object *obj, const char *part, const char *state, int val)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">EAPI unsigned char edje_edit_state_gradient_rel2_offset_x_set           </td>
+          <td>(</td>
+          <td class="paramtype">Evas_Object *&nbsp;</td>
+          <td class="paramname"> <em>obj</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&nbsp;</td>
+          <td class="paramname"> <em>part</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&nbsp;</td>
+          <td class="paramname"> <em>state</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&nbsp;</td>
+          <td class="paramname"> <em>val</em></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td width="100%"></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+Set the gradien rel2 offset x value. 
+<p>
+<dl class="return" compact><dt><b>Returns:</b></dt><dd>1 on success, 0 otherwise </dd></dl>
+<dl compact><dt><b>Parameters: </b></dt><dd>
+<table border="0" cellspacing="2" cellpadding="0">
+<tr><td valign="top"><em>obj</em>&nbsp;</td><td>
+The edje object </td></tr>
+<tr><td valign="top"><em>part</em>&nbsp;</td><td>
+The name of the part </td></tr>
+<tr><td valign="top"><em>state</em>&nbsp;</td><td>
+The name of the 'part state' (ex. "default 0.00") </td></tr>
+</table>
+</dl>
+</div>
+</div><p>
+<a class="anchor" name="51c242ace0ee117483682d3852de54f9"></a><!-- doxytag: member="Edje_Edit.h::edje_edit_state_gradient_rel2_offset_y_get" ref="51c242ace0ee117483682d3852de54f9" args="(Evas_Object *obj, const char *part, const char *state)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">EAPI int edje_edit_state_gradient_rel2_offset_y_get           </td>
+          <td>(</td>
+          <td class="paramtype">Evas_Object *&nbsp;</td>
+          <td class="paramname"> <em>obj</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&nbsp;</td>
+          <td class="paramname"> <em>part</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&nbsp;</td>
+          <td class="paramname"> <em>state</em></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td width="100%"></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+Get the gradien rel2 offset y value. 
+<p>
+<dl class="return" compact><dt><b>Returns:</b></dt><dd>The gradient rel2 offset y value </dd></dl>
+<dl compact><dt><b>Parameters: </b></dt><dd>
+<table border="0" cellspacing="2" cellpadding="0">
+<tr><td valign="top"><em>obj</em>&nbsp;</td><td>
+The edje object </td></tr>
+<tr><td valign="top"><em>part</em>&nbsp;</td><td>
+The name of the part </td></tr>
+<tr><td valign="top"><em>state</em>&nbsp;</td><td>
+The name of the 'part state' (ex. "default 0.00") </td></tr>
+</table>
+</dl>
+</div>
+</div><p>
+<a class="anchor" name="e8ae75b1aa99391e0a85468a4799090b"></a><!-- doxytag: member="Edje_Edit.h::edje_edit_state_gradient_rel2_offset_y_set" ref="e8ae75b1aa99391e0a85468a4799090b" args="(Evas_Object *obj, const char *part, const char *state, int val)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">EAPI unsigned char edje_edit_state_gradient_rel2_offset_y_set           </td>
+          <td>(</td>
+          <td class="paramtype">Evas_Object *&nbsp;</td>
+          <td class="paramname"> <em>obj</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&nbsp;</td>
+          <td class="paramname"> <em>part</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&nbsp;</td>
+          <td class="paramname"> <em>state</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&nbsp;</td>
+          <td class="paramname"> <em>val</em></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td width="100%"></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+Set the gradien rel2 offset y value. 
+<p>
+<dl class="return" compact><dt><b>Returns:</b></dt><dd>1 on success, 0 otherwise </dd></dl>
+<dl compact><dt><b>Parameters: </b></dt><dd>
+<table border="0" cellspacing="2" cellpadding="0">
+<tr><td valign="top"><em>obj</em>&nbsp;</td><td>
+The edje object </td></tr>
+<tr><td valign="top"><em>part</em>&nbsp;</td><td>
+The name of the part </td></tr>
+<tr><td valign="top"><em>state</em>&nbsp;</td><td>
+The name of the 'part state' (ex. "default 0.00") </td></tr>
+</table>
+</dl>
+</div>
+</div><p>
+<a class="anchor" name="e2ebd676193599e95cf45d77f8ed99b3"></a><!-- doxytag: member="Edje_Edit.h::edje_edit_state_gradient_rel2_relative_x_get" ref="e2ebd676193599e95cf45d77f8ed99b3" args="(Evas_Object *obj, const char *part, const char *state)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">EAPI double edje_edit_state_gradient_rel2_relative_x_get           </td>
+          <td>(</td>
+          <td class="paramtype">Evas_Object *&nbsp;</td>
+          <td class="paramname"> <em>obj</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&nbsp;</td>
+          <td class="paramname"> <em>part</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&nbsp;</td>
+          <td class="paramname"> <em>state</em></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td width="100%"></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+Get the gradien rel2 relative x value. 
+<p>
+<dl class="return" compact><dt><b>Returns:</b></dt><dd>The gradien rel2 relative x value </dd></dl>
+<dl compact><dt><b>Parameters: </b></dt><dd>
+<table border="0" cellspacing="2" cellpadding="0">
+<tr><td valign="top"><em>obj</em>&nbsp;</td><td>
+The edje object </td></tr>
+<tr><td valign="top"><em>part</em>&nbsp;</td><td>
+The name of the part </td></tr>
+<tr><td valign="top"><em>state</em>&nbsp;</td><td>
+The name of the 'part state' (ex. "default 0.00") </td></tr>
+</table>
+</dl>
+</div>
+</div><p>
+<a class="anchor" name="557b93bef0d215ffec60d1e0e59a8fff"></a><!-- doxytag: member="Edje_Edit.h::edje_edit_state_gradient_rel2_relative_x_set" ref="557b93bef0d215ffec60d1e0e59a8fff" args="(Evas_Object *obj, const char *part, const char *state, double val)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">EAPI unsigned char edje_edit_state_gradient_rel2_relative_x_set           </td>
+          <td>(</td>
+          <td class="paramtype">Evas_Object *&nbsp;</td>
+          <td class="paramname"> <em>obj</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&nbsp;</td>
+          <td class="paramname"> <em>part</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&nbsp;</td>
+          <td class="paramname"> <em>state</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&nbsp;</td>
+          <td class="paramname"> <em>val</em></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td width="100%"></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+Set the gradien rel2 relative x value. 
+<p>
+<dl class="return" compact><dt><b>Returns:</b></dt><dd>1 on success, 0 otherwise </dd></dl>
+<dl compact><dt><b>Parameters: </b></dt><dd>
+<table border="0" cellspacing="2" cellpadding="0">
+<tr><td valign="top"><em>obj</em>&nbsp;</td><td>
+The edje object </td></tr>
+<tr><td valign="top"><em>part</em>&nbsp;</td><td>
+The name of the part </td></tr>
+<tr><td valign="top"><em>state</em>&nbsp;</td><td>
+The name of the 'part state' (ex. "default 0.00") </td></tr>
+</table>
+</dl>
+</div>
+</div><p>
+<a class="anchor" name="043bc79e1dfc0c8bf9cf88c60c98c01d"></a><!-- doxytag: member="Edje_Edit.h::edje_edit_state_gradient_rel2_relative_y_get" ref="043bc79e1dfc0c8bf9cf88c60c98c01d" args="(Evas_Object *obj, const char *part, const char *state)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">EAPI double edje_edit_state_gradient_rel2_relative_y_get           </td>
+          <td>(</td>
+          <td class="paramtype">Evas_Object *&nbsp;</td>
+          <td class="paramname"> <em>obj</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&nbsp;</td>
+          <td class="paramname"> <em>part</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&nbsp;</td>
+          <td class="paramname"> <em>state</em></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td width="100%"></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+Get the gradien rel2 relative y value. 
+<p>
+<dl class="return" compact><dt><b>Returns:</b></dt><dd>The gradien rel2 relative y value </dd></dl>
+<dl compact><dt><b>Parameters: </b></dt><dd>
+<table border="0" cellspacing="2" cellpadding="0">
+<tr><td valign="top"><em>obj</em>&nbsp;</td><td>
+The edje object </td></tr>
+<tr><td valign="top"><em>part</em>&nbsp;</td><td>
+The name of the part </td></tr>
+<tr><td valign="top"><em>state</em>&nbsp;</td><td>
+The name of the 'part state' (ex. "default 0.00") </td></tr>
+</table>
+</dl>
+</div>
+</div><p>
+<a class="anchor" name="f6a5a58797df063ed8229a4e3497afef"></a><!-- doxytag: member="Edje_Edit.h::edje_edit_state_gradient_rel2_relative_y_set" ref="f6a5a58797df063ed8229a4e3497afef" args="(Evas_Object *obj, const char *part, const char *state, double val)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">EAPI unsigned char edje_edit_state_gradient_rel2_relative_y_set           </td>
+          <td>(</td>
+          <td class="paramtype">Evas_Object *&nbsp;</td>
+          <td class="paramname"> <em>obj</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&nbsp;</td>
+          <td class="paramname"> <em>part</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&nbsp;</td>
+          <td class="paramname"> <em>state</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double&nbsp;</td>
+          <td class="paramname"> <em>val</em></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td width="100%"></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+Set the gradien rel2 relative y value. 
+<p>
+<dl class="return" compact><dt><b>Returns:</b></dt><dd>1 on success, 0 otherwise </dd></dl>
+<dl compact><dt><b>Parameters: </b></dt><dd>
+<table border="0" cellspacing="2" cellpadding="0">
+<tr><td valign="top"><em>obj</em>&nbsp;</td><td>
+The edje object </td></tr>
+<tr><td valign="top"><em>part</em>&nbsp;</td><td>
+The name of the part </td></tr>
+<tr><td valign="top"><em>state</em>&nbsp;</td><td>
+The name of the 'part state' (ex. "default 0.00") </td></tr>
+</table>
+</dl>
+</div>
+</div><p>
+<a class="anchor" name="c3912df5296ba395e48217ff97c1e2de"></a><!-- doxytag: member="Edje_Edit.h::edje_edit_state_gradient_spectra_get" ref="c3912df5296ba395e48217ff97c1e2de" args="(Evas_Object *obj, const char *part, const char *state)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">EAPI const char* edje_edit_state_gradient_spectra_get           </td>
+          <td>(</td>
+          <td class="paramtype">Evas_Object *&nbsp;</td>
+          <td class="paramname"> <em>obj</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&nbsp;</td>
+          <td class="paramname"> <em>part</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&nbsp;</td>
+          <td class="paramname"> <em>state</em></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td width="100%"></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+Get the spectra used by part state. 
+<p>
+Remember to free the string with <a class="el" href="Edje__Edit_8h.html#924beb7b18a2f754b4b78cee3b3cc662" title="Free a generic string (char *) allocated by an edje_edit_*_get() function.">edje_edit_string_free()</a> <dl class="return" compact><dt><b>Returns:</b></dt><dd>The spectra name used in state </dd></dl>
+<dl compact><dt><b>Parameters: </b></dt><dd>
+<table border="0" cellspacing="2" cellpadding="0">
+<tr><td valign="top"><em>obj</em>&nbsp;</td><td>
+The edje object </td></tr>
+<tr><td valign="top"><em>part</em>&nbsp;</td><td>
+The name of the part </td></tr>
+<tr><td valign="top"><em>state</em>&nbsp;</td><td>
+The name of the 'part state' (ex. "default 0.00") </td></tr>
+</table>
+</dl>
+</div>
+</div><p>
+<a class="anchor" name="8d4ac47fa2a196fdb616971c2ebc8737"></a><!-- doxytag: member="Edje_Edit.h::edje_edit_state_gradient_spectra_set" ref="8d4ac47fa2a196fdb616971c2ebc8737" args="(Evas_Object *obj, const char *part, const char *state, const char *spectra)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">EAPI unsigned char edje_edit_state_gradient_spectra_set           </td>
+          <td>(</td>
+          <td class="paramtype">Evas_Object *&nbsp;</td>
+          <td class="paramname"> <em>obj</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&nbsp;</td>
+          <td class="paramname"> <em>part</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&nbsp;</td>
+          <td class="paramname"> <em>state</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&nbsp;</td>
+          <td class="paramname"> <em>spectra</em></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td width="100%"></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+Set the spectra used by part state. 
+<p>
+<dl class="return" compact><dt><b>Returns:</b></dt><dd>1 on success, 0 otherwise </dd></dl>
+<dl compact><dt><b>Parameters: </b></dt><dd>
+<table border="0" cellspacing="2" cellpadding="0">
+<tr><td valign="top"><em>obj</em>&nbsp;</td><td>
+The edje object </td></tr>
+<tr><td valign="top"><em>part</em>&nbsp;</td><td>
+The name of the part </td></tr>
+<tr><td valign="top"><em>state</em>&nbsp;</td><td>
+The name of the 'part state' (ex. "default 0.00") </td></tr>
+<tr><td valign="top"><em>spectra</em>&nbsp;</td><td>
+The spectra name to assign </td></tr>
+</table>
+</dl>
+</div>
+</div><p>
+<a class="anchor" name="b6efdb641e7b86d1374a9bf92eb90448"></a><!-- doxytag: member="Edje_Edit.h::edje_edit_state_gradient_type_get" ref="b6efdb641e7b86d1374a9bf92eb90448" args="(Evas_Object *obj, const char *part, const char *state)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">EAPI const char* edje_edit_state_gradient_type_get           </td>
+          <td>(</td>
+          <td class="paramtype">Evas_Object *&nbsp;</td>
+          <td class="paramname"> <em>obj</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&nbsp;</td>
+          <td class="paramname"> <em>part</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&nbsp;</td>
+          <td class="paramname"> <em>state</em></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td width="100%"></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+Get the type of gradient. 
+<p>
+Remember to free the string with <a class="el" href="Edje__Edit_8h.html#924beb7b18a2f754b4b78cee3b3cc662" title="Free a generic string (char *) allocated by an edje_edit_*_get() function.">edje_edit_string_free()</a>. <dl class="return" compact><dt><b>Returns:</b></dt><dd>The type of gradient used in state </dd></dl>
+<dl compact><dt><b>Parameters: </b></dt><dd>
+<table border="0" cellspacing="2" cellpadding="0">
+<tr><td valign="top"><em>obj</em>&nbsp;</td><td>
+The edje object </td></tr>
+<tr><td valign="top"><em>part</em>&nbsp;</td><td>
+The name of the part </td></tr>
+<tr><td valign="top"><em>state</em>&nbsp;</td><td>
+The name of the 'part state' (ex. "default 0.00") </td></tr>
+</table>
+</dl>
+</div>
+</div><p>
+<a class="anchor" name="f9e2c732849e995cbf5f292aed16e1a8"></a><!-- doxytag: member="Edje_Edit.h::edje_edit_state_gradient_type_set" ref="f9e2c732849e995cbf5f292aed16e1a8" args="(Evas_Object *obj, const char *part, const char *state, const char *type)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">EAPI unsigned char edje_edit_state_gradient_type_set           </td>
+          <td>(</td>
+          <td class="paramtype">Evas_Object *&nbsp;</td>
+          <td class="paramname"> <em>obj</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&nbsp;</td>
+          <td class="paramname"> <em>part</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&nbsp;</td>
+          <td class="paramname"> <em>state</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&nbsp;</td>
+          <td class="paramname"> <em>type</em></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td width="100%"></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+Set the type of gradient. 
+<p>
+Gradient type can be on of the following: linear, linear.diag, linear.codiag, radial, rectangular, angular, sinusoidal<dl class="return" compact><dt><b>Returns:</b></dt><dd>1 on success, 0 otherwise </dd></dl>
+<dl compact><dt><b>Parameters: </b></dt><dd>
+<table border="0" cellspacing="2" cellpadding="0">
+<tr><td valign="top"><em>obj</em>&nbsp;</td><td>
+The edje object </td></tr>
+<tr><td valign="top"><em>part</em>&nbsp;</td><td>
+The name of the part </td></tr>
+<tr><td valign="top"><em>state</em>&nbsp;</td><td>
+The name of the 'part state' (ex. "default 0.00") </td></tr>
+<tr><td valign="top"><em>type</em>&nbsp;</td><td>
+The type of gradient to use </td></tr>
+</table>
+</dl>
+</div>
+</div><p>
+<a class="anchor" name="430d12e4c7f9e697304a6f23821d0400"></a><!-- doxytag: member="Edje_Edit.h::edje_edit_state_gradient_use_fill_get" ref="430d12e4c7f9e697304a6f23821d0400" args="(Evas_Object *obj, const char *part, const char *state)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">EAPI unsigned char edje_edit_state_gradient_use_fill_get           </td>
+          <td>(</td>
+          <td class="paramtype">Evas_Object *&nbsp;</td>
+          <td class="paramname"> <em>obj</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&nbsp;</td>
+          <td class="paramname"> <em>part</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&nbsp;</td>
+          <td class="paramname"> <em>state</em></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td width="100%"></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+Get if the current gradient use the fill properties or the gradient_rel as params. 
+<p>
+<dl class="return" compact><dt><b>Returns:</b></dt><dd>1 if use fill, 0 if use gradient_rel </dd></dl>
+<dl compact><dt><b>Parameters: </b></dt><dd>
+<table border="0" cellspacing="2" cellpadding="0">
+<tr><td valign="top"><em>obj</em>&nbsp;</td><td>
+The edje object </td></tr>
+<tr><td valign="top"><em>part</em>&nbsp;</td><td>
+The name of the part </td></tr>
+<tr><td valign="top"><em>state</em>&nbsp;</td><td>
+The name of the 'part state' (ex. "default 0.00") </td></tr>
 </table>
 </dl>
 </div>
@@ -7254,6 +9971,107 @@ The name of the 'part state' (ex. "default 0.00") </td></tr>
 </dl>
 </div>
 </div><p>
+<a class="anchor" name="fdc25cb31eba35585cd211e43362e4d2"></a><!-- doxytag: member="Edje_Edit.h::edje_edit_state_visible_get" ref="fdc25cb31eba35585cd211e43362e4d2" args="(Evas_Object *obj, const char *part, const char *state)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">EAPI unsigned char edje_edit_state_visible_get           </td>
+          <td>(</td>
+          <td class="paramtype">Evas_Object *&nbsp;</td>
+          <td class="paramname"> <em>obj</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&nbsp;</td>
+          <td class="paramname"> <em>part</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&nbsp;</td>
+          <td class="paramname"> <em>state</em></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td width="100%"></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+Get the visibility of a part state. 
+<p>
+<dl class="return" compact><dt><b>Returns:</b></dt><dd>TRUE if the state is visible </dd></dl>
+<dl compact><dt><b>Parameters: </b></dt><dd>
+<table border="0" cellspacing="2" cellpadding="0">
+<tr><td valign="top"><em>obj</em>&nbsp;</td><td>
+The edje object </td></tr>
+<tr><td valign="top"><em>part</em>&nbsp;</td><td>
+The name of the part </td></tr>
+<tr><td valign="top"><em>state</em>&nbsp;</td><td>
+The name of the 'part state' (ex. "default 0.00") </td></tr>
+</table>
+</dl>
+</div>
+</div><p>
+<a class="anchor" name="d9ea779347c623785acfa4e2a8bcf76b"></a><!-- doxytag: member="Edje_Edit.h::edje_edit_state_visible_set" ref="d9ea779347c623785acfa4e2a8bcf76b" args="(Evas_Object *obj, const char *part, const char *state, unsigned char visible)" -->
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">EAPI void edje_edit_state_visible_set           </td>
+          <td>(</td>
+          <td class="paramtype">Evas_Object *&nbsp;</td>
+          <td class="paramname"> <em>obj</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&nbsp;</td>
+          <td class="paramname"> <em>part</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&nbsp;</td>
+          <td class="paramname"> <em>state</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">unsigned char&nbsp;</td>
+          <td class="paramname"> <em>visible</em></td><td>&nbsp;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td><td width="100%"></td>
+        </tr>
+      </table>
+</div>
+<div class="memdoc">
+
+<p>
+Set the visibility of a part state. 
+<p>
+<dl compact><dt><b>Parameters: </b></dt><dd>
+<table border="0" cellspacing="2" cellpadding="0">
+<tr><td valign="top"><em>obj</em>&nbsp;</td><td>
+The edje object </td></tr>
+<tr><td valign="top"><em>part</em>&nbsp;</td><td>
+The name of the part </td></tr>
+<tr><td valign="top"><em>state</em>&nbsp;</td><td>
+The name of the 'part state' (ex. "default 0.00") </td></tr>
+<tr><td valign="top"><em>visible</em>&nbsp;</td><td>
+TRUE to set the state visible </td></tr>
+</table>
+</dl>
+</div>
+</div><p>
 <a class="anchor" name="924beb7b18a2f754b4b78cee3b3cc662"></a><!-- doxytag: member="Edje_Edit.h::edje_edit_string_free" ref="924beb7b18a2f754b4b78cee3b3cc662" args="(const char *str)" -->
 <div class="memitem">
 <div class="memproto">
@@ -7312,6 +10130,6 @@ The list to free. Will also free all the strings. </td></tr>
   </div>
   <hr />
   <p class="tiny">Copyright &copy; Enlightenment.org</p>
-  <p class="tiny">Edje Documentation Generated: Mon May 19 09:44:57 2008</p>
+  <p class="tiny">Edje Documentation Generated: Thu Sep 25 12:30:42 2008</p>
  </body>
 </html>
