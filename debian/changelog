@@ -1,9 +1,9 @@
-edje (0.9.9.050-1.1) UNRELEASED; urgency=low
+edje (0.9.9.050-1.1) experimental; urgency=low
 
   * Non-maintainer upload.
   * Fix FTBFS: Depend on suitable version of libevas-dev (Closes: #505235)
 
- -- Joachim Breitner <nomeata@debian.org>  Tue, 11 Nov 2008 00:52:26 +0100
+ -- Joachim Breitner <nomeata@debian.org>  Tue, 11 Nov 2008 00:54:03 +0100
 
 edje (0.9.9.050-1) experimental; urgency=low
 
