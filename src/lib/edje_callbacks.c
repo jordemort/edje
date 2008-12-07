@@ -101,15 +101,13 @@ _edje_mouse_down_cb(void *data, Evas * e, Evas_Object * obj, void *event_info)
 	  {
 	     if (events->part->dragable.x)
 	       {
-		  events->drag.tmp.x = ev->canvas.x - x - (events->x + events->w / 2);
-		  events->drag.down.x = ev->canvas.x - x;
-		  events->x = ev->canvas.x - x - events->w / 2;
+		  events->drag.down.x = ev->canvas.x;
+		  events->drag.tmp.x = 0;
 	       }
 	     if (events->part->dragable.y)
 	       {
-		  events->drag.tmp.y = ev->canvas.y - y - (events->y + events->h / 2);
-		  events->drag.down.y = ev->canvas.y - y;
-		  events->y = ev->canvas.y - y - events->h / 2;
+		  events->drag.down.y = ev->canvas.y;
+		  events->drag.tmp.y = 0;
 	       }
 
 	     if (!ignored)
@@ -119,7 +117,7 @@ _edje_mouse_down_cb(void *data, Evas * e, Evas_Object * obj, void *event_info)
 	       }
 	     ed->dirty = 1;
 	  }
-	_edje_recalc(ed);
+	_edje_recalc_do(ed);
 /*
 	_edje_thaw(ed);
 	_edje_unref(ed);
@@ -132,7 +130,7 @@ _edje_mouse_down_cb(void *data, Evas * e, Evas_Object * obj, void *event_info)
 	     int dir;
 
 	     dir = _edje_part_dragable_calc(ed, rp, &dx, &dy);
-
+	     
 	     if ((dx != rp->drag.val.x) || (dy != rp->drag.val.y))
 	       {
 		  rp->drag.val.x = dx;
@@ -141,7 +139,7 @@ _edje_mouse_down_cb(void *data, Evas * e, Evas_Object * obj, void *event_info)
 		    _edje_emit(ed, "drag", rp->part->name);
 		  ed->dirty = 1;
 		  rp->drag.need_reset = 1;
-		  _edje_recalc(ed);
+		  _edje_recalc_do(ed);
 	       }
 	  }
      }
@@ -164,7 +162,7 @@ _edje_mouse_down_cb(void *data, Evas * e, Evas_Object * obj, void *event_info)
 	rp->clicked_button = ev->button;
 	rp->still_in = 1;
      }
-//   _edje_recalc(ed);
+//   _edje_recalc_do(ed);
    _edje_thaw(ed);
    _edje_unref(ed);
    return;
@@ -228,7 +226,7 @@ _edje_mouse_up_cb(void *data, Evas * e, Evas_Object * obj, void *event_info)
    rp->clicked_button = 0;
    rp->still_in = 0;
 
-//   _edje_recalc(ed);
+//   _edje_recalc_do(ed);
    _edje_thaw(ed);
    _edje_unref(ed);
    return;
@@ -284,7 +282,7 @@ _edje_mouse_move_cb(void *data, Evas * e, Evas_Object * obj, void *event_info)
 	       rp->drag.tmp.y = ev->cur.canvas.y - rp->drag.down.y;
 	     ed->dirty = 1;
 	  }
-	_edje_recalc(ed);
+	_edje_recalc_do(ed);
      }
    if ((rp->part->dragable.x) || (rp->part->dragable.y))
      {
@@ -301,7 +299,7 @@ _edje_mouse_move_cb(void *data, Evas * e, Evas_Object * obj, void *event_info)
 		  if (!ignored)
 		    _edje_emit(ed, "drag", rp->part->name);
 		  ed->dirty = 1;
-		  _edje_recalc(ed);
+		  _edje_recalc_do(ed);
 	       }
 	  }
      }
@@ -336,61 +334,62 @@ int
 _edje_timer_cb(void *data)
 {
    double t;
-   Evas_List *l;
-   Evas_List *animl = NULL;
+   Eina_List *l;
+   Eina_List *animl = NULL;
    Edje *ed;
 
-   t = ecore_time_get();
-   for (l = _edje_animators; l; l = l->next)
+   t = ecore_loop_time_get();
+   EINA_LIST_FOREACH(_edje_animators, l, ed)
      {
-	ed = l->data;
 	_edje_ref(ed);
-	animl = evas_list_append(animl, l->data);
+	animl = eina_list_append(animl, ed);
      }
    while (animl)
      {
-	Evas_List *newl = NULL;
+	Eina_List *newl = NULL;
 
-	ed = animl->data;
+	ed = eina_list_data_get(animl);
 	_edje_block(ed);
 	_edje_freeze(ed);
-	animl = evas_list_remove(animl, animl->data);
+	animl = eina_list_remove(animl, eina_list_data_get(animl));
 	if ((!ed->paused) && (!ed->delete_me))
 	  {
+	     const void *tmp;
+
 	     ed->walking_actions = 1;
-	     for (l = ed->actions; l; l = l->next)
-	       newl = evas_list_append(newl, l->data);
+	     EINA_LIST_FOREACH(ed->actions, l, tmp)
+	       newl = eina_list_append(newl, tmp);
 	     while (newl)
 	       {
 		  Edje_Running_Program *runp;
 
-		  runp = newl->data;
-		  newl = evas_list_remove(newl, newl->data);
+		  runp = eina_list_data_get(newl);
+		  newl = eina_list_remove(newl, eina_list_data_get(newl));
 		  if (!runp->delete_me)
 		    _edje_program_run_iterate(runp, t);
 		  if (_edje_block_break(ed))
 		    {
-		       evas_list_free(newl);
+		       eina_list_free(newl);
 		       newl = NULL;
 		       goto break_prog;
 		    }
 	       }
-	     for (l = ed->actions; l; l = l->next)
-	       newl = evas_list_append(newl, l->data);
+	     EINA_LIST_FOREACH(ed->actions, l, tmp)
+	       newl = eina_list_append(newl, tmp);
 	     while (newl)
 	       {
 		  Edje_Running_Program *runp;
 
-		  runp = newl->data;
-		  newl = evas_list_remove(newl, newl->data);
+		  runp = eina_list_data_get(newl);
+		  newl = eina_list_remove(newl, eina_list_data_get(newl));
 		  if (runp->delete_me)
 		    {
 		       _edje_anim_count--;
 		       runp->edje->actions =
-			 evas_list_remove(runp->edje->actions, runp);
+			 eina_list_remove(runp->edje->actions, runp);
 		       if (!runp->edje->actions)
 			 _edje_animators =
-			 evas_list_remove(_edje_animators, runp->edje);
+			 eina_list_remove(_edje_animators, runp->edje);
 		       free(runp);
 		    }
 	       }
@@ -413,7 +412,7 @@ _edje_pending_timer_cb(void *data)
    Edje_Pending_Program *pp;
 
    pp = data;
-   pp->edje->pending_actions = evas_list_remove(pp->edje->pending_actions, pp);
+   pp->edje->pending_actions = eina_list_remove(pp->edje->pending_actions, pp);
    _edje_program_run(pp->edje, pp->program, 1, "", "");
    free(pp);
    return 0;

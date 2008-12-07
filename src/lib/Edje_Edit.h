@@ -59,12 +59,12 @@ enum {
  *
  * Example: print all the part in a loaded edje_object
  * @code
- *  Evas_List *parts, *l;
+ *  Eina_List *parts, *l;
  *
  *  parts = edje_edit_parts_list_get(edje_object);
- *  while(l = parts; l; l = l->next)
+ *  while(l = parts; l; l = eina_list_nexst(l))
  *  {
- *     printf("Part: %s\n", (char*)l->data);
+ *     printf("Part: %s\n", (char*)eina_list_data_get(l));
  *  }
  *  edje_edit_string_list_free(parts);
  * @endcode
@@ -93,16 +93,24 @@ extern "C" {
  *  General functions that don't fit in other cateories.
  */ //@{
 
-/** Free a generic Evas_List of (char *) allocated by an edje_edit_*_get() function.*/
+/** Free a generic Eina_List of (char *) allocated by an edje_edit_*_get() function.*/
 EAPI void
 edje_edit_string_list_free(
-   Evas_List *lst          ///< The list to free. Will also free all the strings.
+   Eina_List *lst          ///< The list to free. Will also free all the strings.
 );
 
 /** Free a generic string (char *) allocated by an edje_edit_*_get() function.*/
 EAPI void
 edje_edit_string_free(
    const char *str         ///< The string to free.
+);
+
+/** Get the name of the program that compiled the edje file.@n
+  * Can be 'edje_cc' or 'edje_edit'
+  */
+EAPI const char*           ///@return The compiler name. Don't forget to free the string with edje_edit_string_free()
+edje_edit_compiler_get(
+   Evas_Object *obj        ///< The edje object
 );
 
 /**Save the modified edje object back to his file.
@@ -225,7 +233,7 @@ edje_edit_group_max_h_set(
  */ //@{
 
 /** Retrieves a list with the item names inside the data block **/
-EAPI Evas_List *          ///@return An Evas_List* of string (char *)containing all the data names.
+EAPI Eina_List *          ///@return An Eina_List* of string (char *)containing all the data names.
 edje_edit_data_list_get(
    Evas_Object *obj       ///< The edje object
 );
@@ -258,10 +266,186 @@ edje_edit_data_value_get(
 EAPI unsigned char        ///@return TRUE on success
 edje_edit_data_value_set(
    Evas_Object * obj,     ///< The edje object
-   const char *itemname,        ///< The name of the data item
-   const char *value            ///< The new value to set
+   const char *itemname,  ///< The name of the data item
+   const char *value      ///< The new value to set
 );
 
+/** Change the name of the given data object */
+EAPI unsigned char        ///@return TRUE on success
+edje_edit_data_name_set(
+   Evas_Object *obj,     ///< The edje object
+   const char *itemname, ///< The name of the data item
+   const char *newname   ///< The new name to set
+);
+
+//@}
+/******************************************************************************/
+/***********************   COLOR CLASSES API   ********************************/
+/******************************************************************************/
+/** @name Color Classes API
+ *  Functions to deal with Color Classes (see @ref edcref).
+ */ //@{
+
+/** Get the list of all the Color Classes in the given edje object.
+ *  Use edje_edit_string_list_free() when you don't need it anymore.
+ */
+EAPI Eina_List *           ///@return An Eina_List* of string (char *)containing all the classes names.
+edje_edit_color_classes_list_get(
+   Evas_Object * obj       ///< The edje object
+);
+
+/** Create a new color class object in the given edje
+ *  If another class with the same name exists nothing is created and FALSE is returned.
+ */
+EAPI unsigned char        ///@return TRUE on success
+edje_edit_color_class_add(
+   Evas_Object *obj,      ///< The edje object
+   const char *name       ///< The name of the new color class
+);
+
+/** Delete the given class object from edje */
+EAPI unsigned char        ///@return TRUE on success
+edje_edit_color_class_del(
+   Evas_Object *obj,      ///< The edje object
+   const char *name       ///< The name of the color class to delete
+);
+
+/** Get all the colors that compose the class.
+ *  You can pass NULL to colors you are not intrested in
+ */
+EAPI unsigned char         ///@return TRUE on success
+edje_edit_color_class_colors_get(
+   Evas_Object *obj,       ///< The edje object
+   const char *class_name, ///< The name of the color class
+   int *r,  ///< Where to store the red component of the standard color
+   int *g,  ///< Where to store the green component of the standard color
+   int *b,  ///< Where to store the blue component of the standard color
+   int *a,  ///< Where to store the alpha component of the standard color
+   int *r2, ///< Where to store the red component of the second color
+   int *g2, ///< Where to store the green component of the second color
+   int *b2, ///< Where to store the green component of the second color
+   int *a2, ///< Where to store the green component of the second color
+   int *r3, ///< Where to store the red component of the third color
+   int *g3, ///< Where to store the green component of the third color
+   int *b3, ///< Where to store the blue component of the third color
+   int *a3  ///< Where to store the alpha component of the third color
+);
+
+/** Set the colors for the given color class.
+ *  If you set a color to -1 it will not be touched
+ */
+EAPI unsigned char         ///@return TRUE on success
+edje_edit_color_class_colors_set(
+   Evas_Object *obj,       ///< The edje object
+   const char *class_name, ///< The name of the color class
+   int r,    ///< The red component of the standard color
+   int g,    ///< The green component of the standard color
+   int b,    ///< The blue component of the standard color
+   int a,    ///< The alpha component of the standard color
+   int r2,   ///< The red component of the second color
+   int g2,   ///< The green component of the second color
+   int b2,   ///< The blue component of the second color
+   int a2,   ///< The alpha component of the second color
+   int r3,   ///< The red component of the third color
+   int g3,   ///< The green component of the third color
+   int b3,   ///< The blue component of the third color
+   int a3    ///< The alpha component of the third color
+);
+
+/** Change the name of a color class */
+EAPI unsigned char        ///@return TRUE on success
+edje_edit_color_class_name_set(
+   Evas_Object *obj,      ///< The edje object
+   const char *name,      ///< The name of the color class
+   const char *newname    ///< The new name to assign
+);
+
+//@}
+/******************************************************************************/
+/**************************   TEXT STYLES *************************************/
+/******************************************************************************/
+/** @name Text styles API
+ *  Functions to deal with text styles (see @ref edcref).
+ */ //@{
+
+/** Get the list of all the text styles in the given edje object.
+ *  Use edje_edit_string_list_free() when you don't need it anymore.
+ */
+EAPI Eina_List *           ///@return An Eina_List* of string (char *)containing all the styles name.
+edje_edit_styles_list_get(
+   Evas_Object *obj        ///< The edje object
+);
+
+/** Create a new text style object in the given edje
+ *  If another style with the same name exists nothing is created and FALSE is returned.
+ */
+EAPI unsigned char        ///@return TRUE on success, FALSE if the tag can't be created
+edje_edit_style_add(
+   Evas_Object *obj,      ///< The edje object
+   const char *style      ///< The new name for the style
+);
+
+/** Delete the given text style and all the child tags. */
+EAPI void
+edje_edit_style_del(
+   Evas_Object *obj,      ///< The edje object
+   const char *style      ///< The name for the style to delete
+);
+   
+/** Get the list of all the tags name in the given text style.
+ *  Use edje_edit_string_list_free() when you don't need it anymore.
+ */
+EAPI Eina_List *           ///@return An Eina_List* of string (char *)containing all the tags name.
+edje_edit_style_tags_list_get(
+  Evas_Object *obj,       ///< The edje object
+  const char *style       ///< The name of the style to inspect
+);
+
+/** Get the value of the given tag.
+ *  Use edje_edit_string_free() when you don't need it anymore.
+ */
+EAPI const char*           ///@return The value of the tag.
+edje_edit_style_tag_value_get(
+   Evas_Object *obj,       ///< The edje object
+   const char *style,      ///< The name of the style to inspect
+   const char *tag         ///< The name of the tag
+);
+
+/** Set the value of the given tag. */
+EAPI void
+edje_edit_style_tag_value_set(
+   Evas_Object *obj,       ///< The edje object
+   const char *style,      ///< The name of the style to inspect
+   const char *tag,        ///< The name of the tag
+   const char *new_value   ///< The new tag value
+);
+
+/** Set the name of the given tag. */
+EAPI void
+edje_edit_style_tag_name_set(
+   Evas_Object *obj,       ///< The edje object
+   const char *style,      ///< The name of the style
+   const char *tag,        ///< The name of the tag
+   const char *new_name    ///< The new name for tag
+);
+
+/** Add a new tag to the given text style.
+ *  If another tag with the same name exists nothing is created and FALSE is returned.
+ */
+EAPI unsigned char         ///@return TRUE on success, FALSE if the tag can't be created
+edje_edit_style_tag_add(
+   Evas_Object *obj,       ///< The edje object
+   const char *style,      ///< The name of the style
+   const char* tag_name    ///< The name of the new tag
+);
+
+/** Delete the given tag. */
+EAPI void
+edje_edit_style_tag_del(
+   Evas_Object *obj,       ///< The edje object
+   const char *style,      ///< The name of the style
+   const char* tag         ///< The name of the tag to remove
+);
 
 //@}
 /******************************************************************************/
@@ -274,7 +458,7 @@ edje_edit_data_value_set(
 /**Get the list of all the parts in the given edje object.
  * Use edje_edit_string_list_free() when you don't need it anymore.
  */
-EAPI Evas_List *           ///@return An Evas_List* of string (char *)containing all the part names.
+EAPI Eina_List *           ///@return An Eina_List* of string (char *)containing all the part names.
 edje_edit_parts_list_get(
    Evas_Object *obj        ///< The edje object
 );
@@ -458,6 +642,125 @@ edje_edit_part_ignore_flags_set(
    Evas_Event_Flags ignore_flags ///< event flags to be ignored
 );
 
+/**Get horizontal dragable state for part.(1, -1 or 0) */
+EAPI int                   ///@return 1 (or -1) if the part can be dragged horizontally
+edje_edit_part_drag_x_get(
+   Evas_Object *obj,       ///< The edje object
+   const char *part        ///< The name of the part
+);
+
+/**Set horizontal dragable state for part.(1, -1 or 0) */
+EAPI void
+edje_edit_part_drag_x_set(
+   Evas_Object *obj,       ///< The edje object
+   const char *part,       ///< The name of the part
+   int drag                ///< Set to 1 (or -1) if the part should be dragged horizontally
+);
+
+/**Get vertical dragable state for part.(1, -1 or 0) */
+EAPI int                   ///@return 1 (or -1) if the part can be dragged vertically
+edje_edit_part_drag_y_get(
+   Evas_Object *obj,       ///< The edje object
+   const char *part        ///< The name of the part
+);
+
+/**Set vertical dragable state for part.(1, -1 or 0) */
+EAPI void
+edje_edit_part_drag_y_set(
+   Evas_Object *obj,       ///< The edje object
+   const char *part,       ///< The name of the part
+   int drag                ///< Set to 1 (or -1) if the part should be dragged vertically
+);
+
+/**Get horizontal dragable step for part.*/
+EAPI int                   ///@return The drag horizontal step value
+edje_edit_part_drag_step_x_get(
+   Evas_Object *obj,       ///< The edje object
+   const char *part        ///< The name of the part
+);
+
+/**Set horizontal dragable state for part.*/
+EAPI void
+edje_edit_part_drag_step_x_set(
+   Evas_Object *obj,       ///< The edje object
+   const char *part,       ///< The name of the part
+   int step                ///< The step value
+);
+
+/**Get vertical dragable step for part.*/
+EAPI int                   ///@return The drag vertical step value
+edje_edit_part_drag_step_y_get(
+   Evas_Object *obj,       ///< The edje object
+   const char *part        ///< The name of the part
+);
+
+/**Set vertical dragable state for part.*/
+EAPI void
+edje_edit_part_drag_step_y_set(
+   Evas_Object *obj,       ///< The edje object
+   const char *part,       ///< The name of the part
+   int step                ///< The step value
+);
+
+/**Get horizontal dragable count for part.*/
+EAPI int                   ///@return The drag horizontal count value
+edje_edit_part_drag_count_x_get(
+   Evas_Object *obj,       ///< The edje object
+   const char *part        ///< The name of the part
+);
+
+/**Set horizontal dragable count for part.*/
+EAPI void
+edje_edit_part_drag_count_x_set(
+   Evas_Object *obj,       ///< The edje object
+   const char *part,       ///< The name of the part
+   int count               ///< The count value
+);
+
+/**Get vertical dragable count for part.*/
+EAPI int                   ///@return The drag vertical count value
+edje_edit_part_drag_count_y_get(
+   Evas_Object *obj,       ///< The edje object
+   const char *part        ///< The name of the part
+);
+
+/**Set vertical dragable count for part.*/
+EAPI void
+edje_edit_part_drag_count_y_set(
+   Evas_Object *obj,       ///< The edje object
+   const char *part,       ///< The name of the part
+   int count               ///< The count value
+);
+
+/**Get the name of the part that is used as 'confine' for the given draggies.*/
+EAPI const char*
+edje_edit_part_drag_confine_get(
+   Evas_Object *obj,       ///< The edje object
+   const char *part        ///< The name of the drag part
+);
+
+/**Set the name of the part that is used as 'confine' for the given draggies.*/
+EAPI void
+edje_edit_part_drag_confine_set(
+   Evas_Object *obj,       ///< The edje object
+   const char *part,       ///< The name of the drag part
+   const char *confine     ///< The name of the confine part, or NULL to unset confine
+);
+
+/**Get the name of the part that is used as the receiver of the drag event.*/
+EAPI const char*
+edje_edit_part_drag_event_get(
+   Evas_Object *obj,      ///< The edje object
+   const char *part       ///< The name of the drag part
+);
+
+/**Set the name of the part that will recive events from the given draggies.*/
+EAPI void
+edje_edit_part_drag_event_set(
+   Evas_Object *obj,       ///< The edje object
+   const char *part,       ///< The name of the drag part
+   const char *event       ///< The name of the part that will receive events, or NULL to unset.
+);
 
 //@}
 /******************************************************************************/
@@ -468,7 +771,7 @@ edje_edit_part_ignore_flags_set(
  */ //@{
 
 /**Get the list of all the states in the given part.*/
-EAPI Evas_List *           /**@return An Evas_List* of string (char *)containing all the states names found
+EAPI Eina_List *           /**@return An Eina_List* of string (char *)containing all the states names found
                             * in part, including the float value (ex: "default 0.00").
                             * Use edje_edit_string_list_free() when you don't need it anymore. */
 edje_edit_part_states_list_get(
@@ -1059,6 +1362,23 @@ edje_edit_state_visible_set(
    unsigned char visible   ///< TRUE to set the state visible
 );
 
+/**Get the color class of the given part state. Remember to free the string with edje_edit_string_free()*/
+EAPI const char*           ///@return The current color_class of the part state
+edje_edit_state_color_class_get(
+   Evas_Object *obj,      ///< The edje object
+   const char *part,       ///< The name of the part
+   const char *state       ///< The name of the 'part state' (ex. "default 0.00")
+);
+
+/**Set the color class for the given part state.*/
+EAPI void
+edje_edit_state_color_class_set(
+   Evas_Object *obj,       ///< The edje object
+   const char *part,       ///< The name of the part
+   const char *state,      ///< The name of the 'part state' (ex. "default 0.00")
+   const char *color_class ///< The new color_class to assign
+);
+
 
 //@}
 /******************************************************************************/
@@ -1136,10 +1456,61 @@ edje_edit_state_text_align_y_set(
    double align            ///< The new text align Y value
 );
 
+/**Get the text elipsis of a part state. The value range is from 0.0(right) to 1.0(left)*/
+EAPI double                ///@return The text elipsis value
+edje_edit_state_text_elipsis_get(
+   Evas_Object *obj,       ///< The edje object
+   const char *part,       ///< The name of the part
+   const char *state       ///< The name of the 'part state' (ex. "default 0.00")
+);
+
+/**Set the text vertical align of a part state. The value range is from 0.0(right) to 1.0(left)*/
+EAPI void
+edje_edit_state_text_elipsis_set(
+   Evas_Object *obj,       ///< The edje object
+   const char *part,       ///< The name of the part
+   const char *state,      ///< The name of the 'part state' (ex. "default 0.00")
+   double balance          ///< The position where to cut the string
+);
+
+/**Get if the text part fit it's container horizontally */
+EAPI unsigned char         ///@return 1 If the part fit it's container horizontally
+edje_edit_state_text_fit_x_get(
+   Evas_Object *obj,       ///< The edje object
+   const char *part,       ///< The name of the part
+   const char *state       ///< The name of the 'part state' (ex. "default 0.00")
+);
+
+/**Set if the text part should fit it's container horizontally */
+EAPI void
+edje_edit_state_text_fit_x_set(
+   Evas_Object *obj,       ///< The edje object
+   const char *part,       ///< The name of the part
+   const char *state,      ///< The name of the 'part state' (ex. "default 0.00")
+   unsigned char fit       ///< 1 to make the text fit it's container
+);
+
+/**Get if the text part fit it's container vertically */
+EAPI unsigned char         ///@return 1 If the part fit it's container vertically
+edje_edit_state_text_fit_y_get(
+   Evas_Object *obj,       ///< The edje object
+   const char *part,       ///< The name of the part
+   const char *state       ///< The name of the 'part state' (ex. "default 0.00")
+);
+
+/**Set if the text part should fit it's container vertically */
+EAPI void
+edje_edit_state_text_fit_y_set(
+   Evas_Object *obj,       ///< The edje object
+   const char *part,       ///< The name of the part
+   const char *state,      ///< The name of the 'part state' (ex. "default 0.00")
+   unsigned char fit       ///< 1 to make the text fit it's container
+);
+
 /**Get the list of all the fonts in the given edje.
  * Use edje_edit_string_list_free() when you don't need the list anymore.
  */
-EAPI Evas_List *          ///@return An Evas_List* of string (char *)containing all the fonts names found in the edje file.
+EAPI Eina_List *          ///@return An Eina_List* of string (char *)containing all the fonts names found in the edje file.
 edje_edit_fonts_list_get(
    Evas_Object *obj       ///< The edje object
 );
@@ -1182,7 +1553,7 @@ edje_edit_state_font_set(
 /**Get the list of all the images in the given edje.
  * Use edje_edit_string_list_free() when you don't need the list anymore.
  */
-EAPI Evas_List *          ///@return An Evas_List* of string (char *)containing all the images names found in the edje file.
+EAPI Eina_List *          ///@return An Eina_List* of string (char *)containing all the images names found in the edje file.
 edje_edit_images_list_get(
    Evas_Object *obj       ///< The edje object
 );
@@ -1266,10 +1637,27 @@ edje_edit_state_image_border_set(
    int b                   ///< The new bottom border (or -1)
 );
 
+/**Get if the image center should be draw. 1 means to draw the center, 0 to don't draw it.*/
+EAPI unsigned char         ///@return 1 if the center of the bordered image is draw
+edje_edit_state_image_border_fill_get(
+   Evas_Object *obj,       ///< The edje object
+   const char *part,       ///< The name of the part
+   const char *state       ///< The name of the 'part state' (ex. "default 0.00")
+);
+
+/**Set if the image center should be draw. 1 means to draw the center, 0 to don't draw it.*/
+EAPI void
+edje_edit_state_image_border_fill_set(
+   Evas_Object *obj,       ///< The edje object
+   const char *part,       ///< The name of the part
+   const char *state,      ///< The name of the 'part state' (ex. "default 0.00")
+   unsigned char fill      ///< If set to 0 the image center isn't draw
+);
+
 /**Get the list of all the tweens images in the given part state.
  * Use edje_edit_string_list_free() when you don't need it anymore.
  */
-EAPI Evas_List *           ///@return A string list containing all the image name that form a tween animation in the given part state
+EAPI Eina_List *           ///@return A string list containing all the image name that form a tween animation in the given part state
 edje_edit_state_tweens_list_get(
    Evas_Object *obj,       ///< The edje object
    const char *part,       ///< The name of the part
@@ -1310,7 +1698,7 @@ edje_edit_state_tween_del(
 /**Get the list of all the spectrum in the given edje object.
  * Use edje_edit_string_list_free() when you don't need it anymore.
  */
-EAPI Evas_List *           ///@return An Evas_List* of string(char *) containing all the spectra names.
+EAPI Eina_List *           ///@return An Eina_List* of string(char *) containing all the spectra names.
 edje_edit_spectrum_list_get(
    Evas_Object *obj        ///< The edje object
 );
@@ -1429,6 +1817,23 @@ edje_edit_state_gradient_spectra_set(
    const char *part,       ///< The name of the part
    const char *state,      ///< The name of the 'part state' (ex. "default 0.00")
    const char* spectra     ///< The spectra name to assign
+);
+
+/**Get the angle of the gradient.*/
+EAPI int                   ///@return The angle of the gradient
+edje_edit_state_gradient_angle_get(
+   Evas_Object *obj,       ///< The edje object
+   const char *part,       ///< The name of the part
+   const char *state       ///< The name of the 'part state' (ex. "default 0.00")
+);
+
+/**Set the angle of the gradient.*/
+EAPI void
+edje_edit_state_gradient_angle_set(
+   Evas_Object *obj,       ///< The edje object
+   const char *part,       ///< The name of the part
+   const char *state,      ///< The name of the 'part state' (ex. "default 0.00")
+   int angle               ///< The angle to set
 );
 
 /**Get the gradien rel1 relative x value */
@@ -1577,10 +1982,10 @@ edje_edit_state_gradient_rel2_offset_y_set(
 
 /**Get the list of all the programs in the given edje object.
  * @param obj The edje object
- * @return An Evas_List* of string (char *)containing all the program names.
+ * @return An Eina_List* of string (char *)containing all the program names.
  * Use edje_edit_string_list_free() when you don't need it anymore.
  */
-EAPI Evas_List *          ///@return A string list containing all the program names
+EAPI Eina_List *          ///@return A string list containing all the program names
 edje_edit_programs_list_get(
    Evas_Object *obj       ///< The edje object
 );
@@ -1708,7 +2113,7 @@ edje_edit_program_action_set(
  * Return a list of target name
  * Use edje_edit_string_list_free() when you don't need it anymore.
  */
-EAPI Evas_List*            ///@return An Evas_List of char*, or NULL on error
+EAPI Eina_List*            ///@return An Eina_List of char*, or NULL on error
 edje_edit_program_targets_get(
    Evas_Object *obj,       ///< The edje object
    const char *prog        ///< The program name
@@ -1736,7 +2141,7 @@ edje_edit_program_targets_clear(
  * Return a list of program name.
  * Use edje_edit_string_list_free() when you don't need it anymore.
  */
-EAPI Evas_List*            ///@return An Evas_List of char*, or NULL on error
+EAPI Eina_List*            ///@return An Eina_List of char*, or NULL on error
 edje_edit_program_afters_get(
    Evas_Object *obj,       ///< The edje object
    const char *prog        ///< The program name

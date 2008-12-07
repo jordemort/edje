@@ -9,15 +9,13 @@ AM_CPPFLAGS = \
 -DPACKAGE_BIN_DIR=\"$(bindir)\" \
 -DPACKAGE_LIB_DIR=\"$(libdir)\" \
 -DPACKAGE_DATA_DIR=\"$(datadir)/$(PACKAGE)\" \
+@EVIL_CFLAGS@ \
 @EDJE_CFLAGS@ \
-@EVIL_CFLAGS@
+@EFL_EDJE_BUILD@
 
-lib_LTLIBRARIES      = \
-libedje.la
+lib_LTLIBRARIES = libedje.la
 
-include_HEADERS      =  \
-Edje.h \
-Edje_Edit.h
+include_HEADERS = Edje.h Edje_Edit.h
 
 libedje_la_SOURCES  = \
 edje_calc.c \
@@ -40,9 +38,8 @@ edje_cache.c \
 edje_match.c \
 edje_textblock_styles.c \
 edje_edit.c \
-edje_script_only.c
+edje_script_only.c \
+edje_entry.c
 
-libedje_la_CFLAGS = @WIN32_CFLAGS@
 libedje_la_LIBADD = @EDJE_LIBS@ -lm
-libedje_la_DEPENDENCIES = $(top_builddir)/config.h
-libedje_la_LDFLAGS = @lt_no_undefined@ @lt_enable_auto_import@ -version-info @version_info@
+libedje_la_LDFLAGS = -no-undefined @lt_enable_auto_import@ -version-info @version_info@

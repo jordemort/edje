@@ -2,13 +2,19 @@
  * vim:ts=8:sw=3:sts=8:noexpandtab:cino=>5n-3f0^-2{2
  */
 
+#include <string.h>
+#include <locale.h>
+#include <limits.h>
+#include <sys/stat.h>
+
 #include "edje_cc.h"
+#include "edje_prefix.h"
 
 static void main_help(void);
 
-Evas_List *img_dirs = NULL;
-Evas_List *fnt_dirs = NULL;
-Evas_List *defines = NULL;
+Eina_List *img_dirs = NULL;
+Eina_List *fnt_dirs = NULL;
+Eina_List *defines = NULL;
 char      *file_in = NULL;
 char      *file_out = NULL;
 char      *progname = NULL;
@@ -50,6 +56,8 @@ main(int argc, char **argv)
 
    setlocale(LC_NUMERIC, "C");
 
+   eina_init();
+
    progname = argv[0];
    for (i = 1; i < argc; i++)
      {
@@ -77,12 +85,12 @@ main(int argc, char **argv)
 	else if ((!strcmp(argv[i], "-id") || !strcmp(argv[i], "--image_dir")) && (i < (argc - 1)))
 	  {
 	     i++;
-	     img_dirs = evas_list_append(img_dirs, argv[i]);
+	     img_dirs = eina_list_append(img_dirs, argv[i]);
 	  }
 	else if ((!strcmp(argv[i], "-fd") || !strcmp(argv[i], "--font_dir")) && (i < (argc - 1)))
 	  {
 	     i++;
-	     fnt_dirs = evas_list_append(fnt_dirs, argv[i]);
+	     fnt_dirs = eina_list_append(fnt_dirs, argv[i]);
 	  }
 	else if ((!strcmp(argv[i], "-min-quality")) && (i < (argc - 1)))
 	  {
@@ -100,7 +108,7 @@ main(int argc, char **argv)
 	  }
 	else if (!strncmp(argv[i], "-D", 2))
 	  {
-	     defines = evas_list_append(defines, mem_strdup(argv[i]));
+	     defines = eina_list_append(defines, mem_strdup(argv[i]));
 	  }
 	else if ((!strcmp(argv[i], "-o")) && (i < (argc - 1)))
 	  {
@@ -187,6 +195,8 @@ main(int argc, char **argv)
    data_write();
 
    edje_shutdown();
+
+   eina_shutdown();
 
    return 0;
 }

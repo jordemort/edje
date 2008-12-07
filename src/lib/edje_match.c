@@ -2,6 +2,8 @@
  * vim:ts=8:sw=3:sts=8:noexpandtab:cino=>5n-3f0^-2{2
  */
 
+#include <string.h>
+
 #include "edje_private.h"
 
 /* States manipulations. */
@@ -53,7 +55,7 @@ _edje_match_states_alloc(Edje_Patterns *ppat, int n)
    unsigned char        *states;
    unsigned char        *has;
 
-   size_t        i;
+   int          i;
 
    states_size = sizeof (*l->states) * array_len;
    ALIGN(states_size);
@@ -114,9 +116,9 @@ _edje_match_states_insert(Edje_States    *list,
 }
 
 static void
-_edje_match_states_clear(Edje_States     *list,
-                         size_t           patterns_size,
-                         size_t           patterns_max_length)
+_edje_match_states_clear(Edje_States *list,
+                         __UNUSED__ size_t patterns_size,
+                         __UNUSED__ size_t patterns_max_length)
 {
    list->size = 0;
 }
@@ -250,21 +252,21 @@ _edje_match_patterns_exec_init_states(Edje_States       *states,
 
 #define EDJE_MATCH_INIT(Func, Type, Source, Show)               \
   Edje_Patterns*                                                \
-  Func(Evas_List *lst)                                          \
+  Func(Eina_List *lst)                                          \
   {                                                             \
      Edje_Patterns      *r;                                     \
      size_t              i;                                     \
                                                                 \
-     if (!lst || evas_list_count(lst) <= 0)                     \
+     if (!lst || eina_list_count(lst) <= 0)                     \
        return NULL;                                             \
                                                                 \
      r = malloc(sizeof (Edje_Patterns) +                        \
-                evas_list_count(lst)                            \
+                eina_list_count(lst)                            \
                 * sizeof (*r->finals)                           \
                 * sizeof(*r->patterns));                        \
      if (!r) return NULL;                                       \
                                                                 \
-     r->patterns_size = evas_list_count(lst);                   \
+     r->patterns_size = eina_list_count(lst);                   \
      r->max_length = 0;                                         \
      r->patterns = (const char **) r->finals + r->patterns_size + 1;    \
                                                                 \
@@ -274,7 +276,7 @@ _edje_match_patterns_exec_init_states(Edje_States       *states,
           Type          *data;                                  \
           size_t         j;                                     \
                                                                 \
-          data = evas_list_data(lst);                           \
+          data = eina_list_data_get(lst);                       \
           if (!data)                                            \
             {                                                   \
                free(r);                                         \
@@ -296,7 +298,7 @@ _edje_match_patterns_exec_init_states(Edje_States       *states,
           if (j > r->max_length)                                \
             r->max_length = j;                                  \
                                                                 \
-          lst = evas_list_next(lst);                            \
+          lst = eina_list_next(lst);                            \
        }                                                        \
                                                                 \
      if (!_edje_match_states_alloc(r, 2))                       \
@@ -341,7 +343,7 @@ edje_match_programs_exec_check_finals(const size_t      *signal_finals,
                                       const size_t      *source_finals,
                                       const Edje_States *signal_states,
                                       const Edje_States *source_states,
-                                      Evas_List         *programs,
+                                      Eina_List         *programs,
                                       int (*func)(Edje_Program *pr, void *data),
                                       void              *data)
 {
@@ -356,7 +358,7 @@ edje_match_programs_exec_check_finals(const size_t      *signal_finals,
            {
               Edje_Program  *pr;
 
-              pr = evas_list_nth(programs, signal_states->states[i].idx);
+              pr = eina_list_nth(programs, signal_states->states[i].idx);
               if (pr)
                 {
                    if (func(pr, data))
@@ -374,7 +376,7 @@ edje_match_callback_exec_check_finals(const size_t      *signal_finals,
                                       const Edje_States *source_states,
                                       const char        *signal,
                                       const char        *source,
-                                      Evas_List         *callbacks,
+                                      Eina_List         *callbacks,
                                       Edje              *ed)
 {
    size_t       i;
@@ -389,7 +391,7 @@ edje_match_callback_exec_check_finals(const size_t      *signal_finals,
            {
               Edje_Signal_Callback      *escb;
 
-              escb = evas_list_nth(callbacks, signal_states->states[i].idx);
+              escb = eina_list_nth(callbacks, signal_states->states[i].idx);
               if (escb)
                 {
                    if ((!escb->just_added)
@@ -479,7 +481,7 @@ edje_match_programs_exec(const Edje_Patterns    *ppat_signal,
                          const Edje_Patterns    *ppat_source,
                          const char             *signal,
                          const char             *source,
-                         Evas_List              *programs,
+                         Eina_List              *programs,
                          int (*func)(Edje_Program *pr, void *data),
                          void                   *data)
 {
@@ -513,7 +515,7 @@ edje_match_callback_exec(const Edje_Patterns    *ppat_signal,
                          const Edje_Patterns    *ppat_source,
                          const char             *signal,
                          const char             *source,
-                         Evas_List              *callbacks,
+                         Eina_List              *callbacks,
                          Edje                   *ed)
 {
    Edje_States  *signal_result;
@@ -559,4 +561,135 @@ _edje_signals_sources_patterns_clean(Edje_Signals_Sources_Patterns *ssp)
    edje_match_patterns_free(ssp->sources_patterns);
    ssp->signals_patterns = NULL;
    ssp->sources_patterns = NULL;
+}
+
+static Eina_Rbtree_Direction
+_edje_signal_source_node_cmp(const Edje_Signal_Source_Char *n1,
+			     const Edje_Signal_Source_Char *n2,
+			     __UNUSED__ void *data)
+{
+   int cmp;
+
+   cmp = strcmp(n1->signal, n2->signal);
+   if (cmp) return cmp < 0 ? EINA_RBTREE_LEFT : EINA_RBTREE_RIGHT;
+
+   return strcmp(n1->source, n2->source) < 0 ? EINA_RBTREE_LEFT : EINA_RBTREE_RIGHT;
+}
+
+static int
+_edje_signal_source_key_cmp(const Edje_Signal_Source_Char *node,
+			    const char *signal,
+			    __UNUSED__ int length,
+			    const char *source)
+{
+   int cmp;
+
+   cmp = strcmp(node->signal, signal);
+   if (cmp) return cmp;
+
+   return strcmp(node->source, source);
+}
+
+
+Eina_List *
+edje_match_program_hash_build(const Eina_List *callbacks,
+			      Eina_Rbtree **tree)
+{
+   Eina_List *result = NULL;
+   Eina_Rbtree *new = NULL;
+   Edje_Program *program;
+   const Eina_List *l;
+
+   EINA_LIST_FOREACH(callbacks, l, program)
+     {
+	if (program->signal && strpbrk(program->signal, "*?[\\") == NULL
+	    && program->source && strpbrk(program->source, "*?[\\") == NULL)
+	  {
+	     Edje_Signal_Source_Char *item;
+
+	     item = (Edje_Signal_Source_Char*) eina_rbtree_inline_lookup(new, program->signal, 0,
+									 EINA_RBTREE_CMP_KEY_CB(_edje_signal_source_key_cmp), program->source);
+	     if (!item)
+	       {
+		  item = malloc(sizeof (Edje_Signal_Source_Char));
+		  if (!item) continue;
+
+		  item->signal = program->signal;
+		  item->source = program->source;
+		  item->list = NULL;
+
+		  new = eina_rbtree_inline_insert(new, EINA_RBTREE_GET(item),
+						  EINA_RBTREE_CMP_NODE_CB(_edje_signal_source_node_cmp), NULL);
+	       }
+
+	     item->list = eina_list_prepend(item->list, program);
+	  }
+	else
+	  result = eina_list_prepend(result, program);
+     }
+
+   *tree = new;
+   return result;
+}
+
+Eina_List *
+edje_match_callback_hash_build(const Eina_List *callbacks,
+			       Eina_Rbtree **tree)
+{
+   Eina_List *result = NULL;
+   Eina_Rbtree *new = NULL;
+   Edje_Signal_Callback *callback;
+   const Eina_List *l;
+
+   EINA_LIST_FOREACH(callbacks, l, callback)
+     {
+	if (callback->signal && strpbrk(callback->signal, "*?[\\") == NULL
+	    && callback->source && strpbrk(callback->source, "*?[\\") == NULL)
+	  {
+	     Edje_Signal_Source_Char *item;
+
+	     item = (Edje_Signal_Source_Char*) eina_rbtree_inline_lookup(new, callback->signal, 0,
+									 EINA_RBTREE_CMP_KEY_CB(_edje_signal_source_key_cmp), callback->source);
+	     if (!item)
+	       {
+		  item = malloc(sizeof (Edje_Signal_Source_Char));
+		  if (!item) continue;
+
+		  item->signal = callback->signal;
+		  item->source = callback->source;
+		  item->list = NULL;
+
+		  new = eina_rbtree_inline_insert(new, EINA_RBTREE_GET(item),
+						  EINA_RBTREE_CMP_NODE_CB(_edje_signal_source_node_cmp), NULL);
+	       }
+
+	     item->list = eina_list_prepend(item->list, callback);
+	  }
+	else
+	  result = eina_list_prepend(result, callback);
+     }
+
+   *tree = new;
+   return result;
+}
+
+const Eina_List *
+edje_match_signal_source_hash_get(const char *signal,
+				  const char *source,
+				  const Eina_Rbtree *tree)
+{
+   Edje_Signal_Source_Char *lookup;
+
+   lookup = (Edje_Signal_Source_Char*) eina_rbtree_inline_lookup(tree, signal, 0,
+								 EINA_RBTREE_CMP_KEY_CB(_edje_signal_source_key_cmp), source);
+
+   if (lookup) return lookup->list;
+   return NULL;
+}
+
+void
+edje_match_signal_source_free(Edje_Signal_Source_Char *key, __UNUSED__ void *data)
+{
+   eina_list_free(key->list);
+   free(key);
 }

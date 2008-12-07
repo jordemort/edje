@@ -2,6 +2,8 @@
  * vim:ts=8:sw=3:sts=8:noexpandtab:cino=>5n-3f0^-2{2
  */
 
+#include <string.h>
+
 #include "edje_private.h"
 
 
@@ -38,8 +40,9 @@ _edje_text_init(void)
 void
 _edje_text_part_on_add(Edje *ed, Edje_Real_Part *ep)
 {
-   Evas_List *tmp;
+   Eina_List *tmp;
    Edje_Part *pt = ep->part;
+   Edje_Part_Description *desc;
 
    if (ep->part->type != EDJE_PART_TYPE_TEXT) return;
 
@@ -48,26 +51,19 @@ _edje_text_part_on_add(Edje *ed, Edje_Real_Part *ep)
      _edje_text_class_member_add(ed, pt->default_desc->text.text_class);
 
    /* If any other classes exist add them */
-   for (tmp = pt->other_desc; tmp; tmp = tmp->next)
-     {
-        Edje_Part_Description *desc;
-
-	desc = tmp->data;
-	if ((desc) && (desc->text.text_class))
-	  _edje_text_class_member_add(ed, desc->text.text_class);
-     }
+   EINA_LIST_FOREACH(pt->other_desc, tmp, desc)
+     if ((desc) && (desc->text.text_class))
+       _edje_text_class_member_add(ed, desc->text.text_class);
 }
 
 void
 _edje_text_part_on_add_clippers(Edje *ed, Edje_Real_Part *ep)
 {
-   Evas_List *l;
+   Eina_List *l;
+   Evas_Object *o;
 
-   for (l = ep->extra_objects; l; l = l->next)
+   EINA_LIST_FOREACH(ep->extra_objects, l, o)
      {
-	Evas_Object *o;
-
-	o = l->data;
 	if (ep->part->clip_to_id >= 0)
 	  {
 	     ep->clip_to = ed->table_parts[ep->part->clip_to_id % ed->table_parts_size];
@@ -83,19 +79,15 @@ _edje_text_part_on_add_clippers(Edje *ed, Edje_Real_Part *ep)
 void
 _edje_text_part_on_del(Edje *ed, Edje_Part *pt)
 {
-   Evas_List *tmp;
+   Eina_List *tmp;
+   Edje_Part_Description *desc;
 
    if ((pt->default_desc) && (pt->default_desc->text.text_class))
      _edje_text_class_member_del(ed, pt->default_desc->text.text_class);
 
-   for (tmp = pt->other_desc; tmp; tmp = tmp->next)
-     {
-	 Edje_Part_Description *desc;
-
-	 desc = tmp->data;
-	 if (desc->text.text_class)
-	   _edje_text_class_member_del(ed, desc->text.text_class);
-     }
+   EINA_LIST_FOREACH(pt->other_desc, tmp, desc)
+     if (desc->text.text_class)
+       _edje_text_class_member_del(ed, desc->text.text_class);
 }
 
 void
@@ -105,8 +97,8 @@ _edje_text_real_part_on_del(Edje *ed, Edje_Real_Part *ep)
      {
 	Evas_Object *o;
 
-	o = ep->extra_objects->data;
-	ep->extra_objects = evas_list_remove(ep->extra_objects, o);
+	o = eina_list_data_get(ep->extra_objects);
+	ep->extra_objects = eina_list_remove(ep->extra_objects, o);
 	evas_object_del(o);
      }
 }
@@ -157,6 +149,7 @@ _edje_text_fit_x(Edje *ed, Edje_Real_Part *ep,
    size_t orig_len;
 
    *free_text = 0;
+   if (sw <= 1) return "";
 
    if (ep->part->scale) evas_object_scale_set(ep->object, _edje_scale);
    evas_object_text_font_set(ep->object, font, size);
@@ -412,8 +405,8 @@ _edje_text_recalc_apply(Edje *ed, Edje_Real_Part *ep,
 
 	goto arrange_text;
      }
-   if (ep->text.cache.in_str) evas_stringshare_del(ep->text.cache.in_str);
-   ep->text.cache.in_str = evas_stringshare_add(text);
+   if (ep->text.cache.in_str) eina_stringshare_del(ep->text.cache.in_str);
+   ep->text.cache.in_str = eina_stringshare_add(text);
    ep->text.cache.in_size = size;
    if (chosen_desc->text.fit_x)
      {
@@ -561,8 +554,8 @@ _edje_text_recalc_apply(Edje *ed, Edje_Real_Part *ep,
 	text = _edje_text_fit_x(ed, ep, params, text, font, size, sw, &free_text);
      }
 
-   if (ep->text.cache.out_str) evas_stringshare_del(ep->text.cache.out_str);
-   ep->text.cache.out_str = evas_stringshare_add(text);
+   if (ep->text.cache.out_str) eina_stringshare_del(ep->text.cache.out_str);
+   ep->text.cache.out_str = eina_stringshare_add(text);
    ep->text.cache.in_w = sw;
    ep->text.cache.in_h = sh;
    ep->text.cache.out_size = size;
