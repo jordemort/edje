@@ -1,1 +1,3 @@
 0001-Add-libtool-Wl-as-needed-reordering-workaround.patch
+0002-fix-library-soname.patch
+0003-reapply-autofoo.patch

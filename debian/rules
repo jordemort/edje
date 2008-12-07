@@ -5,6 +5,10 @@ include /usr/share/cdbs/1/rules/debhelper.mk
 include /usr/share/cdbs/1/rules/patchsys-quilt.mk
 
 LDFLAGS += -Wl,--as-needed
+DEB_MAKE_ENVVARS += DEBIAN_MINOR='a'
+
+build/libedje-doc::
+	$(MAKE) doc
 
 install/libedje-doc::
 	cp -R $(DEB_SRCDIR)/doc/html debian/libedje-doc/usr/share/doc/libedje-doc/
@@ -21,4 +25,3 @@ refresh-patches:
 	@cd '$(CURDIR)'/debian/patches && git format-patch upstream..upstream-$(DEB_UPSTREAM_VERSION)+patches | tee series
 	@sed -i s:^debian/patches/:: '$(CURDIR)'/debian/patches/series
 	@echo .
-

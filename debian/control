@@ -4,9 +4,9 @@ Priority: optional
 Maintainer:  Debian Pkg-e Team <pkg-e-devel@lists.alioth.debian.org>
 Uploaders: Albin Tonnerre <albin.tonnerre@gmail.com>,
  Xavier Oswald <x.oswald@free.fr>, Jan Lübbe <jluebbe@debian.org>
-Build-Depends: debhelper (>= 6), cdbs, quilt, libeet-dev, libevas-dev (>= 0.9.9.050),
- libecore-dev, libembryo-dev, doxygen
-Standards-Version: 3.7.3
+Build-Depends: debhelper (>= 6), cdbs, quilt, libeet-dev, libevas-0.9.9.050a-dev,
+ libecore-0.9.9.050a-dev, libembryo-dev, libeina-0.0.1a-dev, doxygen
+Standards-Version: 3.8.0
 Vcs-Git: git://git.debian.org/pkg-e/libs/edje.git
 Vcs-Browser: http://git.debian.org/?p=pkg-e/libs/edje.git
 Homepage: http://enlightenment.org
@@ -14,7 +14,7 @@ Homepage: http://enlightenment.org
 Package: libedje-bin
 Architecture: any
 Section: devel
-Depends: ${shlibs:Depends}, libembryo-bin, libevas-engines
+Depends: ${misc:Depends}, ${shlibs:Depends}, libembryo-bin, libevas-0.9.9.050a-engines
 Description: Various binaries for use with libedje
  Edje is a graphical layout and animation library for animated resizable,
  compressed and scalable themes. It is the theming engine behind
@@ -25,9 +25,9 @@ Description: Various binaries for use with libedje
   - edje_decc: Used to decompile compiled edje files.
   - edje_recc: A convenience script to recompile EDC files.
 
-Package: libedje0
+Package: libedje-0.9.9.050a
 Architecture: any
-Depends: ${shlibs:Depends}
+Depends: ${misc:Depends}, ${shlibs:Depends}
 Suggests: libedje-bin (= ${binary:Version})
 Description: Graphical layout and animation library
  Edje is a graphical layout and animation library for animated resizable,
@@ -45,10 +45,13 @@ Description: libedje0 development documentation
  .
  This package provides development documentation for Edje.
 
-Package: libedje-dev
+Package: libedje-0.9.9.050a-dev
 Architecture: any
 Section: libdevel
-Depends: libedje0 (= ${binary:Version}), libeet-dev, libevas-dev, libecore-dev, libembryo-dev, pkg-config
+Provides: libedje-dev
+Conflicts: libedje-dev
+Depends: ${misc:Depends}, libedje-0.9.9.050a (= ${binary:Version}), libeet-dev, libembryo-dev,
+ libevas-0.9.9.050a-dev, libecore-0.9.9.050a-dev, libeina-0.0.1a-dev, pkg-config
 Description: libedje headers and static libraries
  Edje is a graphical layout and animation library for animated resizable,
  compressed and scalable themes. It is the theming engine behind
@@ -60,7 +63,7 @@ Package: libedje-dbg
 Architecture: any
 Section: libdevel
 Priority: extra
-Depends: libedje0 (= ${binary:Version})
+Depends: ${misc:Depends}, libedje-0.9.9.050a (= ${binary:Version})
 Description: Graphical layout and animation library
  Edje is a graphical layout and animation library for animated resizable,
  compressed and scalable themes. It is the theming engine behind
