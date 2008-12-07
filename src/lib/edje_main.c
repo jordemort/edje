@@ -2,6 +2,8 @@
  * vim:ts=8:sw=3:sts=8:noexpandtab:cino=>5n-3f0^-2{2
  */
 
+#include <time.h>
+
 #include "edje_private.h"
 
 static int initted = 0;
@@ -18,10 +20,12 @@ edje_init(void)
    initted++;
    if (initted == 1)
      {
+	eina_init();
         ecore_job_init();
 	srand(time(NULL));
 	_edje_edd_setup();
 	_edje_text_init();
+	_edje_box_init();
 	embryo_init();
 	eet_init();
      }
@@ -50,9 +54,11 @@ edje_shutdown(void)
    _edje_color_class_hash_free();
    _edje_text_class_members_free();
    _edje_text_class_hash_free();
+   _edje_box_shutdown();
    embryo_shutdown();
    ecore_job_shutdown();
    eet_shutdown();
+   eina_shutdown();
 
    return 0;
 }
@@ -89,58 +95,58 @@ _edje_del(Edje *ed)
    _edje_message_del(ed);
    _edje_callbacks_patterns_clean(ed);
    _edje_file_del(ed);
-   if (ed->path) evas_stringshare_del(ed->path);
-   if (ed->group) evas_stringshare_del(ed->group);
-   if (ed->parent) evas_stringshare_del(ed->parent);
+   if (ed->path) eina_stringshare_del(ed->path);
+   if (ed->group) eina_stringshare_del(ed->group);
+   if (ed->parent) eina_stringshare_del(ed->parent);
    ed->path = NULL;
    ed->group = NULL;
    if ((ed->actions) || (ed->pending_actions))
      {
-	_edje_animators = evas_list_remove(_edje_animators, ed);
+	_edje_animators = eina_list_remove(_edje_animators, ed);
      }
    while (ed->actions)
      {
 	Edje_Running_Program *runp;
 
-	runp = ed->actions->data;
-	ed->actions = evas_list_remove(ed->actions, runp);
+	runp = eina_list_data_get(ed->actions);
+	ed->actions = eina_list_remove(ed->actions, runp);
 	free(runp);
      }
    while (ed->pending_actions)
      {
 	Edje_Pending_Program *pp;
 
-	pp = ed->pending_actions->data;
-	ed->pending_actions = evas_list_remove(ed->pending_actions, pp);
+	pp = eina_list_data_get(ed->pending_actions);
+	ed->pending_actions = eina_list_remove(ed->pending_actions, pp);
 	free(pp);
      }
    while (ed->callbacks)
      {
 	Edje_Signal_Callback *escb;
 
-	escb = ed->callbacks->data;
-	ed->callbacks = evas_list_remove(ed->callbacks, escb);
-	if (escb->signal) evas_stringshare_del(escb->signal);
-	if (escb->source) evas_stringshare_del(escb->source);
+	escb = eina_list_data_get(ed->callbacks);
+	ed->callbacks = eina_list_remove(ed->callbacks, escb);
+	if (escb->signal) eina_stringshare_del(escb->signal);
+	if (escb->source) eina_stringshare_del(escb->source);
 	free(escb);
      }
    while (ed->color_classes)
      {
 	Edje_Color_Class *cc;
 
-	cc = ed->color_classes->data;
-	ed->color_classes = evas_list_remove(ed->color_classes, cc);
-	if (cc->name) evas_stringshare_del(cc->name);
+	cc = eina_list_data_get(ed->color_classes);
+	ed->color_classes = eina_list_remove(ed->color_classes, cc);
+	if (cc->name) eina_stringshare_del(cc->name);
 	free(cc);
      }
    while (ed->text_classes)
      {
 	Edje_Text_Class *tc;
 
-	tc = ed->text_classes->data;
-	ed->text_classes = evas_list_remove(ed->text_classes, tc);
-	if (tc->name) evas_stringshare_del(tc->name);
-	if (tc->font) evas_stringshare_del(tc->font);
+	tc = eina_list_data_get(ed->text_classes);
+	ed->text_classes = eina_list_remove(ed->text_classes, tc);
+	if (tc->name) eina_stringshare_del(tc->name);
+	if (tc->font) eina_stringshare_del(tc->font);
 	free(tc);
      }
    free(ed);

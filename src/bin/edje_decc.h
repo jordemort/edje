@@ -1,7 +1,7 @@
 #ifndef EDJE_DECC_H
 #define EDJE_DECC_H
 
-#include "edje_main.h"
+#include <edje_private.h>
 
 /* types */
 typedef struct _Font                  Font;
@@ -17,7 +17,7 @@ struct _Font
 
 struct _Font_List
 {
-   Evas_List *list;
+   Eina_List *list;
 };
 
 struct _SrcFile
@@ -28,14 +28,14 @@ struct _SrcFile
 
 struct _SrcFile_List
 {
-   Evas_List *list;
+   Eina_List *list;
 };
 
 void    source_edd(void);
 void    source_fetch(void);
 int     source_append(Eet_File *ef);
 SrcFile_List *source_load(Eet_File *ef);
-int     source_fontmap_save(Eet_File *ef, Evas_List *fonts);
+int     source_fontmap_save(Eet_File *ef, Eina_List *fonts);
 Font_List *source_fontmap_load(Eet_File *ef);
 
 void   *mem_alloc(size_t size);

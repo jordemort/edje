@@ -1,4 +1,4 @@
-/* config.h.in.  Generated from configure.in by autoheader.  */
+/* config.h.in.  Generated from configure.ac by autoheader.  */
 
 /* Define to one of `_getb67', `GETB67', `getb67' for Cray-2 and Cray-YMP
    systems. This function is required for `alloca.c' support on those systems.
@@ -12,9 +12,6 @@
    of faster program matching */
 #undef EDJE_PROGRAM_CACHE
 
-/* Define to mention that embryo is built */
-#undef EFL_EDJE_BUILD
-
 /* Define to 1 if you have `alloca', as a function or macro. */
 #undef HAVE_ALLOCA
 
@@ -25,11 +22,14 @@
 /* Define to 1 if you have the <dlfcn.h> header file. */
 #undef HAVE_DLFCN_H
 
-/* Set to 1 if evil package is installed */
+/* Set to 1 if Evil library is installed */
 #undef HAVE_EVIL
 
 /* Define to 1 if you have the <inttypes.h> header file. */
 #undef HAVE_INTTYPES_H
+
+/* Define to 1 if you have the <locale.h> header file. */
+#undef HAVE_LOCALE_H
 
 /* Define to 1 if you have the <memory.h> header file. */
 #undef HAVE_MEMORY_H
@@ -57,6 +57,9 @@
 
 /* Define to 1 if you have the <unistd.h> header file. */
 #undef HAVE_UNISTD_H
+
+/* Define to 1 if your compiler has __attribute__ */
+#undef HAVE___ATTRIBUTE__
 
 /* Define to 1 if your C compiler doesn't accept -c and -o together. */
 #undef NO_MINUS_C_MINUS_O
@@ -92,6 +95,9 @@
 
 /* Version number of package */
 #undef VERSION
+
+/* Define to nothing if your compiler does not support __attribute__ */
+#undef __UNUSED__
 
 /* Define to empty if `const' does not conform to ANSI C. */
 #undef const

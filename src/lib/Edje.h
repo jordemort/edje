@@ -175,8 +175,8 @@ extern "C" {
    EAPI double       edje_scale_get                  (void);
 
    /* edje_load.c */
-   EAPI Evas_List   *edje_file_collection_list       (const char *file);
-   EAPI void         edje_file_collection_list_free  (Evas_List *lst);
+   EAPI Eina_List   *edje_file_collection_list       (const char *file);
+   EAPI void         edje_file_collection_list_free  (Eina_List *lst);
    EAPI int          edje_file_group_exists          (const char *file, const char *glob);
    EAPI char        *edje_file_data_get              (const char *file, const char *key);
    EAPI void         edje_file_cache_set             (int count);
@@ -190,13 +190,14 @@ extern "C" {
    /* edje_util.c */
    EAPI void         edje_color_class_set(const char *color_class, int r, int g, int b, int a, int r2, int g2, int b2, int a2, int r3, int g3, int b3, int a3);
    EAPI void         edje_color_class_del(const char *color_class);
-   EAPI Evas_List *  edje_color_class_list(void);
+   EAPI Eina_List *  edje_color_class_list(void);
    EAPI void         edje_text_class_set(const char *text_class, const char *font, Evas_Font_Size size);
    EAPI void         edje_text_class_del(const char *text_class);
-   EAPI Evas_List *  edje_text_class_list(void);
+   EAPI Eina_List *  edje_text_class_list(void);
    EAPI void         edje_extern_object_min_size_set (Evas_Object *obj, Evas_Coord minw, Evas_Coord minh);
    EAPI void         edje_extern_object_max_size_set (Evas_Object *obj, Evas_Coord maxw, Evas_Coord maxh);
    EAPI void         edje_extern_object_aspect_set(Evas_Object *obj, Edje_Aspect_Control aspect, Evas_Coord aw, Evas_Coord ah);
+   EAPI void         edje_box_layout_register(const char *name, Evas_Object_Box_Layout func, void *(*layout_data_get)(void *), void (*layout_data_free)(void *), void (*free_data)(void *), void *data);
 
    /* edje_smart.c */
    EAPI Evas_Object *edje_object_add                 (Evas *evas);
@@ -235,6 +236,15 @@ extern "C" {
    EAPI void         edje_object_text_change_cb_set  (Evas_Object *obj, void (*func) (void *data, Evas_Object *obj, const char *part), void *data);
    EAPI void         edje_object_part_text_set       (Evas_Object *obj, const char *part, const char *text);
    EAPI const char  *edje_object_part_text_get       (const Evas_Object *obj, const char *part);
+   EAPI const char  *edje_object_part_text_selection_get(const Evas_Object *obj, const char *part);
+   EAPI void         edje_object_part_text_select_none(const Evas_Object *obj, const char *part);
+   EAPI void         edje_object_part_text_select_all(const Evas_Object *obj, const char *part);
+       
+   EAPI void         edje_object_part_text_insert    (Evas_Object *obj, const char *part, const char *text);
+   EAPI Eina_List   *edje_object_part_text_anchor_list_get(const Evas_Object *obj, const char *part);
+   EAPI Eina_List   *edje_object_part_text_anchor_geometry_get(const Evas_Object *obj, const char *part, const char *anchor);
+   EAPI void         edje_object_part_text_cursor_geometry_get(const Evas_Object *obj, const char *part, Evas_Coord *x, Evas_Coord *y, Evas_Coord *w, Evas_Coord *h);
+       
    EAPI void         edje_object_part_swallow        (Evas_Object *obj, const char *part, Evas_Object *obj_swallow);
    EAPI void         edje_object_part_unswallow      (Evas_Object *obj, Evas_Object *obj_swallow);
    EAPI Evas_Object *edje_object_part_swallow_get    (const Evas_Object *obj, const char *part);
@@ -250,6 +260,13 @@ extern "C" {
    EAPI void         edje_object_part_drag_page_get  (const Evas_Object *obj, const char *part, double *dx, double *dy);
    EAPI void         edje_object_part_drag_step      (Evas_Object *obj, const char *part, double dx, double dy);
    EAPI void         edje_object_part_drag_page      (Evas_Object *obj, const char *part, double dx, double dy);
+   EAPI Evas_Bool    edje_object_part_box_append     (Evas_Object *obj, const char *part, Evas_Object *child);
+   EAPI Evas_Bool    edje_object_part_box_prepend    (Evas_Object *obj, const char *part, Evas_Object *child);
+   EAPI Evas_Bool    edje_object_part_box_insert_before (Evas_Object *obj, const char *part, Evas_Object *child, const Evas_Object *reference);
+   EAPI Evas_Bool    edje_object_part_box_insert_at  (Evas_Object *obj, const char *part, Evas_Object *child, unsigned int pos);
+   EAPI Evas_Object *edje_object_part_box_remove     (Evas_Object *obj, const char *part, Evas_Object *child);
+   EAPI Evas_Object *edje_object_part_box_remove_at  (Evas_Object *obj, const char *part, unsigned int pos);
+   EAPI Evas_Bool    edje_object_part_box_remove_all (Evas_Object *obj, const char *part, Evas_Bool clear);
 
    /* edje_message_queue.c */
    EAPI void         edje_object_message_send           (Evas_Object *obj, Edje_Message_Type type, int id, void *msg);

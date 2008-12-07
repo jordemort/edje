@@ -13,7 +13,6 @@
 # PARTICULAR PURPOSE.
 
 @SET_MAKE@
-
 VPATH = @srcdir@
 pkgdatadir = $(datadir)/@PACKAGE@
 pkglibdir = $(libdir)/@PACKAGE@
@@ -32,8 +31,9 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
-subdir = utils
-DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in
+subdir = doc
+DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in \
+	$(srcdir)/edje.dox.in
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/ac_attribute.m4 \
 	$(top_srcdir)/m4/efl_doxygen.m4 $(top_srcdir)/configure.ac
@@ -41,10 +41,7 @@ am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 mkinstalldirs = $(install_sh) -d
 CONFIG_HEADER = $(top_builddir)/config.h
-CONFIG_CLEAN_FILES =
-am__installdirs = "$(DESTDIR)$(bindir)"
-binSCRIPT_INSTALL = $(INSTALL_SCRIPT)
-SCRIPTS = $(bin_SCRIPTS)
+CONFIG_CLEAN_FILES = edje.dox
 SOURCES =
 DIST_SOURCES =
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
@@ -180,9 +177,9 @@ top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 version_info = @version_info@
 vimdir = @vimdir@
-MAINTAINERCLEANFILES = Makefile.in
-@HAVE_PYTHON_TRUE@bin_SCRIPTS = inkscape2edc
-EXTRA_DIST = gimp-edje-export.py inkscape2edc
+MAINTAINERCLEANFILES = Makefile.in edje.dox
+PACKAGE_DOCNAME = $(PACKAGE_TARNAME)-$(PACKAGE_VERSION)-doc
+EXTRA_DIST = Doxyfile e.css foot.html head.html img/ edje.dox.in
 all: all-am
 
 .SUFFIXES:
@@ -195,9 +192,9 @@ $(srcdir)/Makefile.in:  $(srcdir)/Makefile.am  $(am__configure_deps)
 	      exit 1;; \
 	  esac; \
 	done; \
-	echo ' cd $(top_srcdir) && $(AUTOMAKE) --gnu  utils/Makefile'; \
+	echo ' cd $(top_srcdir) && $(AUTOMAKE) --gnu  doc/Makefile'; \
 	cd $(top_srcdir) && \
-	  $(AUTOMAKE) --gnu  utils/Makefile
+	  $(AUTOMAKE) --gnu  doc/Makefile
 .PRECIOUS: Makefile
 Makefile: $(srcdir)/Makefile.in $(top_builddir)/config.status
 	@case '$?' in \
@@ -215,25 +212,8 @@ $(top_srcdir)/configure:  $(am__configure_deps)
 	cd $(top_builddir) && $(MAKE) $(AM_MAKEFLAGS) am--refresh
 $(ACLOCAL_M4):  $(am__aclocal_m4_deps)
 	cd $(top_builddir) && $(MAKE) $(AM_MAKEFLAGS) am--refresh
-install-binSCRIPTS: $(bin_SCRIPTS)
-	@$(NORMAL_INSTALL)
-	test -z "$(bindir)" || $(MKDIR_P) "$(DESTDIR)$(bindir)"
-	@list='$(bin_SCRIPTS)'; for p in $$list; do \
-	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
-	  if test -f $$d$$p; then \
-	    f=`echo "$$p" | sed 's|^.*/||;$(transform)'`; \
-	    echo " $(binSCRIPT_INSTALL) '$$d$$p' '$(DESTDIR)$(bindir)/$$f'"; \
-	    $(binSCRIPT_INSTALL) "$$d$$p" "$(DESTDIR)$(bindir)/$$f"; \
-	  else :; fi; \
-	done
-
-uninstall-binSCRIPTS:
-	@$(NORMAL_UNINSTALL)
-	@list='$(bin_SCRIPTS)'; for p in $$list; do \
-	  f=`echo "$$p" | sed 's|^.*/||;$(transform)'`; \
-	  echo " rm -f '$(DESTDIR)$(bindir)/$$f'"; \
-	  rm -f "$(DESTDIR)$(bindir)/$$f"; \
-	done
+edje.dox: $(top_builddir)/config.status $(srcdir)/edje.dox.in
+	cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@
 
 mostlyclean-libtool:
 	-rm -f *.lo
@@ -275,11 +255,8 @@ distdir: $(DISTFILES)
 	done
 check-am: all-am
 check: check-am
-all-am: Makefile $(SCRIPTS)
+all-am: Makefile
 installdirs:
-	for dir in "$(DESTDIR)$(bindir)"; do \
-	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
-	done
 install: install-am
 install-exec: install-exec-am
 install-data: install-data-am
@@ -305,9 +282,10 @@ maintainer-clean-generic:
 	@echo "This command is intended for maintainers to use"
 	@echo "it deletes files that may require special tools to rebuild."
 	-test -z "$(MAINTAINERCLEANFILES)" || rm -f $(MAINTAINERCLEANFILES)
+@EFL_BUILD_DOC_FALSE@clean-local:
 clean: clean-am
 
-clean-am: clean-generic clean-libtool mostlyclean-am
+clean-am: clean-generic clean-libtool clean-local mostlyclean-am
 
 distclean: distclean-am
 	-rm -f Makefile
@@ -327,7 +305,7 @@ install-data-am:
 
 install-dvi: install-dvi-am
 
-install-exec-am: install-binSCRIPTS
+install-exec-am:
 
 install-html: install-html-am
 
@@ -357,22 +335,45 @@ ps: ps-am
 
 ps-am:
 
-uninstall-am: uninstall-binSCRIPTS
+uninstall-am:
 
 .MAKE: install-am install-strip
 
 .PHONY: all all-am check check-am clean clean-generic clean-libtool \
-	distclean distclean-generic distclean-libtool distdir dvi \
-	dvi-am html html-am info info-am install install-am \
-	install-binSCRIPTS install-data install-data-am install-dvi \
+	clean-local distclean distclean-generic distclean-libtool \
+	distdir dvi dvi-am html html-am info info-am install \
+	install-am install-data install-data-am install-dvi \
 	install-dvi-am install-exec install-exec-am install-html \
 	install-html-am install-info install-info-am install-man \
 	install-pdf install-pdf-am install-ps install-ps-am \
 	install-strip installcheck installcheck-am installdirs \
 	maintainer-clean maintainer-clean-generic mostlyclean \
 	mostlyclean-generic mostlyclean-libtool pdf pdf-am ps ps-am \
-	uninstall uninstall-am uninstall-binSCRIPTS
+	uninstall uninstall-am
 
+
+.PHONY: doc
+
+@EFL_BUILD_DOC_TRUE@doc-clean:
+@EFL_BUILD_DOC_TRUE@	rm -rf html/ latex/ man/ xml/ $(PACKAGE_DOCNAME).tar*
+
+@EFL_BUILD_DOC_TRUE@doc: all doc-clean
+@EFL_BUILD_DOC_TRUE@	cat ../src/lib/Edje.h >> ./edje.dox
+@EFL_BUILD_DOC_TRUE@	cat `find ../src/lib -name "*.c" -fprint /dev/stdout | grep -v edje_edit.c` >> edje.dox
+@EFL_BUILD_DOC_TRUE@	$(DOXYGEN)
+@EFL_BUILD_DOC_TRUE@	cp img/* html/
+@EFL_BUILD_DOC_TRUE@	rm -rf $(PACKAGE_DOCNAME).tar*
+@EFL_BUILD_DOC_TRUE@	mkdir -p $(PACKAGE_DOCNAME)/doc
+@EFL_BUILD_DOC_TRUE@	cp -R html/ latex/ man/ $(PACKAGE_DOCNAME)/doc
+@EFL_BUILD_DOC_TRUE@	tar cf $(PACKAGE_DOCNAME).tar $(PACKAGE_DOCNAME)/
+@EFL_BUILD_DOC_TRUE@	bzip2 -9 $(PACKAGE_DOCNAME).tar
+@EFL_BUILD_DOC_TRUE@	rm -rf $(PACKAGE_DOCNAME)/
+@EFL_BUILD_DOC_TRUE@	mv $(PACKAGE_DOCNAME).tar.bz2 $(top_srcdir)
+
+@EFL_BUILD_DOC_TRUE@clean-local: doc-clean
+
+@EFL_BUILD_DOC_FALSE@doc:
+@EFL_BUILD_DOC_FALSE@	@echo "Documentation not built. Run ./configure --help"
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
 .NOEXPORT:

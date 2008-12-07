@@ -2,6 +2,29 @@
  * vim:ts=8:sw=3:sts=8:noexpandtab:cino=>5n-3f0^-2{2
  */
 
+#ifdef HAVE_CONFIG_H
+# include <config.h>
+#endif
+
+#include <string.h>
+
+#ifdef HAVE_ALLOCA_H
+# include <alloca.h>
+#elif defined __GNUC__
+# define alloca __builtin_alloca
+#elif defined _AIX
+# define alloca __alloca
+#elif defined _MSC_VER
+# include <malloc.h>
+# define alloca _alloca
+#else
+# include <stddef.h>
+# ifdef  __cplusplus
+extern "C"
+# endif
+void *alloca (size_t);
+#endif
+
 #include "edje_private.h"
 
 /*
@@ -688,7 +711,7 @@ _edje_embryo_fn_stop_program(Embryo_Program *ep, Embryo_Cell *params)
    Edje *ed;
    int program_id = 0;
    Edje_Running_Program *runp;
-   Evas_List *l;
+   Eina_List *l;
 
    CHKPARAM(1);
    ed = embryo_program_data_get(ep);
@@ -697,12 +720,9 @@ _edje_embryo_fn_stop_program(Embryo_Program *ep, Embryo_Cell *params)
 
    ed->walking_actions = 1;
 
-   for (l = ed->actions; l; l = l->next)
-     {
-	runp = l->data;
-	if (program_id == runp->program->id)
-	  _edje_program_end(ed, runp);
-     }
+   EINA_LIST_FOREACH(ed->actions, l, runp)
+     if (program_id == runp->program->id)
+       _edje_program_end(ed, runp);
 
    ed->walking_actions = 0;
 
@@ -1270,7 +1290,7 @@ _edje_embryo_fn_set_drag_page(Embryo_Program *ep, Embryo_Cell *params)
    return(0);
 }
 
-/* send_message(id, Msg_Type:type, ...); */
+/* send_message(Msg_Type:type, id,...); */
 static Embryo_Cell
 _edje_embryo_fn_send_message(Embryo_Program *ep, Embryo_Cell *params)
 {
@@ -1507,7 +1527,8 @@ _edje_embryo_fn_custom_state(Embryo_Program *ep, Embryo_Cell *params)
    Edje *ed = embryo_program_data_get(ep);
    Edje_Real_Part *rp;
    Edje_Part_Description *parent, *d;
-   Evas_List *l;
+   Edje_Part_Image_Id *iid;
+   Eina_List *l;
    char *name;
    float val;
 
@@ -1538,7 +1559,7 @@ _edje_embryo_fn_custom_state(Embryo_Program *ep, Embryo_Cell *params)
 
    *d = *parent;
 
-   d->state.name = (char *)evas_stringshare_add("custom");
+   d->state.name = (char *)eina_stringshare_add("custom");
    d->state.value = 0.0;
 
    /* make sure all the allocated memory is getting copied,
@@ -1546,17 +1567,17 @@ _edje_embryo_fn_custom_state(Embryo_Program *ep, Embryo_Cell *params)
     */
    d->image.tween_list = NULL;
 
-   for (l = parent->image.tween_list; l; l = l->next)
+   EINA_LIST_FOREACH(parent->image.tween_list, l, iid)
      {
-	Edje_Part_Image_Id *iid = l->data, *iid_new;
+        Edje_Part_Image_Id *iid_new;
 
 	iid_new = calloc(1, sizeof(Edje_Part_Image_Id));
 	iid_new->id = iid->id;
 
-	d->image.tween_list = evas_list_append(d->image.tween_list, iid_new);
+	d->image.tween_list = eina_list_append(d->image.tween_list, iid_new);
      }
 
-#define DUP(x) x ? (char *)evas_stringshare_add(x) : NULL
+#define DUP(x) x ? (char *)eina_stringshare_add(x) : NULL
    d->color_class = DUP(d->color_class);
    d->text.text = DUP(d->text.text);
    d->text.text_class = DUP(d->text.text_class);

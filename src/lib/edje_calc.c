@@ -2,6 +2,9 @@
  * vim:ts=8:sw=3:sts=8:noexpandtab:cino=>5n-3f0^-2{2
  */
 
+#include <string.h>
+#include <math.h>
+
 #include "edje_private.h"
 
 #define FLAG_NONE 0
@@ -51,7 +54,8 @@ _edje_part_description_find(Edje *ed, Edje_Real_Part *rp, const char *name,
 {
    Edje_Part *ep = rp->part;
    Edje_Part_Description *ret = NULL;
-   Evas_List *l;
+   Edje_Part_Description *d;
+   Eina_List *l;
    double min_dst = 999.0;
 
    if (!strcmp(name, "default") && val == 0.0)
@@ -65,11 +69,8 @@ _edje_part_description_find(Edje *ed, Edje_Real_Part *rp, const char *name,
 	ret = ep->default_desc;
 	min_dst = ABS(ep->default_desc->state.value - val);
      }
-
-   for (l = ep->other_desc; l; l = l->next)
+   EINA_LIST_FOREACH(ep->other_desc, l, d)
      {
-	Edje_Part_Description *d = l->data;
-
 	if (!strcmp(d->state.name, name))
 	  {
 	     double dst;
@@ -136,12 +137,6 @@ _edje_part_description_apply(Edje *ed, Edje_Real_Part *ep, const char *d1, doubl
 void
 _edje_recalc(Edje *ed)
 {
-   int i;
-
-   if (!ed->dirty)
-     {
-	return;
-     }
    if ((ed->freeze > 0) || (_edje_freeze_val > 0))
      {
 	ed->recalc = 1;
@@ -150,6 +145,21 @@ _edje_recalc(Edje *ed)
 	     if (_edje_freeze_val > 0) _edje_freeze_calc_count++;
 	     return;
 	  }
+     }
+   if (ed->postponed) return;
+   evas_object_smart_changed(ed->obj);
+   ed->postponed = 1;
+}
+
+void
+_edje_recalc_do(Edje *ed)
+{
+   int i;
+
+   ed->postponed = 0;
+   if (!ed->dirty)
+     {
+	return;
      }
    for (i = 0; i < ed->table_parts_size; i++)
      {
@@ -167,8 +177,9 @@ _edje_recalc(Edje *ed)
 	if (ep->calculated != FLAG_XY)
 	  _edje_part_recalc(ed, ep, (~ep->calculated) & FLAG_XY);
      }
-   ed->dirty = 0;
    if (!ed->calc_only) ed->recalc = 0;
+   ed->dirty = 0;
+   ed->calc_only = 0;
 }
 
 int
@@ -600,7 +611,7 @@ _edje_part_recalc_single(Edje *ed,
 	const char *text = "";
 	const char *style = "";
 	Edje_Style *stl  = NULL;
-	Evas_List *l;
+	Eina_List *l;
 
 	if (chosen_desc->text.id_source >= 0)
 	  {
@@ -628,9 +639,8 @@ _edje_part_recalc_single(Edje *ed,
 	     if (ep->text.text) text = ep->text.text;
 	  }
 
-	for (l = ed->file->styles; l; l = l->next)
+	EINA_LIST_FOREACH(ed->file->styles, l, stl)
 	  {
-	     stl = l->data;
 	     if ((stl->name) && (!strcmp(stl->name, style))) break;
 	     stl = NULL;
 	  }
@@ -644,11 +654,19 @@ _edje_part_recalc_single(Edje *ed,
 
 	     if (evas_object_textblock_style_get(ep->object) != stl->style)
 	       evas_object_textblock_style_set(ep->object, stl->style);
-	     ptxt = evas_object_textblock_text_markup_get(ep->object);
-	     if (((!ptxt) && (text)) ||
-		 ((ptxt) && (text) && (strcmp(ptxt, text))) ||
-		 ((ptxt) && (!text)))
-	       evas_object_textblock_text_markup_set(ep->object, text);
+	     // FIXME: need to account for editing
+	     if (ep->part->entry_mode > EDJE_ENTRY_EDIT_MODE_NONE)
+	       {
+		  // do nothing - should be done elsewhere
+	       }
+	     else
+	       {
+		  ptxt = evas_object_textblock_text_markup_get(ep->object);
+		  if (((!ptxt) && (text)) ||
+		      ((ptxt) && (text) && (strcmp(ptxt, text))) ||
+		      ((ptxt) && (!text)))
+		    evas_object_textblock_text_markup_set(ep->object, text);
+	       }
 	     if ((chosen_desc->text.min_x) || (chosen_desc->text.min_y))
 	       {
 		  int mw = 0, mh = 0;
@@ -1155,15 +1173,15 @@ _edje_gradient_recalc_apply(Edje *ed, Edje_Real_Part *ep, Edje_Calc_Params *p3, 
        p3->gradient.id != ep->gradient_id)
      {
 	Edje_Spectrum_Directory_Entry *se;
-	Evas_List *l;
+	Edje_Spectrum_Color *sc;
+	Eina_List *l;
 
-	se = evas_list_nth(ed->file->spectrum_dir->entries, p3->gradient.id);
+	se = eina_list_nth(ed->file->spectrum_dir->entries, p3->gradient.id);
 	if (se)
 	  {
 	     evas_object_gradient_clear(ep->object);
-	     for (l = se->color_list; l; l = l->next)
+	     EINA_LIST_FOREACH(se->color_list, l, sc)
 	       {
-		  Edje_Spectrum_Color *sc = l->data;
 		  evas_object_gradient_color_stop_add(ep->object, sc->r,
 						      sc->g, sc->b, 255,
 						      sc->d);
@@ -1175,65 +1193,34 @@ _edje_gradient_recalc_apply(Edje *ed, Edje_Real_Part *ep, Edje_Calc_Params *p3, 
      }
 }
 
-static int
-_edje_nitoa_rec(char *string, int len, unsigned int value)
+static void
+_edje_box_recalc_apply(Edje *ed, Edje_Real_Part *ep, Edje_Calc_Params *p3, Edje_Part_Description *chosen_desc)
 {
-   const char	*array = "0123456789";
-   int		 length;
-   int		 quotient;
-   int		 modulo;
+   Evas_Object_Box_Layout layout;
+   void (*free_data)(void *data);
+   void *data;
 
-   if (len <= 0) return 0;
-   if (value == 0) return 0;
-
-   quotient = value / 10;
-   modulo = value % 10;
-
-   length = _edje_nitoa_rec(string, len - 1, quotient);
-
-   if (length + 1 > len) return length;
-
-   string[length] = array[modulo];
-
-   return length + 1;
-}
-
-static int
-_edje_nitoa(char *string, int len, int value)
-{
-   int	length;
-
-   if (len <= 0) return 0;
-   if (len == 1)
+   if (!_edje_box_layout_find(chosen_desc->box.layout, &layout, &data, &free_data))
      {
-	*string = '\0';
-	return 1;
+	if ((!chosen_desc->box.alt_layout) ||
+	    (!_edje_box_layout_find(chosen_desc->box.alt_layout, &layout, &data, &free_data)))
+	  {
+	     fprintf(stderr, "ERROR: box layout '%s' (fallback '%s') not available, using horizontal.\n",
+		     chosen_desc->box.layout, chosen_desc->box.alt_layout);
+	     layout = evas_object_box_layout_horizontal;
+	     free_data = NULL;
+	     data = NULL;
+	  }
      }
 
-   if (value < 0)
-     {
-	*string = '-';
-
-	++string;
-	--len;
-     }
-
-   if (value == 0)
-     {
-	strncpy(string, "0", len);
-	return 1;
-     }
-
-   length = _edje_nitoa_rec(string, len, value);
-   string[length] = '\0';
-
-   return length;
+   evas_object_box_layout_set(ep->object, layout, data, free_data);
+   evas_object_box_align_set(ep->object, chosen_desc->box.align.x, chosen_desc->box.align.y);
+   evas_object_box_padding_set(ep->object, chosen_desc->box.padding.x, chosen_desc->box.padding.y);
 }
 
 static void
 _edje_image_recalc_apply(Edje *ed, Edje_Real_Part *ep, Edje_Calc_Params *p3, Edje_Part_Description *chosen_desc, double pos)
 {
-   char buf[4096];
    int image_id;
    int image_count, image_num;
 
@@ -1251,7 +1238,7 @@ _edje_image_recalc_apply(Edje *ed, Edje_Real_Part *ep, Edje_Calc_Params *p3, Edj
 	Edje_Image_Directory_Entry *ie;
 
 	if (!ed->file->image_dir) ie = NULL;
-	else ie = evas_list_nth(ed->file->image_dir->entries, (-image_id) - 1);
+	else ie = eina_list_nth(ed->file->image_dir->entries, (-image_id) - 1);
 	if ((ie) &&
 	    (ie->source_type == EDJE_IMAGE_SOURCE_TYPE_EXTERNAL) &&
 	    (ie->entry))
@@ -1263,7 +1250,7 @@ _edje_image_recalc_apply(Edje *ed, Edje_Real_Part *ep, Edje_Calc_Params *p3, Edj
      {
 	image_count = 2;
 	if (ep->param2.description)
-	  image_count += evas_list_count(ep->param2.description->image.tween_list);
+	  image_count += eina_list_count(ep->param2.description->image.tween_list);
 	image_num = (pos * ((double)image_count - 0.5));
 	if (image_num > (image_count - 1))
 	  image_num = image_count - 1;
@@ -1275,7 +1262,7 @@ _edje_image_recalc_apply(Edje *ed, Edje_Real_Part *ep, Edje_Calc_Params *p3, Edj
 	  {
 	     Edje_Part_Image_Id *imid;
 
-	     imid = evas_list_nth(ep->param2.description->image.tween_list,
+	     imid = eina_list_nth(ep->param2.description->image.tween_list,
 				  image_num - 1);
 	     if (imid) image_id = imid->id;
 	  }
@@ -1289,10 +1276,12 @@ _edje_image_recalc_apply(Edje *ed, Edje_Real_Part *ep, Edje_Calc_Params *p3, Edj
 	  }
 	else
 	  {
+	     char buf[1024];
+
 	     /* Replace snprint("images/%i") == memcpy + itoa */
 #define IMAGES "images/"
 	     memcpy(buf, IMAGES, strlen(IMAGES));
-	     _edje_nitoa(buf + strlen(IMAGES), sizeof(buf) - strlen(IMAGES), image_id);
+	     eina_convert_itoa(image_id, buf + strlen(IMAGES)); /* No need to check length as 2³² need only 10 characteres. */
 
 	     evas_object_image_file_set(ep->object, ed->file->path, buf);
 	     if (evas_object_image_load_error_get(ep->object) != EVAS_LOAD_ERROR_NONE)
@@ -1516,6 +1505,7 @@ _edje_part_recalc(Edje *ed, Edje_Real_Part *ep, int flags)
 	   case EDJE_PART_TYPE_IMAGE:
 	   case EDJE_PART_TYPE_TEXTBLOCK:
 	   case EDJE_PART_TYPE_GRADIENT:
+	   case EDJE_PART_TYPE_BOX:
 	      evas_object_color_set(ep->object,
 				    (pf->color.r * pf->color.a) / 255,
 				    (pf->color.g * pf->color.a) / 255,
@@ -1533,6 +1523,8 @@ _edje_part_recalc(Edje *ed, Edje_Real_Part *ep, int flags)
 	      /* visibility and color have no meaning on SWALLOW and GROUP part. */
 	      evas_object_move(ep->object, ed->x + pf->x, ed->y + pf->y);
 	      evas_object_resize(ep->object, pf->w, pf->h);
+	      if (ep->part->entry_mode > EDJE_ENTRY_EDIT_MODE_NONE)
+	        _edje_entry_real_part_configure(ep);
 	      break;
 	   case EDJE_PART_TYPE_TEXT:
 	      /* This is correctly handle in _edje_text_recalc_apply at the moment. */
@@ -1550,6 +1542,9 @@ _edje_part_recalc(Edje *ed, Edje_Real_Part *ep, int flags)
 	      break;
 	   case EDJE_PART_TYPE_GRADIENT:
 	      _edje_gradient_recalc_apply(ed, ep, pf, chosen_desc);
+	      break;
+	   case EDJE_PART_TYPE_BOX:
+	      _edje_box_recalc_apply(ed, ep, pf, chosen_desc);
 	      break;
 	   case EDJE_PART_TYPE_RECTANGLE:
 	   case EDJE_PART_TYPE_SWALLOW:
@@ -1572,9 +1567,9 @@ _edje_part_recalc(Edje *ed, Edje_Real_Part *ep, int flags)
 //				   pf->color.a);
 	     if (pf->visible)
 	       {
-		  evas_object_show(ep->swallowed_object);
 		  evas_object_move(ep->swallowed_object, ed->x + pf->x, ed->y + pf->y);
 		  evas_object_resize(ep->swallowed_object, pf->w, pf->h);
+		  evas_object_show(ep->swallowed_object);
 	       }
 	     else
 	       evas_object_hide(ep->swallowed_object);
