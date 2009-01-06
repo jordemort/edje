@@ -1,3 +1,10 @@
+edje (0.9.9.050+svn20081206-2) experimental; urgency=low
+
+  * Remove version name from -dev packages name
+  * [lintian] Add ${misc:Depends} to libedje-doc too
+
+ -- Albin Tonnerre <albin.tonnerre@gmail.com>  Tue, 06 Jan 2009 22:03:51 +0100
+
 edje (0.9.9.050+svn20081206-1) experimental; urgency=low
 
   * Upstream SVN snapshot
