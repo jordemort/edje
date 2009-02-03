@@ -1,3 +1,16 @@
+edje (0.9.9.050+svn20090204-1) experimental; urgency=low
+
+  * New SVN snapshot
+   - tighten requirements on libeina-dev
+   - Bump shlibs due to functions added to the API
+   - Add --enable-doc to configure to get the doc built
+  * Make libedje-bin depend on a recent libembryo-bin
+    - Fixes a bug when using edje_cc while E is running, as it calls embryo_cc,
+      which uses environment variables set by E where it shouldn't
+  * Use a proper short description for libedje-dbg
+
+ -- Albin Tonnerre <albin.tonnerre@gmail.com>  Wed, 04 Feb 2009 00:48:09 +0100
+
 edje (0.9.9.050+svn20081206-2) experimental; urgency=low
 
   * Remove version name from -dev packages name
