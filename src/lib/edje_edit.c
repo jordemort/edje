@@ -716,7 +716,9 @@ edje_edit_group_add(Evas_Object *obj, const char *name)
    //cd = mem_alloc(SZ(Code));
    //codes = eina_list_append(codes, cd);
 
-   ed->file->collection_hash = evas_hash_add(ed->file->collection_hash, name, pc);
+   if (!ed->file->collection_hash)
+     ed->file->collection_hash = eina_hash_string_superfast_new(NULL);
+   eina_hash_add(ed->file->collection_hash, name, pc);
 
    return 1;
 }
@@ -828,10 +830,12 @@ edje_edit_group_name_set(Evas_Object *obj, const char *new_name)
      {
 	if (pc->id == pce->id)
 	  {
-	     ed->file->collection_hash = evas_hash_del(ed->file->collection_hash,
-						       pce->entry, NULL);
-	     ed->file->collection_hash = evas_hash_add(ed->file->collection_hash,
-						       new_name, pc);
+	     eina_hash_del(ed->file->collection_hash,
+			   pce->entry, NULL);
+	     if (!ed->file->collection_hash)
+	       ed->file->collection_hash = eina_hash_string_superfast_new(NULL);
+	     eina_hash_add(ed->file->collection_hash,
+			   new_name, pc);
 
 	     //if (pce->entry &&  //TODO Also this cause segv
 	     //    !eet_dictionary_string_check(eet_dictionary_get(ed->file->ef), pce->entry))
@@ -3310,7 +3314,9 @@ edje_edit_font_add(Evas_Object *obj, const char* path)
 	fnt->path = mem_strdup(buf);
 
 	ed->file->font_dir->entries = eina_list_append(ed->file->font_dir->entries, fnt);
-	ed->file->font_hash = evas_hash_direct_add(ed->file->font_hash, fnt->entry, fnt);
+	if (!ed->file->font_hash)
+	  ed->file->font_hash = eina_hash_string_superfast_new(NULL);
+	eina_hash_direct_add(ed->file->font_hash, fnt->entry, fnt);
      }
 
    return 1;
@@ -5222,9 +5228,13 @@ _edje_generate_source_of_group(Edje *ed, const char *group, FILE *f)
       
    fprintf(f, I1"group { name: \"%s\";\n", group);
    //TODO Support alias:
-   if ((w = edje_edit_group_min_w_get(obj)) || (h = edje_edit_group_min_h_get(obj)))
+   w = edje_edit_group_min_w_get(obj);
+   h = edje_edit_group_min_h_get(obj);
+   if ((w > 0) || (h > 0))
       fprintf(f, I2"min: %d %d;\n", w, h);
-   if ((w = edje_edit_group_max_w_get(obj)) || (h = edje_edit_group_max_h_get(obj)))
+   w = edje_edit_group_max_w_get(obj);
+   h = edje_edit_group_max_h_get(obj);
+   if ((w > -1) || (h > -1))
       fprintf(f, I2"max: %d %d;\n", w, h);
    //TODO Support data
    //TODO Support script
@@ -5393,6 +5403,20 @@ _edje_edit_str_direct_free(const char *str)
 {
 }
 
+static void *
+_edje_eina_hash_add_alloc(void *hash, const void *key, void *data)
+{
+   Eina_Hash *result = hash;
+
+   if (!result) result = eina_hash_string_small_new(NULL);
+   if (!result) return NULL;
+
+   eina_hash_add(result, key, data);
+
+   return result;
+}
+
+
 static Eet_Data_Descriptor *_srcfile_edd = NULL;
 static Eet_Data_Descriptor *_srcfile_list_edd = NULL;
 
@@ -5410,9 +5434,9 @@ source_edd(void)
    eddc.func.list_append = eina_list_append;
    eddc.func.list_data = eina_list_data_get;
    eddc.func.list_free = eina_list_free;
-   eddc.func.hash_foreach = evas_hash_foreach;
-   eddc.func.hash_add = evas_hash_add;
-   eddc.func.hash_free = evas_hash_free;
+   eddc.func.hash_foreach = eina_hash_foreach;
+   eddc.func.hash_add = _edje_eina_hash_add_alloc;
+   eddc.func.hash_free = eina_hash_free;
    eddc.func.str_direct_alloc = _edje_edit_str_direct_alloc;
    eddc.func.str_direct_free = _edje_edit_str_direct_free;
 

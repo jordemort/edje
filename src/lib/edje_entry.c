@@ -636,7 +636,7 @@ _anchors_get(Evas_Textblock_Cursor *c, Evas_Object *o, Entry *en)
    evas_textblock_cursor_node_first(c1);
    do 
      {
-	char *s;
+	const char *s;
 	
 	s = evas_textblock_cursor_node_format_get(c1);
 	if (s)
@@ -839,6 +839,7 @@ _edje_key_down_cb(void *data, Evas *e, Evas_Object *obj, void *event_info)
 	  }
 	_sel_clear(en->cursor, rp->object, en);
 	_curs_update_from_curs(en->cursor, rp->object, en);
+	_edje_emit(ed, "entry,changed", rp->part->name);
         _edje_emit(ed, "entry,key,backspace", rp->part->name);
 	ev->event_flags |= EVAS_EVENT_FLAG_ON_HOLD;
      }
@@ -1032,7 +1033,6 @@ static void
 _edje_key_up_cb(void *data, Evas *e, Evas_Object *obj, void *event_info)
 {
    Edje *ed = data;
-   Evas_Event_Key_Up *ev = event_info;
    Edje_Real_Part *rp = ed->focused_part;
    Entry *en;
    if (!rp) return;
@@ -1061,7 +1061,7 @@ _edje_part_mouse_down_cb(void *data, Evas *e, Evas_Object *obj, void *event_info
 	_edje_emit(rp->edje, "entry,paste,request", rp->part->name);
         return;
      }
-   if (ev->button != 2) return;
+   if (ev->button != 1) return;
    // double click -> select word
    // triple click -> select line
    tc = evas_object_textblock_cursor_new(rp->object);

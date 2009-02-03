@@ -151,7 +151,7 @@ check_image_part_desc (Edje_Part_Collection *pc, Edje_Part *ep,
 }
 
 static void
-check_packed_items(Edje_Part_Collection *pc, Edje_Part *ep, Edje_File *ef)
+check_packed_items(Edje_Part_Collection *pc, Edje_Part *ep, Eet_File *ef)
 {
    Eina_List *l;
    Edje_Pack_Element *it;
@@ -161,6 +161,10 @@ check_packed_items(Edje_Part_Collection *pc, Edje_Part *ep, Edje_File *ef)
 	if (it->type == EDJE_PART_TYPE_GROUP && !it->source)
 	  error_and_abort(ef, "Collection %i: missing source on packed item "
 			  "of type GROUP in part \"%s\"\n",
+			  pc->id, ep->name);
+	if (ep->type == EDJE_PART_TYPE_TABLE && (it->col < 0 || it->row < 0))
+	  error_and_abort(ef, "Collection %i: missing col/row on packed item "
+			  "for part \"%s\" of type TABLE\n",
 			  pc->id, ep->name);
      }
 }
@@ -183,7 +187,8 @@ check_part (Edje_Part_Collection *pc, Edje_Part *ep, Eet_File *ef)
 	EINA_LIST_FOREACH(ep->other_desc, l, data)
 	  check_image_part_desc (pc, ep, data, ef);
      }
-   else if (ep->type == EDJE_PART_TYPE_BOX)
+   else if ((ep->type == EDJE_PART_TYPE_BOX) ||
+	    (ep->type == EDJE_PART_TYPE_TABLE))
      check_packed_items(pc, ep, ef);
 }
 

@@ -96,7 +96,7 @@
 /* Version number of package */
 #undef VERSION
 
-/* Define to nothing if your compiler does not support __attribute__ */
+/* Macro declaring a function argument to be unused */
 #undef __UNUSED__
 
 /* Define to empty if `const' does not conform to ANSI C. */

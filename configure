@@ -883,8 +883,8 @@ ECORE_FILE_CFLAGS
 ECORE_FILE_LIBS
 ECORE_EVAS_CFLAGS
 ECORE_EVAS_LIBS
-BUILD_DOCS
-DOXYGEN
+efl_have_doxygen
+efl_doxygen
 EFL_BUILD_DOC_TRUE
 EFL_BUILD_DOC_FALSE
 PYTHON
@@ -1512,7 +1512,7 @@ Optional Features:
   --enable-edje-program-cache
                           enable EDJE_PROGRAM_CACHE support.
                           [[default=disabled]]
-  --disable-doc           Disable the build of the documentation
+  --disable-doc           Disable documentation build [default=enabled]
 
 Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
@@ -15217,34 +15217,39 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 
 
-DOXYGEN="doxygen"
-
 # Check whether --enable-doc was given.
 if test "${enable_doc+set}" = set; then
-  enableval=$enable_doc; if test "${disable_doc}" = "yes" ; then
-       enable_doc="no"
+  enableval=$enable_doc;
+    if test "x${enableval}" = "xyes" ; then
+       efl_enable_doc="yes"
     else
-       enable_doc="yes"
+       efl_enable_doc="no"
     fi
+
 else
-  enable_doc="yes"
+  efl_enable_doc="yes"
 
 fi
 
+
+if test "x${efl_enable_doc}" = "xyes" ; then
+
+
+   efl_doxygen="doxygen"
 
 
 # Check whether --with-doxygen was given.
 if test "${with_doxygen+set}" = set; then
-  withval=$with_doxygen;          DOXYGEN=${withval}
-    # Extract the first word of "${DOXYGEN}", so it can be a program name with args.
-set dummy ${DOXYGEN}; ac_word=$2
+  withval=$with_doxygen;       efl_doxygen=${withval}
+       # Extract the first word of "${efl_doxygen}", so it can be a program name with args.
+set dummy ${efl_doxygen}; ac_word=$2
 { echo "$as_me:$LINENO: checking for $ac_word" >&5
 echo $ECHO_N "checking for $ac_word... $ECHO_C" >&6; }
-if test "${ac_cv_prog_BUILD_DOCS+set}" = set; then
+if test "${ac_cv_prog_efl_have_doxygen+set}" = set; then
   echo $ECHO_N "(cached) $ECHO_C" >&6
 else
-  if test -n "$BUILD_DOCS"; then
-  ac_cv_prog_BUILD_DOCS="$BUILD_DOCS" # Let the user override the test.
+  if test -n "$efl_have_doxygen"; then
+  ac_cv_prog_efl_have_doxygen="$efl_have_doxygen" # Let the user override the test.
 else
 as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
 for as_dir in $PATH
@@ -15253,7 +15258,7 @@ do
   test -z "$as_dir" && as_dir=.
   for ac_exec_ext in '' $ac_executable_extensions; do
   if { test -f "$as_dir/$ac_word$ac_exec_ext" && $as_test_x "$as_dir/$ac_word$ac_exec_ext"; }; then
-    ac_cv_prog_BUILD_DOCS="yes"
+    ac_cv_prog_efl_have_doxygen="yes"
     echo "$as_me:$LINENO: found $as_dir/$ac_word$ac_exec_ext" >&5
     break 2
   fi
@@ -15261,39 +15266,39 @@ done
 done
 IFS=$as_save_IFS
 
-  test -z "$ac_cv_prog_BUILD_DOCS" && ac_cv_prog_BUILD_DOCS="no"
+  test -z "$ac_cv_prog_efl_have_doxygen" && ac_cv_prog_efl_have_doxygen="no"
 fi
 fi
-BUILD_DOCS=$ac_cv_prog_BUILD_DOCS
-if test -n "$BUILD_DOCS"; then
-  { echo "$as_me:$LINENO: result: $BUILD_DOCS" >&5
-echo "${ECHO_T}$BUILD_DOCS" >&6; }
+efl_have_doxygen=$ac_cv_prog_efl_have_doxygen
+if test -n "$efl_have_doxygen"; then
+  { echo "$as_me:$LINENO: result: $efl_have_doxygen" >&5
+echo "${ECHO_T}$efl_have_doxygen" >&6; }
 else
   { echo "$as_me:$LINENO: result: no" >&5
 echo "${ECHO_T}no" >&6; }
 fi
 
 
-    if test "x${BUILD_DOCS}" = "xno" ; then
-       echo "WARNING:"
-       echo "The doxygen program you specified:"
-       echo "$DOXYGEN"
-       echo "was not found.  Please check the path and make sure "
-       echo "the program exists and is executable."
-       { echo "$as_me:$LINENO: WARNING: Warning: no doxygen detected. Documentation will not be built" >&5
+       if test "x${efl_have_doxygen}" = "xno" ; then
+          echo "WARNING:"
+          echo "The doxygen program you specified:"
+          echo "$efl_doxygen"
+          echo "was not found.  Please check the path and make sure "
+          echo "the program exists and is executable."
+          { echo "$as_me:$LINENO: WARNING: Warning: no doxygen detected. Documentation will not be built" >&5
 echo "$as_me: WARNING: Warning: no doxygen detected. Documentation will not be built" >&2;}
-    fi
+       fi
 
 else
-  # Extract the first word of "${DOXYGEN}", so it can be a program name with args.
-set dummy ${DOXYGEN}; ac_word=$2
+  # Extract the first word of "${efl_doxygen}", so it can be a program name with args.
+set dummy ${efl_doxygen}; ac_word=$2
 { echo "$as_me:$LINENO: checking for $ac_word" >&5
 echo $ECHO_N "checking for $ac_word... $ECHO_C" >&6; }
-if test "${ac_cv_prog_BUILD_DOCS+set}" = set; then
+if test "${ac_cv_prog_efl_have_doxygen+set}" = set; then
   echo $ECHO_N "(cached) $ECHO_C" >&6
 else
-  if test -n "$BUILD_DOCS"; then
-  ac_cv_prog_BUILD_DOCS="$BUILD_DOCS" # Let the user override the test.
+  if test -n "$efl_have_doxygen"; then
+  ac_cv_prog_efl_have_doxygen="$efl_have_doxygen" # Let the user override the test.
 else
 as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
 for as_dir in $PATH
@@ -15302,7 +15307,7 @@ do
   test -z "$as_dir" && as_dir=.
   for ac_exec_ext in '' $ac_executable_extensions; do
   if { test -f "$as_dir/$ac_word$ac_exec_ext" && $as_test_x "$as_dir/$ac_word$ac_exec_ext"; }; then
-    ac_cv_prog_BUILD_DOCS="yes"
+    ac_cv_prog_efl_have_doxygen="yes"
     echo "$as_me:$LINENO: found $as_dir/$ac_word$ac_exec_ext" >&5
     break 2
   fi
@@ -15310,39 +15315,44 @@ done
 done
 IFS=$as_save_IFS
 
-  test -z "$ac_cv_prog_BUILD_DOCS" && ac_cv_prog_BUILD_DOCS="no"
+  test -z "$ac_cv_prog_efl_have_doxygen" && ac_cv_prog_efl_have_doxygen="no"
 fi
 fi
-BUILD_DOCS=$ac_cv_prog_BUILD_DOCS
-if test -n "$BUILD_DOCS"; then
-  { echo "$as_me:$LINENO: result: $BUILD_DOCS" >&5
-echo "${ECHO_T}$BUILD_DOCS" >&6; }
+efl_have_doxygen=$ac_cv_prog_efl_have_doxygen
+if test -n "$efl_have_doxygen"; then
+  { echo "$as_me:$LINENO: result: $efl_have_doxygen" >&5
+echo "${ECHO_T}$efl_have_doxygen" >&6; }
 else
   { echo "$as_me:$LINENO: result: no" >&5
 echo "${ECHO_T}no" >&6; }
 fi
 
 
-    if test "x${BUILD_DOCS}" = "xno" ; then
-       echo "WARNING:"
-       echo "The doxygen program was not found in your execute"
-       echo "You may have doxygen installed somewhere not covered by your path."
-       echo ""
-       echo "If this is the case make sure you have the packages installed, AND"
-       echo "that the doxygen program is in your execute path (see your"
-       echo "shell manual page on setting the \$PATH environment variable), OR"
-       echo "alternatively, specify the program to use with --with-doxygen."
-       { echo "$as_me:$LINENO: WARNING: Warning: no doxygen detected. Documentation will not be built" >&5
+       if test "x${efl_have_doxygen}" = "xno" ; then
+          echo "WARNING:"
+          echo "The doxygen program was not found in your execute"
+          echo "You may have doxygen installed somewhere not covered by your path."
+          echo ""
+          echo "If this is the case make sure you have the packages installed, AND"
+          echo "that the doxygen program is in your execute path (see your"
+          echo "shell manual page on setting the \$PATH environment variable), OR"
+          echo "alternatively, specify the program to use with --with-doxygen."
+          { echo "$as_me:$LINENO: WARNING: Warning: no doxygen detected. Documentation will not be built" >&5
 echo "$as_me: WARNING: Warning: no doxygen detected. Documentation will not be built" >&2;}
-    fi
+       fi
 
+
+fi
 
 fi
 
 
 
+if ! test "x${efl_have_doxygen}" = "xyes" ; then
+   efl_enable_doc="no"
+fi
 
- if test "x${BUILD_DOCS}" = "xyes"; then
+ if test "x${efl_enable_doc}" = "xyes"; then
   EFL_BUILD_DOC_TRUE=
   EFL_BUILD_DOC_FALSE='#'
 else
@@ -15351,7 +15361,7 @@ else
 fi
 
 
-if test "x${BUILD_DOCS}" = "xyes" ; then
+if test "x${efl_enable_doc}" = "xyes" ; then
   build_doc="yes"
 else
   build_doc="no"
@@ -16328,15 +16338,15 @@ cat >>conftest.$ac_ext <<_ACEOF
 
 #include <stdlib.h>
 
-int
-main ()
-{
-
 int func(int x);
 int foo(int x __attribute__ ((unused)))
 {
    exit(1);
 }
+
+int
+main ()
+{
 
   ;
   return 0;
@@ -17733,8 +17743,8 @@ ECORE_FILE_CFLAGS!$ECORE_FILE_CFLAGS$ac_delim
 ECORE_FILE_LIBS!$ECORE_FILE_LIBS$ac_delim
 ECORE_EVAS_CFLAGS!$ECORE_EVAS_CFLAGS$ac_delim
 ECORE_EVAS_LIBS!$ECORE_EVAS_LIBS$ac_delim
-BUILD_DOCS!$BUILD_DOCS$ac_delim
-DOXYGEN!$DOXYGEN$ac_delim
+efl_have_doxygen!$efl_have_doxygen$ac_delim
+efl_doxygen!$efl_doxygen$ac_delim
 EFL_BUILD_DOC_TRUE!$EFL_BUILD_DOC_TRUE$ac_delim
 EFL_BUILD_DOC_FALSE!$EFL_BUILD_DOC_FALSE$ac_delim
 PYTHON!$PYTHON$ac_delim
