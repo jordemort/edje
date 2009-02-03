@@ -7,9 +7,9 @@
 #include "edje_private.h"
 
 void _edje_collection_free_part_description_free(Edje_Part_Description *desc, unsigned int free_strings);
-static Evas_Bool _edje_file_collection_hash_foreach(const Evas_Hash *hash, const char *key, void *data, void *fdata);
+static Eina_Bool _edje_file_collection_hash_foreach(const Eina_Hash *hash, const void *key, void *data, void *fdata);
 #ifdef EDJE_PROGRAM_CACHE
-static Evas_Bool  _edje_collection_free_prog_cache_matches_free_cb(const Evas_Hash *hash, const char *key, void *data, void *fdata);
+static Eina_Bool  _edje_collection_free_prog_cache_matches_free_cb(const Eina_Hash *hash, const void *key, void *data, void *fdata);
 #endif
 static int _edje_object_file_set_internal(Evas_Object *obj, const char *file, const char *group, Eina_List *group_path);
 static void _edje_object_pack_item_hints_set(Evas_Object *obj, Edje_Pack_Element *it);
@@ -90,6 +90,37 @@ edje_object_load_error_get(const Evas_Object *obj)
    if (!ed) return EDJE_LOAD_ERROR_NONE;
    return ed->load_error;
 }
+
+EAPI const char *
+edje_load_error_str(int error)
+{
+   switch (error)
+     {
+      case EDJE_LOAD_ERROR_NONE:
+	 return "No Error";
+      case EDJE_LOAD_ERROR_GENERIC:
+	 return "Generic Error";
+      case EDJE_LOAD_ERROR_DOES_NOT_EXIST:
+	 return "File Does Not Exist";
+      case EDJE_LOAD_ERROR_PERMISSION_DENIED:
+	 return "Permission Denied";
+      case EDJE_LOAD_ERROR_RESOURCE_ALLOCATION_FAILED:
+	 return "Resource Allocation Failed";
+      case EDJE_LOAD_ERROR_CORRUPT_FILE:
+	 return "Corrupt File";
+      case EDJE_LOAD_ERROR_UNKNOWN_FORMAT:
+	 return "Unknown Format";
+      case EDJE_LOAD_ERROR_INCOMPATIBLE_FILE:
+	 return "Incompatible File";
+      case EDJE_LOAD_ERROR_UNKNOWN_COLLECTION:
+	 return "Unknown Collection";
+      case EDJE_LOAD_ERROR_RECURSIVE_REFERENCE:
+	 return "Recursive Reference";
+      default:
+	 return "Unknown Error";
+     }
+}
+
 
 /** Get a list of groups in an edje file
  * @param file The path to the edje file
@@ -203,7 +234,7 @@ edje_file_data_get(const char *file, const char *key)
 	  {
 	     if (edf->data_cache != NULL)
 	       {
-		  str = evas_hash_find(edf->data_cache, key);
+		  str = eina_hash_find(edf->data_cache, key);
 		  if (str) str = strdup(str);
 	       }
 	     _edje_cache_file_unref(edf);
@@ -349,6 +380,8 @@ _edje_object_file_set_internal(Evas_Object *obj, const char *file, const char *g
 		    {
 		       rp->object = evas_object_box_add(ed->evas);
 		    }
+		  else if (ep->type == EDJE_PART_TYPE_TABLE)
+		    rp->object = evas_object_table_add(ed->evas);
 		  else
 		    printf("EDJE ERROR: wrong part type %i!\n", ep->type);
 		  if (rp->object)
@@ -491,16 +524,23 @@ _edje_object_file_set_internal(Evas_Object *obj, const char *file, const char *g
 	     for (i = 0; i < ed->table_parts_size; i++)
 	       {
 		  Edje_Real_Part *rp;
-		  Eina_List *curr_item;
-		  Edje_Pack_Element *pack_it;
+		  /* XXX: curr_item and pack_it don't require to be NULL since
+		   * XXX: they are just used when source != NULL and type == BOX,
+		   * XXX: and they're always set in this case, but GCC fails to
+		   * XXX: notice that, so let's shut it up
+		   */
+		  Eina_List *curr_item = NULL;
+		  Edje_Pack_Element *pack_it = NULL;
 		  const char *source = NULL;
 		  
 		  rp = ed->table_parts[i];
 		  if (rp->part->type != EDJE_PART_TYPE_GROUP &&
-		      rp->part->type != EDJE_PART_TYPE_BOX) continue;
+		      rp->part->type != EDJE_PART_TYPE_BOX &&
+		      rp->part->type != EDJE_PART_TYPE_TABLE) continue;
 		  if (rp->part->type == EDJE_PART_TYPE_GROUP)
 		    source = rp->part->source;
-		  else if (rp->part->type == EDJE_PART_TYPE_BOX)
+		  else if (rp->part->type == EDJE_PART_TYPE_BOX ||
+			   rp->part->type == EDJE_PART_TYPE_TABLE)
 		    {
 		       if (rp->part->items)
 			 {
@@ -574,15 +614,22 @@ _edje_object_file_set_internal(Evas_Object *obj, const char *file, const char *g
 			    _edje_real_part_swallow(rp, child_obj);
 			    source = NULL;
 			 }
-		       else if (rp->part->type == EDJE_PART_TYPE_BOX)
+		       else
 			 {
 			    _edje_object_pack_item_hints_set(child_obj, pack_it);
 			    evas_object_show(child_obj);
-
-			    _edje_real_part_box_append(rp, child_obj);
-			    evas_object_data_set(child_obj, "\377 edje.box_item", curr_item->data);
 			    if (pack_it->name)
 			      evas_object_name_set(child_obj, pack_it->name);
+			    if (rp->part->type == EDJE_PART_TYPE_BOX)
+			      {
+				 _edje_real_part_box_append(rp, child_obj);
+				 evas_object_data_set(child_obj, "\377 edje.box_item", pack_it);
+			      }
+			    else if(rp->part->type == EDJE_PART_TYPE_TABLE)
+			      {
+				 _edje_real_part_table_pack(rp, child_obj, pack_it->col, pack_it->row, pack_it->colspan, pack_it->rowspan);
+				 evas_object_data_set(child_obj, "\377 edje.table_item", pack_it);
+			      }
 			    rp->items = eina_list_append(rp->items, child_obj);
 			    if (!(curr_item = curr_item->next))
 			      source = NULL;
@@ -712,20 +759,6 @@ _edje_file_del(Edje *ed)
    _edje_programs_patterns_clean(ed);
 
    if (!((ed->file) && (ed->collection))) return;
-   if ((ed->file) && (ed->collection))
-     {
-	Eina_List *l;
-	Edje_Part *ep;
-
-	_edje_textblock_styles_del(ed);
-	EINA_LIST_FOREACH(ed->collection->parts, l, ep)
-	  {
-	     _edje_text_part_on_del(ed, ep);
-	     _edje_color_class_on_del(ed, ep);
-	  }
-	_edje_cache_coll_unref(ed->file, ed->collection);
-	ed->collection = NULL;
-     }
    if (ed->table_parts)
      {
 	int i;
@@ -765,7 +798,7 @@ _edje_file_del(Edje *ed)
 		  /* all internal, for now */
 		  while (rp->items)
 		    {
-		       /* evas_box handles deletion of objects */
+		       /* evas_box/table handles deletion of objects */
 		       /*evas_object_del(rp->items->data);*/
 		       rp->items = eina_list_remove_list(rp->items, rp->items);
 		    }
@@ -781,6 +814,20 @@ _edje_file_del(Edje *ed)
 	     _edje_unref(rp->edje);
 	     free(rp);
 	  }
+     }
+   if ((ed->file) && (ed->collection))
+     {
+	Eina_List *l;
+	Edje_Part *ep;
+
+	_edje_textblock_styles_del(ed);
+	EINA_LIST_FOREACH(ed->collection->parts, l, ep)
+	  {
+	     _edje_text_part_on_del(ed, ep);
+	     _edje_color_class_on_del(ed, ep);
+	  }
+	_edje_cache_coll_unref(ed->file, ed->collection);
+	ed->collection = NULL;
      }
    if (ed->file)
      {
@@ -823,7 +870,7 @@ _edje_file_del(Edje *ed)
  * Used to free the cached data values that are stored in the data_cache
  * hash table.
  */
-static Evas_Bool data_cache_free(const Evas_Hash *hash, const char *key, void *data, void *fdata)
+static Eina_Bool data_cache_free(const Eina_Hash *hash, const void *key, void *data, void *fdata)
 {
    Edje_File    *edf;
 
@@ -844,11 +891,16 @@ _edje_file_free(Edje_File *edf)
 	     fe = eina_list_data_get(edf->font_dir->entries);
 	     edf->font_dir->entries =
 	       eina_list_remove_list(edf->font_dir->entries, edf->font_dir->entries);
-	     edf->font_hash = evas_hash_del(edf->font_hash, fe->entry, edf);
+	     eina_hash_del(edf->font_hash, fe->entry, edf);
 	     if (edf->free_strings && fe->path) eina_stringshare_del(fe->path);
 	     free(fe);
 	  }
 	free(edf->font_dir);
+     }
+   if (edf->font_hash)
+     {
+	eina_hash_free(edf->font_hash);
+	edf->font_hash = NULL;
      }
    if (edf->image_dir)
      {
@@ -917,8 +969,8 @@ _edje_file_free(Edje_File *edf)
      }
    if (edf->data_cache)
      {
-	evas_hash_foreach(edf->data_cache, data_cache_free, edf);
-	evas_hash_free(edf->data_cache);
+	eina_hash_foreach(edf->data_cache, data_cache_free, edf);
+	eina_hash_free(edf->data_cache);
 	edf->data_cache = NULL;
      }
 
@@ -946,9 +998,9 @@ _edje_file_free(Edje_File *edf)
 	       "before calling edje_shutdown().\n"
 	       "The following errors are the edje object files and parts that are still\n"
 	       "hanging around, with their reference counts\n");
-	evas_hash_foreach(edf->collection_hash,
+	eina_hash_foreach(edf->collection_hash,
                           _edje_file_collection_hash_foreach, edf);
-	evas_hash_free(edf->collection_hash);
+	eina_hash_free(edf->collection_hash);
      }
    if (edf->path) eina_stringshare_del(edf->path);
    if (edf->free_strings && edf->compiler) eina_stringshare_del(edf->compiler);
@@ -1033,13 +1085,13 @@ _edje_collection_free(Edje_File *edf, Edje_Part_Collection *ec)
      }
    if (edf->free_strings && ec->part) eina_stringshare_del(ec->part);
 #ifdef EDJE_PROGRAM_CACHE
-   if (ec->prog_cache.no_matches) evas_hash_free(ec->prog_cache.no_matches);
+   if (ec->prog_cache.no_matches) eina_hash_free(ec->prog_cache.no_matches);
    if (ec->prog_cache.matches)
      {
-	evas_hash_foreach(ec->prog_cache.matches,
+	eina_hash_foreach(ec->prog_cache.matches,
 			  _edje_collection_free_prog_cache_matches_free_cb,
 			  NULL);
-	evas_hash_free(ec->prog_cache.matches);
+	eina_hash_free(ec->prog_cache.matches);
      }
 #endif
    if (ec->script) embryo_program_free(ec->script);
@@ -1070,8 +1122,8 @@ _edje_collection_free_part_description_free(Edje_Part_Description *desc, unsigne
    free(desc);
 }
 
-static Evas_Bool
-_edje_file_collection_hash_foreach(const Evas_Hash *hash, const char *key, void *data, void *fdata)
+static Eina_Bool
+_edje_file_collection_hash_foreach(const Eina_Hash *hash, const void *key, void *data, void *fdata)
 {
    Edje_File *edf;
    Edje_Part_Collection *coll;
@@ -1087,11 +1139,12 @@ _edje_file_collection_hash_foreach(const Evas_Hash *hash, const char *key, void 
 }
 
 #ifdef EDJE_PROGRAM_CACHE
-static Evas_Bool
-_edje_collection_free_prog_cache_matches_free_cb(const Evas_Hash *hash, const char *key, void *data, void *fdata)
+static Eina_Bool
+_edje_collection_free_prog_cache_matches_free_cb(const Eina_Hash *hash, const void *key, void *data, void *fdata)
 {
    eina_list_free((Eina_List *)data);
    return 1;
+   key = NULL;
    hash = NULL;
    fdata = NULL;
 }

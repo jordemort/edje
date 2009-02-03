@@ -153,7 +153,8 @@ typedef struct _Edje_Patterns                        Edje_Patterns;
 #define EDJE_PART_TYPE_GRADIENT  6
 #define EDJE_PART_TYPE_GROUP     7
 #define EDJE_PART_TYPE_BOX       8
-#define EDJE_PART_TYPE_LAST      9
+#define EDJE_PART_TYPE_TABLE     9
+#define EDJE_PART_TYPE_LAST     10
 
 #define EDJE_TEXT_EFFECT_NONE                0
 #define EDJE_TEXT_EFFECT_PLAIN               1
@@ -255,10 +256,10 @@ struct _Edje_File
    int                             version;
    int                             feature_ver;
 
-   Evas_Hash                      *collection_hash;
-   Evas_Hash			  *font_hash;
+   Eina_Hash                      *collection_hash;
+   Eina_Hash			  *font_hash;
    Eina_List                      *collection_cache;
-   Evas_Hash                      *data_cache;
+   Eina_Hash                      *data_cache;
 
    Eet_File                       *ef;
 
@@ -414,6 +415,9 @@ struct _Edje_Pack_Element
    Edje_Alignment   weight;
    Edje_Aspect      aspect;
    const char      *options; /* extra options for custom objects */
+   /* table specific follows */
+   int              col, row;
+   unsigned short   colspan, rowspan;
 };
 
 /*----------*/
@@ -433,8 +437,8 @@ struct _Edje_Part_Collection
    int        references;
 #ifdef EDJE_PROGRAM_CACHE
    struct {
-      Evas_Hash                   *no_matches;
-      Evas_Hash                   *matches;
+      Eina_Hash                   *no_matches;
+      Eina_Hash                   *matches;
    } prog_cache;
 #endif
 
@@ -583,6 +587,13 @@ struct _Edje_Part_Description
 	      int x, y;
       } padding;
    } box;
+   struct {
+      unsigned char  homogeneous;
+      Edje_Alignment align;
+      struct {
+	      int x, y;
+      } padding;
+   } table;
 
    Edje_Color color, color2, color3;  /* color for rect or text, shadow etc. */
 
@@ -673,6 +684,7 @@ struct _Edje
    int                   block;
    int                   load_error;
    int                   freeze;
+   double                scale;
 
    struct {
       void (*func) (void *data, Evas_Object *obj, const char *part);
@@ -880,7 +892,7 @@ struct _Edje_Var_List
 
 struct _Edje_Var_Hash
 {
-   Evas_Hash *v;
+   Eina_Hash *v;
 };
 
 struct _Edje_Var_Timer
@@ -1129,6 +1141,9 @@ Evas_Bool         _edje_real_part_box_insert_at(Edje_Real_Part *rp, Evas_Object 
 Evas_Object      *_edje_real_part_box_remove(Edje_Real_Part *rp, Evas_Object *child_obj);
 Evas_Object      *_edje_real_part_box_remove_at(Edje_Real_Part *rp, unsigned int pos);
 Evas_Bool         _edje_real_part_box_remove_all(Edje_Real_Part *rp, Evas_Bool clear);
+Evas_Bool         _edje_real_part_table_pack(Edje_Real_Part *rp, Evas_Object *child_obj, unsigned short col, unsigned short row, unsigned short colspan, unsigned short rowspan);
+Evas_Bool         _edje_real_part_table_unpack(Edje_Real_Part *rp, Evas_Object *child_obj);
+void              _edje_real_part_table_clear(Edje_Real_Part *rp, Evas_Bool clear);
 
 void          _edje_embryo_script_init      (Edje *ed);
 void          _edje_embryo_script_shutdown  (Edje *ed);

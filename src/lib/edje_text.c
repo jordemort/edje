@@ -147,11 +147,15 @@ _edje_text_fit_x(Edje *ed, Edje_Real_Part *ep,
    char *buf;
    int c1 = -1, c2 = -1, loop = 0, extra;
    size_t orig_len;
+   double sc;
 
+   sc = ed->scale;
+   if (sc == 0.0) sc = _edje_scale;
+   
    *free_text = 0;
    if (sw <= 1) return "";
 
-   if (ep->part->scale) evas_object_scale_set(ep->object, _edje_scale);
+   if (ep->part->scale) evas_object_scale_set(ep->object, sc);
    evas_object_text_font_set(ep->object, font, size);
    evas_object_text_text_set(ep->object, text);
 
@@ -331,8 +335,10 @@ _edje_text_recalc_apply(Edje *ed, Edje_Real_Part *ep,
    Evas_Coord	 tw, th;
    Evas_Coord	 sw, sh;
    int		 inlined_font = 0, free_text = 0;
+   double        sc;
 
-
+   sc = ed->scale;
+   if (sc == 0.0) sc = _edje_scale;
    text = chosen_desc->text.text;
    font = _edje_text_class_font_get(ed, chosen_desc, &size, &sfont);
 
@@ -359,7 +365,7 @@ _edje_text_recalc_apply(Edje *ed, Edje_Real_Part *ep,
    /* check if the font is embedded in the .eet */
    if (ed->file->font_hash)
      {
-	Edje_Font_Directory_Entry *fnt = evas_hash_find(ed->file->font_hash, font);
+	Edje_Font_Directory_Entry *fnt = eina_hash_find(ed->file->font_hash, font);
 
 	if (fnt)
 	  {
@@ -413,7 +419,7 @@ _edje_text_recalc_apply(Edje *ed, Edje_Real_Part *ep,
         if (inlined_font) evas_object_text_font_source_set(ep->object, ed->path);
 	else evas_object_text_font_source_set(ep->object, NULL);
 
-	if (ep->part->scale) evas_object_scale_set(ep->object, _edje_scale);
+	if (ep->part->scale) evas_object_scale_set(ep->object, sc);
 	evas_object_text_font_set(ep->object, font, size);
 	evas_object_text_text_set(ep->object, text);
 	part_get_geometry(ep, &tw, &th);
@@ -430,7 +436,7 @@ _edje_text_recalc_apply(Edje *ed, Edje_Real_Part *ep,
 		  if (inlined_font) evas_object_text_font_source_set(ep->object, ed->path);
 		  else evas_object_text_font_source_set(ep->object, NULL);
 
-		  if (ep->part->scale) evas_object_scale_set(ep->object, _edje_scale);
+		  if (ep->part->scale) evas_object_scale_set(ep->object, sc);
 		  evas_object_text_font_set(ep->object, font, size);
 		  part_get_geometry(ep, &tw, &th);
 		  if ((size > 0) && (tw == 0)) break;
@@ -449,7 +455,7 @@ _edje_text_recalc_apply(Edje *ed, Edje_Real_Part *ep,
 		  if (inlined_font) evas_object_text_font_source_set(ep->object, ed->path);
 		  else evas_object_text_font_source_set(ep->object, NULL);
 
-		  if (ep->part->scale) evas_object_scale_set(ep->object, _edje_scale);
+		  if (ep->part->scale) evas_object_scale_set(ep->object, sc);
 		  evas_object_text_font_set(ep->object, font, size);
 		  part_get_geometry(ep, &tw, &th);
 		  if ((size > 0) && (tw == 0)) break;
@@ -467,7 +473,7 @@ _edje_text_recalc_apply(Edje *ed, Edje_Real_Part *ep,
         if (inlined_font) evas_object_text_font_source_set(ep->object, ed->path);
 	else evas_object_text_font_source_set(ep->object, NULL);
 
-	if (ep->part->scale) evas_object_scale_set(ep->object, _edje_scale);
+	if (ep->part->scale) evas_object_scale_set(ep->object, sc);
 	evas_object_text_font_set(ep->object, font, size);
 	evas_object_text_text_set(ep->object, text);
 	part_get_geometry(ep, &tw, &th);
@@ -488,7 +494,7 @@ _edje_text_recalc_apply(Edje *ed, Edje_Real_Part *ep,
 		  if (inlined_font) evas_object_text_font_source_set(ep->object, ed->path);
 		  else evas_object_text_font_source_set(ep->object, NULL);
 
-		  if (ep->part->scale) evas_object_scale_set(ep->object, _edje_scale);
+		  if (ep->part->scale) evas_object_scale_set(ep->object, sc);
 		  evas_object_text_font_set(ep->object, font, size);
 		  part_get_geometry(ep, &tw, &th);
 		  if ((size > 0) && (th == 0)) break;
@@ -499,7 +505,7 @@ _edje_text_recalc_apply(Edje *ed, Edje_Real_Part *ep,
 	  {
 	     int current;
 
-	     if (ep->part->scale) evas_object_scale_set(ep->object, _edje_scale);
+	     if (ep->part->scale) evas_object_scale_set(ep->object, sc);
 	     evas_object_text_font_set(ep->object, font, 10);
 	     part_get_geometry(ep, &tw, &th);
 
@@ -516,6 +522,7 @@ _edje_text_recalc_apply(Edje *ed, Edje_Real_Part *ep,
 		       bottom = 1;
 		       top = 10;
 		    }
+		  else bottom = 0; /* XXX shut up GCC, th == sh is handled before! */
 
 		  top = size;
 		  /* search one that fits (binary search) */
@@ -523,7 +530,7 @@ _edje_text_recalc_apply(Edje *ed, Edje_Real_Part *ep,
 		    {
 		       current = (top + bottom) / 2;
 
-		       if (ep->part->scale) evas_object_scale_set(ep->object, _edje_scale);
+		       if (ep->part->scale) evas_object_scale_set(ep->object, sc);
 		       evas_object_text_font_set(ep->object, font, current);
 		       part_get_geometry(ep, &tw, &th);
 
@@ -537,7 +544,7 @@ _edje_text_recalc_apply(Edje *ed, Edje_Real_Part *ep,
 	       {
 		  current++;
 
-		  if (ep->part->scale) evas_object_scale_set(ep->object, _edje_scale);
+		  if (ep->part->scale) evas_object_scale_set(ep->object, sc);
 		  evas_object_text_font_set(ep->object, font, current);
 		  part_get_geometry(ep, &tw, &th);
 	       } while (th <= sh);
@@ -569,7 +576,7 @@ _edje_text_recalc_apply(Edje *ed, Edje_Real_Part *ep,
    if (inlined_font) evas_object_text_font_source_set(ep->object, ed->path);
    else evas_object_text_font_source_set(ep->object, NULL);
 
-   if (ep->part->scale) evas_object_scale_set(ep->object, _edje_scale);
+   if (ep->part->scale) evas_object_scale_set(ep->object, sc);
    evas_object_text_font_set(ep->object, font, size);
    evas_object_text_text_set(ep->object, text);
    part_get_geometry(ep, &tw, &th);

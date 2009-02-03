@@ -75,6 +75,16 @@ _edje_str_direct_free(const char *str)
 {
 }
 
+static Eina_Hash *
+_edje_eina_hash_add_alloc(Eina_Hash *hash, const char *key, void *data)
+{
+   if (!hash) hash = eina_hash_string_small_new(NULL);
+   if (!hash) return NULL;
+
+   eina_hash_add(hash, key, data);
+   return hash;
+}
+
 void
 _edje_edd_setup(void)
 {
@@ -89,9 +99,9 @@ _edje_edd_setup(void)
    eddc.func.list_append = (void *(*)(void *, void *))eina_list_append;
    eddc.func.list_data = (void *(*)(void *))eina_list_data_get;
    eddc.func.list_free = (void *(*)(void *))eina_list_free;
-   eddc.func.hash_foreach = (void (*)(void *, int (*)(void *, const char *, void *, void *), void *))evas_hash_foreach;
-   eddc.func.hash_add = (void *(*)(void *, const char *, void *))evas_hash_add;
-   eddc.func.hash_free = (void (*)(void *))evas_hash_free;
+   eddc.func.hash_foreach = (void (*)(const Eina_Hash *, Eina_Bool (*)(const Eina_Hash *, const void *, void *, void *), void *))eina_hash_foreach;
+   eddc.func.hash_add = (Eina_Hash* (*)(Eina_Hash *, const char *, void *)) _edje_eina_hash_add_alloc;
+   eddc.func.hash_free = (void (*)(void *))eina_hash_free;
    eddc.func.str_direct_alloc = _edje_str_direct_alloc;
    eddc.func.str_direct_free = _edje_str_direct_free;
 
@@ -359,6 +369,11 @@ _edje_edd_setup(void)
    EET_DATA_DESCRIPTOR_ADD_BASIC(_edje_edd_edje_part_description, Edje_Part_Description, "box.align.y", box.align.y, EET_T_DOUBLE);
    EET_DATA_DESCRIPTOR_ADD_BASIC(_edje_edd_edje_part_description, Edje_Part_Description, "box.padding.x", box.padding.x, EET_T_INT);
    EET_DATA_DESCRIPTOR_ADD_BASIC(_edje_edd_edje_part_description, Edje_Part_Description, "box.padding.y", box.padding.y, EET_T_INT);
+   EET_DATA_DESCRIPTOR_ADD_BASIC(_edje_edd_edje_part_description, Edje_Part_Description, "table.homogeneous", table.homogeneous, EET_T_UCHAR);
+   EET_DATA_DESCRIPTOR_ADD_BASIC(_edje_edd_edje_part_description, Edje_Part_Description, "table.align.x", table.align.x, EET_T_DOUBLE);
+   EET_DATA_DESCRIPTOR_ADD_BASIC(_edje_edd_edje_part_description, Edje_Part_Description, "table.align.y", table.align.y, EET_T_DOUBLE);
+   EET_DATA_DESCRIPTOR_ADD_BASIC(_edje_edd_edje_part_description, Edje_Part_Description, "table.padding.x", table.padding.x, EET_T_INT);
+   EET_DATA_DESCRIPTOR_ADD_BASIC(_edje_edd_edje_part_description, Edje_Part_Description, "table.padding.y", table.padding.y, EET_T_INT);
 
    NEWD("Edje_Pack_Element",
 	 Edje_Pack_Element);
@@ -385,6 +400,10 @@ _edje_edd_setup(void)
    EET_DATA_DESCRIPTOR_ADD_BASIC(_edje_edd_edje_pack_element, Edje_Pack_Element, "aspect.h", aspect.h, EET_T_INT);
    EET_DATA_DESCRIPTOR_ADD_BASIC(_edje_edd_edje_pack_element, Edje_Pack_Element, "aspect.mode", aspect.mode, EET_T_UCHAR);
    EET_DATA_DESCRIPTOR_ADD_BASIC(_edje_edd_edje_pack_element, Edje_Pack_Element, "options", options, EET_T_STRING);
+   EET_DATA_DESCRIPTOR_ADD_BASIC(_edje_edd_edje_pack_element, Edje_Pack_Element, "col", col, EET_T_INT);
+   EET_DATA_DESCRIPTOR_ADD_BASIC(_edje_edd_edje_pack_element, Edje_Pack_Element, "row", row, EET_T_INT);
+   EET_DATA_DESCRIPTOR_ADD_BASIC(_edje_edd_edje_pack_element, Edje_Pack_Element, "colspan", colspan, EET_T_USHORT);
+   EET_DATA_DESCRIPTOR_ADD_BASIC(_edje_edd_edje_pack_element, Edje_Pack_Element, "rowspan", rowspan, EET_T_USHORT);
 
    NEWD("Edje_Part",
 	Edje_Part);

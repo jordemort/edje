@@ -157,10 +157,12 @@ _edje_recalc_do(Edje *ed)
    int i;
 
    ed->postponed = 0;
+   evas_object_smart_need_recalculate_set(ed->obj, 0);
    if (!ed->dirty)
      {
 	return;
      }
+   ed->dirty = 0;
    for (i = 0; i < ed->table_parts_size; i++)
      {
 	Edje_Real_Part *ep;
@@ -178,7 +180,6 @@ _edje_recalc_do(Edje *ed)
 	  _edje_part_recalc(ed, ep, (~ep->calculated) & FLAG_XY);
      }
    if (!ed->calc_only) ed->recalc = 0;
-   ed->dirty = 0;
    ed->calc_only = 0;
 }
 
@@ -269,13 +270,16 @@ _edje_part_recalc_single(Edje *ed,
 			 int flags)
 {
    int minw = 0, minh = 0, maxw = 0, maxh = 0;
+   double sc;
 
    flags = FLAG_XY;
 
+   sc = ed->scale;
+   if (sc == 0.0) sc = _edje_scale;
 //   if (flags & FLAG_X)
      {
 	minw = desc->min.w;
-	if (ep->part->scale) minw = (int)(((double)minw) * _edje_scale);
+	if (ep->part->scale) minw = (int)(((double)minw) * sc);
 	if (ep->swallow_params.min.w > desc->min.w)
 	  minw = ep->swallow_params.min.w;
 
@@ -286,7 +290,7 @@ _edje_part_recalc_single(Edje *ed,
 	     maxw = desc->max.w;
 	     if (maxw > 0)
 	       {
-		  if (ep->part->scale) maxw = (int)(((double)maxw) * _edje_scale);
+		  if (ep->part->scale) maxw = (int)(((double)maxw) * sc);
 		  if (maxw < 1) maxw = 1;
 	       }
 	  }
@@ -299,7 +303,7 @@ _edje_part_recalc_single(Edje *ed,
 		  maxw = desc->max.w;
 		  if (maxw > 0)
 		    {
-		       if (ep->part->scale) maxw = (int)(((double)maxw) * _edje_scale);
+		       if (ep->part->scale) maxw = (int)(((double)maxw) * sc);
 		       if (maxw < 1) maxw = 1;
 		    }
 		  if (ep->swallow_params.max.w < maxw)
@@ -314,7 +318,7 @@ _edje_part_recalc_single(Edje *ed,
 //   if (flags & FLAG_Y)
      {
 	minh = desc->min.h;
-	if (ep->part->scale) minh = (int)(((double)minh) * _edje_scale);
+	if (ep->part->scale) minh = (int)(((double)minh) * sc);
 	if (ep->swallow_params.min.h > desc->min.h)
 	  minh = ep->swallow_params.min.h;
 
@@ -325,7 +329,7 @@ _edje_part_recalc_single(Edje *ed,
 	     maxh = desc->max.h;
 	     if (maxh > 0)
 	       {
-		  if (ep->part->scale) maxh = (int)(((double)maxh) * _edje_scale);
+		  if (ep->part->scale) maxh = (int)(((double)maxh) * sc);
 		  if (maxh < 1) maxh = 1;
 	       }
 	  }
@@ -338,7 +342,7 @@ _edje_part_recalc_single(Edje *ed,
 		  maxh = desc->max.h;
 		  if (maxh > 0)
 		    {
-		       if (ep->part->scale) maxh = (int)(((double)maxh) * _edje_scale);
+		       if (ep->part->scale) maxh = (int)(((double)maxh) * sc);
 		       if (maxh < 1) maxh = 1;
 		    }
 		  if (ep->swallow_params.max.h < maxh)
@@ -646,7 +650,7 @@ _edje_part_recalc_single(Edje *ed,
 	  }
 
 	if (ep->part->scale)
-	  evas_object_scale_set(ep->object, _edje_scale);
+	  evas_object_scale_set(ep->object, sc);
 	
 	if (stl)
 	  {
@@ -776,7 +780,7 @@ _edje_part_recalc_single(Edje *ed,
 	  {
 	     Edje_Font_Directory_Entry *fnt;
 
-	     fnt = evas_hash_find(ed->file->font_hash, font);
+	     fnt = eina_hash_find(ed->file->font_hash, font);
 
 	     if (fnt)
 	       {
@@ -785,7 +789,7 @@ _edje_part_recalc_single(Edje *ed,
 	       }
 	  }
 	if (ep->part->scale)
-	  evas_object_scale_set(ep->object, _edje_scale);
+	  evas_object_scale_set(ep->object, sc);
 	if (inlined_font) evas_object_text_font_source_set(ep->object, ed->path);
 	else evas_object_text_font_source_set(ep->object, NULL);
 
@@ -1219,6 +1223,14 @@ _edje_box_recalc_apply(Edje *ed, Edje_Real_Part *ep, Edje_Calc_Params *p3, Edje_
 }
 
 static void
+_edje_table_recalc_apply(Edje *ed, Edje_Real_Part *ep, Edje_Calc_Params *p3, Edje_Part_Description *chosen_desc)
+{
+   evas_object_table_homogeneous_set(ep->object, chosen_desc->table.homogeneous);
+   evas_object_table_align_set(ep->object, chosen_desc->table.align.x, chosen_desc->table.align.y);
+   evas_object_table_padding_set(ep->object, chosen_desc->table.padding.x, chosen_desc->table.padding.y);
+}
+
+static void
 _edje_image_recalc_apply(Edje *ed, Edje_Real_Part *ep, Edje_Calc_Params *p3, Edje_Part_Description *chosen_desc, double pos)
 {
    int image_id;
@@ -1506,6 +1518,7 @@ _edje_part_recalc(Edje *ed, Edje_Real_Part *ep, int flags)
 	   case EDJE_PART_TYPE_TEXTBLOCK:
 	   case EDJE_PART_TYPE_GRADIENT:
 	   case EDJE_PART_TYPE_BOX:
+	   case EDJE_PART_TYPE_TABLE:
 	      evas_object_color_set(ep->object,
 				    (pf->color.r * pf->color.a) / 255,
 				    (pf->color.g * pf->color.a) / 255,
@@ -1545,6 +1558,9 @@ _edje_part_recalc(Edje *ed, Edje_Real_Part *ep, int flags)
 	      break;
 	   case EDJE_PART_TYPE_BOX:
 	      _edje_box_recalc_apply(ed, ep, pf, chosen_desc);
+	      break;
+	   case EDJE_PART_TYPE_TABLE:
+	      _edje_table_recalc_apply(ed, ep, pf, chosen_desc);
 	      break;
 	   case EDJE_PART_TYPE_RECTANGLE:
 	   case EDJE_PART_TYPE_SWALLOW:
