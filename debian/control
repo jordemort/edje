@@ -14,7 +14,7 @@ Homepage: http://enlightenment.org
 Package: libedje-bin
 Architecture: any
 Section: devel
-Depends: ${misc:Depends}, ${shlibs:Depends}, libembryo-bin (>= 0.9.9.050+svn20090204), libevas-0.9.9.050b-engines
+Depends: ${misc:Depends}, ${shlibs:Depends}, libembryo-bin (>= 0.9.9.050+svn20090204), libevas-engines
 Description: Various binaries for use with libedje
  Edje is a graphical layout and animation library for animated resizable,
  compressed and scalable themes. It is the theming engine behind
