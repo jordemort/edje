@@ -5,7 +5,6 @@ include /usr/share/cdbs/1/rules/debhelper.mk
 include /usr/share/cdbs/1/rules/patchsys-quilt.mk
 
 LDFLAGS += -Wl,--as-needed
-DEB_MAKE_ENVVARS += DEBIAN_MINOR='a'
 
 build/libedje-doc::
 	$(MAKE) doc

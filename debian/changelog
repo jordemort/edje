@@ -1,3 +1,19 @@
+edje (0.9.9.050+svn????????) UNRELEASED; urgency=low
+
+  * New SVN snapshot
+    - Drop patches, no longer needed:
+      + 0002-fix-library-soname.patch
+      + 0003-reapply-autofoo.patch
+    - Package renaming due to upstream SONAME change.
+      + Update shlibs and .install files as a consequence
+  * Update Standards-Version, no change needed
+
+ -- Albin Tonnerre <albin.tonnerre@gmail.com>  Sat, 18 Apr 2009 16:16:34 +0200
+
+ 
+
+ -- Albin Tonnerre <albin.tonnerre@gmail.com>  Sat, 18 Apr 2009 16:15:00 +0200
+
 edje (0.9.9.050+svn20090204-1) experimental; urgency=low
 
   * New SVN snapshot
