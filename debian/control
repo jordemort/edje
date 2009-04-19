@@ -60,7 +60,7 @@ Description: libedje headers and static libraries
 
 Package: libedje-dbg
 Architecture: any
-Section: libdevel
+Section: debug
 Priority: extra
 Depends: ${misc:Depends}, libedje-svn-00 (= ${binary:Version})
 Description: Debugging symbols for libedje
