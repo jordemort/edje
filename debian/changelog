@@ -1,4 +1,4 @@
-edje (0.9.9.050+svn????????) UNRELEASED; urgency=low
+edje (0.9.91.050+svn????????) UNRELEASED; urgency=low
 
   * New SVN snapshot
     - Drop patches, no longer needed:
