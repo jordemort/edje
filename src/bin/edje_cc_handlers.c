@@ -43,8 +43,8 @@
 
 #include <string.h>
 #include <errno.h>
-#include <fcntl.h>
 #include <sys/stat.h>
+#include <fcntl.h>
 #include <sys/mman.h>
 #include <unistd.h>
 
@@ -104,6 +104,7 @@ static void st_collections_group_parts_part_source4(void);
 static void st_collections_group_parts_part_source5(void);
 static void st_collections_group_parts_part_source6(void);
 static void st_collections_group_parts_part_entry_mode(void);
+static void st_collections_group_parts_part_select_mode(void);
 static void st_collections_group_parts_part_multiline(void);
 static void st_collections_group_parts_part_dragable_x(void);
 static void st_collections_group_parts_part_dragable_y(void);
@@ -187,6 +188,7 @@ static void st_collections_group_parts_part_description_gradient_rel2_offset(voi
 static void st_collections_group_parts_part_description_box_layout(void);
 static void st_collections_group_parts_part_description_box_align(void);
 static void st_collections_group_parts_part_description_box_padding(void);
+static void st_collections_group_parts_part_description_box_min(void);
 static void st_collections_group_parts_part_description_table_homogeneous(void);
 static void st_collections_group_parts_part_description_table_align(void);
 static void st_collections_group_parts_part_description_table_padding(void);
@@ -282,6 +284,7 @@ New_Statement_Handler statement_handlers[] =
      {"collections.group.parts.part.dragable.confine", st_collections_group_parts_part_dragable_confine},
      {"collections.group.parts.part.dragable.events", st_collections_group_parts_part_dragable_events},
      {"collections.group.parts.part.entry_mode", st_collections_group_parts_part_entry_mode},
+     {"collections.group.parts.part.select_mode", st_collections_group_parts_part_select_mode},
      {"collections.group.parts.part.multiline", st_collections_group_parts_part_multiline},
      {"collections.group.parts.part.image", st_images_image}, /* dup */
      {"collections.group.parts.part.images.image", st_images_image}, /* dup */
@@ -382,6 +385,7 @@ New_Statement_Handler statement_handlers[] =
      {"collections.group.parts.part.description.box.layout", st_collections_group_parts_part_description_box_layout},
      {"collections.group.parts.part.description.box.align", st_collections_group_parts_part_description_box_align},
      {"collections.group.parts.part.description.box.padding", st_collections_group_parts_part_description_box_padding},
+     {"collections.group.parts.part.description.box.min", st_collections_group_parts_part_description_box_min},
      {"collections.group.parts.part.description.table.homogeneous", st_collections_group_parts_part_description_table_homogeneous},
      {"collections.group.parts.part.description.table.align", st_collections_group_parts_part_description_table_align},
      {"collections.group.parts.part.description.table.padding", st_collections_group_parts_part_description_table_padding},
@@ -823,7 +827,7 @@ st_data_file(void)
    di->key = parse_str(0);
    filename = parse_str(1);
 
-   fd = open(filename, O_RDONLY | O_BINARY);
+   fd = open(filename, O_RDONLY | O_BINARY, S_IRUSR | S_IWUSR);
    if (fd < 0)
      {
         fprintf(stderr, "%s: Error. %s:%i when opening file \"%s\": \"%s\"\n",
@@ -2113,6 +2117,37 @@ st_collections_group_parts_part_entry_mode(void)
 			       "EDITABLE", EDJE_ENTRY_EDIT_MODE_EDITABLE,
 			       "PASSWORD", EDJE_ENTRY_EDIT_MODE_PASSWORD,
 			       NULL);
+}
+
+/**
+    @page edcref
+    @property
+        select_mode
+    @parameters
+        Sets the selection mode for a textblock part to one of:
+        @li DEFAULT
+        @li EXPLICIT
+    @effect
+        DEFAULT selection mode is what you would expect on any desktop. Press
+        mouse, drag and release to end. EXPLICIT mode requires the application
+        controlling the edje object has to explicitly begin and end selection
+        modes, and the selection itself is dragable at both ends.
+    @endproperty
+*/
+static void
+st_collections_group_parts_part_select_mode(void)
+{
+   Edje_Part_Collection *pc;
+   Edje_Part *ep;
+
+   check_arg_count(1);
+
+   pc = eina_list_data_get(eina_list_last(edje_collections));
+   ep = eina_list_data_get(eina_list_last(pc->parts));
+   ep->select_mode = parse_enum(0,
+                                "DEFAULT", EDJE_ENTRY_SELECTION_MODE_DEFAULT,
+                                "EXPLICIT", EDJE_ENTRY_SELECTION_MODE_EXPLICIT,
+                                NULL);
 }
 
 /**
@@ -3689,7 +3724,7 @@ st_collections_group_parts_part_description_rel2_to_y(void)
                 ..
                 tween:  "filenameN.ext";
                 border:  left right top bottom;
-                middle:  0-1;
+                middle:  0/1/NONE/DEFAULT/SOLID;
             }
             ..
         }
@@ -3828,11 +3863,11 @@ st_collections_group_parts_part_description_image_border(void)
     @property
         middle
     @parameters
-        [0 or 1]
+        0, 1, NONE, DEFAULT, SOLID
     @effect
-        If border is set, this boolean value tells Edje if the rest of the
-        image (not covered by the defined border) will be displayed or not.
-        The default value is 1.
+        If border is set, this value tells Edje if the rest of the
+        image (not covered by the defined border) will be displayed or not
+        or be assumed to be solid (without alpha). The default is 1/DEFAULT.
     @endproperty
 */
 static void
@@ -3857,7 +3892,13 @@ st_collections_group_parts_part_description_image_middle(void)
 
    ed = ep->default_desc;
    if (ep->other_desc) ed = eina_list_data_get(eina_list_last(ep->other_desc));
-   ed->border.no_fill = !parse_bool(0);
+   ed->border.no_fill =  parse_enum(0,
+                                    "1", 0,
+                                    "DEFAULT", 0,
+                                    "0", 1,
+                                    "NONE", 1,
+                                    "SOLID", 2,
+                                    NULL);
 }
 
 /**
@@ -5041,6 +5082,7 @@ st_collections_group_parts_part_description_gradient_rel2_offset(void)
                     layout: "vertical";
                     padding: 0 2;
                     align: 0.5 0.5;
+		    min: 0 0;
                 }
                 ..
             }
@@ -5087,6 +5129,16 @@ st_collections_group_parts_part_description_gradient_rel2_offset(void)
         [horizontal] [vertical]
     @effect
         Sets the space between cells in pixels. Defaults to 0 0.
+    @endproperty
+
+    @property
+        min
+    @parameters
+        [horizontal] [vertical]
+    @effect
+        When any of the parameters is enabled (1) it forces the minimum size of
+        the box to be equal to the minimum size of the items. The default
+        value is "0 0".
     @endproperty
 */
 static void st_collections_group_parts_part_description_box_layout(void)
@@ -5163,6 +5215,32 @@ static void st_collections_group_parts_part_description_box_padding(void)
    if (ep->other_desc) ed = eina_list_data_get(eina_list_last(ep->other_desc));
    ed->box.padding.x = parse_int_range(0, 0, 0x7fffffff);
    ed->box.padding.y = parse_int_range(1, 0, 0x7fffffff);
+}
+
+static void
+st_collections_group_parts_part_description_box_min(void)
+{
+   Edje_Part_Collection *pc;
+   Edje_Part *ep;
+   Edje_Part_Description *ed;
+
+   check_arg_count(2);
+
+   pc = eina_list_data_get(eina_list_last(edje_collections));
+   ep = eina_list_data_get(eina_list_last(pc->parts));
+
+   if (ep->type != EDJE_PART_TYPE_BOX)
+     {
+	fprintf(stderr, "%s: Error. parse error %s:%i. "
+		"box attributes in non-BOX part.\n",
+		progname, file_in, line - 1);
+	exit(-1);
+     }
+
+   ed = ep->default_desc;
+   if (ep->other_desc) ed = eina_list_data_get(eina_list_last(ep->other_desc));
+   ed->box.min.h = parse_bool(0);
+   ed->box.min.v = parse_bool(1);
 }
 
 /**

@@ -235,6 +235,9 @@ typedef struct _Edje_Patterns                        Edje_Patterns;
 #define EDJE_ENTRY_EDIT_MODE_EDITABLE 2
 #define EDJE_ENTRY_EDIT_MODE_PASSWORD 3
 
+#define EDJE_ENTRY_SELECTION_MODE_DEFAULT 0
+#define EDJE_ENTRY_SELECTION_MODE_EXPLICIT 1
+
 #define EDJE_PART_PATH_SEPARATOR ':'
 #define EDJE_PART_PATH_SEPARATOR_STRING ":"
 /*----------*/
@@ -483,6 +486,7 @@ struct _Edje_Part
    unsigned char          use_alternate_font_metrics;
    unsigned char          pointer_mode;
    unsigned char          entry_mode;
+   unsigned char          select_mode;
    unsigned char          multiline;
 };
 
@@ -586,6 +590,9 @@ struct _Edje_Part_Description
       struct {
 	      int x, y;
       } padding;
+      struct {
+              Eina_Bool h, v;
+      } min;
    } box;
    struct {
       unsigned char  homogeneous;
@@ -823,6 +830,7 @@ struct _Edje_Calc_Params
    struct {
       Edje_Alignment align; /* text alignment within bounds */
       double         elipsis;
+      int            size;
    } text;
    struct {
      int             id;
@@ -1298,5 +1306,7 @@ void _edje_entry_select_all(Edje_Real_Part *rp);
 const Eina_List *_edje_entry_anchor_geometry_get(Edje_Real_Part *rp, const char *anchor);
 const Eina_List *_edje_entry_anchors_list(Edje_Real_Part *rp);
 void _edje_entry_cursor_geometry_get(Edje_Real_Part *rp, Evas_Coord *cx, Evas_Coord *cy, Evas_Coord *cw, Evas_Coord *ch);
-  
+void _edje_entry_select_allow_set(Edje_Real_Part *rp, Evas_Bool allow);
+void _edje_entry_select_abort(Edje_Real_Part *rp);
+
 #endif

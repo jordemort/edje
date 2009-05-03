@@ -3,7 +3,7 @@ dnl Process this file with autoconf to produce a configure script.
 # get rid of that stupid cache mechanism
 rm -f config.cache
 
-AC_INIT([edje], [0.9.9.050], [enlightenment-devel@lists.sourceforge.net])
+AC_INIT([edje], 0.9.92.060, [enlightenment-devel@lists.sourceforge.net])
 AC_PREREQ(2.52)
 AC_CONFIG_SRCDIR([configure.ac])
 AC_CONFIG_MACRO_DIR([m4])
@@ -24,7 +24,10 @@ VMIN=`echo $PACKAGE_VERSION | awk -F. '{printf("%s", $2);}'`
 VMIC=`echo $PACKAGE_VERSION | awk -F. '{printf("%s", $3);}'`
 SNAP=`echo $PACKAGE_VERSION | awk -F. '{printf("%s", $4);}'`
 version_info=`expr $VMAJ + $VMIN`":$VMIC:$VMIN"
+release="ver-pre-01"
+release_info="-release $release"
 AC_SUBST(version_info)
+AC_SUBST(release_info)
 
 
 ### Default options with respect to host
@@ -50,7 +53,7 @@ requirement_edje=""
 AC_ARG_ENABLE([edje-cc],
    [AC_HELP_STRING([--disable-edje-cc], [disable building of edje_cc])],
    [
-    if test x"$enableval" = x"yes" ; then
+    if test "x${enableval}" = "xyes" ; then
        have_edje_cc="yes"
     else
        have_edje_cc="no"
@@ -123,6 +126,18 @@ fi
 
 AC_SUBST(vimdir)
 
+### Checks for programs
+AC_PROG_CC
+
+# doxygen program for documentation building
+
+EFL_CHECK_DOXYGEN([build_doc="yes"], [build_doc="no"])
+
+# python
+
+AM_PATH_PYTHON([2.5], , [:])
+AM_CONDITIONAL([HAVE_PYTHON], [test "$PYTHON" != : ])
+
 
 ### Checks for libraries
 
@@ -133,10 +148,10 @@ PKG_PROG_PKG_CONFIG
 EFL_EDJE_BUILD=""
 case "$host_os" in
    mingw* | cegcc*)
-   PKG_CHECK_MODULES([EVIL], [evil])
-   AC_DEFINE(HAVE_EVIL, 1, [Set to 1 if Evil library is installed])
-   requirement_edje="evil ${requirement_edje}"
-   EFL_EDJE_BUILD="-DEFL_EDJE_BUILD"
+      PKG_CHECK_MODULES([EVIL], [evil])
+      AC_DEFINE(HAVE_EVIL, 1, [Set to 1 if Evil library is installed])
+      requirement_edje="evil ${requirement_edje}"
+      EFL_EDJE_BUILD="-DEFL_EDJE_BUILD"
    ;;
 esac
 AC_SUBST(EFL_EDJE_BUILD)
@@ -167,18 +182,6 @@ fi
 ### Checks for header files
 AC_CHECK_HEADERS([locale.h])
 
-### Checks for programs
-AC_PROG_CC
-
-# doxygen program for documentation building
-
-EFL_CHECK_DOXYGEN([build_doc="yes"], [build_doc="no"])
-
-# python
-
-AM_PATH_PYTHON([2.5], , [:])
-AM_CONDITIONAL([HAVE_PYTHON], [test "$PYTHON" != : ])
-
 
 ### Checks for types
 
@@ -201,6 +204,9 @@ case "$host_os" in
       EDJE_CFLAGS="${EDJE_CFLAGS} -mwin32 -D_WIN32_WCE=0x0420"
       ;;
 esac
+
+
+### Checks for linker characteristics
 
 lt_enable_auto_import=""
 case "$host_os" in

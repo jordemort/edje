@@ -2,10 +2,31 @@
  * vim:ts=8:sw=3:sts=8:noexpandtab:cino=>5n-3f0^-2{2
  */
 
+#ifdef HAVE_CONFIG_H
+# include "config.h"
+#endif
+
 #include <string.h>
 #include <limits.h>
 #include <unistd.h>
 #include <sys/stat.h>
+
+#ifdef HAVE_ALLOCA_H
+# include <alloca.h>
+#elif defined __GNUC__
+# define alloca __builtin_alloca
+#elif defined _AIX
+# define alloca __alloca
+#elif defined _MSC_VER
+# include <malloc.h>
+# define alloca _alloca
+#else
+# include <stddef.h>
+# ifdef  __cplusplus
+extern "C"
+# endif
+void *alloca (size_t);
+#endif
 
 #include <Ecore_Evas.h>
 
@@ -1333,18 +1354,17 @@ data_process_script_lookups(void)
 
    EINA_LIST_FOREACH(code_lookups, l, cl)
      {
-	char buf[256];
-	int i, n;
+	char buf[12];
+	int n;
 
-	snprintf(buf, sizeof(buf), "%i", cl->val);
-	n = strlen(buf);
+	n = eina_convert_itoa(cl->val, buf);
 	if (n > cl->len)
 	  {
 	     fprintf(stderr, "%s: Error. The unexpected happened. A numeric replacement string was larger than the original!\n",
 		     progname);
 	     exit(-1);
 	  }
-	for (i = 0; i < cl->len; i++) cl->ptr[i] = ' ';
+	memset(cl->ptr, ' ', cl->len);
 	strncpy(cl->ptr, buf, n);
      }
 }
