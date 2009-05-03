@@ -247,6 +247,9 @@ extern "C" {
    EAPI void         edje_object_text_change_cb_set  (Evas_Object *obj, void (*func) (void *data, Evas_Object *obj, const char *part), void *data);
    EAPI void         edje_object_part_text_set       (Evas_Object *obj, const char *part, const char *text);
    EAPI const char  *edje_object_part_text_get       (const Evas_Object *obj, const char *part);
+   EAPI void         edje_object_part_text_unescaped_set(Evas_Object *obj, const char *part, const char *text_to_escape);
+   EAPI char        *edje_object_part_text_unescaped_get(const Evas_Object *obj, const char *part);
+
    EAPI const char  *edje_object_part_text_selection_get(const Evas_Object *obj, const char *part);
    EAPI void         edje_object_part_text_select_none(const Evas_Object *obj, const char *part);
    EAPI void         edje_object_part_text_select_all(const Evas_Object *obj, const char *part);
@@ -255,6 +258,8 @@ extern "C" {
    EAPI const Eina_List *edje_object_part_text_anchor_list_get(const Evas_Object *obj, const char *part);
    EAPI const Eina_List *edje_object_part_text_anchor_geometry_get(const Evas_Object *obj, const char *part, const char *anchor);
    EAPI void             edje_object_part_text_cursor_geometry_get(const Evas_Object *obj, const char *part, Evas_Coord *x, Evas_Coord *y, Evas_Coord *w, Evas_Coord *h);
+   EAPI void             edje_object_part_text_select_allow_set(const Evas_Object *obj, const char *part, Evas_Bool allow);
+   EAPI void             edje_object_part_text_select_abort(const Evas_Object *obj, const char *part);
        
    EAPI void         edje_object_part_swallow        (Evas_Object *obj, const char *part, Evas_Object *obj_swallow);
    EAPI void         edje_object_part_unswallow      (Evas_Object *obj, Evas_Object *obj_swallow);
