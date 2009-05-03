@@ -1,4 +1,4 @@
-edje (0.9.91.050+svn????????) UNRELEASED; urgency=low
+edje (0.9.92.060-1) experimental; urgency=low
 
   * New SVN snapshot
     - Drop patches, no longer needed:
@@ -8,12 +8,12 @@ edje (0.9.91.050+svn????????) UNRELEASED; urgency=low
       + Update shlibs and .install files as a consequence
   * Update Standards-Version, no change needed
   * Move libedje-dbg to the debug section
+  * libedje-dev now depends on libedje-bin, as it's needed to compile themes
+  * Package name purposedly doesn't match SONAME, in an attempt to make the
+    former a bit more meaningful than libedje-ver-pre-01-0
+    - Override the lintian warning: package-name-doesnt-match-sonames
 
- -- Albin Tonnerre <albin.tonnerre@gmail.com>  Sat, 18 Apr 2009 16:16:34 +0200
-
- 
-
- -- Albin Tonnerre <albin.tonnerre@gmail.com>  Sat, 18 Apr 2009 16:15:00 +0200
+ -- Albin Tonnerre <albin.tonnerre@gmail.com>  Thu, 07 May 2009 13:34:49 +0200
 
 edje (0.9.9.050+svn20090204-1) experimental; urgency=low
 
