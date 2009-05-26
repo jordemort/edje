@@ -4,7 +4,7 @@ include /usr/share/cdbs/1/class/autotools.mk
 include /usr/share/cdbs/1/rules/debhelper.mk
 include /usr/share/cdbs/1/rules/patchsys-quilt.mk
 
-LDFLAGS += -Wl,--as-needed
+LDFLAGS += -Wl,-z,defs -Wl,--as-needed
 
 build/libedje-doc::
 	$(MAKE) doc
