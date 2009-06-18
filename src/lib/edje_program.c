@@ -2,6 +2,7 @@
  * vim:ts=8:sw=3:sts=8:noexpandtab:cino=>5n-3f0^-2{2
  */
 
+#define _GNU_SOURCE
 #include <string.h>
 
 #include "edje_private.h"
@@ -814,8 +815,49 @@ _edje_emit(Edje *ed, const char *sig, const char *src)
    Edje_Message_Signal emsg;
    Eina_List *l;
    Evas_Object *obj;
-   
+   const char *sep;
+
    if (ed->delete_me) return;
+
+   sep = strchr(sig, ':');
+   if (sep)
+     {
+        size_t length;
+        char *part;
+       /* the signal contains a colon, split the signal into "group:signal",
+	* and deliver it to "group"
+	*/
+       length = strlen(sig) + 1;
+       part = alloca(length);
+       if (part)
+	 {
+            char *newsig;
+	    int i;
+
+            memcpy(part, sig, length);
+            newsig = part + (sep - sig);
+	    *newsig = '\0';
+	    newsig++;
+
+            for (i = 0; i < ed->table_parts_size; i++)
+              {
+                 Edje_Real_Part *rp = ed->table_parts[i];
+                 if ((rp->part->type == EDJE_PART_TYPE_GROUP) &&
+                     (rp->swallowed_object) &&
+                     (rp->part) && (rp->part->name) &&
+                     (strcmp(rp->part->name, part) == 0))
+                   {
+                      Edje *ed2 = _edje_fetch(rp->swallowed_object);
+                      if (ed2) _edje_emit(ed2, newsig, src);
+                      return; /* stop processing.
+			       * XXX maybe let signal be processed anyway?
+			       * XXX in this case, just comment this line
+			       */
+                   }
+              }
+         }
+     }
+
    emsg.sig = sig;
    emsg.src = src;
    _edje_message_send(ed, EDJE_QUEUE_SCRIPT, EDJE_MESSAGE_SIGNAL, 0, &emsg);
