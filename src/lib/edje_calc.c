@@ -56,7 +56,7 @@ _edje_part_description_find(Edje *ed, Edje_Real_Part *rp, const char *name,
    Edje_Part_Description *ret = NULL;
    Edje_Part_Description *d;
    Eina_List *l;
-   double min_dst = 999.0;
+   double min_dst = 99999.0;
 
    if (!strcmp(name, "default") && val == 0.0)
      return ep->default_desc;
@@ -180,7 +180,6 @@ _edje_recalc_do(Edje *ed)
 	  _edje_part_recalc(ed, ep, (~ep->calculated) & FLAG_XY);
      }
    if (!ed->calc_only) ed->recalc = 0;
-   ed->calc_only = 0;
 }
 
 int
@@ -655,7 +654,7 @@ _edje_part_recalc_single(Edje *ed,
 
 	if (ep->part->scale)
 	  evas_object_scale_set(ep->object, sc);
-	
+
 	if (stl)
 	  {
 	     const char *ptxt;
@@ -690,11 +689,11 @@ _edje_part_recalc_single(Edje *ed,
 		  evas_object_textblock_style_insets_get(ep->object, &ins_l, &ins_r, &ins_t, &ins_b);
 		  mw = ins_l + tw + ins_r;
 		  mh = ins_t + th + ins_b;
-		  if (chosen_desc->text.min_x)
+//		  if (chosen_desc->text.min_x)
 		    {
 		       if (mw > minw) minw = mw;
 		    }
-		  if (chosen_desc->text.min_y)
+//		  if (chosen_desc->text.min_y)
 		    {
 		       if (mh > minh) minh = mh;
 		    }
@@ -882,7 +881,6 @@ _edje_part_recalc_single(Edje *ed,
 	free(sfont);
 	params->text.size = size;
      }
-
    /* rememebr what our size is BEFORE we go limit it */
    params->req.x = params->x;
    params->req.y = params->y;
@@ -1256,6 +1254,11 @@ _edje_table_recalc_apply(Edje *ed, Edje_Real_Part *ep, Edje_Calc_Params *p3, Edj
    evas_object_table_homogeneous_set(ep->object, chosen_desc->table.homogeneous);
    evas_object_table_align_set(ep->object, chosen_desc->table.align.x, chosen_desc->table.align.y);
    evas_object_table_padding_set(ep->object, chosen_desc->table.padding.x, chosen_desc->table.padding.y);
+   if (evas_object_smart_need_recalculate_get(ep->object))
+     {
+	evas_object_smart_need_recalculate_set(ep->object, 0);
+	evas_object_smart_calculate(ep->object);
+     }
 }
 
 static void
@@ -1267,7 +1270,6 @@ _edje_image_recalc_apply(Edje *ed, Edje_Real_Part *ep, Edje_Calc_Params *p3, Edj
    evas_object_image_fill_set(ep->object, p3->fill.x, p3->fill.y,
 			      p3->fill.w, p3->fill.h);
    evas_object_image_smooth_scale_set(ep->object, p3->smooth);
-
    evas_object_image_border_set(ep->object, p3->border.l, p3->border.r,
 				p3->border.t, p3->border.b);
    if (chosen_desc->border.no_fill == 0)
@@ -1546,8 +1548,10 @@ _edje_part_recalc(Edje *ed, Edje_Real_Part *ep, int flags)
 	/* Common move, resize and color_set for all part. */
 	switch (ep->part->type)
 	  {
-	   case EDJE_PART_TYPE_RECTANGLE:
 	   case EDJE_PART_TYPE_IMAGE:
+             evas_object_image_scale_hint_set(ep->object, 
+                                              chosen_desc->image.scale_hint);
+	   case EDJE_PART_TYPE_RECTANGLE:
 	   case EDJE_PART_TYPE_TEXTBLOCK:
 	   case EDJE_PART_TYPE_GRADIENT:
 	   case EDJE_PART_TYPE_BOX:

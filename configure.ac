@@ -3,8 +3,8 @@ dnl Process this file with autoconf to produce a configure script.
 # get rid of that stupid cache mechanism
 rm -f config.cache
 
-AC_INIT([edje], 0.9.92.060, [enlightenment-devel@lists.sourceforge.net])
-AC_PREREQ(2.52)
+AC_INIT([edje], [0.9.92.061], [enlightenment-devel@lists.sourceforge.net])
+AC_PREREQ([2.52])
 AC_CONFIG_SRCDIR([configure.ac])
 AC_CONFIG_MACRO_DIR([m4])
 AC_CANONICAL_BUILD
@@ -24,9 +24,16 @@ VMIN=`echo $PACKAGE_VERSION | awk -F. '{printf("%s", $2);}'`
 VMIC=`echo $PACKAGE_VERSION | awk -F. '{printf("%s", $3);}'`
 SNAP=`echo $PACKAGE_VERSION | awk -F. '{printf("%s", $4);}'`
 version_info=`expr $VMAJ + $VMIN`":$VMIC:$VMIN"
-release="ver-pre-01"
-release_info="-release $release"
 AC_SUBST(version_info)
+
+release="ver-svn-02"
+case "$host_os" in
+   mingw32ce* | cegcc*)
+      ;;
+   *)
+      release_info="-release $release"
+      ;;
+esac
 AC_SUBST(release_info)
 
 
@@ -138,10 +145,12 @@ EFL_CHECK_DOXYGEN([build_doc="yes"], [build_doc="no"])
 AM_PATH_PYTHON([2.5], , [:])
 AM_CONDITIONAL([HAVE_PYTHON], [test "$PYTHON" != : ])
 
-
-### Checks for libraries
+# pkg-config
 
 PKG_PROG_PKG_CONFIG
+
+
+### Checks for libraries
 
 # Evil library for compilation on Windows
 
@@ -166,10 +175,22 @@ PKG_CHECK_MODULES([EDJE],
     ecore >= 0.9.9
     ecore-job >= 0.9.9
     embryo >= 0.9.1
-   ]
-)
+   ])
 
 requirement_edje="embryo ecore-job ecore evas eet eina-0 ${requirement_edje}"
+
+have_ecore_imf="no"
+PKG_CHECK_MODULES([ECORE_IMF],
+   [
+    ecore-imf >= 0.9.9
+    ecore-imf-evas >= 0.9.9
+   ],
+   [
+    AC_DEFINE(HAVE_ECORE_IMF, 1, [Input Method Support for Edje Entry])
+    have_ecore_imf="yes"
+    requirement_edje="ecore-imf ecore-imf-evas ${requirement_edje}"
+   ],
+   [have_ecore_imf="no"])
 
 # Dependencies for the binaries
 
@@ -259,11 +280,13 @@ echo "------------------------------------------------------------------------"
 echo
 echo "Configuration Options Summary:"
 echo
+echo "  Ecore IMF............: $have_ecore_imf"
+echo
 echo "  EDJE_PROGRAM_CACHE...: $want_edje_program_cache"
 echo
 echo "  Build binaries.......: $have_edje_cc"
 echo
-echo "  Documentation........: ${enable_doc}"
+echo "  Documentation........: ${build_doc}"
 echo
 echo "  Compilation..........: make"
 echo

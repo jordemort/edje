@@ -113,6 +113,8 @@ ECORE_EVAS_CFLAGS = @ECORE_EVAS_CFLAGS@
 ECORE_EVAS_LIBS = @ECORE_EVAS_LIBS@
 ECORE_FILE_CFLAGS = @ECORE_FILE_CFLAGS@
 ECORE_FILE_LIBS = @ECORE_FILE_LIBS@
+ECORE_IMF_CFLAGS = @ECORE_IMF_CFLAGS@
+ECORE_IMF_LIBS = @ECORE_IMF_LIBS@
 EDJE_CC_PRG = @EDJE_CC_PRG@
 EDJE_CFLAGS = @EDJE_CFLAGS@
 EDJE_DECC_PRG = @EDJE_DECC_PRG@
@@ -238,6 +240,7 @@ AM_CPPFLAGS = \
 -DPACKAGE_DATA_DIR=\"$(datadir)/$(PACKAGE)\" \
 @EVIL_CFLAGS@ \
 @EDJE_CFLAGS@ \
+@ECORE_IMF_CFLAGS@ \
 @EFL_EDJE_BUILD@
 
 lib_LTLIBRARIES = libedje.la
@@ -266,7 +269,7 @@ edje_edit.c \
 edje_script_only.c \
 edje_entry.c
 
-libedje_la_LIBADD = @EDJE_LIBS@ -lm
+libedje_la_LIBADD = @EDJE_LIBS@ @ECORE_IMF_LIBS@ -lm
 libedje_la_LDFLAGS = -no-undefined @lt_enable_auto_import@ -version-info @version_info@ @release_info@
 all: all-am
 
