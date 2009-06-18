@@ -1,3 +1,11 @@
+edje (0.9.92.061-1) UNRELEASED; urgency=low
+
+  * New upstream snapshot
+  * Re-add patches to fix soname, it got bumped upstream with no reason
+  * Drop Add-libtool-Wl-as-needed-reordering-workaround.patch, no longer needed
+
+ -- Albin Tonnerre <albin.tonnerre@gmail.com>  Thu, 18 Jun 2009 09:32:36 +0200
+
 edje (0.9.92.060-1) experimental; urgency=low
 
   * New SVN snapshot
