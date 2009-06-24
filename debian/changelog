@@ -1,7 +1,9 @@
-edje (0.9.92.061-1) UNRELEASED; urgency=low
+edje (0.9.92.061-1) unstable; urgency=low
 
   * New upstream snapshot
   * Drop Add-libtool-Wl-as-needed-reordering-workaround.patch, no longer needed
+  * Update libedje-bin deps following the evas engines rename
+  * Upload to unstable
 
  -- Albin Tonnerre <albin.tonnerre@gmail.com>  Wed, 24 Jun 2009 22:23:39 +0200
 
