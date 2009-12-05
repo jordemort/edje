@@ -1,6 +1,9 @@
 #ifndef _EDJE_H
 #define _EDJE_H
 
+#include <stdint.h>
+#include <math.h>
+
 #include <Evas.h>
 
 #ifdef EAPI
@@ -28,6 +31,14 @@
 #  define EAPI
 # endif
 #endif
+
+/** 
+ * @file Edje.h
+ * @brief Edje Graphical Design Library
+ *
+ * These routines are used for Edje.
+ */
+
 
 /* FIXDOC: Define these? */
 enum _Edje_Message_Type
@@ -69,6 +80,72 @@ enum _Edje_Object_Table_Homogeneous_Mode
    EDJE_OBJECT_TABLE_HOMOGENEOUS_ITEM = 2
 };
 typedef enum _Edje_Object_Table_Homogeneous_Mode Edje_Object_Table_Homogeneous_Mode;
+
+typedef enum _Edje_Part_Type
+{
+   EDJE_PART_TYPE_NONE      = 0,
+   EDJE_PART_TYPE_RECTANGLE = 1,
+   EDJE_PART_TYPE_TEXT      = 2,
+   EDJE_PART_TYPE_IMAGE     = 3,
+   EDJE_PART_TYPE_SWALLOW   = 4,
+   EDJE_PART_TYPE_TEXTBLOCK = 5,
+   EDJE_PART_TYPE_GRADIENT  = 6,
+   EDJE_PART_TYPE_GROUP     = 7,
+   EDJE_PART_TYPE_BOX       = 8,
+   EDJE_PART_TYPE_TABLE     = 9,
+   EDJE_PART_TYPE_EXTERNAL  = 10,
+   EDJE_PART_TYPE_LAST      = 11
+} Edje_Part_Type;
+
+typedef enum _Edje_Text_Effect
+{
+   EDJE_TEXT_EFFECT_NONE                = 0,
+   EDJE_TEXT_EFFECT_PLAIN               = 1,
+   EDJE_TEXT_EFFECT_OUTLINE             = 2,
+   EDJE_TEXT_EFFECT_SOFT_OUTLINE        = 3,
+   EDJE_TEXT_EFFECT_SHADOW              = 4,
+   EDJE_TEXT_EFFECT_SOFT_SHADOW         = 5,
+   EDJE_TEXT_EFFECT_OUTLINE_SHADOW      = 6,
+   EDJE_TEXT_EFFECT_OUTLINE_SOFT_SHADOW = 7,
+   EDJE_TEXT_EFFECT_FAR_SHADOW          = 8,
+   EDJE_TEXT_EFFECT_FAR_SOFT_SHADOW     = 9,
+   EDJE_TEXT_EFFECT_GLOW                = 10,
+   EDJE_TEXT_EFFECT_LAST                = 11
+} Edje_Text_Effect;
+
+typedef enum _Edje_Action_Type
+{
+   EDJE_ACTION_TYPE_NONE          = 0,
+   EDJE_ACTION_TYPE_STATE_SET     = 1,
+   EDJE_ACTION_TYPE_ACTION_STOP   = 2,
+   EDJE_ACTION_TYPE_SIGNAL_EMIT   = 3,
+   EDJE_ACTION_TYPE_DRAG_VAL_SET  = 4,
+   EDJE_ACTION_TYPE_DRAG_VAL_STEP = 5,
+   EDJE_ACTION_TYPE_DRAG_VAL_PAGE = 6,
+   EDJE_ACTION_TYPE_SCRIPT        = 7,
+   EDJE_ACTION_TYPE_FOCUS_SET     = 8,
+   EDJE_ACTION_TYPE_LUA_SCRIPT    = 9,
+   EDJE_ACTION_TYPE_LAST          = 10
+} Edje_Action_Type;
+
+typedef enum _Edje_Tween_Mode
+{
+   EDJE_TWEEN_MODE_NONE       = 0,
+   EDJE_TWEEN_MODE_LINEAR     = 1,
+   EDJE_TWEEN_MODE_SINUSOIDAL = 2,
+   EDJE_TWEEN_MODE_ACCELERATE = 3,
+   EDJE_TWEEN_MODE_DECELERATE = 4,
+   EDJE_TWEEN_MODE_LAST       = 5
+} Edje_Tween_Mode;
+
+enum _Edje_Cursor
+{
+   EDJE_CURSOR_MAIN,
+   EDJE_CURSOR_SELECTION_BEGIN,
+   EDJE_CURSOR_SELECTION_END
+   // more later
+};
+typedef enum _Edje_Cursor Edje_Cursor;
 
 typedef struct _Edje_Message_String           Edje_Message_String;
 typedef struct _Edje_Message_Int              Edje_Message_Int;
@@ -162,6 +239,112 @@ enum
      EDJE_LOAD_ERROR_RECURSIVE_REFERENCE = 9
 };
 
+enum _Edje_External_Param_Type
+{
+  EDJE_EXTERNAL_PARAM_TYPE_INT,
+  EDJE_EXTERNAL_PARAM_TYPE_DOUBLE,
+  EDJE_EXTERNAL_PARAM_TYPE_STRING,
+  EDJE_EXTERNAL_PARAM_TYPE_MAX
+};
+typedef enum _Edje_External_Param_Type Edje_External_Param_Type;
+
+struct _Edje_External_Param
+{
+  const char *name;
+  Edje_External_Param_Type type;
+  // XXX these could be in a union, but eet doesn't support them (or does it?)
+  int i;
+  double d;
+  const char *s;
+};
+typedef struct _Edje_External_Param Edje_External_Param;
+
+#define EDJE_EXTERNAL_INT_UNSET INT32_MAX
+#define EDJE_EXTERNAL_DOUBLE_UNSET NAN
+
+struct _Edje_External_Param_Info
+{
+   const char *name;
+   Edje_External_Param_Type type;
+   union
+   {
+      struct
+      {
+	 int def, min, max, step;
+      } i;
+      struct
+      {
+	 double def, min, max, step;
+      } d;
+      struct
+      {
+	 const char *def;
+	 const char *accept_fmt;
+	 const char *deny_fmt;
+      } s;
+   } info;
+};
+typedef struct _Edje_External_Param_Info Edje_External_Param_Info;
+
+#define EDJE_EXTERNAL_PARAM_INFO_INT_FULL(name, def, min, max, step) \
+  {name, EDJE_EXTERNAL_PARAM_TYPE_INT, {.i = {def, min, max, step}}}
+#define EDJE_EXTERNAL_PARAM_INFO_DOUBLE_FULL(name, def, min, max, step) \
+  {name, EDJE_EXTERNAL_PARAM_TYPE_DOUBLE, {.d = {def, min, max, step}}}
+#define EDJE_EXTERNAL_PARAM_INFO_STRING_FULL(name, def, accept, deny) \
+  {name, EDJE_EXTERNAL_PARAM_TYPE_STRING, {.s = {def, accept, deny}}}
+
+#define EDJE_EXTERNAL_PARAM_INFO_INT_DEFAULT(name, def) \
+   EDJE_EXTERNAL_PARAM_INFO_INT_FULL(name, def, EDJE_EXTERNAL_INT_UNSET, EDJE_EXTERNAL_INT_UNSET, EDJE_EXTERNAL_INT_UNSET)
+#define EDJE_EXTERNAL_PARAM_INFO_DOUBLE_DEFAULT(name, def) \
+   EDJE_EXTERNAL_PARAM_INFO_DOUBLE_FULL(name, def, EDJE_EXTERNAL_DOUBLE_UNSET, EDJE_EXTERNAL_DOUBLE_UNSET, EDJE_EXTERNAL_DOUBLE_UNSET)
+#define EDJE_EXTERNAL_PARAM_INFO_STRING_DEFAULT(name, def) \
+   EDJE_EXTERNAL_PARAM_INFO_STRING_FULL(name, def, NULL, NULL)
+
+#define EDJE_EXTERNAL_PARAM_INFO_INT(name) \
+   EDJE_EXTERNAL_PARAM_INFO_INT_DEFAULT(name, 0)
+#define EDJE_EXTERNAL_PARAM_INFO_DOUBLE(name) \
+   EDJE_EXTERNAL_PARAM_INFO_DOUBLE_DEFAULT(name, 0.0)
+#define EDJE_EXTERNAL_PARAM_INFO_STRING(name) \
+   EDJE_EXTERNAL_PARAM_INFO_STRING_DEFAULT(name, NULL)
+
+#define EDJE_EXTERNAL_PARAM_INFO_SENTINEL {NULL, 0, {.s = {NULL, NULL, NULL}}}
+
+struct _Edje_External_Type
+{
+#define EDJE_EXTERNAL_TYPE_ABI_VERSION (1)
+  unsigned int abi_version; /**< always use:
+			     *  - #EDJE_EXTERNAL_TYPE_ABI_VERSION to declare.
+			     *  - edje_external_type_abi_version_get() to check.
+			     */
+
+  const char *module;
+  Evas_Object *(*add) (void *data, Evas *evas, Evas_Object *parent, const Eina_List *params);
+  void (*state_set) (void *data, Evas_Object *obj, const void *from_params, const void *to_params, float pos);
+  void (*signal_emit) (void *data, Evas_Object *obj, const char *emission, const char *source);
+  void *(*params_parse) (void *data, Evas_Object *obj, const Eina_List *params);
+  void (*params_free) (void *params);
+
+  const char *(*label_get) (void *data);
+  const char *(*description_get) (void *data);
+  Evas_Object *(*icon_add) (void *data, Evas *e);
+  Evas_Object *(*preview_add) (void *data, Evas *e);
+
+  Edje_External_Param_Info *parameters_info;
+
+  void *data;
+};
+typedef struct _Edje_External_Type Edje_External_Type;
+
+
+struct _Edje_External_Type_Info
+{
+   const char *name;
+   const Edje_External_Type *info;
+};
+typedef struct _Edje_External_Type_Info Edje_External_Type_Info;
+
+
+
 typedef void (*Edje_Signal_Cb) (void *data, Evas_Object *obj, const char *emission, const char *source);
 typedef void (*Edje_Text_Change_Cb) (void *data, Evas_Object *obj, const char *part);
 typedef void (*Edje_Message_Handler_Cb) (void *data, Evas_Object *obj, Edje_Message_Type type, int id, void *msg);
@@ -203,6 +386,7 @@ extern "C" {
 
    /* edje_util.c */
    EAPI void         edje_color_class_set(const char *color_class, int r, int g, int b, int a, int r2, int g2, int b2, int a2, int r3, int g3, int b3, int a3);
+   EAPI Eina_Bool    edje_color_class_get(const char *color_class, int *r, int *g, int *b, int *a, int *r2, int *g2, int *b2, int *a2, int *r3, int *g3, int *b3, int *a3);
    EAPI void         edje_color_class_del(const char *color_class);
    EAPI Eina_List *  edje_color_class_list(void);
    EAPI void         edje_text_class_set(const char *text_class, const char *font, Evas_Font_Size size);
@@ -238,6 +422,7 @@ extern "C" {
    EAPI int          edje_object_freeze              (Evas_Object *obj);
    EAPI int          edje_object_thaw                (Evas_Object *obj);
    EAPI void         edje_object_color_class_set     (Evas_Object *obj, const char *color_class, int r, int g, int b, int a, int r2, int g2, int b2, int a2, int r3, int g3, int b3, int a3);
+   EAPI Eina_Bool     edje_object_color_class_get    (const Evas_Object *o, const char *color_class, int *r, int *g, int *b, int *a, int *r2, int *g2, int *b2, int *a2, int *r3, int *g3, int *b3, int *a3);
    EAPI void         edje_object_color_class_del     (Evas_Object *obj, const char *color_class);
    EAPI void         edje_object_text_class_set      (Evas_Object *obj, const char *text_class, const char *font, Evas_Font_Size size);
    EAPI void         edje_object_size_min_get        (const Evas_Object *obj, Evas_Coord *minw, Evas_Coord *minh);
@@ -254,16 +439,28 @@ extern "C" {
    EAPI void         edje_object_part_text_unescaped_set(Evas_Object *obj, const char *part, const char *text_to_escape);
    EAPI char        *edje_object_part_text_unescaped_get(const Evas_Object *obj, const char *part);
 
-   EAPI const char  *edje_object_part_text_selection_get(const Evas_Object *obj, const char *part);
-   EAPI void         edje_object_part_text_select_none(const Evas_Object *obj, const char *part);
-   EAPI void         edje_object_part_text_select_all(const Evas_Object *obj, const char *part);
-       
-   EAPI void             edje_object_part_text_insert    (Evas_Object *obj, const char *part, const char *text);
-   EAPI const Eina_List *edje_object_part_text_anchor_list_get(const Evas_Object *obj, const char *part);
-   EAPI const Eina_List *edje_object_part_text_anchor_geometry_get(const Evas_Object *obj, const char *part, const char *anchor);
-   EAPI void             edje_object_part_text_cursor_geometry_get(const Evas_Object *obj, const char *part, Evas_Coord *x, Evas_Coord *y, Evas_Coord *w, Evas_Coord *h);
-   EAPI void             edje_object_part_text_select_allow_set(const Evas_Object *obj, const char *part, Eina_Bool allow);
-   EAPI void             edje_object_part_text_select_abort(const Evas_Object *obj, const char *part);
+   EAPI const char      *edje_object_part_text_selection_get           (const Evas_Object *obj, const char *part);
+   EAPI void             edje_object_part_text_select_none             (const Evas_Object *obj, const char *part);
+   EAPI void             edje_object_part_text_select_all              (const Evas_Object *obj, const char *part);
+   EAPI void             edje_object_part_text_insert                  (Evas_Object *obj, const char *part, const char *text);
+   EAPI const Eina_List *edje_object_part_text_anchor_list_get         (const Evas_Object *obj, const char *part);
+   EAPI const Eina_List *edje_object_part_text_anchor_geometry_get     (const Evas_Object *obj, const char *part, const char *anchor);
+   EAPI void             edje_object_part_text_cursor_geometry_get     (const Evas_Object *obj, const char *part, Evas_Coord *x, Evas_Coord *y, Evas_Coord *w, Evas_Coord *h);
+   EAPI void             edje_object_part_text_select_allow_set        (const Evas_Object *obj, const char *part, Eina_Bool allow);
+   EAPI void             edje_object_part_text_select_abort            (const Evas_Object *obj, const char *part);
+   
+   EAPI Eina_Bool        edje_object_part_text_cursor_next(const Evas_Object *obj, const char *part, Edje_Cursor cur);
+   EAPI Eina_Bool        edje_object_part_text_cursor_prev(const Evas_Object *obj, const char *part, Edje_Cursor cur);
+   EAPI Eina_Bool        edje_object_part_text_cursor_up(const Evas_Object *obj, const char *part, Edje_Cursor cur);
+   EAPI Eina_Bool        edje_object_part_text_cursor_down(const Evas_Object *obj, const char *part, Edje_Cursor cur);
+   EAPI void             edje_object_part_text_cursor_begin_set(const Evas_Object *obj, const char *part, Edje_Cursor cur);
+   EAPI void             edje_object_part_text_cursor_end_set(const Evas_Object *obj, const char *part, Edje_Cursor cur);
+   EAPI void             edje_object_part_text_cursor_copy(const Evas_Object *obj, const char *part, Edje_Cursor src, Edje_Cursor dst);
+   EAPI void             edje_object_part_text_cursor_line_begin_set(const Evas_Object *obj, const char *part, Edje_Cursor cur);
+   EAPI void             edje_object_part_text_cursor_line_end_set(const Evas_Object *obj, const char *part, Edje_Cursor cur);
+   EAPI Eina_Bool        edje_object_part_text_cursor_is_format_get(const Evas_Object *obj, const char *part, Edje_Cursor cur);
+   EAPI Eina_Bool        edje_object_part_text_cursor_is_visible_format_get(const Evas_Object *obj, const char *part, Edje_Cursor cur);
+   EAPI const char      *edje_object_part_text_cursor_content_get(const Evas_Object *obj, const char *part, Edje_Cursor cur);
        
    EAPI void         edje_object_part_swallow        (Evas_Object *obj, const char *part, Evas_Object *obj_swallow);
    EAPI void         edje_object_part_unswallow      (Evas_Object *obj, Evas_Object *obj_swallow);
@@ -298,6 +495,28 @@ extern "C" {
    EAPI void         edje_object_message_signal_process (Evas_Object *obj);
 
    EAPI void         edje_message_signal_process        (void);
+
+   /* edje_external.c */
+  EAPI Eina_Bool edje_external_type_register(const char *type_name, const Edje_External_Type *type_info);
+  EAPI Eina_Bool edje_external_type_unregister(const char *type_name);
+
+  EAPI void      edje_external_type_array_register(const Edje_External_Type_Info *array);
+  EAPI void      edje_external_type_array_unregister(const Edje_External_Type_Info *array);
+
+  EAPI unsigned int edje_external_type_abi_version_get(void) EINA_CONST;
+
+
+  EAPI Eina_Iterator *edje_external_iterator_get(void);
+  EAPI Edje_External_Param *edje_external_param_find(const Eina_List *params, const char *key);
+  EAPI Eina_Bool edje_external_param_int_get(const Eina_List *params, const char *key, int *ret);
+  EAPI Eina_Bool edje_external_param_double_get(const Eina_List *params, const char *key, double *ret);
+  EAPI Eina_Bool edje_external_param_string_get(const Eina_List *params, const char *key, const char **ret);
+  EAPI const Edje_External_Param_Info *edje_external_param_info_get(const char *type_name);
+
+  /* edje_module.c */
+  EAPI Eina_Bool edje_module_load(const char *module);
+  EAPI const Eina_List *edje_available_modules_get(void);
+
 
 #ifdef __cplusplus
 }

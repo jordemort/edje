@@ -101,13 +101,13 @@ _edje_mouse_down_cb(void *data, Evas * e, Evas_Object * obj, void *event_info)
 	  {
 	     if (events->part->dragable.x)
 	       {
-		  events->drag.down.x = ev->canvas.x;
-		  events->drag.tmp.x = 0;
+		  events->drag->down.x = ev->canvas.x;
+		  events->drag->tmp.x = 0;
 	       }
 	     if (events->part->dragable.y)
 	       {
-		  events->drag.down.y = ev->canvas.y;
-		  events->drag.tmp.y = 0;
+		  events->drag->down.y = ev->canvas.y;
+		  events->drag->tmp.y = 0;
 	       }
 
 	     if (!ignored)
@@ -116,47 +116,54 @@ _edje_mouse_down_cb(void *data, Evas * e, Evas_Object * obj, void *event_info)
 		  _edje_emit(ed, buf, events->part->name);
 	       }
 	     ed->dirty = 1;
+#ifdef EDJE_CALC_CACHE
+	     rp->invalidate = 1;
+#endif
 	  }
 	_edje_recalc_do(ed);
-/*
-	_edje_thaw(ed);
-	_edje_unref(ed);
-	_edje_ref(ed);
-	_edje_freeze(ed);
-*/
+	/*
+	  _edje_thaw(ed);
+	  _edje_unref(ed);
+	  _edje_ref(ed);
+	  _edje_freeze(ed);
+	*/
 	rp = events;
-	  {
-	     double dx = 0.0, dy = 0.0;
-	     int dir;
+	{
+	   double dx = 0.0, dy = 0.0;
+	   int dir;
 
-	     dir = _edje_part_dragable_calc(ed, rp, &dx, &dy);
-	     
-	     if ((dx != rp->drag.val.x) || (dy != rp->drag.val.y))
-	       {
-		  rp->drag.val.x = dx;
-		  rp->drag.val.y = dy;
-		  if (!ignored)
-		    _edje_emit(ed, "drag", rp->part->name);
-		  ed->dirty = 1;
-		  rp->drag.need_reset = 1;
-		  _edje_recalc_do(ed);
-	       }
-	  }
+	   dir = _edje_part_dragable_calc(ed, rp, &dx, &dy);
+
+	   if ((dx != rp->drag->val.x) || (dy != rp->drag->val.y))
+	     {
+		rp->drag->val.x = dx;
+		rp->drag->val.y = dy;
+		if (!ignored)
+		  _edje_emit(ed, "drag", rp->part->name);
+		ed->dirty = 1;
+#ifdef EDJE_CALC_CACHE
+		rp->invalidate = 1;
+#endif
+		rp->drag->need_reset = 1;
+		_edje_recalc_do(ed);
+	     }
+	}
      }
 
-   if ((rp->part->dragable.x) || (rp->part->dragable.y))
+   if (rp->drag)
      {
-	if (rp->drag.down.count == 0)
+	if (rp->drag->down.count == 0)
 	  {
 	     if (rp->part->dragable.x)
-		 rp->drag.down.x = ev->canvas.x;
+	       rp->drag->down.x = ev->canvas.x;
 	     if (rp->part->dragable.y)
-		 rp->drag.down.y = ev->canvas.y;
+	       rp->drag->down.y = ev->canvas.y;
 	     if (!ignored)
 	       _edje_emit(ed, "drag,start", rp->part->name);
 	  }
-	rp->drag.down.count++;
+	rp->drag->down.count++;
      }
+
    if (rp->clicked_button == 0)
      {
 	rp->clicked_button = ev->button;
@@ -204,20 +211,24 @@ _edje_mouse_up_cb(void *data, Evas * e, Evas_Object * obj, void *event_info)
 	  }
      }
 
-   if ((rp->part->dragable.x) || (rp->part->dragable.y))
+   if (rp->drag)
      {
-	if (rp->drag.down.count > 0)
+	if (rp->drag->down.count > 0)
 	  {
-	     rp->drag.down.count--;
-	     if (rp->drag.down.count == 0)
+	     rp->drag->down.count--;
+	     if (rp->drag->down.count == 0)
 	       {
-		  rp->drag.need_reset = 1;
+		  rp->drag->need_reset = 1;
 		  ed->dirty = 1;
+#ifdef EDJE_CALC_CACHE
+		  rp->invalidate = 1;
+#endif
 		  if (!ignored)
 		    _edje_emit(ed, "drag,stop", rp->part->name);
 	       }
 	  }
      }
+
    if ((rp->still_in) && (rp->clicked_button == ev->button) && (!ignored))
      {
 	snprintf(buf, sizeof(buf), "mouse,clicked,%i", ev->button);
@@ -272,33 +283,37 @@ _edje_mouse_move_cb(void *data, Evas * e, Evas_Object * obj, void *event_info)
 	  rp->still_in = 1;
      }
    _edje_freeze(ed);
-   if ((rp->part->dragable.x) || (rp->part->dragable.y))
+   if (rp->drag)
      {
-	if (rp->drag.down.count > 0)
+	if (rp->drag->down.count > 0)
 	  {
 	     if (rp->part->dragable.x)
-	       rp->drag.tmp.x = ev->cur.canvas.x - rp->drag.down.x;
+	       rp->drag->tmp.x = ev->cur.canvas.x - rp->drag->down.x;
 	     if (rp->part->dragable.y)
-	       rp->drag.tmp.y = ev->cur.canvas.y - rp->drag.down.y;
+	       rp->drag->tmp.y = ev->cur.canvas.y - rp->drag->down.y;
 	     ed->dirty = 1;
+#ifdef EDJE_CALC_CACHE
+	     rp->invalidate = 1;
+#endif
 	  }
 	_edje_recalc_do(ed);
-     }
-   if ((rp->part->dragable.x) || (rp->part->dragable.y))
-     {
-	if (rp->drag.down.count > 0)
+
+	if (rp->drag->down.count > 0)
 	  {
 	     double dx, dy;
 	     int dir;
 
 	     dir = _edje_part_dragable_calc(ed, rp, &dx, &dy);
-	     if ((dx != rp->drag.val.x) || (dy != rp->drag.val.y))
+	     if ((dx != rp->drag->val.x) || (dy != rp->drag->val.y))
 	       {
-		  rp->drag.val.x = dx;
-		  rp->drag.val.y = dy;
+		  rp->drag->val.x = dx;
+		  rp->drag->val.y = dy;
 		  if (!ignored)
 		    _edje_emit(ed, "drag", rp->part->name);
 		  ed->dirty = 1;
+#ifdef EDJE_CALC_CACHE
+		  rp->invalidate = 1;
+#endif
 		  _edje_recalc_do(ed);
 	       }
 	  }

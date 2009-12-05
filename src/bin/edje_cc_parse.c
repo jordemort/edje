@@ -6,15 +6,6 @@
 # include <config.h>
 #endif
 
-#include <string.h>
-#include <ctype.h>
-#include <limits.h>
-#include <errno.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <unistd.h>
-#include <fcntl.h>
-
 #ifdef HAVE_ALLOCA_H
 # include <alloca.h>
 #elif defined __GNUC__
@@ -31,6 +22,15 @@ extern "C"
 # endif
 void *alloca (size_t);
 #endif
+
+#include <string.h>
+#include <ctype.h>
+#include <limits.h>
+#include <errno.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
+#include <fcntl.h>
 
 #include "edje_cc.h"
 
@@ -641,12 +641,12 @@ compile(void)
    int fd;
    off_t size;
    char *data, *p;
-   const char *tmpdir;
 
+   if (!tmp_dir)
 #ifdef HAVE_EVIL
-   tmpdir = evil_tmpdir_get();
+     tmp_dir = (char *)evil_tmpdir_get();
 #else
-   tmpdir = "/tmp";
+     tmp_dir = "/tmp";
 #endif
 
    strncpy(inc, file_in, 4000);
@@ -654,7 +654,7 @@ compile(void)
    p = strrchr(inc, '/');
    if (!p) strcpy(inc, "./");
    else *p = 0;
-   snprintf (tmpn, PATH_MAX, "%s/edje_cc.edc-tmp-XXXXXX", tmpdir);
+   snprintf (tmpn, PATH_MAX, "%s/edje_cc.edc-tmp-XXXXXX", tmp_dir);
    fd = mkstemp(tmpn);
    if (fd >= 0)
      {

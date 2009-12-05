@@ -12,6 +12,38 @@ static Ecore_Timer *job_loss_timer = NULL;
 static Eina_List *msgq = NULL;
 static Eina_List *tmp_msgq = NULL;
 
+/*============================================================================*
+ *                                   API                                      *
+ *============================================================================*/
+
+/**
+ * @addtogroup Edje_message_queue_Group Message_Queue
+ *
+ * @brief These functions provide an abstraction layer between the
+ * application code and the interface, while allowing extremely
+ * flexible dynamic layouts and animations.
+ *
+ * @{
+ */
+
+/**
+ * @brief Send message to object.
+ *
+ * @param obj The edje object reference.
+ * @param type The type of message to send.
+ * @param id A identification number for the message.
+ * @param msg The message to be send.
+ *
+ *
+ * This function sends messages to this object and to all of its child
+ * objects, if applicable. The function that handles messages arriving
+ * at this edje object is is set with
+ * edje_object_message_handler_set().
+ *
+ * @see edje_object_message_handler_set()
+ *
+ */
+
 EAPI void
 edje_object_message_send(Evas_Object *obj, Edje_Message_Type type, int id, void *msg)
 {
@@ -30,6 +62,19 @@ edje_object_message_send(Evas_Object *obj, Edje_Message_Type type, int id, void 
      }
 }
 
+/**
+ * @brief Set the message handler function for this an object.
+ *
+ * @param obj The edje object reference.
+ * @param func The function to handle messages.
+ * @param data The data to be associated to the message handler.
+ *
+ *
+ * This function associates a message handler function and data to the
+ * edje object.
+ *
+ */
+
 EAPI void
 edje_object_message_handler_set(Evas_Object *obj, void (*func) (void *data, Evas_Object *obj, Edje_Message_Type type, int id, void *msg), void *data)
 {
@@ -39,6 +84,17 @@ edje_object_message_handler_set(Evas_Object *obj, void (*func) (void *data, Evas
    if (!ed) return;
    _edje_message_cb_set(ed, func, data);
 }
+
+/**
+ * @brief Process an object's message queue.
+ *
+ * @param obj The edje object reference.
+ *
+ * This function goes through the object message queue processing the
+ * pending messages for *this* specific edje object. Normally they'd
+ * be processed only at idle time.
+ *
+ */
 
 EAPI void
 edje_object_message_signal_process(Evas_Object *obj)
@@ -84,20 +140,29 @@ edje_object_message_signal_process(Evas_Object *obj)
      }
 }
 
+/**
+ * @brief Process all queued up edje messages.
+ *
+ * This function triggers the processing of messages addressed to any
+ * (alive) edje objects.
+ *
+ */
+
 EAPI void
 edje_message_signal_process(void)
 {
    _edje_message_queue_process();
 }
 
+
 static int
-_edje_dummy_timer(void *data)
+_edje_dummy_timer(void *data __UNUSED__)
 {
    return 0;
 }
 
 static void
-_edje_job(void *data)
+_edje_job(void *data __UNUSED__)
 {
    if (job_loss_timer)
      {
@@ -109,7 +174,7 @@ _edje_job(void *data)
 }
 
 static int
-_edje_job_loss_timer(void *data)
+_edje_job_loss_timer(void *data __UNUSED__)
 {
    job_loss_timer = NULL;
    if (job) job = NULL;
@@ -558,10 +623,15 @@ _edje_message_process(Edje_Message *em)
 	return;
      }
    /* now this message is destined for the script message handler fn */
-   if (!((em->edje->collection) && (em->edje->collection->script))) return;
-   if (_edje_script_only(em->edje))
+   if (!(em->edje->collection)) return;
+   if ((em->edje->collection->script) && _edje_script_only (em->edje))
      {
 	_edje_script_only_message(em->edje, em);
+	return;
+     }
+   if (em->edje->collection->L)
+     {
+	_edje_lua_script_only_message(em->edje, em);
 	return;
      }
    fn = embryo_program_function_find(em->edje->collection->script, "message");
@@ -704,3 +774,8 @@ _edje_message_del(Edje *ed)
 	if (ed->message.num <= 0) return;
      }
 }
+
+/**
+ *
+ * @}
+ */
