@@ -2,7 +2,31 @@
  * vim:ts=8:sw=3:sts=8:noexpandtab:cino=>5n-3f0^-2{2
  */
 
-#define _GNU_SOURCE
+#ifdef HAVE_CONFIG_H
+# include <config.h>
+#endif
+
+#ifndef _WIN32
+# define _GNU_SOURCE
+#endif
+
+#ifdef HAVE_ALLOCA_H
+# include <alloca.h>
+#elif defined __GNUC__
+# define alloca __builtin_alloca
+#elif defined _AIX
+# define alloca __alloca
+#elif defined _MSC_VER
+# include <malloc.h>
+# define alloca _alloca
+#else
+# include <stddef.h>
+# ifdef  __cplusplus
+extern "C"
+# endif
+void *alloca (size_t);
+#endif
+
 #include <string.h>
 
 #include "edje_private.h"
@@ -13,13 +37,33 @@ int             _edje_anim_count = 0;
 Ecore_Animator *_edje_timer = NULL;
 Eina_List      *_edje_animators = NULL;
 
-/************************** API Routines **************************/
 
-/* FIXDOC: Expand */
-/** Set the frametime
- * @param t The frametime
+/*============================================================================*
+ *                                   API                                      *
+ *============================================================================*/
+
+/**
+ * @addtogroup Edje_program_Group Program
  *
- * Sets the global frametime in seconds, by default this is 1/30.
+ * @brief These functions provide an abstraction layer between the
+ * application code and the interface, while allowing extremely
+ * flexible dynamic layouts and animations.
+ *
+ * @{
+ */
+
+/**
+ * @brief Set edje trasitions' frame time.
+ *
+ * @param t The frame time, in seconds. Default value is 1/30.
+ *
+ * This function sets the edje built-in animations' frame time (thus,
+ * affecting their resolution) by calling
+ * ecore_animator_frametime_set(). This frame time can be retrieved
+ * with edje_frametime_get().
+ *
+ * @see edje_frametime_get()
+ *
  */
 EAPI void
 edje_frametime_set(double t)
@@ -27,11 +71,16 @@ edje_frametime_set(double t)
    ecore_animator_frametime_set(t);
 }
 
-/* FIXDOC: Expand */
-/** Get the frametime
- * @return The frametime
+/**
+ * @brief Get edje trasitions' frame time.
  *
- * Returns the frametime in seconds, by default this is 1/30.
+ * @return The frame time, in seconds.
+ *
+ * This function returns the edje frame time set by
+ * edje_frametime_set().
+ *
+ * @see edje_frametime_set()
+ *
  */
 EAPI double
 edje_frametime_get(void)
@@ -39,13 +88,15 @@ edje_frametime_get(void)
    return ecore_animator_frametime_get();
 }
 
-/* FIXDOC: Expand */
-/** Add a callback for a signal emitted by @a obj.
- * @param obj A valid Evas_Object handle
- * @param emission The signal name
- * @param source The signal source
- * @param func The callback function to be executed when the signal is emitted
- * @param data A pointer to data to pass in to the callback function
+/**
+ * @brief Add a callback for a signal emitted by @a obj.
+ *
+ * @param obj A valid Evas_Object handle.
+ * @param emission The signal's name.
+ * @param source The signal's source.
+ * @param func The callback function to be executed when the signal is
+ * emitted.
+ * @param data A pointer to data to pass in to the callback function.
  *
  * Connects a callback function to a signal emitted by @a obj.
  * In EDC, a program can emit a signal as follows:
@@ -69,21 +120,21 @@ edje_frametime_get(void)
  * edje_object_callback_add(obj, "a_signal", "a_source", cb_signal, data);
  * @endcode
  *
- * Here, @a data is an arbitrary pointer to be used as desired.
- * Note that @a emission and @a source correspond respectively to first and
- * second parameters to the SIGNAL_EMIT action.
+ * Here, @a data is an arbitrary pointer to be used as desired.  Note
+ * that @a emission and @a source correspond respectively to the first
+ * and the second parameters at the SIGNAL_EMIT action.
  *
- * Internal edje signals can also be attached to, and globs can be in either
- * the emission or source name. e.g.
+ * Internal edje signals can also be attached to, and globs can occur
+ * in either the emission or source name, e.g.
  *
  * @code
  * edje_object_callback_add(obj, "mouse,down,*", "button.*", NULL);
  * @endcode
  *
  * Here, any mouse down events on an edje part whose name begins with
- * "button." will trigger the callback. The actual signal and source name
- * will be passed in to the @a emission and @a source parameters of the
- * callback function. (e.g. "mouse,down,2" and "button.close").
+ * "button." will trigger the callback. The actual signal and source
+ * names will be passed in to the @a emission and @a source parameters
+ * of the callback function (e.g. "mouse,down,2" and "button.close").
  */
 EAPI void
 edje_object_signal_callback_add(Evas_Object *obj, const char *emission, const char *source, void (*func) (void *data, Evas_Object *o, const char *emission, const char *source), void *data)
@@ -112,17 +163,23 @@ edje_object_signal_callback_add(Evas_Object *obj, const char *emission, const ch
      _edje_callbacks_patterns_clean(ed);
 }
 
-/** Remove a callback from an object
- * @param obj A valid Evas_Object handle
- * @param emission the emission string
- * @param source the source string
- * @param func the callback function
- * @return the data pointer
+/**
+ * @brief Remove a signal-triggered callback from an object.
  *
- * Removes a callback from an object. The parameters @a emission, @a source
- * and @a func must match exactly those passed to a previous call to
- * edje_object_signal_callback_add(). The data pointer that was passed to
- * this call will be returned.
+ * @param obj A valid Evas_Object handle.
+ * @param emission The emission string.
+ * @param source The source string.
+ * @param func The callback function.
+ * @return The data pointer
+ *
+ * This function removes a callback, previously attached to the
+ * emittion of a signal, from the object @a obj. The parameters @a
+ * emission, @a source and @a func must match exactly those passed to
+ * a previous call to edje_object_signal_callback_add(). The data
+ * pointer that was passed to this call will be returned.
+ *
+ * @see edje_object_signal_callback_add().
+ *
  */
 EAPI void *
 edje_object_signal_callback_del(Evas_Object *obj, const char *emission, const char *source, void (*func) (void *data, Evas_Object *o, const char *emission, const char *source))
@@ -166,24 +223,22 @@ edje_object_signal_callback_del(Evas_Object *obj, const char *emission, const ch
    return NULL;
 }
 
-/* FIXDOC: Verify/Expand */
-/** Send a signal to the Edje object
- * @param obj A vaild Evas_Object handle
- * @param emission The signal
- * @param source The signal source
+/**
+ * @brief Send a signal to an edje object.
  *
- * This sends a signal to the edje object.
+ * @param obj A valid Evas_Object handle.
+ * @param emission The signal's name.
+ * @param source The signal's source.
  *
- * An edje program can respond to a signal by specifying matching 'signal'
- * and 'source' fields.
- *
- * E.g.
+ * This function sends a signal to the object @a obj. An edje program
+ * can respond to a signal by specifying matching 'signal' and
+ * 'source' fields.
  *
  * @code
  * edje_object_signal_emit(obj, "a_signal", "");
  * @endcode
  *
- * will trigger a program whose edc is:
+ * will trigger a program whose EDC block is:
  *
  * @code
  * program {
@@ -194,7 +249,7 @@ edje_object_signal_callback_del(Evas_Object *obj, const char *emission, const ch
  * }
  * @endcode
  *
- * FIXME should this signal be sent to children also?
+ * FIXME: should this signal be sent to children also?
  */
 EAPI void
 edje_object_signal_emit(Evas_Object *obj, const char *emission, const char *source)
@@ -209,12 +264,18 @@ edje_object_signal_emit(Evas_Object *obj, const char *emission, const char *sour
 }
 
 /* FIXDOC: Verify/Expand */
-/** Set the Edje to play or pause
- * @param obj A valid Evas_Object handle
- * @param play Play instruction (1 to play, 0 to pause)
+/**
+ * @brief Set the edje object to playing or paused states.
  *
- * This sets the Edje to play or pause depending on the parameter.
- * This has no effect if the Edje is already in that state.
+ * @param obj A valid Evas_Object handle.
+ * @param play Object state (1 to playing, 0 to pauseed).
+ *
+ * This function sets the edje object @a obj to playing or paused
+ * states, depending on the parameter @a play.  This has no effect if
+ * the object was already at that state.
+ *
+ * @see edje_object_play_get().
+ *
  */
 EAPI void
 edje_object_play_set(Evas_Object *obj, int play)
@@ -252,11 +313,19 @@ edje_object_play_set(Evas_Object *obj, int play)
      }
 }
 
-/* FIXDOC: Verify/Expand */
-/** Get the Edje play/pause state
- * @param obj A valid Evas_Object handle
- * @return 0 if Edje not connected, Edje delete_me, or Edje paused\n
- * 1 if Edje set to play
+/**
+ * @brief Get the edje object's play/pause state.
+ *
+ * @param obj A valid Evas_Object handle.
+ * @return @c 0 if the object is not connected, its @c delete_me flag
+ * is set, or it is at paused state; @c 1 if the object is at playing
+ * state.
+ *
+ * This function tells if an edje object is playing or not. This state
+ * is set by edje_object_play_set().
+ *
+ * @see edje_object_play_set().
+ *
  */
 EAPI int
 edje_object_play_get(const Evas_Object *obj)
@@ -271,11 +340,18 @@ edje_object_play_get(const Evas_Object *obj)
 }
 
 /* FIXDOC: Verify/Expand */
-/** Set Animation state
- * @param obj A valid Evas_Object handle
- * @param on Animation State
+/**
+ * @brief Set the object's animation state.
  *
- * Stop or start an Edje animation.
+ * @param obj A valid Evas_Object handle.
+ * @param on Animation State.
+ *
+ * This function starts or stops an edje object's animation. The
+ * information if it's runnig can be retrieved by
+ * edje_object_animation_get().
+ *
+ * @see edje_object_animation_get()
+ *
  */
 EAPI void
 edje_object_animation_set(Evas_Object *obj, int on)
@@ -334,12 +410,19 @@ edje_object_animation_set(Evas_Object *obj, int on)
    _edje_unblock(ed);
 }
 
-/* FIXDOC: Verify/Expand */
-/** Get the animation state
- * @param obj A valid Evas_Object handle
- * @return 0 on Error or if not animated\n
- * 1 if animated
+/**
+ * @brief Get the edje object's animation state.
+ *
+ * @param obj A valid Evas_Object handle.
+ * @return @c 0 on error or if object is not animated; @c 1 if animated.
+ *
+ * This function returns if the animation is playing or not. The
+ * animation state is set by edje_object_play_set().
+ *
+ * @see edje_object_animation_set().
+ *
  */
+
 EAPI int
 edje_object_animation_get(const Evas_Object *obj)
 {
@@ -647,8 +730,8 @@ _edje_program_run(Edje *ed, Edje_Program *pr, int force, const char *ssig, const
 //		       goto done;
 		    }
 	       }
-	     done:
-	        continue;
+//	     done:
+//	        continue;
 	  }
 //	_edje_emit(ed, "program,stop", pr->name);
 	if (_edje_block_break(ed)) goto break_prog;
@@ -671,15 +754,15 @@ _edje_program_run(Edje *ed, Edje_Program *pr, int force, const char *ssig, const
 	     if (pt->id >= 0)
 	       {
 		  rp = ed->table_parts[pt->id % ed->table_parts_size];
-		  if ((rp) && (rp->drag.down.count == 0))
+		  if ((rp) && (rp->drag) && (rp->drag->down.count == 0))
 		    {
-		       rp->drag.val.x = pr->value;
-		       rp->drag.val.y = pr->value2;
-		       if      (rp->drag.val.x < 0.0) rp->drag.val.x = 0.0;
-		       else if (rp->drag.val.x > 1.0) rp->drag.val.x = 1.0;
-		       if      (rp->drag.val.y < 0.0) rp->drag.val.y = 0.0;
-		       else if (rp->drag.val.y > 1.0) rp->drag.val.y = 1.0;
-		       _edje_dragable_pos_set(ed, rp, rp->drag.val.x, rp->drag.val.y);
+		       rp->drag->val.x = pr->value;
+		       rp->drag->val.y = pr->value2;
+		       if      (rp->drag->val.x < 0.0) rp->drag->val.x = 0.0;
+		       else if (rp->drag->val.x > 1.0) rp->drag->val.x = 1.0;
+		       if      (rp->drag->val.y < 0.0) rp->drag->val.y = 0.0;
+		       else if (rp->drag->val.y > 1.0) rp->drag->val.y = 1.0;
+		       _edje_dragable_pos_set(ed, rp, rp->drag->val.x, rp->drag->val.y);
 		       _edje_emit(ed, "drag,set", rp->part->name);
 		       if (_edje_block_break(ed)) goto break_prog;
 		    }
@@ -697,15 +780,15 @@ _edje_program_run(Edje *ed, Edje_Program *pr, int force, const char *ssig, const
 	     if (pt->id >= 0)
 	       {
 		  rp = ed->table_parts[pt->id % ed->table_parts_size];
-		  if ((rp) && (rp->drag.down.count == 0))
+		  if ((rp) && (rp->drag) && (rp->drag->down.count == 0))
 		    {
-		       rp->drag.val.x += pr->value * rp->drag.step.x * rp->part->dragable.x;
-		       rp->drag.val.y += pr->value2 * rp->drag.step.y * rp->part->dragable.y;
-		       if      (rp->drag.val.x < 0.0) rp->drag.val.x = 0.0;
-		       else if (rp->drag.val.x > 1.0) rp->drag.val.x = 1.0;
-		       if      (rp->drag.val.y < 0.0) rp->drag.val.y = 0.0;
-		       else if (rp->drag.val.y > 1.0) rp->drag.val.y = 1.0;
-		       _edje_dragable_pos_set(ed, rp, rp->drag.val.x, rp->drag.val.y);
+		       rp->drag->val.x += pr->value * rp->drag->step.x * rp->part->dragable.x;
+		       rp->drag->val.y += pr->value2 * rp->drag->step.y * rp->part->dragable.y;
+		       if      (rp->drag->val.x < 0.0) rp->drag->val.x = 0.0;
+		       else if (rp->drag->val.x > 1.0) rp->drag->val.x = 1.0;
+		       if      (rp->drag->val.y < 0.0) rp->drag->val.y = 0.0;
+		       else if (rp->drag->val.y > 1.0) rp->drag->val.y = 1.0;
+		       _edje_dragable_pos_set(ed, rp, rp->drag->val.x, rp->drag->val.y);
 		       _edje_emit(ed, "drag,step", rp->part->name);
 		       if (_edje_block_break(ed)) goto break_prog;
 		    }
@@ -723,15 +806,15 @@ _edje_program_run(Edje *ed, Edje_Program *pr, int force, const char *ssig, const
 	     if (pt->id >= 0)
 	       {
 		  rp = ed->table_parts[pt->id % ed->table_parts_size];
-		  if ((rp) && (rp->drag.down.count == 0))
+		  if ((rp) && (rp->drag) && (rp->drag->down.count == 0))
 		    {
-		       rp->drag.val.x += pr->value * rp->drag.page.x * rp->part->dragable.x;
-		       rp->drag.val.y += pr->value2 * rp->drag.page.y * rp->part->dragable.y;
-		       if      (rp->drag.val.x < 0.0) rp->drag.val.x = 0.0;
-		       else if (rp->drag.val.x > 1.0) rp->drag.val.x = 1.0;
-		       if      (rp->drag.val.y < 0.0) rp->drag.val.y = 0.0;
-		       else if (rp->drag.val.y > 1.0) rp->drag.val.y = 1.0;
-		       _edje_dragable_pos_set(ed, rp, rp->drag.val.x, rp->drag.val.y);
+		       rp->drag->val.x += pr->value * rp->drag->page.x * rp->part->dragable.x;
+		       rp->drag->val.y += pr->value2 * rp->drag->page.y * rp->part->dragable.y;
+		       if      (rp->drag->val.x < 0.0) rp->drag->val.x = 0.0;
+		       else if (rp->drag->val.x > 1.0) rp->drag->val.x = 1.0;
+		       if      (rp->drag->val.y < 0.0) rp->drag->val.y = 0.0;
+		       else if (rp->drag->val.y > 1.0) rp->drag->val.y = 1.0;
+		       _edje_dragable_pos_set(ed, rp, rp->drag->val.x, rp->drag->val.y);
 		       _edje_emit(ed, "drag,page", rp->part->name);
 		       if (_edje_block_break(ed)) goto break_prog;
 		    }
@@ -749,6 +832,45 @@ _edje_program_run(Edje *ed, Edje_Program *pr, int force, const char *ssig, const
 	snprintf(fname, sizeof(fname), "_p%i", pr->id);
 	_edje_embryo_test_run(ed, fname, ssig, ssrc);
 //	_edje_emit(ed, "program,stop", pr->name);
+	if (_edje_block_break(ed)) goto break_prog;
+	_edje_recalc_do(ed);
+     }
+   else if (pr->action == EDJE_ACTION_TYPE_LUA_SCRIPT)
+     {
+	//printf ("running Lua program script %i\n", pr->id);
+
+//	_edje_emit(ed, "program,start", pr->name);
+	if (_edje_block_break(ed)) goto break_prog;
+	
+	if (ed->L == NULL) /* private state does not yet exist, create it */
+	  {
+	     ed->L = _edje_lua_new_thread(ed->collection->L);
+	     _edje_lua_new_reg(ed->collection->L, -1, ed->L); // freed in edje_load.c::_edje_file_del
+	     lua_pop(ed->collection->L, 1);
+	  }
+	lua_State *L = ed->L;
+	lua_pushnumber(L, pr->id);
+	lua_gettable(L, LUA_GLOBALSINDEX);
+	if (!lua_isnil(L, -1))
+	  {
+	     int err_code;
+
+	     lua_pushvalue(L, LUA_GLOBALSINDEX); /* set function environment from collection thread to edje object thread */
+	     lua_setfenv(L, -2);
+	     _edje_lua_get_reg(L, ed);
+	     if (lua_isnil(L, -1)) /* group object does not yet exist, create it */
+	       {
+		  lua_pop(L, 1);
+		  _edje_lua_group_fn_new (ed);
+	       }
+	     lua_pushstring(L, ssig);
+	     lua_pushstring(L, ssrc);
+
+	     if ((err_code = lua_pcall(L, 3, 0, 0)))
+	       _edje_lua_error(L, err_code);
+	  }
+
+	//	_edje_emit(ed, "program,stop", pr->name);
 	if (_edje_block_break(ed)) goto break_prog;
 	_edje_recalc_do(ed);
      }
@@ -824,8 +946,8 @@ _edje_emit(Edje *ed, const char *sig, const char *src)
      {
         size_t length;
         char *part;
-       /* the signal contains a colon, split the signal into "group:signal",
-	* and deliver it to "group"
+       /* the signal contains a colon, split the signal into "part:signal",
+	* and deliver it to "part" (if there is a GROUP or EXTERNAL part named "part")
 	*/
        length = strlen(sig) + 1;
        part = alloca(length);
@@ -842,17 +964,25 @@ _edje_emit(Edje *ed, const char *sig, const char *src)
             for (i = 0; i < ed->table_parts_size; i++)
               {
                  Edje_Real_Part *rp = ed->table_parts[i];
-                 if ((rp->part->type == EDJE_PART_TYPE_GROUP) &&
+                 if ((rp->part->type == EDJE_PART_TYPE_GROUP || rp->part->type == EDJE_PART_TYPE_EXTERNAL) &&
                      (rp->swallowed_object) &&
                      (rp->part) && (rp->part->name) &&
                      (strcmp(rp->part->name, part) == 0))
                    {
-                      Edje *ed2 = _edje_fetch(rp->swallowed_object);
-                      if (ed2) _edje_emit(ed2, newsig, src);
-                      return; /* stop processing.
-			       * XXX maybe let signal be processed anyway?
-			       * XXX in this case, just comment this line
-			       */
+		      if (rp->part->type == EDJE_PART_TYPE_GROUP)
+			{
+			   Edje *ed2 = _edje_fetch(rp->swallowed_object);
+			   if (ed2) _edje_emit(ed2, newsig, src);
+			   return; /* stop processing.
+				    * XXX maybe let signal be processed anyway?
+				    * XXX in this case, just comment this line
+				    */
+			}
+		      else if (rp->part->type == EDJE_PART_TYPE_EXTERNAL)
+			{
+			   _edje_external_signal_emit(rp->swallowed_object, newsig, src);
+			   return;
+			}
                    }
               }
          }
@@ -1132,3 +1262,8 @@ _edje_emit_cb(Edje *ed, const char *sig, const char *src)
    _edje_thaw(ed);
    _edje_unref(ed);
 }
+
+/**
+ *
+ * @}
+ */

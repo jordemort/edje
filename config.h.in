@@ -8,6 +8,10 @@
 /* Define to 1 if using `alloca.c'. */
 #undef C_ALLOCA
 
+/* Cache result of edje_part_recalc - this uses up extra ram with the gain of
+   reducing CPU usage when edje object are not resized */
+#undef EDJE_CALC_CACHE
+
 /* Cache result of program glob matches - this uses up extra ram with the gain
    of faster program matching */
 #undef EDJE_PROGRAM_CACHE

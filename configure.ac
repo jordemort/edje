@@ -1,9 +1,8 @@
-dnl Process this file with autoconf to produce a configure script.
-
 # get rid of that stupid cache mechanism
 rm -f config.cache
 
-AC_INIT([edje], [0.9.92.062], [enlightenment-devel@lists.sourceforge.net])
+AC_INIT([edje], [0.9.93.063], [enlightenment-devel@lists.sourceforge.net])
+release="ver-svn-05"
 AC_PREREQ([2.52])
 AC_CONFIG_SRCDIR([configure.ac])
 AC_CONFIG_MACRO_DIR([m4])
@@ -11,8 +10,9 @@ AC_CANONICAL_BUILD
 AC_CANONICAL_HOST
 AC_ISC_POSIX
 
-AM_INIT_AUTOMAKE(1.6 dist-bzip2)
-AM_CONFIG_HEADER(config.h)
+AM_INIT_AUTOMAKE([1.6 dist-bzip2])
+AM_CONFIG_HEADER([config.h])
+m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])
 
 AC_LIBTOOL_WIN32_DLL
 define([AC_LIBTOOL_LANG_CXX_CONFIG], [:])dnl
@@ -26,7 +26,6 @@ SNAP=`echo $PACKAGE_VERSION | awk -F. '{printf("%s", $4);}'`
 version_info=`expr $VMAJ + $VMIN`":$VMIC:$VMIN"
 AC_SUBST(version_info)
 
-release="ver-svn-03"
 case "$host_os" in
    mingw32ce* | cegcc*)
       ;;
@@ -50,12 +49,22 @@ case "$host_os" in
       ;;
 esac
 
-want_edje_program_cache="no"
-
 requirement_edje=""
 
 
 ### Additional options to configure
+
+AC_ARG_ENABLE([amalgamation],
+   [AC_HELP_STRING([--enable-amalgamation], [enable generation of one single file with all source code in it, helps compiler optimizations.])],
+   [if test "x${enableval}" = "xyes"; then
+       do_amalgamation="yes"
+    else
+       do_amalgamation="no"
+    fi
+   ],
+   [do_amalgamation="no"]
+)
+AM_CONDITIONAL(EDJE_AMALGAMATION, test "x${do_amalgamation}" = "xyes")
 
 AC_ARG_ENABLE([edje-cc],
    [AC_HELP_STRING([--disable-edje-cc], [disable building of edje_cc])],
@@ -86,6 +95,8 @@ AC_SUBST(EDJE_DECC_PRG)
 AC_SUBST(EDJE_RECC_PRG)
 
 # Optional EDJE_PROGRAM_CACHE (use much more ram, but increase speed in some cases)
+want_edje_program_cache="no"
+
 AC_ARG_ENABLE([edje-program-cache],
    [AC_HELP_STRING(
        [--enable-edje-program-cache],
@@ -97,6 +108,22 @@ AM_CONDITIONAL(EDJE_PROGRAM_CACHE, test "x${want_edje_program_cache}" = "xyes")
 
 if test "x${want_edje_program_cache}" = "xyes" ; then
    AC_DEFINE(EDJE_PROGRAM_CACHE, 1, [Cache result of program glob matches - this uses up extra ram with the gain of faster program matching])
+fi
+
+# Optional EDJE_CALC_CACHE (use more ram, but increase speed by reducing the need to recalculate static stuff)
+want_edje_calc_cache="yes"
+
+AC_ARG_ENABLE([edje-calc-cache],
+   [AC_HELP_STRING(
+       [--enable-edje-calc-cache],
+       [enable EDJE_CALC_CACHE support. [[default=disabled]]]
+    )],
+   [want_edje_calc_cache=$enableval]
+)
+AM_CONDITIONAL(EDJE_CALC_CACHE, test "x${want_edje_calc_cache}" = "xyes")
+
+if test "x${want_edje_calc_cache}" = "xyes" ; then
+   AC_DEFINE(EDJE_CALC_CACHE, 1, [Cache result of edje_part_recalc - this uses up extra ram with the gain of reducing CPU usage when edje object are not resized])
 fi
 
 install_vim="yes"
@@ -149,6 +176,15 @@ AM_CONDITIONAL([HAVE_PYTHON], [test "$PYTHON" != : ])
 
 PKG_PROG_PKG_CONFIG
 
+# Check whether pkg-config supports Requires.private
+
+if $PKG_CONFIG --atleast-pkgconfig-version 0.22; then
+   pkgconfig_requires_private="Requires.private"
+else
+   pkgconfig_requires_private="Requires"
+fi
+AC_SUBST(pkgconfig_requires_private)
+
 
 ### Checks for libraries
 
@@ -167,6 +203,18 @@ AC_SUBST(EFL_EDJE_BUILD)
 
 # Dependencies for the library
 
+# Lua pkg-config hack for different naming conventions
+requirement_lua=""
+PKG_CHECK_MODULES([LUA], [lua >= 5.1.0], requirement_lua="lua",
+	[PKG_CHECK_MODULES([LUA], [lua5.1 >= 5.1.0], requirement_lua="lua5.1",
+		[PKG_CHECK_MODULES([LUA], [lua-5.1 >= 5.1.0], requirement_lua="lua-5.1",
+			[PKG_CHECK_MODULES([LUA], [lua51 >= 5.1.0], requirement_lua="lua51",
+				AC_MSG_ERROR([unable to find Lua])
+			)
+		])
+	])
+])
+
 PKG_CHECK_MODULES([EDJE],
    [
     eina-0
@@ -174,10 +222,15 @@ PKG_CHECK_MODULES([EDJE],
     evas >= 0.9.9
     ecore >= 0.9.9
     ecore-job >= 0.9.9
+    ecore-file >= 0.9.9
     embryo >= 0.9.1
    ])
 
+EDJE_LIBS="$EDJE_LIBS $LUA_LIBS"
+EDJE_CFLAGS="$EDJE_CFLAGS $LUA_CFLAGS"
+
 requirement_edje="embryo ecore-job ecore evas eet eina-0 ${requirement_edje}"
+requirement_edje="${requirement_lua} ${requirement_edje}"
 
 have_ecore_imf="no"
 PKG_CHECK_MODULES([ECORE_IMF],
@@ -188,7 +241,7 @@ PKG_CHECK_MODULES([ECORE_IMF],
    [
     AC_DEFINE(HAVE_ECORE_IMF, 1, [Input Method Support for Edje Entry])
     have_ecore_imf="yes"
-    requirement_edje="ecore-imf ecore-imf-evas ${requirement_edje}"
+    requirement_edje="ecore-imf-evas ecore-imf ${requirement_edje}"
    ],
    [have_ecore_imf="no"])
 
@@ -280,9 +333,10 @@ echo "------------------------------------------------------------------------"
 echo
 echo "Configuration Options Summary:"
 echo
+echo "  Amalgamation.........: ${do_amalgamation}"
 echo "  Ecore IMF............: $have_ecore_imf"
-echo
 echo "  EDJE_PROGRAM_CACHE...: $want_edje_program_cache"
+echo "  EDJE_CALC_CACHE......: $want_edje_calc_cache"
 echo
 echo "  Build binaries.......: $have_edje_cc"
 echo

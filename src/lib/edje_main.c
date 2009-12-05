@@ -6,61 +6,202 @@
 
 #include "edje_private.h"
 
-static int initted = 0;
+static int _edje_init_count = 0;
+static int _edje_log_dom_global = -1;
+Eina_Mempool *_edje_real_part_mp = NULL;
+Eina_Mempool *_edje_real_part_state_mp = NULL;
 
-/************************** API Routines **************************/
+#ifdef EDJE_DEFAULT_LOG_COLOR
+# undef EDJE_DEFAULT_LOG_COLOR
+#endif
+#define EDJE_DEFAULT_LOG_COLOR EINA_COLOR_CYAN
+#ifdef ERR
+# undef ERR
+#endif
+#define ERR(...) EINA_LOG_DOM_ERR(_edje_log_dom_global, __VA_ARGS__)
 
-/** Initialize the EDJE library.
+
+/*============================================================================*
+ *                                   API                                      *
+ *============================================================================*/
+
+/**
+ * @addtogroup Edje_main_Group Main
  *
- * @return The new init count.
+ * @brief These functions provide an abstraction layer between the
+ * application code and the interface, while allowing extremely
+ * flexible dynamic layouts and animations.
+ *
+ * @{
  */
+
+/**
+ * @brief Initialize the edje library.
+ *
+ * @return The new init count. The initial value is zero.
+ *
+ * This function initializes the ejde library, making the propers
+ * calls to initialization functions. It makes calls to functions
+ * eina_init(), ecore_job_init(), embryo_init() and eet_init() so
+ * there is no need to call those functions again in your code. To
+ * shutdown edje there is a function edje_shutdown().
+ *
+ * @see edje_shutdown()
+ * @see eina_init()
+ * @see ecore_job_init()
+ * @see embryo_init()
+ * @see eet_init()
+ *
+ */
+
 EAPI int
 edje_init(void)
 {
-   initted++;
-   if (initted == 1)
+   if (++_edje_init_count != 1)
+     return _edje_init_count;
+
+   srand(time(NULL));
+
+   if (!eina_init())
      {
-	eina_init();
-        ecore_job_init();
-	srand(time(NULL));
-	_edje_edd_setup();
-	_edje_text_init();
-	_edje_box_init();
-	embryo_init();
-	eet_init();
+	fprintf(stderr, "Edje: Eina init failed");
+	return --_edje_init_count;
      }
+
+   _edje_log_dom_global = eina_log_domain_register("Edje", EDJE_DEFAULT_LOG_COLOR);
+   if (_edje_log_dom_global < 0)
+     {
+	EINA_LOG_ERR("Edje Can not create a general log domain.");
+	goto shutdown_eina;
+     }
+
+   if (!ecore_job_init())
+     {
+	ERR("Edje: Ecore_Job init failed");
+	goto unregister_log_domain;
+     }
+
+   if (!embryo_init())
+     {
+	ERR("Edje: Embryo init failed");
+	goto shutdown_ecore_job;
+     }
+
+   if (!eet_init())
+     {
+	ERR("Edje: Eet init failed");
+	goto shutdown_embryo;
+     }
+
+   _edje_edd_init();
+   _edje_text_init();
+   _edje_box_init();
+   _edje_external_init();
+   _edje_module_init();
+   _edje_lua_init();
    _edje_message_init();
-   return initted;
+
+   _edje_real_part_mp = eina_mempool_add("chained_mempool",
+					 "Edje_Real_Part", NULL,
+					 sizeof (Edje_Real_Part), 128);
+   if (!_edje_real_part_mp)
+     {
+	ERR("ERROR: Mempool for Edje_Real_Part cannot be allocated.\n");
+	goto shutdown_eet;
+     }
+
+   _edje_real_part_state_mp = eina_mempool_add("chained_mempool",
+					       "Edje_Real_Part_State", NULL,
+					       sizeof (Edje_Real_Part_State), 256);
+   if (!_edje_real_part_state_mp)
+     {
+	ERR("ERROR: Mempool for Edje_Real_Part_State cannot be allocated.\n");
+	goto shutdown_eet;
+     }
+
+   return _edje_init_count;
+
+ shutdown_eet:
+   eina_mempool_del(_edje_real_part_state_mp);
+   eina_mempool_del(_edje_real_part_mp);
+   _edje_real_part_state_mp = NULL;
+   _edje_real_part_mp = NULL;
+   _edje_message_shutdown();
+   _edje_lua_shutdown();
+   _edje_module_shutdown();
+   _edje_external_shutdown();
+   _edje_box_shutdown();
+   _edje_text_class_members_free();
+   _edje_text_class_hash_free();
+   _edje_edd_shutdown();
+   eet_shutdown();
+ shutdown_embryo:
+   embryo_shutdown();
+ shutdown_ecore_job:
+   ecore_job_shutdown();
+ unregister_log_domain:
+   eina_log_domain_unregister(_edje_log_dom_global);
+   _edje_log_dom_global = -1;
+ shutdown_eina:
+   eina_shutdown();
+   return --_edje_init_count;
 }
 
-/** Shutdown the EDJE library.
+/**
+ * @brief Shutdown the edje library.
  *
- * @return The new init count.
+ * @return The number of times the library has been initialised without being
+ *         shutdown.
+ *
+ * This function shuts down the edje library. It calls the functions
+ * eina_shutdown(), ecore_job_shutdown(), embryo_shutdown() and
+ * eet_shutdown(), so there is no need to call these functions again
+ * in your code.
+ *
+ * @see edje_init()
+ * @see eina_shutdown()
+ * @see ecore_job_shutdown()
+ * @see embryo_shutdown()
+ * @see eet_shutdown()
+ *
  */
+
 EAPI int
 edje_shutdown(void)
 {
-   initted--;
-   if (initted > 0) return initted;
+   if (--_edje_init_count != 0)
+     return _edje_init_count;
 
    if (_edje_timer)
      ecore_animator_del(_edje_timer);
    _edje_timer = NULL;
 
    _edje_file_cache_shutdown();
-   _edje_message_shutdown();
-   _edje_edd_free();
    _edje_color_class_members_free();
    _edje_color_class_hash_free();
+
+   eina_mempool_del(_edje_real_part_state_mp);
+   eina_mempool_del(_edje_real_part_mp);
+   _edje_real_part_state_mp = NULL;
+   _edje_real_part_mp = NULL;
+
+   _edje_message_shutdown();
+   _edje_lua_shutdown();
+   _edje_module_shutdown();
+   _edje_external_shutdown();
+   _edje_box_shutdown();
    _edje_text_class_members_free();
    _edje_text_class_hash_free();
-   _edje_box_shutdown();
+   _edje_edd_shutdown();
+
+   eet_shutdown();
    embryo_shutdown();
    ecore_job_shutdown();
-   eet_shutdown();
+   eina_log_domain_unregister(_edje_log_dom_global);
+   _edje_log_dom_global = -1;
    eina_shutdown();
 
-   return 0;
+   return _edje_init_count;
 }
 
 /* Private Routines */
@@ -174,3 +315,8 @@ _edje_unref(Edje *ed)
    ed->references--;
    if (ed->references == 0) _edje_del(ed);
 }
+
+/**
+ *
+ * @}
+ */

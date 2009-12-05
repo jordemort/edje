@@ -28,6 +28,19 @@
     \@endproperty
 */
 
+#ifdef HAVE_CONFIG_H
+# include "config.h"
+#endif
+
+#include <string.h>
+#include <errno.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <sys/mman.h>
+#include <unistd.h>
+
+#include "edje_cc.h"
+
 /**
  * @page edcref Edje Data Collection reference
  * An Edje Data Collection, it's a plain text file (normally identified with the
@@ -41,14 +54,7 @@
  * <table class="edcref" border="0">
  */
 
-#include <string.h>
-#include <errno.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-#include <sys/mman.h>
-#include <unistd.h>
-
-#include "edje_cc.h"
+static void st_externals_external(void);
 
 static void st_images_image(void);
 
@@ -78,12 +84,14 @@ static void ob_collections(void);
 static void ob_collections_group(void);
 static void st_collections_group_name(void);
 static void st_collections_group_script_only(void);
+static void st_collections_group_lua_script_only(void);
 static void st_collections_group_alias(void);
 static void st_collections_group_min(void);
 static void st_collections_group_max(void);
 static void st_collections_group_data_item(void);
 
 static void ob_collections_group_script(void);
+static void ob_collections_group_lua_script(void);
 
 static void ob_collections_group_parts_part(void);
 static void st_collections_group_parts_part_name(void);
@@ -194,10 +202,15 @@ static void st_collections_group_parts_part_description_table_homogeneous(void);
 static void st_collections_group_parts_part_description_table_align(void);
 static void st_collections_group_parts_part_description_table_padding(void);
 
+/* external part parameters */
+static void st_collections_group_parts_part_description_params_int(void);
 static void ob_collections_group_programs_program(void);
+static void st_collections_group_parts_part_description_params_double(void);
+
 static void st_collections_group_programs_program_name(void);
+static void st_collections_group_parts_part_description_params_string(void);
 static void st_collections_group_programs_program_signal(void);
-static void st_collections_group_programs_program_source(void);
+ static void st_collections_group_programs_program_source(void);
 static void st_collections_group_programs_program_in(void);
 static void st_collections_group_programs_program_action(void);
 static void st_collections_group_programs_program_transition(void);
@@ -205,11 +218,13 @@ static void st_collections_group_programs_program_target(void);
 static void st_collections_group_programs_program_after(void);
 
 static void ob_collections_group_programs_program_script(void);
+static void ob_collections_group_programs_program_lua_script(void);
 
 /*****/
 
 New_Statement_Handler statement_handlers[] =
 {
+     {"externals.external", st_externals_external},
      {"images.image", st_images_image},
      {"fonts.font", st_fonts_font},
      {"data.item", st_data_item},
@@ -224,6 +239,7 @@ New_Statement_Handler statement_handlers[] =
      /*{"spectra.spectrum", st_spectrum},*/
      {"spectra.spectrum.name", st_spectrum_name},
      {"spectra.spectrum.color", st_spectrum_color},
+     {"collections.externals.external", st_externals_external}, /* dup */
      {"collections.image", st_images_image}, /* dup */
      {"collections.images.image", st_images_image}, /* dup */
      {"collections.font", st_fonts_font}, /* dup */
@@ -237,10 +253,12 @@ New_Statement_Handler statement_handlers[] =
      {"collections.color_classes.color_class.color3", st_color_class_color3}, /* dup */
      {"collections.group.name", st_collections_group_name},
      {"collections.group.script_only", st_collections_group_script_only},
+     {"collections.group.lua_script_only", st_collections_group_lua_script_only},
      {"collections.group.alias", st_collections_group_alias},
      {"collections.group.min", st_collections_group_min},
      {"collections.group.max", st_collections_group_max},
      {"collections.group.data.item", st_collections_group_data_item},
+     {"collections.group.externals.external", st_externals_external}, /* dup */
      {"collections.group.image", st_images_image}, /* dup */
      {"collections.group.images.image", st_images_image}, /* dup */
      {"collections.group.font", st_fonts_font}, /* dup */
@@ -391,6 +409,9 @@ New_Statement_Handler statement_handlers[] =
      {"collections.group.parts.part.description.table.homogeneous", st_collections_group_parts_part_description_table_homogeneous},
      {"collections.group.parts.part.description.table.align", st_collections_group_parts_part_description_table_align},
      {"collections.group.parts.part.description.table.padding", st_collections_group_parts_part_description_table_padding},
+     {"collections.group.parts.part.description.params.int", st_collections_group_parts_part_description_params_int},
+     {"collections.group.parts.part.description.params.double", st_collections_group_parts_part_description_params_double},
+     {"collections.group.parts.part.description.params.string", st_collections_group_parts_part_description_params_string},
      {"collections.group.parts.part.description.images.image", st_images_image}, /* dup */
      {"collections.group.parts.part.description.font", st_fonts_font}, /* dup */
      {"collections.group.parts.part.description.fonts.font", st_fonts_font}, /* dup */
@@ -485,6 +506,7 @@ New_Statement_Handler statement_handlers[] =
 
 New_Object_Handler object_handlers[] =
 {
+     {"externals", NULL},
      {"images", NULL},
      {"fonts", NULL},
      {"data", NULL},
@@ -495,6 +517,7 @@ New_Object_Handler object_handlers[] =
      {"spectra", NULL},
      {"spectra.spectrum", ob_spectrum},
      {"collections", ob_collections},
+     {"collections.externals", NULL}, /* dup */
      {"collections.images", NULL}, /* dup */
      {"collections.fonts", NULL}, /* dup */
      {"collections.styles", NULL}, /* dup */
@@ -504,6 +527,8 @@ New_Object_Handler object_handlers[] =
      {"collections.group", ob_collections_group},
      {"collections.group.data", NULL},
      {"collections.group.script", ob_collections_group_script},
+     {"collections.group.lua_script", ob_collections_group_lua_script},
+     {"collections.group.externals", NULL}, /* dup */
      {"collections.group.images", NULL}, /* dup */
      {"collections.group.fonts", NULL}, /* dup */
      {"collections.group.styles", NULL}, /* dup */
@@ -550,40 +575,53 @@ New_Object_Handler object_handlers[] =
      {"collections.group.parts.part.description.gradient.rel2", NULL},
      {"collections.group.parts.part.description.box", NULL},
      {"collections.group.parts.part.description.table", NULL},
+     {"collections.group.parts.part.description.params", NULL},
      {"collections.group.parts.part.description.color_classes", NULL}, /* dup */
      {"collections.group.parts.part.description.color_classes.color_class", ob_color_class}, /* dup */
      {"collections.group.parts.part.description.program", ob_collections_group_programs_program}, /* dup */
      {"collections.group.parts.part.description.program.script", ob_collections_group_programs_program_script}, /* dup */
+     {"collections.group.parts.part.description.program.lua_script", ob_collections_group_programs_program_lua_script}, /* dup */
      {"collections.group.parts.part.description.programs", NULL}, /* dup */
      {"collections.group.parts.part.description.programs.images", NULL}, /* dup */
      {"collections.group.parts.part.description.programs.fonts", NULL}, /* dup */
      {"collections.group.parts.part.description.programs.program", ob_collections_group_programs_program}, /* dup */
      {"collections.group.parts.part.description.programs.program.script", ob_collections_group_programs_program_script}, /* dup */
+     {"collections.group.parts.part.description.programs.program.lua_script", ob_collections_group_programs_program_lua_script}, /* dup */
      {"collections.group.parts.part.description.script", ob_collections_group_script}, /* dup */
+     {"collections.group.parts.part.description.lua_script", ob_collections_group_lua_script}, /* dup */
      {"collections.group.parts.part.program", ob_collections_group_programs_program}, /* dup */
      {"collections.group.parts.part.program.script", ob_collections_group_programs_program_script}, /* dup */
+     {"collections.group.parts.part.program.lua_script", ob_collections_group_programs_program_lua_script}, /* dup */
      {"collections.group.parts.part.programs", NULL}, /* dup */
      {"collections.group.parts.part.programs.images", NULL}, /* dup */
      {"collections.group.parts.part.programs.fonts", NULL}, /* dup */
      {"collections.group.parts.part.programs.program", ob_collections_group_programs_program}, /* dup */
      {"collections.group.parts.part.programs.program.script", ob_collections_group_programs_program_script}, /* dup */
+     {"collections.group.parts.part.programs.program.lua_script", ob_collections_group_programs_program_lua_script}, /* dup */
      {"collections.group.parts.part.script", ob_collections_group_script}, /* dup */
+     {"collections.group.parts.part.lua_script", ob_collections_group_lua_script}, /* dup */
      {"collections.group.parts.program", ob_collections_group_programs_program}, /* dup */
      {"collections.group.parts.program.script", ob_collections_group_programs_program_script}, /* dup */
+     {"collections.group.parts.program.lua_script", ob_collections_group_programs_program_lua_script}, /* dup */
      {"collections.group.parts.programs", NULL}, /* dup */
      {"collections.group.parts.programs.images", NULL}, /* dup */
      {"collections.group.parts.programs.fonts", NULL}, /* dup */
      {"collections.group.parts.programs.program", ob_collections_group_programs_program}, /* dup */
      {"collections.group.parts.programs.program.script", ob_collections_group_programs_program_script}, /* dup */
+     {"collections.group.parts.programs.program.lua_script", ob_collections_group_programs_program_lua_script}, /* dup */
      {"collections.group.parts.script", ob_collections_group_script}, /* dup */
+     {"collections.group.parts.lua_script", ob_collections_group_lua_script}, /* dup */
      {"collections.group.program", ob_collections_group_programs_program}, /* dup */
      {"collections.group.program.script", ob_collections_group_programs_program_script}, /* dup */
+     {"collections.group.program.lua_script", ob_collections_group_programs_program_lua_script}, /* dup */
      {"collections.group.programs", NULL},
      {"collections.group.programs.images", NULL}, /* dup */
      {"collections.group.programs.fonts", NULL}, /* dup */
      {"collections.group.programs.program", ob_collections_group_programs_program},
      {"collections.group.programs.program.script", ob_collections_group_programs_program_script},
-     {"collections.group.programs.script", ob_collections_group_script} /* dup */
+     {"collections.group.programs.program.lua_script", ob_collections_group_programs_program_lua_script},
+     {"collections.group.programs.script", ob_collections_group_script}, /* dup */
+     {"collections.group.programs.lua_script", ob_collections_group_lua_script} /* dup */
 };
 
 /*****/
@@ -601,6 +639,63 @@ statement_handler_num(void)
 }
 
 /*****/
+
+/**
+    @page edcref
+
+    @block
+        externals
+    @context
+        externals {
+           external: "name";
+        }
+    @description
+        The "externals" block is used to list each external module file that will be used in others
+	programs.
+    @endblock
+
+    @property
+        external
+    @parameters
+        [external filename]
+    @endproperty
+ */
+static void
+st_externals_external(void)
+{
+   External *ex;
+   Edje_External_Directory_Entry *ext;
+
+   check_arg_count(1);
+
+   if (!edje_file->external_dir)
+     edje_file->external_dir = mem_alloc(SZ(Edje_External_Directory));
+
+   ex = mem_alloc(SZ(External));
+   ex->name = parse_str(0);
+     {
+	Eina_List *l;
+	External *lex;
+
+	EINA_LIST_FOREACH(externals, l, lex)
+	  {
+	     if (!strcmp(lex->name, ex->name))
+	       {
+		  free(ex->name);
+		  free(ex);
+		  return;
+	       }
+	  }
+     }
+   externals = eina_list_append(externals, ex);
+
+   if (edje_file->external_dir)
+     {
+	ext = mem_alloc(SZ(Edje_External_Directory_Entry));
+	ext->entry = mem_strdup(ex->name);
+	edje_file->external_dir->entries = eina_list_append(edje_file->external_dir->entries, ext);
+     }
+}
 
 /**
     @page edcref
@@ -1368,6 +1463,17 @@ st_collections_group_script_only(void)
    pc->script_only = parse_bool(0);
 }
 
+static void
+st_collections_group_lua_script_only(void)
+{
+   Edje_Part_Collection *pc;
+
+   check_arg_count(1);
+
+   pc = eina_list_data_get(eina_list_last(edje_collections));
+   pc->lua_script_only = parse_bool(0);
+}
+
 /**
     @page edcref
     @property
@@ -1494,6 +1600,39 @@ ob_collections_group_script(void)
 		  exit(-1);
 	       }
 	     cd->shared = s;
+	     cd->is_lua = 0;
+	     set_verbatim(NULL, 0, 0);
+	  }
+     }
+}
+
+static void
+ob_collections_group_lua_script(void)
+{
+   Edje_Part_Collection *pc;
+   Code *cd;
+
+   pc = eina_list_data_get(eina_list_last(edje_collections));
+   cd = eina_list_data_get(eina_list_last(codes));
+
+   if (!is_verbatim()) track_verbatim(1);
+   else
+     {
+	char *s;
+
+	s = get_verbatim();
+	if (s)
+	  {
+	     cd->l1 = get_verbatim_line1();
+	     cd->l2 = get_verbatim_line2();
+	     if (cd->shared)
+	       {
+		  fprintf(stderr, "%s: Error. parse error %s:%i. There is already an existing script section for the group\n",
+			  progname, file_in, line - 1);
+		  exit(-1);
+	       }
+	     cd->shared = s;
+	     cd->is_lua = 1;
 	     set_verbatim(NULL, 0, 0);
 	  }
      }
@@ -1628,6 +1767,7 @@ st_collections_group_parts_part_name(void)
             @li GROUP
             @li BOX
             @li TABLE
+            @li EXTERNAL
     @endproperty
 */
 static void
@@ -1651,6 +1791,7 @@ st_collections_group_parts_part_type(void)
 			 "GROUP", EDJE_PART_TYPE_GROUP,
 			 "BOX", EDJE_PART_TYPE_BOX,
 			 "TABLE", EDJE_PART_TYPE_TABLE,
+			 "EXTERNAL", EDJE_PART_TYPE_EXTERNAL,
 			 NULL);
 }
 
@@ -2910,6 +3051,7 @@ ob_collections_group_parts_part_description(void)
    ed->table.align.y = 0.5;
    ed->table.padding.x = 0;
    ed->table.padding.y = 0;
+   ed->external_params = NULL;
 }
 
 /**
@@ -3044,6 +3186,20 @@ st_collections_group_parts_part_description_inherit(void)
 
    data_queue_part_slave_lookup(&(parent->text.id_source), &(ed->text.id_source));
    data_queue_part_slave_lookup(&(parent->text.id_text_source), &(ed->text.id_text_source));
+
+   if (parent->external_params)
+     {
+	Eina_List *l;
+	Edje_External_Param *param, *new_param;
+
+	ed->external_params = NULL;
+	EINA_LIST_FOREACH(parent->external_params, l, param)
+	  {
+	     new_param = mem_alloc(SZ(Edje_External_Param));
+	     *new_param = *param;
+	     ed->external_params = eina_list_append(ed->external_params, new_param);
+	  }
+     }
 }
 
 /**
@@ -5415,6 +5571,121 @@ static void st_collections_group_parts_part_description_table_padding(void)
    ed->table.padding.y = parse_int_range(1, 0, 0x7fffffff);
 }
 
+static void
+_st_collections_group_parts_part_description_params(Edje_External_Param_Type type)
+{
+   Edje_Part_Collection *pc;
+   Edje_Part *ep;
+   Edje_Part_Description *ed;
+   Edje_External_Param *param;
+   Eina_List *l;
+   const char *name;
+   int found = 0;
+
+   check_arg_count(2);
+
+   pc = eina_list_data_get(eina_list_last(edje_collections));
+   ep = eina_list_data_get(eina_list_last(pc->parts));
+
+   if (ep->type != EDJE_PART_TYPE_EXTERNAL)
+     {
+	fprintf(stderr, "%s: Error. parse error %s:%i. "
+		"params in non-EXTERNAL part.\n",
+		progname, file_in, line - 1);
+	exit(-1);
+     }
+
+   ed = ep->default_desc;
+   if (ep->other_desc) ed = eina_list_data_get(eina_list_last(ep->other_desc));
+
+   name = parse_str(0);
+
+   /* if a param with this name already exists, overwrite it */
+   EINA_LIST_FOREACH(ed->external_params, l, param)
+     {
+	if (!strcmp(param->name, name))
+	  {
+	     found = 1;
+	     break;
+	  }
+     }
+
+   if (!found)
+     {
+	param = mem_alloc(SZ(Edje_External_Param));
+	param->name = name;
+     }
+
+   param->type = type;
+   param->i = 0;
+   param->d = 0;
+   param->s = NULL;
+
+   switch (type)
+     {
+      case EDJE_EXTERNAL_PARAM_TYPE_INT:
+	 param->i = parse_int(1);
+	 break;
+      case EDJE_EXTERNAL_PARAM_TYPE_DOUBLE:
+	 param->d = parse_float(1);
+	 break;
+      case EDJE_EXTERNAL_PARAM_TYPE_STRING:
+	 param->s = parse_str(1);
+	 break;
+     }
+
+   if (!found)
+     ed->external_params = eina_list_append(ed->external_params, param);
+}
+
+/**
+    @page edcref
+    @property
+        inherit
+    @parameters
+        [param_name] [int_value]
+    @effect
+	Adds an integer parameter for an external object
+    @endproperty
+*/
+static void
+st_collections_group_parts_part_description_params_int(void)
+{
+   _st_collections_group_parts_part_description_params(EDJE_EXTERNAL_PARAM_TYPE_INT);
+}
+
+/**
+    @page edcref
+    @property
+        inherit
+    @parameters
+        [param_name] [double_value]
+    @effect
+	Adds a double parameter for an external object
+    @endproperty
+*/
+static void
+st_collections_group_parts_part_description_params_double(void)
+{
+   _st_collections_group_parts_part_description_params(EDJE_EXTERNAL_PARAM_TYPE_DOUBLE);
+}
+
+/**
+    @page edcref
+    @property
+        inherit
+    @parameters
+        [param_name] [string_value]
+    @effect
+	Adds a string parameter for an external object
+    @endproperty
+*/
+static void
+st_collections_group_parts_part_description_params_string(void)
+{
+   _st_collections_group_parts_part_description_params(EDJE_EXTERNAL_PARAM_TYPE_STRING);
+}
+
 /**
     @page edcref
     @block
@@ -5604,6 +5875,7 @@ st_collections_group_programs_program_action(void)
 			   "DRAG_VAL_STEP", EDJE_ACTION_TYPE_DRAG_VAL_STEP,
 			   "DRAG_VAL_PAGE", EDJE_ACTION_TYPE_DRAG_VAL_PAGE,
 			   "SCRIPT", EDJE_ACTION_TYPE_SCRIPT,
+			   "LUA_SCRIPT", EDJE_ACTION_TYPE_LUA_SCRIPT,
 			   "FOCUS_SET", EDJE_ACTION_TYPE_FOCUS_SET,
 			   NULL);
    if (ep->action == EDJE_ACTION_TYPE_STATE_SET)
@@ -5639,6 +5911,10 @@ st_collections_group_programs_program_action(void)
 	break;
       case EDJE_ACTION_TYPE_SCRIPT:
 	/* this is implicitly set by script {} so this is here just for
+	 * completeness */
+	break;
+      case EDJE_ACTION_TYPE_LUA_SCRIPT:
+	/* this is implicitly set by lua_script {} so this is here just for
 	 * completeness */
 	break;
       case EDJE_ACTION_TYPE_FOCUS_SET:
@@ -5797,9 +6073,56 @@ ob_collections_group_programs_program_script(void)
 	     cp->l2 = get_verbatim_line2();
 	     cp->id = ep->id;
 	     cp->script = s;
+	     if (cd->shared && cd->is_lua)
+	       {
+		  fprintf(stderr, "%s: Error. parse error %s:%i. You're trying to mix Embryo and Lua scripting in the same group\n",
+			progname, file_in, line - 1);
+		  exit(-1);
+	       }
+	     cd->is_lua = 0;
 	     cd->programs = eina_list_append(cd->programs, cp);
 	     set_verbatim(NULL, 0, 0);
 	     ep->action = EDJE_ACTION_TYPE_SCRIPT;
+	  }
+     }
+}
+
+static void
+ob_collections_group_programs_program_lua_script(void)
+{
+   Edje_Part_Collection *pc;
+   Edje_Program *ep;
+   Code *cd;
+
+   pc = eina_list_data_get(eina_list_last(edje_collections));
+   ep = eina_list_data_get(eina_list_last(pc->programs));
+   cd = eina_list_data_get(eina_list_last(codes));
+
+   if (!is_verbatim()) track_verbatim(1);
+   else
+     {
+	char *s;
+
+	s = get_verbatim();
+	if (s)
+	  {
+	     Code_Program *cp;
+
+	     cp = mem_alloc(SZ(Code_Program));
+	     cp->l1 = get_verbatim_line1();
+	     cp->l2 = get_verbatim_line2();
+	     cp->id = ep->id;
+	     cp->script = s;
+	     if (cd->shared && !cd->is_lua)
+	       {
+		  fprintf(stderr, "%s: Error. parse error %s:%i. You're trying to mix Embryo and Lua scripting in the same group\n",
+			progname, file_in, line - 1);
+		  exit(-1);
+	       }
+	     cd->is_lua = 1;
+	     cd->programs = eina_list_append(cd->programs, cp);
+	     set_verbatim(NULL, 0, 0);
+	     ep->action = EDJE_ACTION_TYPE_LUA_SCRIPT;
 	  }
      }
 }

@@ -6,11 +6,6 @@
 # include "config.h"
 #endif
 
-#include <string.h>
-#include <limits.h>
-#include <unistd.h>
-#include <sys/stat.h>
-
 #ifdef HAVE_ALLOCA_H
 # include <alloca.h>
 #elif defined __GNUC__
@@ -28,11 +23,20 @@ extern "C"
 void *alloca (size_t);
 #endif
 
+#include <string.h>
+#include <limits.h>
+#include <unistd.h>
+#include <sys/stat.h>
+
 #include <Ecore_Evas.h>
 
 #include "edje_cc.h"
 #include "edje_prefix.h"
 
+#include <lua.h>
+#include <lauxlib.h>
+
+typedef struct _External_Lookup External_Lookup;
 typedef struct _Part_Lookup Part_Lookup;
 typedef struct _Program_Lookup Program_Lookup;
 typedef struct _Group_Lookup Group_Lookup;
@@ -40,6 +44,12 @@ typedef struct _String_Lookup Image_Lookup;
 typedef struct _String_Lookup Spectrum_Lookup;
 typedef struct _Slave_Lookup Slave_Lookup;
 typedef struct _Code_Lookup Code_Lookup;
+
+
+struct _External_Lookup
+{
+   char *name;
+};
 
 struct _Part_Lookup
 {
@@ -83,6 +93,7 @@ static void data_process_string(Edje_Part_Collection *pc, const char *prefix, ch
 
 Edje_File *edje_file = NULL;
 Eina_List *edje_collections = NULL;
+Eina_List *externals = NULL;
 Eina_List *fonts = NULL;
 Eina_List *codes = NULL;
 Eina_List *code_lookups = NULL;
@@ -522,7 +533,7 @@ data_write_images(Eet_File *ef, int *image_num, int *input_bytes, int *input_raw
 			    const char *file = NULL;
 
 			    evas_object_image_file_get(im, &file, NULL);
-			    if ((file) && (stat(file, &st) != 0))
+			    if (!file || (stat(file, &st) != 0))
 			      st.st_size = 0;
 			    *input_bytes += st.st_size;
 			    *input_raw_bytes += im_w * im_h * 4;
@@ -759,22 +770,26 @@ data_write_scripts(Eet_File *ef)
    Eina_List *l;
    int i;
 
+   if (!tmp_dir)
 #ifdef HAVE_EVIL
-   char *tmpdir = evil_tmpdir_get();
+     tmp_dir = (char *)evil_tmpdir_get();
 #else
-   char *tmpdir = "/tmp";
+     tmp_dir = "/tmp";
 #endif
 
    for (i = 0, l = codes; l; l = eina_list_next(l), i++)
      {
+	char tmpn[4096];
+	char tmpo[4096];
 	int fd;
 	Code *cd = eina_list_data_get(l);
-
+	
+	if (cd->is_lua)
+	  continue;
 	if ((!cd->shared) && (!cd->programs))
 	  continue;
 
-	char tmpn[4096];
-	snprintf(tmpn, PATH_MAX, "%s/edje_cc.sma-tmp-XXXXXX", tmpdir);
+	snprintf(tmpn, PATH_MAX, "%s/edje_cc.sma-tmp-XXXXXX", tmp_dir);
 	fd = mkstemp(tmpn);
 	if (fd < 0)
 	  error_and_abort(ef, "Unable to open temp file \"%s\" for script "
@@ -783,8 +798,7 @@ data_write_scripts(Eet_File *ef)
 	create_script_file(ef, tmpn, cd);
 	close(fd);
 
-	char tmpo[4096];
-	snprintf(tmpo, PATH_MAX, "%s/edje_cc.amx-tmp-XXXXXX", tmpdir);
+	snprintf(tmpo, PATH_MAX, "%s/edje_cc.amx-tmp-XXXXXX", tmp_dir);
 	fd = mkstemp(tmpo);
 	if (fd < 0)
 	  {
@@ -798,6 +812,154 @@ data_write_scripts(Eet_File *ef)
 
 	unlink(tmpn);
 	unlink(tmpo);
+     }
+}
+
+typedef struct _Edje_Lua_Script_Writer_Struct Edje_Lua_Script_Writer_Struct;
+
+struct _Edje_Lua_Script_Writer_Struct {
+   char *buf;
+   int size;
+};
+
+#ifdef LUA_BINARY
+static int
+_edje_lua_script_writer (lua_State *L __UNUSED__, const void* chunk_buf, size_t chunk_size, void* _data)
+{
+   Edje_Lua_Script_Writer_Struct *data;
+   void *old;
+
+   data = (Edje_Lua_Script_Writer_Struct *)_data;
+   old = data->buf;
+   data->buf = malloc (data->size + chunk_size);
+   memcpy (data->buf, old, data->size);
+   memcpy (&((data->buf)[data->size]), chunk_buf, chunk_size);
+   if (old)
+     free (old);
+   data->size += chunk_size;
+
+   return 0;
+}
+#endif
+
+void
+_edje_lua_error_and_abort(lua_State * L, int err_code, Eet_File *ef)
+{
+   char *err_type;
+
+   switch (err_code)
+     {
+     case LUA_ERRRUN:
+	err_type = "runtime";
+	break;
+     case LUA_ERRSYNTAX:
+	err_type = "syntax";
+	break;
+     case LUA_ERRMEM:
+	err_type = "memory allocation";
+	break;
+     case LUA_ERRERR:
+	err_type = "error handler";
+	break;
+     default:
+	err_type = "unknown";
+	break;
+     }
+   error_and_abort(ef, "Lua %s error: %s\n", err_type, lua_tostring(L, -1));
+}
+
+
+static void
+data_write_lua_scripts(Eet_File *ef)
+{
+   Eina_List *l;
+   Eina_List *ll;
+   Code_Program *cp;
+   int i;
+
+   for (i = 0, l = codes; l; l = eina_list_next(l), i++)
+     {
+	char buf[4096];
+	Code *cd;
+	lua_State *L;
+	int ln = 1;
+	luaL_Buffer b;
+	Edje_Lua_Script_Writer_Struct data;
+#ifdef LUA_BINARY
+	int err_code;
+#endif
+
+	cd = (Code *)eina_list_data_get(l);
+	if (!cd->is_lua)
+	  continue;
+	if ((!cd->shared) && (!cd->programs))
+	  continue;
+	
+	L = luaL_newstate();
+	if (!L)
+	  error_and_abort(ef, "Lua error: Lua state could not be initialized\n");
+
+	luaL_buffinit(L, &b);
+
+	data.buf = NULL;
+	data.size = 0;
+	if (cd->shared)
+	  {
+	     while (ln < (cd->l1 - 1))
+	       {
+		  luaL_addchar(&b, '\n');
+		  ln++;
+	       }
+	     luaL_addstring(&b, cd->shared);
+	     ln += cd->l2 - cd->l1;
+	  }
+
+	EINA_LIST_FOREACH(cd->programs, ll, cp)
+	  {
+	     if (cp->script)
+	       {
+		  while (ln < (cp->l1 - 1))
+		    {
+		       luaL_addchar(&b, '\n');
+		       ln++;
+		    }
+		  luaL_addstring(&b, "_G[");
+		  lua_pushnumber(L, cp->id);
+		  luaL_addvalue(&b);
+		  luaL_addstring(&b, "] = function (ed, signal, source)");
+		  luaL_addstring(&b, cp->script);
+		  luaL_addstring(&b, "end\n");
+		  ln += cp->l2 - cp->l1 + 1;
+	       }
+	  }
+	luaL_pushresult(&b);
+#ifdef LUA_BINARY
+	if (err_code = luaL_loadstring(L, lua_tostring (L, -1)))
+	  _edje_lua_error_and_abort(L, err_code, ef);
+	lua_dump(L, _edje_lua_script_writer, &data);
+#else // LUA_PLAIN_TEXT
+	data.buf = lua_tostring(L, -1);
+	data.size = strlen(data.buf);
+#endif
+	//printf("lua chunk size: %d\n", data.size);
+
+	/* 
+	 * TODO load and test Lua chunk
+	 */
+
+	/*
+	   if (luaL_loadbuffer(L, globbuf, globbufsize, "edje_lua_script"))
+	   printf("lua load error: %s\n", lua_tostring (L, -1));
+	   if (lua_pcall(L, 0, 0, 0))
+	   printf("lua call error: %s\n", lua_tostring (L, -1));
+	 */
+	
+	snprintf(buf, sizeof(buf), "lua_scripts/%i", i);
+	eet_write(ef, buf, data.buf, data.size, 1);
+#ifdef LUA_BINARY
+	free(data.buf);
+#endif
+	lua_close(L);
      }
 }
 
@@ -834,6 +996,7 @@ data_write(void)
 
    total_bytes += data_write_groups(ef, &collection_num);
    data_write_scripts(ef);
+   data_write_lua_scripts(ef);
 
    src_bytes = source_append(ef);
    total_bytes += src_bytes;
@@ -1282,6 +1445,7 @@ static void
 _data_queue_program_lookup(Edje_Part_Collection *pc, char *name, char *ptr, int len)
 {
    Code_Lookup *cl;
+
    cl = mem_alloc(SZ(Code_Lookup));
    cl->ptr = ptr;
    cl->len = len;
@@ -1291,14 +1455,15 @@ _data_queue_program_lookup(Edje_Part_Collection *pc, char *name, char *ptr, int 
    code_lookups = eina_list_append(code_lookups, cl);
 }
 static void
-_data_queue_group_lookup(Edje_Part_Collection *pc, char *name, char *ptr, int len)
+_data_queue_group_lookup(Edje_Part_Collection *pc __UNUSED__, char *name, char *ptr __UNUSED__, int len __UNUSED__)
 {
    data_queue_group_lookup(name);	
 }
 static void
-_data_queue_image_pc_lookup(Edje_Part_Collection *pc, char *name, char *ptr, int len)
+_data_queue_image_pc_lookup(Edje_Part_Collection *pc __UNUSED__, char *name, char *ptr, int len)
 {
    Code_Lookup *cl;
+
    cl = mem_alloc(SZ(Code_Lookup));
    cl->ptr = ptr;
    cl->len = len;
@@ -1325,7 +1490,7 @@ data_process_scripts(void)
 	     Eina_List *ll;
 	     Code_Program *cp;
 
-	     if (cd->shared)
+	     if ((cd->shared) && (!cd->is_lua))
 	       {
 		  data_process_string(pc, "PART",    cd->shared, _data_queue_part_lookup);
 		  data_process_string(pc, "PROGRAM", cd->shared, _data_queue_program_lookup);

@@ -15,6 +15,8 @@
 /* types */
 typedef struct _New_Object_Handler    New_Object_Handler;
 typedef struct _New_Statement_Handler New_Statement_Handler;
+typedef struct _External_List         External_List;
+typedef struct _External              External;
 typedef struct _Font_List             Font_List;
 typedef struct _Font                  Font;
 typedef struct _Code                  Code;
@@ -34,6 +36,16 @@ struct _New_Statement_Handler
    void (*func)(void);
 };
 
+struct _External_List
+{
+   Eina_List *list;
+};
+
+struct _External
+{
+    char *name;
+};
+
 struct _Font_List
 {
    Eina_List *list;
@@ -50,6 +62,7 @@ struct _Code
    int       l1, l2;
    char      *shared;
    Eina_List *programs;
+   int		is_lua;
 };
 
 struct _Code_Program
@@ -120,9 +133,11 @@ char   *mem_strdup(const char *s);
 #define SZ sizeof
 
 /* global vars */
+extern Eina_List             *ext_dirs;
 extern Eina_List             *img_dirs;
 extern Eina_List             *fnt_dirs;
 extern char                  *file_in;
+extern char                  *tmp_dir;
 extern char                  *file_out;
 extern char                  *progname;
 extern int                    verbose;
@@ -136,6 +151,7 @@ extern Eina_List             *stack;
 extern Eina_List             *params;
 extern Edje_File             *edje_file;
 extern Eina_List             *edje_collections;
+extern Eina_List             *externals;
 extern Eina_List             *fonts;
 extern Eina_List             *codes;
 extern Eina_List             *defines;
