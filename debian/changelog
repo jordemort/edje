@@ -1,3 +1,16 @@
+edje (0.9.93.063-1) unstable; urgency=low
+
+  * New upstream snapshot
+  * Build with -Wl,-z,defs for extra security. Drop 0001-Add-libtool-Wl-
+    as-needed-reordering-workaround.patch, works fine without it
+  * Bump Standards-Version to 3.8.3
+  * Prevent the doc from being built when not necessary, and move
+    doxygen to B-D-I
+  * Remove DEB_DH_STRIP_ARGS, cdbs figures this out
+  * Add new {build-,}dependency on lua 5.1
+
+ -- Albin Tonnerre <albin.tonnerre@gmail.com>  Sat, 05 Dec 2009 09:29:31 +0100
+
 edje (0.9.92.062-1) unstable; urgency=low
 
   * New upstream snapshot
