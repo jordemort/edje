@@ -10,7 +10,7 @@ edje (0.9.93.063-1) unstable; urgency=low
   * Add new {build-,}dependency on lua 5.1
   * debian/control: update my email address
 
- -- Albin Tonnerre <albin.tonnerre@gmail.com>  Sat, 05 Dec 2009 09:29:31 +0100
+ -- Albin Tonnerre <lutin@debian.org>  Sat, 05 Dec 2009 09:29:31 +0100
 
 edje (0.9.92.062-1) unstable; urgency=low
 
