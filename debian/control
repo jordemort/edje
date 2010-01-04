@@ -4,7 +4,7 @@ Priority: optional
 Maintainer: Debian Pkg-e Team <pkg-e-devel@lists.alioth.debian.org>
 Uploaders: Albin Tonnerre <lutin@debian.org>,
  Xavier Oswald <x.oswald@free.fr>, Jan Lübbe <jluebbe@debian.org>
-Build-Depends: debhelper (>= 6), cdbs, quilt, libeet-dev, libevas-dev (>= 0.9.9.063),
+Build-Depends: debhelper (>= 6), cdbs, quilt, libeet-dev (>= 1.2.3), libevas-dev (>= 0.9.9.063),
  libecore-dev (>= 0.9.9.063), libembryo-dev, libeina-dev (>= 0.9.9.063),
  liblua5.1-0-dev
 Build-Depends-Indep: doxygen
@@ -52,7 +52,7 @@ Package: libedje-dev
 Architecture: any
 Section: libdevel
 Depends: ${misc:Depends}, libedje-svn-05 (= ${binary:Version}), libedje-bin,
- libeet-dev, libembryo-dev, libevas-dev (>= 0.9.9.063), libecore-dev (>= 0.9.9.063),
+ libeet-dev (>= 1.2.3), libembryo-dev, libevas-dev (>= 0.9.9.063), libecore-dev (>= 0.9.9.063),
  libeina-dev (>= 0.9.9.063), liblua5.1-0-dev, pkg-config
 Description: libedje headers and static libraries
  Edje is a graphical layout and animation library for animated resizable,
