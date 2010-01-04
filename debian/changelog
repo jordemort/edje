@@ -1,3 +1,12 @@
+edje (0.9.93.063-2) unstable; urgency=low
+
+  * Fix the truncated license text in debian/copyright (Closes: #541886)
+  * Drop --disable-rpath from configure options, it is no longer
+    recognized
+  * Bump build-dependency on libeet-dev, edje requires eet >= 1.2.3
+
+ -- Albin Tonnerre <lutin@debian.org>  Mon, 04 Jan 2010 21:11:06 +0100
+
 edje (0.9.93.063-1) unstable; urgency=low
 
   * New upstream snapshot
