@@ -4,8 +4,8 @@
 
 #include "edje_private.h"
 
-void
-_edje_hold_cb(void *data, Evas * e, Evas_Object * obj, void *event_info)
+static void
+_edje_hold_signal_cb(void *data, Evas * e, Evas_Object * obj, void *event_info)
 {
    Evas_Event_Hold *ev;
    Edje *ed;
@@ -23,8 +23,40 @@ _edje_hold_cb(void *data, Evas * e, Evas_Object * obj, void *event_info)
    e = NULL;
 }
 
-void
-_edje_mouse_in_cb(void *data, Evas * e, Evas_Object * obj, void *event_info)
+static void
+_edje_focus_in_signal_cb(void *data, Evas * e, Evas_Object * obj, __UNUSED__ void *event_info)
+{
+   Edje *ed;
+   Edje_Real_Part *rp;
+
+   ed = data;
+   rp = evas_object_data_get(obj, "real_part");
+   if ((!rp) || (!ed))
+     return;
+
+   _edje_emit(ed, "focus,part,in", rp->part->name);
+   return;
+   e = NULL;
+}
+
+static void
+_edje_focus_out_signal_cb(void *data, Evas * e, Evas_Object * obj, __UNUSED__ void *event_info)
+{
+   Edje *ed;
+   Edje_Real_Part *rp;
+
+   ed = data;
+   rp = evas_object_data_get(obj, "real_part");
+   if ((!rp) || (!ed))
+     return;
+
+   _edje_emit(ed, "focus,part,out", rp->part->name);
+   return;
+   e = NULL;
+}
+
+static void
+_edje_mouse_in_signal_cb(void *data, Evas * e, Evas_Object * obj, void *event_info)
 {
    Evas_Event_Mouse_In *ev;
    Edje *ed;
@@ -41,8 +73,8 @@ _edje_mouse_in_cb(void *data, Evas * e, Evas_Object * obj, void *event_info)
    e = NULL;
 }
 
-void
-_edje_mouse_out_cb(void *data, Evas * e, Evas_Object * obj, void *event_info)
+static void
+_edje_mouse_out_signal_cb(void *data, Evas * e, Evas_Object * obj, void *event_info)
 {
    Evas_Event_Mouse_Out *ev;
    Edje *ed;
@@ -59,8 +91,8 @@ _edje_mouse_out_cb(void *data, Evas * e, Evas_Object * obj, void *event_info)
    e = NULL;
 }
 
-void
-_edje_mouse_down_cb(void *data, Evas * e, Evas_Object * obj, void *event_info)
+static void
+_edje_mouse_down_signal_cb(void *data, Evas * e, Evas_Object * obj, void *event_info)
 {
    Evas_Event_Mouse_Down *ev;
    Edje *ed;
@@ -129,10 +161,9 @@ _edje_mouse_down_cb(void *data, Evas * e, Evas_Object * obj, void *event_info)
 	*/
 	rp = events;
 	{
-	   double dx = 0.0, dy = 0.0;
-	   int dir;
+	   FLOAT_T dx = ZERO, dy = ZERO;
 
-	   dir = _edje_part_dragable_calc(ed, rp, &dx, &dy);
+	   _edje_part_dragable_calc(ed, rp, &dx, &dy);
 
 	   if ((dx != rp->drag->val.x) || (dy != rp->drag->val.y))
 	     {
@@ -176,8 +207,8 @@ _edje_mouse_down_cb(void *data, Evas * e, Evas_Object * obj, void *event_info)
    e = NULL;
 }
 
-void
-_edje_mouse_up_cb(void *data, Evas * e, Evas_Object * obj, void *event_info)
+static void
+_edje_mouse_up_signal_cb(void *data, Evas * e, Evas_Object * obj, void *event_info)
 {
    Evas_Event_Mouse_Up *ev;
    Edje *ed;
@@ -244,8 +275,8 @@ _edje_mouse_up_cb(void *data, Evas * e, Evas_Object * obj, void *event_info)
    e = NULL;
 }
 
-void
-_edje_mouse_move_cb(void *data, Evas * e, Evas_Object * obj, void *event_info)
+static void
+_edje_mouse_move_signal_cb(void *data, Evas * e, Evas_Object * obj, void *event_info)
 {
    Evas_Event_Mouse_Move *ev;
    Edje *ed;
@@ -300,10 +331,9 @@ _edje_mouse_move_cb(void *data, Evas * e, Evas_Object * obj, void *event_info)
 
 	if (rp->drag->down.count > 0)
 	  {
-	     double dx, dy;
-	     int dir;
+	     FLOAT_T dx, dy;
 
-	     dir = _edje_part_dragable_calc(ed, rp, &dx, &dy);
+	     _edje_part_dragable_calc(ed, rp, &dx, &dy);
 	     if ((dx != rp->drag->val.x) || (dy != rp->drag->val.y))
 	       {
 		  rp->drag->val.x = dx;
@@ -324,8 +354,8 @@ _edje_mouse_move_cb(void *data, Evas * e, Evas_Object * obj, void *event_info)
    e = NULL;
 }
 
-void
-_edje_mouse_wheel_cb(void *data, Evas * e, Evas_Object * obj, void *event_info)
+static void
+_edje_mouse_wheel_signal_cb(void *data, Evas * e, Evas_Object * obj, void *event_info)
 {
    Evas_Event_Mouse_Wheel *ev;
    Edje *ed;
@@ -345,8 +375,8 @@ _edje_mouse_wheel_cb(void *data, Evas * e, Evas_Object * obj, void *event_info)
    e = NULL;
 }
 
-int
-_edje_timer_cb(void *data)
+Eina_Bool
+_edje_timer_cb(__UNUSED__ void *data)
 {
    double t;
    Eina_List *l;
@@ -415,13 +445,12 @@ _edje_timer_cb(void *data)
 	_edje_thaw(ed);
 	_edje_unref(ed);
      }
-   if (_edje_anim_count > 0) return 1;
+   if (_edje_anim_count > 0) return ECORE_CALLBACK_RENEW;
    _edje_timer = NULL;
-   return 0;
-   data = NULL;
+   return ECORE_CALLBACK_CANCEL;
 }
 
-int
+Eina_Bool
 _edje_pending_timer_cb(void *data)
 {
    Edje_Pending_Program *pp;
@@ -430,7 +459,7 @@ _edje_pending_timer_cb(void *data)
    pp->edje->pending_actions = eina_list_remove(pp->edje->pending_actions, pp);
    _edje_program_run(pp->edje, pp->program, 1, "", "");
    free(pp);
-   return 0;
+   return ECORE_CALLBACK_CANCEL;
 }
 
 void
@@ -438,58 +467,92 @@ _edje_callbacks_add(Evas_Object *obj, Edje *ed, Edje_Real_Part *rp)
 {
    evas_object_event_callback_add(obj,
                                   EVAS_CALLBACK_HOLD,
-                                  _edje_hold_cb,
+                                  _edje_hold_signal_cb,
                                   ed);
    evas_object_event_callback_add(obj,
                                   EVAS_CALLBACK_MOUSE_IN,
-                                  _edje_mouse_in_cb,
+                                  _edje_mouse_in_signal_cb,
                                   ed);
    evas_object_event_callback_add(obj,
                                   EVAS_CALLBACK_MOUSE_OUT,
-                                  _edje_mouse_out_cb,
+                                  _edje_mouse_out_signal_cb,
                                   ed);
    evas_object_event_callback_add(obj,
                                   EVAS_CALLBACK_MOUSE_DOWN,
-                                  _edje_mouse_down_cb,
+                                  _edje_mouse_down_signal_cb,
                                   ed);
    evas_object_event_callback_add(obj,
                                   EVAS_CALLBACK_MOUSE_UP,
-                                  _edje_mouse_up_cb,
+                                  _edje_mouse_up_signal_cb,
                                   ed);
    evas_object_event_callback_add(obj,
                                   EVAS_CALLBACK_MOUSE_MOVE,
-                                  _edje_mouse_move_cb,
+                                  _edje_mouse_move_signal_cb,
                                   ed);
    evas_object_event_callback_add(obj,
                                   EVAS_CALLBACK_MOUSE_WHEEL,
-                                  _edje_mouse_wheel_cb,
+                                  _edje_mouse_wheel_signal_cb,
                                   ed);
    evas_object_data_set(obj, "real_part", rp);
 }
 
 void
-_edje_callbacks_del(Evas_Object *obj)
+_edje_callbacks_del(Evas_Object *obj, Edje *ed)
 {
-   evas_object_event_callback_del(obj,
-                                  EVAS_CALLBACK_HOLD,
-                                  _edje_hold_cb);
-   evas_object_event_callback_del(obj,
-                                  EVAS_CALLBACK_MOUSE_IN,
-                                  _edje_mouse_in_cb);
-   evas_object_event_callback_del(obj,
-                                  EVAS_CALLBACK_MOUSE_OUT,
-                                  _edje_mouse_out_cb);
-   evas_object_event_callback_del(obj,
-                                  EVAS_CALLBACK_MOUSE_DOWN,
-                                  _edje_mouse_down_cb);
-   evas_object_event_callback_del(obj,
-                                  EVAS_CALLBACK_MOUSE_UP,
-                                  _edje_mouse_up_cb);
-   evas_object_event_callback_del(obj,
-                                  EVAS_CALLBACK_MOUSE_MOVE,
-                                  _edje_mouse_move_cb);
-   evas_object_event_callback_del(obj,
-                                  EVAS_CALLBACK_MOUSE_WHEEL,
-                                  _edje_mouse_wheel_cb);
+   evas_object_event_callback_del_full(obj,
+				       EVAS_CALLBACK_HOLD,
+				       _edje_hold_signal_cb,
+				       ed);
+   evas_object_event_callback_del_full(obj,
+				       EVAS_CALLBACK_MOUSE_IN,
+				       _edje_mouse_in_signal_cb,
+				       ed);
+   evas_object_event_callback_del_full(obj,
+				       EVAS_CALLBACK_MOUSE_OUT,
+				       _edje_mouse_out_signal_cb,
+				       ed);
+   evas_object_event_callback_del_full(obj,
+				       EVAS_CALLBACK_MOUSE_DOWN,
+				       _edje_mouse_down_signal_cb,
+				       ed);
+   evas_object_event_callback_del_full(obj,
+				       EVAS_CALLBACK_MOUSE_UP,
+				       _edje_mouse_up_signal_cb,
+				       ed);
+   evas_object_event_callback_del_full(obj,
+				       EVAS_CALLBACK_MOUSE_MOVE,
+				       _edje_mouse_move_signal_cb,
+				       ed);
+   evas_object_event_callback_del_full(obj,
+				       EVAS_CALLBACK_MOUSE_WHEEL,
+				       _edje_mouse_wheel_signal_cb,
+				       ed);
    evas_object_data_del(obj, "real_part");
+}
+
+void
+_edje_callbacks_focus_add(Evas_Object *obj, Edje *ed, Edje_Real_Part *rp)
+{
+   evas_object_event_callback_add(obj,
+				  EVAS_CALLBACK_FOCUS_IN,
+				  _edje_focus_in_signal_cb,
+				  ed);
+   evas_object_event_callback_add(obj,
+				  EVAS_CALLBACK_FOCUS_OUT,
+				  _edje_focus_out_signal_cb,
+				  ed);
+   evas_object_data_set(obj, "real_part", rp);
+}
+
+void
+_edje_callbacks_focus_del(Evas_Object *obj, Edje *ed)
+{
+   evas_object_event_callback_del_full(obj,
+				       EVAS_CALLBACK_FOCUS_IN,
+				       _edje_focus_in_signal_cb,
+				       ed);
+   evas_object_event_callback_del_full(obj,
+				       EVAS_CALLBACK_FOCUS_OUT,
+				       _edje_focus_out_signal_cb,
+				       ed);
 }

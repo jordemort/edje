@@ -49,6 +49,22 @@
  * The syntax for the edje data collection files follows a simple structure of
  * "blocks { .. }" that can contain "properties: ..", more blocks, or both.
  *
+ * @anchor sec_quickaccess Quick access to block descriptions:
+ * <ul>
+ *    <li>@ref sec_toplevel "Top-Level"</li>
+ *    <li>@ref sec_group "Group"</li>
+ *    <li>@ref sec_description "State description"</li>
+ *    <ul>
+ *      <li>@ref sec_description_image "Image"</li>
+ *      <li>@ref sec_description_text "Text"</li>
+ *      <li>@ref sec_description_gradient "Gradient"</li>
+ *      <li>@ref sec_description_box "Box"</li>
+ *      <li>@ref sec_description_table "Table"</li>
+ *      <li>@ref sec_description_map "Map (3d/transformations)"</li>
+ *    </ul>
+ *    <li>@ref sec_program "Program block"</li>
+ * </ul>
+ *
  * @author Andres Blanc (dresb) andresblanc@gmail.com
  *
  * <table class="edcref" border="0">
@@ -57,6 +73,11 @@
 static void st_externals_external(void);
 
 static void st_images_image(void);
+static void ob_images_set(void);
+static void st_images_set_name(void);
+static void ob_images_set_image(void);
+static void st_images_set_image_image(void);
+static void st_images_set_image_size(void);
 
 static void st_fonts_font(void);
 
@@ -162,6 +183,7 @@ static void st_collections_group_parts_part_description_image_normal(void);
 static void st_collections_group_parts_part_description_image_tween(void);
 static void st_collections_group_parts_part_description_image_border(void);
 static void st_collections_group_parts_part_description_image_middle(void);
+static void st_collections_group_parts_part_description_image_border_scale(void);
 static void st_collections_group_parts_part_description_image_scale_hint(void);
 static void st_collections_group_parts_part_description_fill_smooth(void);
 static void st_collections_group_parts_part_description_fill_origin_relative(void);
@@ -201,6 +223,20 @@ static void st_collections_group_parts_part_description_box_min(void);
 static void st_collections_group_parts_part_description_table_homogeneous(void);
 static void st_collections_group_parts_part_description_table_align(void);
 static void st_collections_group_parts_part_description_table_padding(void);
+static void st_collections_group_parts_part_description_map_perspective(void);
+static void st_collections_group_parts_part_description_map_light(void);
+static void st_collections_group_parts_part_description_map_rotation_center(void);
+static void st_collections_group_parts_part_description_map_rotation_x(void);
+static void st_collections_group_parts_part_description_map_rotation_y(void);
+static void st_collections_group_parts_part_description_map_rotation_z(void);
+static void st_collections_group_parts_part_description_map_on(void);
+static void st_collections_group_parts_part_description_map_smooth(void);
+static void st_collections_group_parts_part_description_map_alpha(void);
+static void st_collections_group_parts_part_description_map_backface_cull(void);
+static void st_collections_group_parts_part_description_map_perspective_on(void);
+static void st_collections_group_parts_part_description_perspective_zplane(void);
+static void st_collections_group_parts_part_description_perspective_focal(void);
+static void st_collections_group_parts_part_api(void);
 
 /* external part parameters */
 static void st_collections_group_parts_part_description_params_int(void);
@@ -209,13 +245,17 @@ static void st_collections_group_parts_part_description_params_double(void);
 
 static void st_collections_group_programs_program_name(void);
 static void st_collections_group_parts_part_description_params_string(void);
+static void st_collections_group_parts_part_description_params_bool(void);
+static void st_collections_group_parts_part_description_params_choice(void);
 static void st_collections_group_programs_program_signal(void);
- static void st_collections_group_programs_program_source(void);
+static void st_collections_group_programs_program_source(void);
+static void st_collections_group_programs_program_filter(void);
 static void st_collections_group_programs_program_in(void);
 static void st_collections_group_programs_program_action(void);
 static void st_collections_group_programs_program_transition(void);
 static void st_collections_group_programs_program_target(void);
 static void st_collections_group_programs_program_after(void);
+static void st_collections_group_programs_program_api(void);
 
 static void ob_collections_group_programs_program_script(void);
 static void ob_collections_group_programs_program_lua_script(void);
@@ -226,6 +266,9 @@ New_Statement_Handler statement_handlers[] =
 {
      {"externals.external", st_externals_external},
      {"images.image", st_images_image},
+     {"images.set.name", st_images_set_name},
+     {"images.set.image.image", st_images_set_image_image},
+     {"images.set.image.size", st_images_set_image_size},
      {"fonts.font", st_fonts_font},
      {"data.item", st_data_item},
      {"data.file", st_data_file},
@@ -241,7 +284,13 @@ New_Statement_Handler statement_handlers[] =
      {"spectra.spectrum.color", st_spectrum_color},
      {"collections.externals.external", st_externals_external}, /* dup */
      {"collections.image", st_images_image}, /* dup */
+     {"collections.set.name", st_images_set_name}, /* dup */
+     {"collections.set.image.image", st_images_set_image_image}, /* dup */
+     {"collections.set.image.size", st_images_set_image_size}, /* dup */
      {"collections.images.image", st_images_image}, /* dup */
+     {"collections.images.set.name", st_images_set_name}, /* dup */
+     {"collections.images.set.image.image", st_images_set_image_image}, /* dup */
+     {"collections.images.set.image.size", st_images_set_image_size}, /* dup */
      {"collections.font", st_fonts_font}, /* dup */
      {"collections.fonts.font", st_fonts_font}, /* dup */
      {"collections.styles.style.name", st_styles_style_name}, /* dup */
@@ -260,7 +309,13 @@ New_Statement_Handler statement_handlers[] =
      {"collections.group.data.item", st_collections_group_data_item},
      {"collections.group.externals.external", st_externals_external}, /* dup */
      {"collections.group.image", st_images_image}, /* dup */
+     {"collections.group.set.name", st_images_set_name},
+     {"collections.group.set.image.image", st_images_set_image_image},
+     {"collections.group.set.image.size", st_images_set_image_size},
      {"collections.group.images.image", st_images_image}, /* dup */
+     {"collections.group.images.set.name", st_images_set_name},
+     {"collections.group.images.set.image.image", st_images_set_image_image},
+     {"collections.group.images.set.image.size", st_images_set_image_size},
      {"collections.group.font", st_fonts_font}, /* dup */
      {"collections.group.fonts.font", st_fonts_font}, /* dup */
      {"collections.group.styles.style.name", st_styles_style_name}, /* dup */
@@ -271,7 +326,13 @@ New_Statement_Handler statement_handlers[] =
      {"collections.group.color_classes.color_class.color2", st_color_class_color2}, /* dup */
      {"collections.group.color_classes.color_class.color3", st_color_class_color3}, /* dup */
      {"collections.group.parts.image", st_images_image}, /* dup */
+     {"collections.group.parts.set.name", st_images_set_name},
+     {"collections.group.parts.set.image.image", st_images_set_image_image},
+     {"collections.group.parts.set.image.size", st_images_set_image_size},
      {"collections.group.parts.images.image", st_images_image}, /* dup */
+     {"collections.group.parts.images.set.name", st_images_set_name},
+     {"collections.group.parts.images.set.image.image", st_images_set_image_image},
+     {"collections.group.parts.images.set.image.size", st_images_set_image_size},
      {"collections.group.parts.font", st_fonts_font}, /* dup */
      {"collections.group.parts.fonts.font", st_fonts_font}, /* dup */
      {"collections.group.parts.styles.style.name", st_styles_style_name}, /* dup */
@@ -282,6 +343,7 @@ New_Statement_Handler statement_handlers[] =
      {"collections.group.parts.color_classes.color_class.color2", st_color_class_color2}, /* dup */
      {"collections.group.parts.color_classes.color_class.color3", st_color_class_color3}, /* dup */
      {"collections.group.parts.part.name", st_collections_group_parts_part_name},
+     {"collections.group.parts.part.api", st_collections_group_parts_part_api},
      {"collections.group.parts.part.type", st_collections_group_parts_part_type},
      {"collections.group.parts.part.effect", st_collections_group_parts_part_effect},
      {"collections.group.parts.part.mouse_events", st_collections_group_parts_part_mouse_events},
@@ -306,7 +368,13 @@ New_Statement_Handler statement_handlers[] =
      {"collections.group.parts.part.select_mode", st_collections_group_parts_part_select_mode},
      {"collections.group.parts.part.multiline", st_collections_group_parts_part_multiline},
      {"collections.group.parts.part.image", st_images_image}, /* dup */
+     {"collections.group.parts.part.set.name", st_images_set_name},
+     {"collections.group.parts.part.set.image.image", st_images_set_image_image},
+     {"collections.group.parts.part.set.image.size", st_images_set_image_size},
      {"collections.group.parts.part.images.image", st_images_image}, /* dup */
+     {"collections.group.parts.part.images.set.name", st_images_set_name},
+     {"collections.group.parts.part.images.set.image.image", st_images_set_image_image},
+     {"collections.group.parts.part.images.set.image.size", st_images_set_image_size},
      {"collections.group.parts.part.font", st_fonts_font}, /* dup */
      {"collections.group.parts.part.fonts.font", st_fonts_font}, /* dup */
      {"collections.group.parts.part.styles.style.name", st_styles_style_name}, /* dup */
@@ -365,9 +433,16 @@ New_Statement_Handler statement_handlers[] =
      {"collections.group.parts.part.description.image.normal", st_collections_group_parts_part_description_image_normal},
      {"collections.group.parts.part.description.image.tween", st_collections_group_parts_part_description_image_tween},
      {"collections.group.parts.part.description.image.image", st_images_image}, /* dup */
+     {"collections.group.parts.part.description.image.set.name", st_images_set_name},
+     {"collections.group.parts.part.description.image.set.image.image", st_images_set_image_image},
+     {"collections.group.parts.part.description.image.set.image.size", st_images_set_image_size},
      {"collections.group.parts.part.description.image.images.image", st_images_image}, /* dup */
+     {"collections.group.parts.part.description.image.images.set.name", st_images_set_name},
+     {"collections.group.parts.part.description.image.images.set.image.image", st_images_set_image_image},
+     {"collections.group.parts.part.description.image.images.set.image.size", st_images_set_image_size},
      {"collections.group.parts.part.description.image.border", st_collections_group_parts_part_description_image_border},
      {"collections.group.parts.part.description.image.middle", st_collections_group_parts_part_description_image_middle},
+     {"collections.group.parts.part.description.image.border_scale", st_collections_group_parts_part_description_image_border_scale},
      {"collections.group.parts.part.description.image.scale_hint", st_collections_group_parts_part_description_image_scale_hint},
      {"collections.group.parts.part.description.fill.smooth", st_collections_group_parts_part_description_fill_smooth},
      {"collections.group.parts.part.description.fill.origin.relative", st_collections_group_parts_part_description_fill_origin_relative},
@@ -409,10 +484,28 @@ New_Statement_Handler statement_handlers[] =
      {"collections.group.parts.part.description.table.homogeneous", st_collections_group_parts_part_description_table_homogeneous},
      {"collections.group.parts.part.description.table.align", st_collections_group_parts_part_description_table_align},
      {"collections.group.parts.part.description.table.padding", st_collections_group_parts_part_description_table_padding},
+     {"collections.group.parts.part.description.map.perspective", st_collections_group_parts_part_description_map_perspective},
+     {"collections.group.parts.part.description.map.light", st_collections_group_parts_part_description_map_light},
+     {"collections.group.parts.part.description.map.rotation.center", st_collections_group_parts_part_description_map_rotation_center},
+     {"collections.group.parts.part.description.map.rotation.x", st_collections_group_parts_part_description_map_rotation_x},
+     {"collections.group.parts.part.description.map.rotation.y", st_collections_group_parts_part_description_map_rotation_y},
+     {"collections.group.parts.part.description.map.rotation.z", st_collections_group_parts_part_description_map_rotation_z},
+     {"collections.group.parts.part.description.map.on", st_collections_group_parts_part_description_map_on},
+     {"collections.group.parts.part.description.map.smooth", st_collections_group_parts_part_description_map_smooth},
+     {"collections.group.parts.part.description.map.alpha", st_collections_group_parts_part_description_map_alpha},
+     {"collections.group.parts.part.description.map.backface_cull", st_collections_group_parts_part_description_map_backface_cull},
+     {"collections.group.parts.part.description.map.perspective_on", st_collections_group_parts_part_description_map_perspective_on},
+     {"collections.group.parts.part.description.perspective.zplane", st_collections_group_parts_part_description_perspective_zplane},
+     {"collections.group.parts.part.description.perspective.focal", st_collections_group_parts_part_description_perspective_focal},
      {"collections.group.parts.part.description.params.int", st_collections_group_parts_part_description_params_int},
      {"collections.group.parts.part.description.params.double", st_collections_group_parts_part_description_params_double},
      {"collections.group.parts.part.description.params.string", st_collections_group_parts_part_description_params_string},
+     {"collections.group.parts.part.description.params.bool", st_collections_group_parts_part_description_params_bool},
+     {"collections.group.parts.part.description.params.choice", st_collections_group_parts_part_description_params_choice},
      {"collections.group.parts.part.description.images.image", st_images_image}, /* dup */
+     {"collections.group.parts.part.description.images.set.name", st_images_set_name},
+     {"collections.group.parts.part.description.images.set.image.image", st_images_set_image_image},
+     {"collections.group.parts.part.description.images.set.image.size", st_images_set_image_size},
      {"collections.group.parts.part.description.font", st_fonts_font}, /* dup */
      {"collections.group.parts.part.description.fonts.font", st_fonts_font}, /* dup */
      {"collections.group.parts.part.description.styles.style.name", st_styles_style_name}, /* dup */
@@ -423,7 +516,13 @@ New_Statement_Handler statement_handlers[] =
      {"collections.group.parts.part.description.color_classes.color_class.color2", st_color_class_color2}, /* dup */
      {"collections.group.parts.part.description.color_classes.color_class.color3", st_color_class_color3}, /* dup */
      {"collections.group.parts.part.description.programs.image", st_images_image}, /* dup */
+     {"collections.group.parts.part.description.programs.set.name", st_images_set_name},
+     {"collections.group.parts.part.description.programs.set.image.image", st_images_set_image_image},
+     {"collections.group.parts.part.description.programs.set.image.size", st_images_set_image_size},
      {"collections.group.parts.part.description.programs.images.image", st_images_image}, /* dup */
+     {"collections.group.parts.part.description.programs.images.set.name", st_images_set_name},
+     {"collections.group.parts.part.description.programs.images.set.image.image", st_images_set_image_image},
+     {"collections.group.parts.part.description.programs.images.set.image.size", st_images_set_image_size},
      {"collections.group.parts.part.description.programs.font", st_fonts_font}, /* dup */
      {"collections.group.parts.part.description.programs.fonts.font", st_fonts_font}, /* dup */
      {"collections.group.parts.part.description.programs.program.name", st_collections_group_programs_program_name}, /* dup */
@@ -434,6 +533,7 @@ New_Statement_Handler statement_handlers[] =
      {"collections.group.parts.part.description.programs.program.transition", st_collections_group_programs_program_transition}, /* dup */
      {"collections.group.parts.part.description.programs.program.target", st_collections_group_programs_program_target}, /* dup */
      {"collections.group.parts.part.description.programs.program.after", st_collections_group_programs_program_after}, /* dup */
+     {"collections.group.parts.part.description.programs.program.api", st_collections_group_programs_program_api}, /* dup */
      {"collections.group.parts.part.description.program.name", st_collections_group_programs_program_name}, /* dup */
      {"collections.group.parts.part.description.program.signal", st_collections_group_programs_program_signal}, /* dup */
      {"collections.group.parts.part.description.program.source", st_collections_group_programs_program_source}, /* dup */
@@ -442,8 +542,15 @@ New_Statement_Handler statement_handlers[] =
      {"collections.group.parts.part.description.program.transition", st_collections_group_programs_program_transition}, /* dup */
      {"collections.group.parts.part.description.program.target", st_collections_group_programs_program_target}, /* dup */
      {"collections.group.parts.part.description.program.after", st_collections_group_programs_program_after}, /* dup */
+     {"collections.group.parts.part.description.program.api", st_collections_group_programs_program_api}, /* dup */
      {"collections.group.parts.part.programs.image", st_images_image}, /* dup */
+     {"collections.group.parts.part.programs.set.name", st_images_set_name},
+     {"collections.group.parts.part.programs.set.image.image", st_images_set_image_image},
+     {"collections.group.parts.part.programs.set.image.size", st_images_set_image_size},
      {"collections.group.parts.part.programs.images.image", st_images_image}, /* dup */
+     {"collections.group.parts.part.programs.images.set.name", st_images_set_name},
+     {"collections.group.parts.part.programs.images.set.image.image", st_images_set_image_image},
+     {"collections.group.parts.part.programs.images.set.image.size", st_images_set_image_size},
      {"collections.group.parts.part.programs.font", st_fonts_font}, /* dup */
      {"collections.group.parts.part.programs.fonts.font", st_fonts_font}, /* dup */
      {"collections.group.parts.part.programs.program.name", st_collections_group_programs_program_name}, /* dup */
@@ -454,6 +561,7 @@ New_Statement_Handler statement_handlers[] =
      {"collections.group.parts.part.programs.program.transition", st_collections_group_programs_program_transition}, /* dup */
      {"collections.group.parts.part.programs.program.target", st_collections_group_programs_program_target}, /* dup */
      {"collections.group.parts.part.programs.program.after", st_collections_group_programs_program_after}, /* dup */
+     {"collections.group.parts.part.programs.program.api", st_collections_group_programs_program_api}, /* dup */
      {"collections.group.parts.part.program.name", st_collections_group_programs_program_name}, /* dup */
      {"collections.group.parts.part.program.signal", st_collections_group_programs_program_signal}, /* dup */
      {"collections.group.parts.part.program.source", st_collections_group_programs_program_source}, /* dup */
@@ -462,8 +570,15 @@ New_Statement_Handler statement_handlers[] =
      {"collections.group.parts.part.program.transition", st_collections_group_programs_program_transition}, /* dup */
      {"collections.group.parts.part.program.target", st_collections_group_programs_program_target}, /* dup */
      {"collections.group.parts.part.program.after", st_collections_group_programs_program_after}, /* dup */
+     {"collections.group.parts.part.program.api", st_collections_group_programs_program_api}, /* dup */
      {"collections.group.parts.programs.image", st_images_image}, /* dup */
+     {"collections.group.parts.programs.set.name", st_images_set_name},
+     {"collections.group.parts.programs.set.image.image", st_images_set_image_image},
+     {"collections.group.parts.programs.set.image.size", st_images_set_image_size},
      {"collections.group.parts.programs.images.image", st_images_image}, /* dup */
+     {"collections.group.parts.programs.images.set.name", st_images_set_name},
+     {"collections.group.parts.programs.images.set.image.image", st_images_set_image_image},
+     {"collections.group.parts.programs.images.set.image.size", st_images_set_image_size},
      {"collections.group.parts.programs.font", st_fonts_font}, /* dup */
      {"collections.group.parts.programs.fonts.font", st_fonts_font}, /* dup */
      {"collections.group.parts.programs.program.name", st_collections_group_programs_program_name}, /* dup */
@@ -474,32 +589,45 @@ New_Statement_Handler statement_handlers[] =
      {"collections.group.parts.programs.program.transition", st_collections_group_programs_program_transition}, /* dup */
      {"collections.group.parts.programs.program.target", st_collections_group_programs_program_target}, /* dup */
      {"collections.group.parts.programs.program.after", st_collections_group_programs_program_after},
+     {"collections.group.parts.programs.program.api", st_collections_group_programs_program_api},
      {"collections.group.parts.program.name", st_collections_group_programs_program_name}, /* dup */
      {"collections.group.parts.program.signal", st_collections_group_programs_program_signal}, /* dup */
      {"collections.group.parts.program.source", st_collections_group_programs_program_source}, /* dup */
+     {"collections.group.parts.program.filter", st_collections_group_programs_program_filter}, /* dup */
      {"collections.group.parts.program.in", st_collections_group_programs_program_in}, /* dup */
      {"collections.group.parts.program.action", st_collections_group_programs_program_action}, /* dup */
      {"collections.group.parts.program.transition", st_collections_group_programs_program_transition}, /* dup */
      {"collections.group.parts.program.target", st_collections_group_programs_program_target}, /* dup */
      {"collections.group.parts.program.after", st_collections_group_programs_program_after}, /* dup */
+     {"collections.group.parts.program.api", st_collections_group_programs_program_api}, /* dup */
      {"collections.group.program.name", st_collections_group_programs_program_name}, /* dup */
      {"collections.group.program.signal", st_collections_group_programs_program_signal}, /* dup */
      {"collections.group.program.source", st_collections_group_programs_program_source}, /* dup */
+     {"collections.group.program.filter", st_collections_group_programs_program_filter}, /* dup */
      {"collections.group.program.in", st_collections_group_programs_program_in}, /* dup */
      {"collections.group.program.action", st_collections_group_programs_program_action}, /* dup */
      {"collections.group.program.transition", st_collections_group_programs_program_transition}, /* dup */
      {"collections.group.program.target", st_collections_group_programs_program_target}, /* dup */
      {"collections.group.program.after", st_collections_group_programs_program_after}, /* dup */
+     {"collections.group.program.api", st_collections_group_programs_program_api}, /* dup */
      {"collections.group.programs.program.name", st_collections_group_programs_program_name},
      {"collections.group.programs.program.signal", st_collections_group_programs_program_signal},
      {"collections.group.programs.program.source", st_collections_group_programs_program_source},
+     {"collections.group.programs.program.filter", st_collections_group_programs_program_filter}, /* dup */
      {"collections.group.programs.program.in", st_collections_group_programs_program_in},
      {"collections.group.programs.program.action", st_collections_group_programs_program_action},
      {"collections.group.programs.program.transition", st_collections_group_programs_program_transition},
      {"collections.group.programs.program.target", st_collections_group_programs_program_target},
      {"collections.group.programs.program.after", st_collections_group_programs_program_after},
+     {"collections.group.programs.program.api", st_collections_group_programs_program_api},
      {"collections.group.programs.image", st_images_image}, /* dup */
+     {"collections.group.programs.set.name", st_images_set_name},
+     {"collections.group.programs.set.image.image", st_images_set_image_image},
+     {"collections.group.programs.set.image.size", st_images_set_image_size},
      {"collections.group.programs.images.image", st_images_image}, /* dup */
+     {"collections.group.programs.images.set.name", st_images_set_name},
+     {"collections.group.programs.images.set.image.image", st_images_set_image_image},
+     {"collections.group.programs.images.set.image.size", st_images_set_image_size},
      {"collections.group.programs.font", st_fonts_font}, /* dup */
      {"collections.group.programs.fonts.font", st_fonts_font} /* dup */
 };
@@ -508,6 +636,8 @@ New_Object_Handler object_handlers[] =
 {
      {"externals", NULL},
      {"images", NULL},
+     {"images.set", ob_images_set},
+     {"images.set.image", ob_images_set_image},
      {"fonts", NULL},
      {"data", NULL},
      {"styles", NULL},
@@ -518,7 +648,11 @@ New_Object_Handler object_handlers[] =
      {"spectra.spectrum", ob_spectrum},
      {"collections", ob_collections},
      {"collections.externals", NULL}, /* dup */
+     {"collections.set", ob_images_set}, /* dup */
+     {"collections.set.image", ob_images_set_image}, /* dup */
      {"collections.images", NULL}, /* dup */
+     {"collections.images.set", ob_images_set}, /* dup */
+     {"collections.images.set.image", ob_images_set_image}, /* dup */
      {"collections.fonts", NULL}, /* dup */
      {"collections.styles", NULL}, /* dup */
      {"collections.styles.style", ob_styles_style}, /* dup */
@@ -529,14 +663,22 @@ New_Object_Handler object_handlers[] =
      {"collections.group.script", ob_collections_group_script},
      {"collections.group.lua_script", ob_collections_group_lua_script},
      {"collections.group.externals", NULL}, /* dup */
+     {"collections.group.set", ob_images_set}, /* dup */
+     {"collections.group.set.image", ob_images_set_image}, /* dup */
      {"collections.group.images", NULL}, /* dup */
+     {"collections.group.images.set", ob_images_set}, /* dup */
+     {"collections.group.images.set.image", ob_images_set_image}, /* dup */
      {"collections.group.fonts", NULL}, /* dup */
      {"collections.group.styles", NULL}, /* dup */
      {"collections.group.styles.style", ob_styles_style}, /* dup */
      {"collections.group.color_classes", NULL}, /* dup */
      {"collections.group.color_classes.color_class", ob_color_class}, /* dup */
      {"collections.group.parts", NULL},
+     {"collections.group.parts.set", ob_images_set}, /* dup */
+     {"collections.group.parts.set.image", ob_images_set_image}, /* dup */
      {"collections.group.parts.images", NULL}, /* dup */
+     {"collections.group.parts.images.set", ob_images_set}, /* dup */
+     {"collections.group.parts.images.set.image", ob_images_set_image}, /* dup */
      {"collections.group.parts.fonts", NULL}, /* dup */
      {"collections.group.parts.styles", NULL}, /* dup */
      {"collections.group.parts.styles.style", ob_styles_style}, /* dup */
@@ -544,7 +686,11 @@ New_Object_Handler object_handlers[] =
      {"collections.group.parts.color_classes.color_class", ob_color_class}, /* dup */
      {"collections.group.parts.part", ob_collections_group_parts_part},
      {"collections.group.parts.part.dragable", NULL},
+     {"collections.group.parts.part.set", ob_images_set}, /* dup */
+     {"collections.group.parts.part.set.image", ob_images_set_image}, /* dup */
      {"collections.group.parts.part.images", NULL}, /* dup */
+     {"collections.group.parts.part.images.set", ob_images_set}, /* dup */
+     {"collections.group.parts.part.images.set.image", ob_images_set_image}, /* dup */
      {"collections.group.parts.part.fonts", NULL}, /* dup */
      {"collections.group.parts.part.styles", NULL}, /* dup */
      {"collections.group.parts.part.styles.style", ob_styles_style}, /* dup */
@@ -560,13 +706,19 @@ New_Object_Handler object_handlers[] =
      {"collections.group.parts.part.description.rel1", NULL},
      {"collections.group.parts.part.description.rel2", NULL},
      {"collections.group.parts.part.description.image", NULL}, /* dup */
+     {"collections.group.parts.part.description.image.set", ob_images_set}, /* dup */
+     {"collections.group.parts.part.description.image.set.image", ob_images_set_image}, /* dup */
      {"collections.group.parts.part.description.image.images", NULL}, /* dup */
+     {"collections.group.parts.part.description.image.images.set", ob_images_set}, /* dup */
+     {"collections.group.parts.part.description.image.images.set.image", ob_images_set_image}, /* dup */
      {"collections.group.parts.part.description.fill", NULL},
      {"collections.group.parts.part.description.fill.origin", NULL},
      {"collections.group.parts.part.description.fill.size", NULL},
      {"collections.group.parts.part.description.text", NULL},
      {"collections.group.parts.part.description.text.fonts", NULL}, /* dup */
      {"collections.group.parts.part.description.images", NULL}, /* dup */
+     {"collections.group.parts.part.description.images.set", ob_images_set}, /* dup */
+     {"collections.group.parts.part.description.images.set.image", ob_images_set_image}, /* dup */
      {"collections.group.parts.part.description.fonts", NULL}, /* dup */
      {"collections.group.parts.part.description.styles", NULL}, /* dup */
      {"collections.group.parts.part.description.styles.style", ob_styles_style}, /* dup */
@@ -575,6 +727,9 @@ New_Object_Handler object_handlers[] =
      {"collections.group.parts.part.description.gradient.rel2", NULL},
      {"collections.group.parts.part.description.box", NULL},
      {"collections.group.parts.part.description.table", NULL},
+     {"collections.group.parts.part.description.map", NULL},
+     {"collections.group.parts.part.description.map.rotation", NULL},
+     {"collections.group.parts.part.description.perspective", NULL},
      {"collections.group.parts.part.description.params", NULL},
      {"collections.group.parts.part.description.color_classes", NULL}, /* dup */
      {"collections.group.parts.part.description.color_classes.color_class", ob_color_class}, /* dup */
@@ -582,7 +737,11 @@ New_Object_Handler object_handlers[] =
      {"collections.group.parts.part.description.program.script", ob_collections_group_programs_program_script}, /* dup */
      {"collections.group.parts.part.description.program.lua_script", ob_collections_group_programs_program_lua_script}, /* dup */
      {"collections.group.parts.part.description.programs", NULL}, /* dup */
+     {"collections.group.parts.part.description.programs.set", ob_images_set}, /* dup */
+     {"collections.group.parts.part.description.programs.set.image", ob_images_set_image}, /* dup */
      {"collections.group.parts.part.description.programs.images", NULL}, /* dup */
+     {"collections.group.parts.part.description.programs.images.set", ob_images_set},
+     {"collections.group.parts.part.description.programs.images.set.image", ob_images_set_image}, /* dup */
      {"collections.group.parts.part.description.programs.fonts", NULL}, /* dup */
      {"collections.group.parts.part.description.programs.program", ob_collections_group_programs_program}, /* dup */
      {"collections.group.parts.part.description.programs.program.script", ob_collections_group_programs_program_script}, /* dup */
@@ -593,7 +752,11 @@ New_Object_Handler object_handlers[] =
      {"collections.group.parts.part.program.script", ob_collections_group_programs_program_script}, /* dup */
      {"collections.group.parts.part.program.lua_script", ob_collections_group_programs_program_lua_script}, /* dup */
      {"collections.group.parts.part.programs", NULL}, /* dup */
+     {"collections.group.parts.part.programs.set", ob_images_set}, /* dup */
+     {"collections.group.parts.part.programs.set.image", ob_images_set_image}, /* dup */
      {"collections.group.parts.part.programs.images", NULL}, /* dup */
+     {"collections.group.parts.part.programs.images.set", ob_images_set}, /* dup */
+     {"collections.group.parts.part.programs.images.set.image", ob_images_set_image}, /* dup */
      {"collections.group.parts.part.programs.fonts", NULL}, /* dup */
      {"collections.group.parts.part.programs.program", ob_collections_group_programs_program}, /* dup */
      {"collections.group.parts.part.programs.program.script", ob_collections_group_programs_program_script}, /* dup */
@@ -604,7 +767,11 @@ New_Object_Handler object_handlers[] =
      {"collections.group.parts.program.script", ob_collections_group_programs_program_script}, /* dup */
      {"collections.group.parts.program.lua_script", ob_collections_group_programs_program_lua_script}, /* dup */
      {"collections.group.parts.programs", NULL}, /* dup */
+     {"collections.group.parts.programs.set", ob_images_set}, /* dup */
+     {"collections.group.parts.programs.set.image", ob_images_set_image}, /* dup */
      {"collections.group.parts.programs.images", NULL}, /* dup */
+     {"collections.group.parts.programs.images.set", ob_images_set}, /* dup */
+     {"collections.group.parts.programs.images.set.image", ob_images_set_image}, /* dup */
      {"collections.group.parts.programs.fonts", NULL}, /* dup */
      {"collections.group.parts.programs.program", ob_collections_group_programs_program}, /* dup */
      {"collections.group.parts.programs.program.script", ob_collections_group_programs_program_script}, /* dup */
@@ -615,7 +782,11 @@ New_Object_Handler object_handlers[] =
      {"collections.group.program.script", ob_collections_group_programs_program_script}, /* dup */
      {"collections.group.program.lua_script", ob_collections_group_programs_program_lua_script}, /* dup */
      {"collections.group.programs", NULL},
+     {"collections.group.programs.set", ob_images_set}, /* dup */
+     {"collections.group.programs.set.image", ob_images_set_image}, /* dup */
      {"collections.group.programs.images", NULL}, /* dup */
+     {"collections.group.programs.images.set", ob_images_set}, /* dup */
+     {"collections.group.programs.images.set.image", ob_images_set_image}, /* dup */
      {"collections.group.programs.fonts", NULL}, /* dup */
      {"collections.group.programs.program", ob_collections_group_programs_program},
      {"collections.group.programs.program.script", ob_collections_group_programs_program_script},
@@ -641,6 +812,10 @@ statement_handler_num(void)
 /*****/
 
 /**
+   @edcsection{toplevel,Top-Level blocks}
+ */
+
+/**
     @page edcref
 
     @block
@@ -658,6 +833,8 @@ statement_handler_num(void)
         external
     @parameters
         [external filename]
+    @effect
+        Used to add a file to the externals list.
     @endproperty
  */
 static void
@@ -706,14 +883,33 @@ st_externals_external(void)
         images {
             image: "filename1.ext" COMP;
             image: "filename2.ext" LOSSY 99;
+	    set {
+	       name: "image_name_used";
+               image {
+                  image: "filename3.ext" LOSSY 90;
+                  size: 201 201 500 500;
+               }
+               image {
+                  image: "filename4.ext" COMP;
+                  size: 51 51 200 200;
+               }
+               image {
+                  image: "filename5.ext" COMP;
+                  size: 11 11 50 50;
+               }
+               image {
+                  image: "filename6.ext" RAW;
+                  size: 0 0 10 10;
+               }
+            }
             ..
         }
     @description
         The "images" block is used to list each image file that will be used in
         the theme along with its compression method (if any).
-        Besides the domcument's root, additional "images" blocks can be
+        Besides the document's root, additional "images" blocks can be
         included inside other blocks, normally "collections", "group" and
-        "part", easing mantienance of the file list when the theme is split
+        "part", easing maintenance of the file list when the theme is split
         among multiple files.
     @endblock
 
@@ -728,6 +924,7 @@ st_externals_external(void)
         @li RAW: Uncompressed.
         @li COMP: Lossless compression.
         @li LOSSY [0-100]: Lossy comression with quality from 0 to 100.
+        @li USER: Do not embed the file, refer to the external file instead.
     @endproperty
  */
 static void
@@ -795,6 +992,146 @@ st_images_image(void)
     @page edcref
 
     @block
+        set
+    @context
+    set {
+       name: "image_name_used";
+       image {
+          image: "filename3.ext" LOSSY 90;
+          size: 201 201 500 500;
+       }
+       image {
+          image: "filename4.ext" COMP;
+          size: 51 51 200 200;
+       }
+       image {
+          image: "filename5.ext" COMP;
+          size: 11 11 50 50;
+       }
+       image {
+          image: "filename6.ext" RAW;
+          size: 0 0 10 10;
+       }
+    }
+    @description
+        The "set" block is used to define an image with different content depending on their size.
+        Besides the document's root, additional "set" blocks can be
+        included inside other blocks, normally "collections", "group" and
+        "part", easing maintenance of the file list when the theme is split
+        among multiple files.
+    @endblock
+ */
+static void
+ob_images_set(void)
+{
+   Edje_Image_Directory_Set *set;
+
+   if (!edje_file->image_dir)
+     edje_file->image_dir = mem_alloc(SZ(Edje_Image_Directory));
+   set = mem_alloc(SZ(Edje_Image_Directory_Set));
+   set->id = eina_list_count(edje_file->image_dir->sets);
+   edje_file->image_dir->sets = eina_list_append(edje_file->image_dir->sets, set);
+}
+
+/**
+    @page edcref
+
+    @property
+        name
+    @parameters
+        [image name]
+    @effect
+        Define the name that refer to this image description.
+    @endproperty
+*/
+static void
+st_images_set_name(void)
+{
+   Edje_Image_Directory_Set *set;
+
+   check_arg_count(1);
+
+   set = eina_list_data_get(eina_list_last(edje_file->image_dir->sets));
+   set->name = parse_str(0);
+}
+
+static void
+ob_images_set_image(void)
+{
+   Edje_Image_Directory_Set_Entry *entry;
+   Edje_Image_Directory_Set *set;
+
+   set = eina_list_data_get(eina_list_last(edje_file->image_dir->sets));
+
+   entry = mem_alloc(SZ(Edje_Image_Directory_Set_Entry));
+
+   set->entries = eina_list_append(set->entries, entry);
+}
+
+static void
+st_images_set_image_image(void)
+{
+   Edje_Image_Directory_Set_Entry *entry;
+   Edje_Image_Directory_Set *set;
+   Edje_Image_Directory_Entry *img;
+   Eina_List *l;
+
+   set =  eina_list_data_get(eina_list_last(edje_file->image_dir->sets));
+   entry = eina_list_data_get(eina_list_last(set->entries));
+
+   /* Add the image to the global pool with the same syntax. */
+   st_images_image();
+
+   entry->name = parse_str(0);
+
+   EINA_LIST_FOREACH(edje_file->image_dir->entries, l, img)
+     if (!strcmp(img->entry, entry->name))
+       {
+	 entry->id = img->id;
+	 return;
+       }  
+}
+
+/**
+    @page edcref
+
+    @property
+        size
+    @parameters
+        [minw minh maxw mawh]
+    @effect
+        Define the minimal and maximal size that will select the specified image.
+    @endproperty
+*/
+static void
+st_images_set_image_size(void)
+{
+   Edje_Image_Directory_Set_Entry *entry;
+   Edje_Image_Directory_Set *set;
+  
+   set =  eina_list_data_get(eina_list_last(edje_file->image_dir->sets));
+   entry = eina_list_data_get(eina_list_last(set->entries));
+
+   entry->size.min.w = parse_int(0);
+   entry->size.min.h = parse_int(1);
+   entry->size.max.w = parse_int(2);
+   entry->size.max.h = parse_int(3);
+
+   if (entry->size.min.w > entry->size.max.w
+       || entry->size.min.h > entry->size.max.h)
+     {
+       ERR("%s: Error. parse error %s:%i. Image min and max size are not in the right order ([%i, %i] < [%i, %i])",
+	   progname, file_in, line - 1,
+	   entry->size.min.w, entry->size.min.h,
+	   entry->size.max.w, entry->size.max.h);
+       exit(-1);
+     }
+}
+
+/**
+    @page edcref
+
+    @block
         fonts
     @context
         fonts {
@@ -852,6 +1189,7 @@ st_fonts_font(void)
      {
 	fnt = mem_alloc(SZ(Edje_Font_Directory_Entry));
 	fnt->entry = mem_strdup(fn->name);
+	fnt->file = mem_strdup(fn->file);
 	edje_file->font_dir->entries = eina_list_append(edje_file->font_dir->entries, fnt);
      }
 }
@@ -927,23 +1265,23 @@ st_data_file(void)
    fd = open(filename, O_RDONLY | O_BINARY, S_IRUSR | S_IWUSR);
    if (fd < 0)
      {
-        fprintf(stderr, "%s: Error. %s:%i when opening file \"%s\": \"%s\"\n",
-                progname, file_in, line, filename, strerror(errno));
+        ERR("%s: Error. %s:%i when opening file \"%s\": \"%s\"",
+	    progname, file_in, line, filename, strerror(errno));
         exit(-1);
      }
 
    if (fstat(fd, &buf))
      {
-        fprintf(stderr, "%s: Error. %s:%i when stating file \"%s\": \"%s\"\n",
-                progname, file_in, line, filename, strerror(errno));
+        ERR("%s: Error. %s:%i when stating file \"%s\": \"%s\"",
+	    progname, file_in, line, filename, strerror(errno));
         exit(-1);
      }
 
    data = mmap(NULL, buf.st_size, PROT_READ, MAP_SHARED, fd, 0);
    if (data == MAP_FAILED)
      {
-        fprintf(stderr, "%s: Error. %s:%i when mapping file \"%s\": \"%s\"\n",
-                progname, file_in, line, filename, strerror(errno));
+        ERR("%s: Error. %s:%i when mapping file \"%s\": \"%s\"",
+	    progname, file_in, line, filename, strerror(errno));
         exit(-1);
      }
 
@@ -951,7 +1289,7 @@ st_data_file(void)
    for (i = 0; i < buf.st_size; ++i, ++over)
      if (*over == '\0')
        {
-          fprintf(stderr, "%s: Error. %s:%i file \"%s\" is a binary file.\n",
+          ERR("%s: Error. %s:%i file \"%s\" is a binary file.",
                   progname, file_in, line, filename);
           exit(-1);
        }
@@ -1250,8 +1588,8 @@ st_styles_style_name(void)
      {
 	if ((stl != tstl) && (!strcmp(stl->name, tstl->name)))
 	  {
-	     fprintf(stderr, "%s: Error. parse error %s:%i. There is already a style named \"%s\"\n",
-		     progname, file_in, line - 1, stl->name);
+	     ERR("%s: Error. parse error %s:%i. There is already a style named \"%s\"",
+		 progname, file_in, line - 1, stl->name);
 	     exit(-1);
 	  }
      }
@@ -1277,8 +1615,8 @@ st_styles_style_base(void)
    stl = eina_list_data_get(eina_list_last(edje_file->styles));
    if (stl->tags)
      {
-	fprintf(stderr, "%s: Error. parse error %s:%i. There is already a basic format for the style\n",
-		progname, file_in, line - 1);
+	ERR("%s: Error. parse error %s:%i. There is already a basic format for the style",
+	    progname, file_in, line - 1);
 	exit(-1);
      }
    tag = mem_alloc(SZ(Edje_Style_Tag));
@@ -1333,6 +1671,10 @@ ob_collections(void)
    if (!edje_file->collection_dir)
      edje_file->collection_dir = mem_alloc(SZ(Edje_Part_Collection_Directory));
 }
+
+/**
+   @edcsection{group,Group sub blocks}
+ */
 
 /**
     @page edcref
@@ -1577,10 +1919,8 @@ st_collections_group_max(void)
 static void
 ob_collections_group_script(void)
 {
-   Edje_Part_Collection *pc;
    Code *cd;
 
-   pc = eina_list_data_get(eina_list_last(edje_collections));
    cd = eina_list_data_get(eina_list_last(codes));
 
    if (!is_verbatim()) track_verbatim(1);
@@ -1595,8 +1935,8 @@ ob_collections_group_script(void)
 	     cd->l2 = get_verbatim_line2();
 	     if (cd->shared)
 	       {
-		  fprintf(stderr, "%s: Error. parse error %s:%i. There is already an existing script section for the group\n",
-			  progname, file_in, line - 1);
+		  ERR("%s: Error. parse error %s:%i. There is already an existing script section for the group",
+		      progname, file_in, line - 1);
 		  exit(-1);
 	       }
 	     cd->shared = s;
@@ -1609,10 +1949,8 @@ ob_collections_group_script(void)
 static void
 ob_collections_group_lua_script(void)
 {
-   Edje_Part_Collection *pc;
    Code *cd;
 
-   pc = eina_list_data_get(eina_list_last(edje_collections));
    cd = eina_list_data_get(eina_list_last(codes));
 
    if (!is_verbatim()) track_verbatim(1);
@@ -1627,8 +1965,8 @@ ob_collections_group_lua_script(void)
 	     cd->l2 = get_verbatim_line2();
 	     if (cd->shared)
 	       {
-		  fprintf(stderr, "%s: Error. parse error %s:%i. There is already an existing script section for the group\n",
-			  progname, file_in, line - 1);
+		  ERR("%s: Error. parse error %s:%i. There is already an existing script section for the group",
+		      progname, file_in, line - 1);
 		  exit(-1);
 	       }
 	     cd->shared = s;
@@ -1741,8 +2079,8 @@ st_collections_group_parts_part_name(void)
 	  {
 	     if ((lep != ep) && (lep->name) && (!strcmp(lep->name, ep->name)))
 	       {
-		  fprintf(stderr, "%s: Error. parse error %s:%i. There is already a part of the name %s\n",
-			  progname, file_in, line - 1, ep->name);
+		  ERR("%s: Error. parse error %s:%i. There is already a part of the name %s",
+		      progname, file_in, line - 1, ep->name);
 		  exit(-1);
 	       }
 	  }
@@ -1918,7 +2256,6 @@ st_collections_group_parts_part_scale(void)
                 signals emitted, even outside the object, until the button is
                 released.
             @li NOGRAB, the effect will be limited to the part's container.
-        container.
     @endproperty
 */
 static void
@@ -2231,12 +2568,13 @@ st_collections_group_parts_part_effect(void)
     @property
         entry_mode
     @parameters
+        [MODE]
+    @effect
         Sets the edit mode for a textblock part to one of:
         @li NONE
         @li PLAIN
         @li EDITABLE
         @li PASSWORD
-    @effect
         It causes the part be editable if the edje object has the keyboard
         focus AND the part has the edje focus (or selectable always
         regardless of focus) and in the event of password mode, not
@@ -2267,10 +2605,11 @@ st_collections_group_parts_part_entry_mode(void)
     @property
         select_mode
     @parameters
+        [MODE]
+    @effect
         Sets the selection mode for a textblock part to one of:
         @li DEFAULT
         @li EXPLICIT
-    @effect
         DEFAULT selection mode is what you would expect on any desktop. Press
         mouse, drag and release to end. EXPLICIT mode requires the application
         controlling the edje object has to explicitly begin and end selection
@@ -2298,7 +2637,7 @@ st_collections_group_parts_part_select_mode(void)
     @property
         multiline
     @parameters
-        0 or 1 (boolean) off/on
+        [1 or 0]
     @effect
         It causes a textblock that is editable to allow multiple lines for
         editing.
@@ -2350,7 +2689,7 @@ st_collections_group_parts_part_multiline(void)
         used to enable (1 or -1) and disable (0) dragging along the axis. When
         enabled, 1 will set the starting point at 0.0 and -1 at 1.0. The second
         parameter takes any integer and will limit movement to values
-        divisibles by it, causing the part to jump from position to position.
+        divisible by it, causing the part to jump from position to position.
         The third parameter, (question from the author: What is count for?).
     @endproperty
 */
@@ -2504,9 +2843,9 @@ static void ob_collections_group_parts_part_box_items_item(void)
 
    if ((ep->type != EDJE_PART_TYPE_BOX) && (ep->type != EDJE_PART_TYPE_TABLE))
      {
-	fprintf(stderr, "%s: Error. parse error %s:%i. "
-		"box attributes in non-BOX or TABLE part.\n",
-		progname, file_in, line - 1);
+	ERR("%s: Error. parse error %s:%i. "
+	    "box attributes in non-BOX or TABLE part.",
+	    progname, file_in, line - 1);
 	exit(-1);
      }
 
@@ -2525,13 +2864,13 @@ static void ob_collections_group_parts_part_box_items_item(void)
    item->padding.r = 0;
    item->padding.t = 0;
    item->padding.b = 0;
-   item->align.x = 0.5;
-   item->align.y = 0.5;
-   item->weight.x = 0.0;
-   item->weight.y = 0.0;
+   item->align.x = FROM_DOUBLE(0.5);
+   item->align.y = FROM_DOUBLE(0.5);
+   item->weight.x = FROM_DOUBLE(0.0);
+   item->weight.y = FROM_DOUBLE(0.0);
    item->aspect.w = 0;
    item->aspect.h = 0;
-   item->aspect.mode = EDJE_ASPECT_PREFER_NONE;
+   item->aspect.mode = EDJE_ASPECT_CONTROL_NONE;
    item->options = NULL;
    item->col = -1;
    item->row = -1;
@@ -2568,9 +2907,9 @@ static void st_collections_group_parts_part_box_items_item_type(void)
 	s = parse_str(0);
 	if (strcmp(s, "GROUP"))
 	  {
-	     fprintf(stderr, "%s: Error. parse error %s:%i. "
-		     "token %s not one of: GROUP.\n",
-		     progname, file_in, line - 1, s);
+	     ERR("%s: Error. parse error %s:%i. "
+		 "token %s not one of: GROUP.",
+		 progname, file_in, line - 1, s);
 	     exit(-1);
 	  }
 	/* FIXME: handle the enum, once everything else is supported */
@@ -2608,7 +2947,7 @@ static void st_collections_group_parts_part_box_items_item_name(void)
     @property
         source
     @parameters
-        [another groups name]
+        [another group's name]
     @effect
         Sets the group this object will be made from.
     @endproperty
@@ -2755,8 +3094,8 @@ static void st_collections_group_parts_part_box_items_item_align(void)
    ep = eina_list_data_get(eina_list_last(pc->parts));
 
    item = eina_list_data_get(eina_list_last(ep->items));
-   item->align.x = parse_float_range(0, -1.0, 1.0);
-   item->align.y = parse_float_range(1, -1.0, 1.0);
+   item->align.x = FROM_DOUBLE(parse_float_range(0, -1.0, 1.0));
+   item->align.y = FROM_DOUBLE(parse_float_range(1, -1.0, 1.0));
 }
 
 /**
@@ -2781,8 +3120,8 @@ static void st_collections_group_parts_part_box_items_item_weight(void)
    ep = eina_list_data_get(eina_list_last(pc->parts));
 
    item = eina_list_data_get(eina_list_last(ep->items));
-   item->weight.x = parse_float_range(0, 0.0, 99999.99);
-   item->weight.y = parse_float_range(1, 0.0, 99999.99);
+   item->weight.x = FROM_DOUBLE(parse_float_range(0, 0.0, 99999.99));
+   item->weight.y = FROM_DOUBLE(parse_float_range(1, 0.0, 99999.99));
 }
 
 /**
@@ -2891,12 +3230,12 @@ static void st_collections_group_parts_part_table_items_item_position(void)
 
    if (ep->type != EDJE_PART_TYPE_TABLE)
      {
-	fprintf(stderr, "%s: Error. parse error %s:%i. "
-		"table attributes in non-TABLE part.\n",
-		progname, file_in, line - 1);
+	ERR("%s: Error. parse error %s:%i. "
+	    "table attributes in non-TABLE part.",
+	    progname, file_in, line - 1);
 	exit(-1);
      }
-
+   
    item = eina_list_data_get(eina_list_last(ep->items));
    item->col = parse_int_range(0, 0, 0xffff);
    item->row = parse_int_range(1, 0, 0xffff);
@@ -2926,9 +3265,9 @@ static void st_collections_group_parts_part_table_items_item_span(void)
 
    if (ep->type != EDJE_PART_TYPE_TABLE)
      {
-	fprintf(stderr, "%s: Error. parse error %s:%i. "
-		"table attributes in non-TABLE part.\n",
-		progname, file_in, line - 1);
+	ERR("%s: Error. parse error %s:%i. "
+	    "table attributes in non-TABLE part.",
+	    progname, file_in, line - 1);
 	exit(-1);
      }
 
@@ -2936,6 +3275,10 @@ static void st_collections_group_parts_part_table_items_item_span(void)
    item->colspan = parse_int_range(0, 1, 0xffff);
    item->rowspan = parse_int_range(1, 1, 0xffff);
 }
+
+/**
+   @edcsection{description,State description sub blocks}
+ */
 
 /**
     @page edcref
@@ -2982,35 +3325,35 @@ ob_collections_group_parts_part_description(void)
    else
      ep->other_desc = eina_list_append(ep->other_desc, ed);
    ed->visible = 1;
-   ed->align.x = 0.5;
-   ed->align.y = 0.5;
+   ed->align.x = FROM_DOUBLE(0.5);
+   ed->align.y = FROM_DOUBLE(0.5);
    ed->min.w = 0;
    ed->min.h = 0;
    ed->fixed.w = 0;
    ed->fixed.h = 0;
    ed->max.w = -1;
    ed->max.h = -1;
-   ed->rel1.relative_x = 0.0;
-   ed->rel1.relative_y = 0.0;
+   ed->rel1.relative_x = FROM_DOUBLE(0.0);
+   ed->rel1.relative_y = FROM_DOUBLE(0.0);
    ed->rel1.offset_x = 0;
    ed->rel1.offset_y = 0;
    ed->rel1.id_x = -1;
    ed->rel1.id_y = -1;
-   ed->rel2.relative_x = 1.0;
-   ed->rel2.relative_y = 1.0;
+   ed->rel2.relative_x = FROM_DOUBLE(1.0);
+   ed->rel2.relative_y = FROM_DOUBLE(1.0);
    ed->rel2.offset_x = -1;
    ed->rel2.offset_y = -1;
    ed->rel2.id_x = -1;
    ed->rel2.id_y = -1;
    ed->image.id = -1;
    ed->fill.smooth = 1;
-   ed->fill.pos_rel_x = 0.0;
+   ed->fill.pos_rel_x = FROM_DOUBLE(0.0);
    ed->fill.pos_abs_x = 0;
-   ed->fill.rel_x = 1.0;
+   ed->fill.rel_x = FROM_DOUBLE(1.0);
    ed->fill.abs_x = 0;
-   ed->fill.pos_rel_y = 0.0;
+   ed->fill.pos_rel_y = FROM_DOUBLE(0.0);
    ed->fill.pos_abs_y = 0;
-   ed->fill.rel_y = 1.0;
+   ed->fill.rel_y = FROM_DOUBLE(1.0);
    ed->fill.abs_y = 0;
    ed->fill.angle = 0;
    ed->fill.spread = 0;
@@ -3028,29 +3371,42 @@ ob_collections_group_parts_part_description(void)
    ed->color3.g = 0;
    ed->color3.b = 0;
    ed->color3.a = 128;
-   ed->text.align.x = 0.5;
-   ed->text.align.y = 0.5;
+   ed->text.align.x = FROM_DOUBLE(0.5);
+   ed->text.align.y = FROM_DOUBLE(0.5);
    ed->text.id_source = -1;
    ed->text.id_text_source = -1;
-   ed->gradient.rel1.relative_x = 0;
-   ed->gradient.rel1.relative_y = 0;
+   ed->gradient.rel1.relative_x = FROM_INT(0);
+   ed->gradient.rel1.relative_y = FROM_INT(0);
    ed->gradient.rel1.offset_x = 0;
    ed->gradient.rel1.offset_y = 0;
-   ed->gradient.rel2.relative_x = 1;
-   ed->gradient.rel2.relative_y = 1;
+   ed->gradient.rel2.relative_x = FROM_INT(1);
+   ed->gradient.rel2.relative_y = FROM_INT(1);
    ed->gradient.rel2.offset_x = -1;
    ed->gradient.rel2.offset_y = -1;
    ed->box.layout = NULL;
    ed->box.alt_layout = NULL;
-   ed->box.align.x = 0.5;
-   ed->box.align.y = 0.5;
+   ed->box.align.x = FROM_DOUBLE(0.5);
+   ed->box.align.y = FROM_DOUBLE(0.5);
    ed->box.padding.x = 0;
    ed->box.padding.y = 0;
    ed->table.homogeneous = EDJE_OBJECT_TABLE_HOMOGENEOUS_NONE;
-   ed->table.align.x = 0.5;
-   ed->table.align.y = 0.5;
+   ed->table.align.x = FROM_DOUBLE(0.5);
+   ed->table.align.y = FROM_DOUBLE(0.5);
    ed->table.padding.x = 0;
    ed->table.padding.y = 0;
+   ed->map.id_persp = -1;
+   ed->map.id_light = -1;
+   ed->map.rot.id_center = -1;
+   ed->map.rot.x = FROM_DOUBLE(0.0);
+   ed->map.rot.y = FROM_DOUBLE(0.0);
+   ed->map.rot.z = FROM_DOUBLE(0.0);
+   ed->map.on = 0;
+   ed->map.smooth = 1;
+   ed->map.alpha = 1;
+   ed->map.backcull = 0;
+   ed->map.persp_on = 0;
+   ed->persp.zplane = 0;
+   ed->persp.focal = 1000;
    ed->external_params = NULL;
 }
 
@@ -3087,9 +3443,9 @@ st_collections_group_parts_part_description_inherit(void)
    /* inherit may not be used in the default description */
    if (!ep->other_desc)
      {
-	fprintf(stderr, "%s: Error. parse error %s:%i. "
-		"inherit may not be used in the default description\n",
-		progname, file_in, line - 1);
+	ERR("%s: Error. parse error %s:%i. "
+	    "inherit may not be used in the default description",
+	    progname, file_in, line - 1);
 	exit(-1);
      }
 
@@ -3097,9 +3453,9 @@ st_collections_group_parts_part_description_inherit(void)
 
    if (!ed->state.name)
      {
-	fprintf(stderr, "%s: Error. parse error %s:%i. "
-		"inherit may only be used after state\n",
-		progname, file_in, line - 1);
+        ERR("%s: Error. parse error %s:%i. "
+	    "inherit may only be used after state",
+	    progname, file_in, line - 1);
 	exit(-1);
      }
 
@@ -3138,9 +3494,9 @@ st_collections_group_parts_part_description_inherit(void)
 
    if (!parent)
      {
-	fprintf (stderr, "%s: Error. parse error %s:%i. "
-	      "cannot find referenced part state %s %lf\n",
-	      ep->name, file_in, line - 1, parent_name, parent_val);
+	ERR("%s: Error. parse error %s:%i. "
+	    "cannot find referenced part state %s %lf",
+	    ep->name, file_in, line - 1, parent_name, parent_val);
 	exit(-1);
      }
 
@@ -3234,9 +3590,9 @@ st_collections_group_parts_part_description_state(void)
    s = parse_str(0);
    if (!strcmp (s, "custom"))
      {
-	fprintf(stderr, "%s: Error. parse error %s:%i. "
-		"invalid state name: '%s'.\n",
-		progname, file_in, line - 1, s);
+	ERR("%s: Error. parse error %s:%i. "
+	    "invalid state name: '%s'.",
+	    progname, file_in, line - 1, s);
 	exit(-1);
      }
 
@@ -3296,8 +3652,8 @@ st_collections_group_parts_part_description_align(void)
    ep = eina_list_data_get(eina_list_last(pc->parts));
    ed = ep->default_desc;
    if (ep->other_desc) ed = eina_list_data_get(eina_list_last(ep->other_desc));
-   ed->align.x = parse_float_range(0, 0.0, 1.0);
-   ed->align.y = parse_float_range(1, 0.0, 1.0);
+   ed->align.x = FROM_DOUBLE(parse_float_range(0, 0.0, 1.0));
+   ed->align.y = FROM_DOUBLE(parse_float_range(1, 0.0, 1.0));
 }
 
 /**
@@ -3307,8 +3663,11 @@ st_collections_group_parts_part_description_align(void)
     @parameters
         [width, 0 or 1] [height, 0 or 1]
     @effect
-        When the "min" or "max" properties are set, fixed enables or disables
-        resizing for each dimension. The default value is "0 0"
+        This affects the minimum size calculation. See
+        edje_object_size_min_calc() and edje_object_size_min_restricted_calc().
+        This tells the min size calculation routine that this part does not
+        change size in width or height (1 for it doesn't, 0 for it does), so
+        the routine should not try and expand or contract the part.
     @endproperty
 */
 static void
@@ -3438,8 +3797,8 @@ st_collections_group_parts_part_description_aspect(void)
    ep = eina_list_data_get(eina_list_last(pc->parts));
    ed = ep->default_desc;
    if (ep->other_desc) ed = eina_list_data_get(eina_list_last(ep->other_desc));
-   ed->aspect.min = parse_float_range(0, 0.0, 999999999.0);
-   ed->aspect.max = parse_float_range(1, 0.0, 999999999.0);
+   ed->aspect.min = FROM_DOUBLE(parse_float_range(0, 0.0, 999999999.0));
+   ed->aspect.max = FROM_DOUBLE(parse_float_range(1, 0.0, 999999999.0));
 }
 
 /**
@@ -3636,8 +3995,8 @@ st_collections_group_parts_part_description_rel1_relative(void)
    ep = eina_list_data_get(eina_list_last(pc->parts));
    ed = ep->default_desc;
    if (ep->other_desc) ed = eina_list_data_get(eina_list_last(ep->other_desc));
-   ed->rel1.relative_x = parse_float(0);
-   ed->rel1.relative_y = parse_float(1);
+   ed->rel1.relative_x = FROM_DOUBLE(parse_float(0));
+   ed->rel1.relative_y = FROM_DOUBLE(parse_float(1));
 }
 
 /**
@@ -3781,8 +4140,8 @@ st_collections_group_parts_part_description_rel2_relative(void)
    ep = eina_list_data_get(eina_list_last(pc->parts));
    ed = ep->default_desc;
    if (ep->other_desc) ed = eina_list_data_get(eina_list_last(ep->other_desc));
-   ed->rel2.relative_x = parse_float(0);
-   ed->rel2.relative_y = parse_float(1);
+   ed->rel2.relative_x = FROM_DOUBLE(parse_float(0));
+   ed->rel2.relative_y = FROM_DOUBLE(parse_float(1));
 }
 
 static void
@@ -3870,6 +4229,10 @@ st_collections_group_parts_part_description_rel2_to_y(void)
 }
 
 /**
+   @edcsection{description_image,Image state description sub blocks}
+ */
+
+/**
     @page edcref
     @block
         image
@@ -3913,9 +4276,9 @@ st_collections_group_parts_part_description_image_normal(void)
 
    if (ep->type != EDJE_PART_TYPE_IMAGE)
      {
-	fprintf(stderr, "%s: Error. parse error %s:%i. "
-		"image attributes in non-IMAGE part.\n",
-		progname, file_in, line - 1);
+	ERR("%s: Error. parse error %s:%i. "
+	    "image attributes in non-IMAGE part.",
+	    progname, file_in, line - 1);
 	exit(-1);
      }
 
@@ -3925,7 +4288,7 @@ st_collections_group_parts_part_description_image_normal(void)
 	char *name;
 
 	name = parse_str(0);
-	data_queue_image_lookup(name, &(ed->image.id));
+	data_queue_image_lookup(name, &(ed->image.id), &(ed->image.set));
 	free(name);
      }
 }
@@ -3956,9 +4319,9 @@ st_collections_group_parts_part_description_image_tween(void)
 
    if (ep->type != EDJE_PART_TYPE_IMAGE)
      {
-	fprintf(stderr, "%s: Error. parse error %s:%i. "
-		"image attributes in non-IMAGE part.\n",
-		progname, file_in, line - 1);
+	ERR("%s: Error. parse error %s:%i. "
+	    "image attributes in non-IMAGE part.",
+	    progname, file_in, line - 1);
 	exit(-1);
      }
 
@@ -3971,7 +4334,7 @@ st_collections_group_parts_part_description_image_tween(void)
 	iid = mem_alloc(SZ(Edje_Part_Image_Id));
 	ed->image.tween_list = eina_list_append(ed->image.tween_list, iid);
 	name = parse_str(0);
-	data_queue_image_lookup(name, &(iid->id));
+	data_queue_image_lookup(name, &(iid->id), &(iid->set));
 	free(name);
      }
 }
@@ -4002,9 +4365,9 @@ st_collections_group_parts_part_description_image_border(void)
 
    if (ep->type != EDJE_PART_TYPE_IMAGE)
      {
-	fprintf(stderr, "%s: Error. parse error %s:%i. "
-		"image attributes in non-IMAGE part.\n",
-		progname, file_in, line - 1);
+	ERR("%s: Error. parse error %s:%i. "
+	    "image attributes in non-IMAGE part.",
+	    progname, file_in, line - 1);
 	exit(-1);
      }
 
@@ -4042,9 +4405,9 @@ st_collections_group_parts_part_description_image_middle(void)
 
    if (ep->type != EDJE_PART_TYPE_IMAGE)
      {
-	fprintf(stderr, "%s: Error. parse error %s:%i. "
-		"image attributes in non-IMAGE part.\n",
-		progname, file_in, line - 1);
+	ERR("%s: Error. parse error %s:%i. "
+	    "image attributes in non-IMAGE part.",
+	    progname, file_in, line - 1);
 	exit(-1);
      }
 
@@ -4062,12 +4425,51 @@ st_collections_group_parts_part_description_image_middle(void)
 /**
     @page edcref
     @property
+        border_scale
+    @parameters
+        0, 1
+    @effect
+        If border is set, this value tells Edje if the border should be scaled
+        by the object/global edje scale factors
+    @endproperty
+*/
+static void
+st_collections_group_parts_part_description_image_border_scale(void)
+{
+   Edje_Part_Collection *pc;
+   Edje_Part *ep;
+   Edje_Part_Description *ed;
+
+   check_arg_count(1);
+
+   pc = eina_list_data_get(eina_list_last(edje_collections));
+   ep = eina_list_data_get(eina_list_last(pc->parts));
+
+   if (ep->type != EDJE_PART_TYPE_IMAGE)
+     {
+	ERR("%s: Error. parse error %s:%i. "
+	    "image attributes in non-IMAGE part.",
+	    progname, file_in, line - 1);
+	exit(-1);
+     }
+
+   ed = ep->default_desc;
+   if (ep->other_desc) ed = eina_list_data_get(eina_list_last(ep->other_desc));
+   ed->border.scale =  parse_enum(0,
+                                  "1", 0,
+                                  "0", 1,
+                                  NULL);
+}
+
+/**
+    @page edcref
+    @property
         scale_hint
     @parameters
         0, NONE, DYNAMIC, STATIC
     @effect
-      Sets the evas image scale hint letting the engine more efectively save
-      cached copies of the scaled image if it maks sense
+        Sets the evas image scale hint letting the engine more effectively save
+        cached copies of the scaled image if it makes sense
     @endproperty
 */
 static void
@@ -4084,9 +4486,9 @@ st_collections_group_parts_part_description_image_scale_hint(void)
 
    if (ep->type != EDJE_PART_TYPE_IMAGE)
      {
-	fprintf(stderr, "%s: Error. parse error %s:%i. "
-		"image attributes in non-IMAGE part.\n",
-		progname, file_in, line - 1);
+	ERR("%s: Error. parse error %s:%i. "
+	    "image attributes in non-IMAGE part.",
+	    progname, file_in, line - 1);
 	exit(-1);
      }
 
@@ -4148,9 +4550,9 @@ st_collections_group_parts_part_description_fill_smooth(void)
 
    if (ep->type != EDJE_PART_TYPE_IMAGE)
      {
-	fprintf(stderr, "%s: Error. parse error %s:%i. "
-		"fill.type attribute in non-IMAGE part.\n",
-		progname, file_in, line - 1);
+	ERR("%s: Error. parse error %s:%i. "
+	    "fill.type attribute in non-IMAGE part.",
+	    progname, file_in, line - 1);
 	exit(-1);
      }
 
@@ -4205,7 +4607,7 @@ st_collections_group_parts_part_description_fill_spread(void)
         [angle]
     @effect
         The angle of rotation of a GRADIENT part. It is invalid in any other
-        part type. The angle is espressed as an int, in the range 0 - 360.
+        part type. The angle is expressed as an int, in the range 0 - 360.
     @endproperty
 */
 static void
@@ -4223,9 +4625,9 @@ st_collections_group_parts_part_description_fill_angle(void)
    /* XXX this will need to include IMAGES when angle support is added to evas images */
    if (ep->type != EDJE_PART_TYPE_GRADIENT)
      {
-	fprintf(stderr, "%s: Error. parse error %s:%i. "
-		"gradient attributes in non-GRADIENT part.\n",
-		progname, file_in, line - 1);
+	ERR("%s: Error. parse error %s:%i. "
+	    "gradient attributes in non-GRADIENT part.",
+	    progname, file_in, line - 1);
 	exit(-1);
      }
 
@@ -4261,9 +4663,9 @@ st_collections_group_parts_part_description_fill_type(void)
 
    if (ep->type != EDJE_PART_TYPE_IMAGE)
      {
-	fprintf(stderr, "%s: Error. parse error %s:%i. "
-		"fill attributes in non-IMAGE part.\n",
-		progname, file_in, line - 1);
+	ERR("%s: Error. parse error %s:%i. "
+	    "fill attributes in non-IMAGE part.",
+	    progname, file_in, line - 1);
 	exit(-1);
      }
 
@@ -4318,16 +4720,16 @@ st_collections_group_parts_part_description_fill_origin_relative(void)
 
    if (ep->type != EDJE_PART_TYPE_IMAGE && ep->type != EDJE_PART_TYPE_GRADIENT)
      {
-	fprintf(stderr, "%s: Error. parse error %s:%i. "
-		"fill attributes in non-IMAGE part.\n",
-		progname, file_in, line - 1);
+	ERR("%s: Error. parse error %s:%i. "
+	    "fill attributes in non-IMAGE part.",
+	    progname, file_in, line - 1);
 	exit(-1);
      }
 
    ed = ep->default_desc;
    if (ep->other_desc) ed = eina_list_data_get(eina_list_last(ep->other_desc));
-   ed->fill.pos_rel_x = parse_float_range(0, -999999999.0, 999999999.0);
-   ed->fill.pos_rel_y = parse_float_range(1, -999999999.0, 999999999.0);
+   ed->fill.pos_rel_x = FROM_DOUBLE(parse_float_range(0, -999999999.0, 999999999.0));
+   ed->fill.pos_rel_y = FROM_DOUBLE(parse_float_range(1, -999999999.0, 999999999.0));
 }
 
 /**
@@ -4354,9 +4756,9 @@ st_collections_group_parts_part_description_fill_origin_offset(void)
 
    if (ep->type != EDJE_PART_TYPE_IMAGE && ep->type != EDJE_PART_TYPE_GRADIENT)
      {
-	fprintf(stderr, "%s: Error. parse error %s:%i. "
-		"fill attributes in non-IMAGE part.\n",
-		progname, file_in, line - 1);
+	ERR("%s: Error. parse error %s:%i. "
+	    "fill attributes in non-IMAGE part.",
+	    progname, file_in, line - 1);
 	exit(-1);
      }
 
@@ -4415,14 +4817,14 @@ st_collections_group_parts_part_description_fill_size_relative(void)
 
    if (ep->type != EDJE_PART_TYPE_IMAGE && ep->type != EDJE_PART_TYPE_GRADIENT)
      {
-	fprintf(stderr, "%s: Error. parse error %s:%i. "
-		"fill attributes in non-IMAGE part.\n",
-		progname, file_in, line - 1);
+	ERR("%s: Error. parse error %s:%i. "
+	    "fill attributes in non-IMAGE part.",
+	    progname, file_in, line - 1);
 	exit(-1);
      }
 
-   ed->fill.rel_x = parse_float_range(0, 0.0, 999999999.0);
-   ed->fill.rel_y = parse_float_range(1, 0.0, 999999999.0);
+   ed->fill.rel_x = FROM_DOUBLE(parse_float_range(0, 0.0, 999999999.0));
+   ed->fill.rel_y = FROM_DOUBLE(parse_float_range(1, 0.0, 999999999.0));
 }
 
 /**
@@ -4451,15 +4853,20 @@ st_collections_group_parts_part_description_fill_size_offset(void)
 
    if (ep->type != EDJE_PART_TYPE_IMAGE && ep->type != EDJE_PART_TYPE_GRADIENT)
      {
-	fprintf(stderr, "%s: Error. parse error %s:%i. "
-		"fill attributes in non-IMAGE part.\n",
-		progname, file_in, line - 1);
+	ERR("%s: Error. parse error %s:%i. "
+	    "fill attributes in non-IMAGE part.",
+	    progname, file_in, line - 1);
 	exit(-1);
      }
 
    ed->fill.abs_x = parse_int(0);
    ed->fill.abs_y = parse_int(1);
 }
+
+
+/**
+   @edcsection{description_text,Text state description sub blocks}
+ */
 
 /**
     @page edcref
@@ -4514,9 +4921,9 @@ st_collections_group_parts_part_description_text_text(void)
    if ((ep->type != EDJE_PART_TYPE_TEXT) &&
        (ep->type != EDJE_PART_TYPE_TEXTBLOCK))
      {
-	fprintf(stderr, "%s: Error. parse error %s:%i. "
-		"text attributes in non-TEXT part.\n",
-		progname, file_in, line - 1);
+	ERR("%s: Error. parse error %s:%i. "
+	    "text attributes in non-TEXT part.",
+	    progname, file_in, line - 1);
 	exit(-1);
      }
 
@@ -4566,9 +4973,9 @@ st_collections_group_parts_part_description_text_text_class(void)
    if ((ep->type != EDJE_PART_TYPE_TEXT) &&
        (ep->type != EDJE_PART_TYPE_TEXTBLOCK))
      {
-	fprintf(stderr, "%s: Error. parse error %s:%i. "
-		"text attributes in non-TEXT part.\n",
-		progname, file_in, line - 1);
+	ERR("%s: Error. parse error %s:%i. "
+	    "text attributes in non-TEXT part.",
+	    progname, file_in, line - 1);
 	exit(-1);
      }
 
@@ -4603,9 +5010,9 @@ st_collections_group_parts_part_description_text_font(void)
 
    if (ep->type != EDJE_PART_TYPE_TEXT)
      {
-	fprintf(stderr, "%s: Error. parse error %s:%i. "
-		"text attributes in non-TEXT part.\n",
-		progname, file_in, line - 1);
+	ERR("%s: Error. parse error %s:%i. "
+	    "text attributes in non-TEXT part.",
+	    progname, file_in, line - 1);
 	exit(-1);
      }
 
@@ -4640,9 +5047,9 @@ st_collections_group_parts_part_description_text_style(void)
 
    if (ep->type != EDJE_PART_TYPE_TEXTBLOCK)
      {
-	fprintf(stderr, "%s: Error. parse error %s:%i. "
-		"text attributes in non-TEXTBLOCK part.\n",
-		progname, file_in, line - 1);
+	ERR("%s: Error. parse error %s:%i. "
+	    "text attributes in non-TEXTBLOCK part.",
+	    progname, file_in, line - 1);
 	exit(-1);
      }
 
@@ -4678,9 +5085,9 @@ st_collections_group_parts_part_description_text_repch(void)
 
    if (ep->type != EDJE_PART_TYPE_TEXTBLOCK)
      {
-	fprintf(stderr, "%s: Error. parse error %s:%i. "
-		"text attributes in non-TEXTBLOCK part.\n",
-		progname, file_in, line - 1);
+	ERR("%s: Error. parse error %s:%i. "
+	    "text attributes in non-TEXTBLOCK part.",
+	    progname, file_in, line - 1);
 	exit(-1);
      }
 
@@ -4715,9 +5122,9 @@ st_collections_group_parts_part_description_text_size(void)
 
    if (ep->type != EDJE_PART_TYPE_TEXT)
      {
-	fprintf(stderr, "%s: Error. parse error %s:%i. "
-		"text attributes in non-TEXT part.\n",
-		progname, file_in, line - 1);
+	ERR("%s: Error. parse error %s:%i. "
+	    "text attributes in non-TEXT part.",
+	    progname, file_in, line - 1);
 	exit(-1);
      }
 
@@ -4752,9 +5159,9 @@ st_collections_group_parts_part_description_text_fit(void)
 
    if (ep->type != EDJE_PART_TYPE_TEXT)
      {
-	fprintf(stderr, "%s: Error. parse error %s:%i. "
-		"text attributes in non-TEXT part.\n",
-		progname, file_in, line - 1);
+	ERR("%s: Error. parse error %s:%i. "
+	    "text attributes in non-TEXT part.",
+	    progname, file_in, line - 1);
 	exit(-1);
      }
 
@@ -4792,9 +5199,9 @@ st_collections_group_parts_part_description_text_min(void)
    if ((ep->type != EDJE_PART_TYPE_TEXT) &&
        (ep->type != EDJE_PART_TYPE_TEXTBLOCK))
      {
-	fprintf(stderr, "%s: Error. parse error %s:%i. "
-		"text attributes in non-TEXT part.\n",
-		progname, file_in, line - 1);
+	ERR("%s: Error. parse error %s:%i. "
+	    "text attributes in non-TEXT part.",
+	    progname, file_in, line - 1);
 	exit(-1);
      }
 
@@ -4832,9 +5239,9 @@ st_collections_group_parts_part_description_text_max(void)
    if ((ep->type != EDJE_PART_TYPE_TEXT) &&
        (ep->type != EDJE_PART_TYPE_TEXTBLOCK))
      {
-	fprintf(stderr, "%s: Error. parse error %s:%i. "
-		"text attributes in non-TEXT part.\n",
-		progname, file_in, line - 1);
+	ERR("%s: Error. parse error %s:%i. "
+	    "text attributes in non-TEXT part.",
+	    progname, file_in, line - 1);
 	exit(-1);
      }
 
@@ -4870,16 +5277,16 @@ st_collections_group_parts_part_description_text_align(void)
 
    if (ep->type != EDJE_PART_TYPE_TEXT)
      {
-	fprintf(stderr, "%s: Error. parse error %s:%i. "
-		"text attributes in non-TEXT part.\n",
-		progname, file_in, line - 1);
+	ERR("%s: Error. parse error %s:%i. "
+	    "text attributes in non-TEXT part.",
+	    progname, file_in, line - 1);
 	exit(-1);
      }
 
    ed = ep->default_desc;
    if (ep->other_desc) ed = eina_list_data_get(eina_list_last(ep->other_desc));
-   ed->text.align.x = parse_float_range(0, 0.0, 1.0);
-   ed->text.align.y = parse_float_range(1, 0.0, 1.0);
+   ed->text.align.x = FROM_DOUBLE(parse_float_range(0, 0.0, 1.0));
+   ed->text.align.y = FROM_DOUBLE(parse_float_range(1, 0.0, 1.0));
 }
 
 /**
@@ -4909,9 +5316,9 @@ st_collections_group_parts_part_description_text_source(void)
    if ((ep->type != EDJE_PART_TYPE_TEXT) &&
        (ep->type != EDJE_PART_TYPE_TEXTBLOCK))
      {
-	fprintf(stderr, "%s: Error. parse error %s:%i. "
-		"text attributes in non-TEXT part.\n",
-		progname, file_in, line - 1);
+	ERR("%s: Error. parse error %s:%i. "
+	    "text attributes in non-TEXT part.",
+	    progname, file_in, line - 1);
 	exit(-1);
      }
 
@@ -4953,9 +5360,9 @@ st_collections_group_parts_part_description_text_text_source(void)
    if ((ep->type != EDJE_PART_TYPE_TEXT) &&
        (ep->type != EDJE_PART_TYPE_TEXTBLOCK))
      {
-	fprintf(stderr, "%s: Error. parse error %s:%i. "
-		"text attributes in non-TEXT part.\n",
-		progname, file_in, line - 1);
+	ERR("%s: Error. parse error %s:%i. "
+	    "text attributes in non-TEXT part.",
+	    progname, file_in, line - 1);
 	exit(-1);
      }
 
@@ -4974,7 +5381,7 @@ st_collections_group_parts_part_description_text_text_source(void)
     @page edcref
 
     @property
-        text_elipsis
+        elipsis
     @parameters
         [point of balance]
     @effect
@@ -4997,9 +5404,9 @@ st_collections_group_parts_part_description_text_elipsis(void)
 
    if (ep->type != EDJE_PART_TYPE_TEXT)
      {
-	fprintf(stderr, "%s: Error. parse error %s:%i. "
-		"text attributes in non-TEXT part.\n",
-		progname, file_in, line - 1);
+	ERR("%s: Error. parse error %s:%i. "
+	    "text attributes in non-TEXT part.",
+	    progname, file_in, line - 1);
 	exit(-1);
      }
 
@@ -5007,6 +5414,11 @@ st_collections_group_parts_part_description_text_elipsis(void)
    if (ep->other_desc) ed = eina_list_data_get(eina_list_last(ep->other_desc));
    ed->text.elipsis = parse_float_range(0, 0.0, 1.0);
 }
+
+
+/**
+   @edcsection{description_gradient,Gradient state description sub blocks}
+ */
 
 /**
     @page edcref
@@ -5067,9 +5479,9 @@ st_collections_group_parts_part_description_gradient_type(void)
 
    if (ep->type != EDJE_PART_TYPE_GRADIENT)
      {
-	fprintf(stderr, "%s: Error. parse error %s:%i. "
-		"gradient attributes in non-GRADIENT part.\n",
-		progname, file_in, line - 1);
+	ERR("%s: Error. parse error %s:%i. "
+	    "gradient attributes in non-GRADIENT part.",
+	    progname, file_in, line - 1);
 	exit(-1);
      }
 
@@ -5104,9 +5516,9 @@ st_collections_group_parts_part_description_gradient_spectrum(void)
 
    if (ep->type != EDJE_PART_TYPE_GRADIENT)
      {
-	fprintf(stderr, "%s: Error. parse error %s:%i. "
-		"gradient attributes in non-GRADIENT part.\n",
-		progname, file_in, line - 1);
+        ERR("%s: Error. parse error %s:%i. "
+	    "gradient attributes in non-GRADIENT part.",
+	    progname, file_in, line - 1);
 	exit(-1);
      }
 
@@ -5149,9 +5561,9 @@ st_collections_group_parts_part_description_gradient_rel1_relative(void)
 
    if (ep->type != EDJE_PART_TYPE_GRADIENT)
      {
-	fprintf(stderr, "%s: Error. parse error %s:%i. "
-		"gradient attributes in non-GRADIENT part.\n",
-		progname, file_in, line - 1);
+	ERR("%s: Error. parse error %s:%i. "
+	    "gradient attributes in non-GRADIENT part.",
+	    progname, file_in, line - 1);
 	exit(-1);
      }
 
@@ -5192,9 +5604,9 @@ st_collections_group_parts_part_description_gradient_rel1_offset(void)
 
    if (ep->type != EDJE_PART_TYPE_GRADIENT)
      {
-	fprintf(stderr, "%s: Error. parse error %s:%i. "
-		"gradient attributes in non-GRADIENT part.\n",
-		progname, file_in, line - 1);
+	ERR("%s: Error. parse error %s:%i. "
+	    "gradient attributes in non-GRADIENT part.",
+	    progname, file_in, line - 1);
 	exit(-1);
      }
 
@@ -5222,12 +5634,12 @@ st_collections_group_parts_part_description_gradient_rel2_relative(void)
 
    if (ep->type != EDJE_PART_TYPE_GRADIENT)
      {
-	fprintf(stderr, "%s: Error. parse error %s:%i. "
-		"gradient attributes in non-GRADIENT part.\n",
-		progname, file_in, line - 1);
+	ERR("%s: Error. parse error %s:%i. "
+	    "gradient attributes in non-GRADIENT part.",
+	    progname, file_in, line - 1);
 	exit(-1);
      }
-
+   
    ed = ep->default_desc;
    if (ep->other_desc) ed = eina_list_data_get(eina_list_last(ep->other_desc));
 
@@ -5252,9 +5664,9 @@ st_collections_group_parts_part_description_gradient_rel2_offset(void)
 
    if (ep->type != EDJE_PART_TYPE_GRADIENT)
      {
-	fprintf(stderr, "%s: Error. parse error %s:%i. "
-		"gradient attributes in non-GRADIENT part.\n",
-		progname, file_in, line - 1);
+	ERR("%s: Error. parse error %s:%i. "
+	    "gradient attributes in non-GRADIENT part.",
+	    progname, file_in, line - 1);
 	exit(-1);
      }
 
@@ -5267,6 +5679,11 @@ st_collections_group_parts_part_description_gradient_rel2_offset(void)
 	ed->gradient.rel2.offset_y = parse_int(1);
      }
 }
+
+
+/**
+   @edcsection{description_box,Box state description sub blocks}
+ */
 
 /**
     @page edcref
@@ -5353,9 +5770,9 @@ static void st_collections_group_parts_part_description_box_layout(void)
 
    if (ep->type != EDJE_PART_TYPE_BOX)
      {
-	fprintf(stderr, "%s: Error. parse error %s:%i. "
-		"box attributes in non-BOX part.\n",
-		progname, file_in, line - 1);
+	ERR("%s: Error. parse error %s:%i. "
+	    "box attributes in non-BOX part.",
+	    progname, file_in, line - 1);
 	exit(-1);
      }
 
@@ -5379,16 +5796,16 @@ static void st_collections_group_parts_part_description_box_align(void)
 
    if (ep->type != EDJE_PART_TYPE_BOX)
      {
-	fprintf(stderr, "%s: Error. parse error %s:%i. "
-		"box attributes in non-BOX part.\n",
-		progname, file_in, line - 1);
+	ERR("%s: Error. parse error %s:%i. "
+	    "box attributes in non-BOX part.",
+	    progname, file_in, line - 1);
 	exit(-1);
      }
 
    ed = ep->default_desc;
    if (ep->other_desc) ed = eina_list_data_get(eina_list_last(ep->other_desc));
-   ed->box.align.x = parse_float_range(0, -1.0, 1.0);
-   ed->box.align.y = parse_float_range(1, -1.0, 1.0);
+   ed->box.align.x = FROM_DOUBLE(parse_float_range(0, -1.0, 1.0));
+   ed->box.align.y = FROM_DOUBLE(parse_float_range(1, -1.0, 1.0));
 }
 
 static void st_collections_group_parts_part_description_box_padding(void)
@@ -5404,9 +5821,9 @@ static void st_collections_group_parts_part_description_box_padding(void)
 
    if (ep->type != EDJE_PART_TYPE_BOX)
      {
-	fprintf(stderr, "%s: Error. parse error %s:%i. "
-		"box attributes in non-BOX part.\n",
-		progname, file_in, line - 1);
+	ERR("%s: Error. parse error %s:%i. "
+	    "box attributes in non-BOX part.",
+	    progname, file_in, line - 1);
 	exit(-1);
      }
 
@@ -5430,9 +5847,9 @@ st_collections_group_parts_part_description_box_min(void)
 
    if (ep->type != EDJE_PART_TYPE_BOX)
      {
-	fprintf(stderr, "%s: Error. parse error %s:%i. "
-		"box attributes in non-BOX part.\n",
-		progname, file_in, line - 1);
+	ERR("%s: Error. parse error %s:%i. "
+	    "box attributes in non-BOX part.",
+	    progname, file_in, line - 1);
 	exit(-1);
      }
 
@@ -5441,6 +5858,11 @@ st_collections_group_parts_part_description_box_min(void)
    ed->box.min.h = parse_bool(0);
    ed->box.min.v = parse_bool(1);
 }
+
+
+/**
+   @edcsection{description_table,Table state description sub blocks}
+ */
 
 /**
     @page edcref
@@ -5506,9 +5928,9 @@ static void st_collections_group_parts_part_description_table_homogeneous(void)
 
    if (ep->type != EDJE_PART_TYPE_TABLE)
      {
-	fprintf(stderr, "%s: Error. parse error %s:%i. "
-		"table attributes in non-TABLE part.\n",
-		progname, file_in, line - 1);
+	ERR("%s: Error. parse error %s:%i. "
+	    "table attributes in non-TABLE part.",
+	    progname, file_in, line - 1);
 	exit(-1);
      }
 
@@ -5534,16 +5956,16 @@ static void st_collections_group_parts_part_description_table_align(void)
 
    if (ep->type != EDJE_PART_TYPE_TABLE)
      {
-	fprintf(stderr, "%s: Error. parse error %s:%i. "
-		"table attributes in non-TABLE part.\n",
-		progname, file_in, line - 1);
+	ERR("%s: Error. parse error %s:%i. "
+	    "table attributes in non-TABLE part.",
+	    progname, file_in, line - 1);
 	exit(-1);
      }
 
    ed = ep->default_desc;
    if (ep->other_desc) ed = eina_list_data_get(eina_list_last(ep->other_desc));
-   ed->table.align.x = parse_float_range(0, -1.0, 1.0);
-   ed->table.align.y = parse_float_range(1, -1.0, 1.0);
+   ed->table.align.x = FROM_DOUBLE(parse_float_range(0, -1.0, 1.0));
+   ed->table.align.y = FROM_DOUBLE(parse_float_range(1, -1.0, 1.0));
 }
 
 static void st_collections_group_parts_part_description_table_padding(void)
@@ -5559,9 +5981,9 @@ static void st_collections_group_parts_part_description_table_padding(void)
 
    if (ep->type != EDJE_PART_TYPE_TABLE)
      {
-	fprintf(stderr, "%s: Error. parse error %s:%i. "
-		"table attributes in non-TABLE part.\n",
-		progname, file_in, line - 1);
+	ERR("%s: Error. parse error %s:%i. "
+	    "table attributes in non-TABLE part.",
+	    progname, file_in, line - 1);
 	exit(-1);
      }
 
@@ -5571,6 +5993,495 @@ static void st_collections_group_parts_part_description_table_padding(void)
    ed->table.padding.y = parse_int_range(1, 0, 0x7fffffff);
 }
 
+
+/**
+   @edcsection{description_map,Map state description sub blocks}
+ */
+
+/**
+    @page edcref
+    @block
+        map
+    @context
+    description {
+        ..
+        map {
+            perspective: "name";
+            light: "name";
+            on: 1;
+            smooth: 1;
+            perspective_on: 1;
+            backface_cull: 1;
+            alpha: 1;
+            
+            rotation {
+                ..
+            }
+        }
+        ..
+    }
+    
+    @description
+    @endblock
+    
+    @property
+        perspective
+    @parameters
+        [another part's name]
+    @effect
+        This sets the part that is used as the "perspective point" for giving
+        a part a "3d look". The perspective point should have a perspective
+        section that provides zplane and focal properties. The center of this
+        part will be used as the focal point, so size, color and visibility
+        etc. are not relevant just center point, zplane and focal are used.
+        This also implicitly enables perspective transforms (see the on
+        parameter for the map section).
+    @endproperty
+*/
+static void
+st_collections_group_parts_part_description_map_perspective(void)
+{
+   Edje_Part_Collection *pc;
+   Edje_Part *ep;
+   Edje_Part_Description *ed;
+
+   check_arg_count(1);
+   
+   pc = eina_list_data_get(eina_list_last(edje_collections));
+   ep = eina_list_data_get(eina_list_last(pc->parts));
+   
+   ed = ep->default_desc;
+   if (ep->other_desc) ed = eina_list_data_get(eina_list_last(ep->other_desc));
+     {
+	char *name;
+
+	name = parse_str(0);
+	data_queue_part_lookup(pc, name, &(ed->map.id_persp));
+	free(name);
+     }
+   ed->map.persp_on = 1;
+}
+
+/**
+    @page edcref
+    @property
+        light
+    @parameters
+        [another part's name]
+    @effect
+        This sets the part that is used as the "light" for calculating the
+        brightness (based on how directly the part's surface is facing the
+        light source point). Like the perspective point part, the center point
+        is used and zplane is used for the z position (0 being the zero-plane
+        where all 2D objects normally live) and positive values being further
+        away into the distance. The light part color is used as the light
+        color (alpha not used for light color). The color2 color is used for
+        the ambient lighting when calculating brightness (alpha also not
+        used).
+    @endproperty
+*/
+static void
+st_collections_group_parts_part_description_map_light(void)
+{
+   Edje_Part_Collection *pc;
+   Edje_Part *ep;
+   Edje_Part_Description *ed;
+
+   check_arg_count(1);
+   
+   pc = eina_list_data_get(eina_list_last(edje_collections));
+   ep = eina_list_data_get(eina_list_last(pc->parts));
+   
+   ed = ep->default_desc;
+   if (ep->other_desc) ed = eina_list_data_get(eina_list_last(ep->other_desc));
+     {
+	char *name;
+
+	name = parse_str(0);
+	data_queue_part_lookup(pc, name, &(ed->map.id_light));
+	free(name);
+     }
+}
+
+/**
+    @page edcref
+    @property
+        on
+    @parameters
+        [1 or 0]
+    @effect
+        This enables mapping for the part. Default is 0.
+    @endproperty
+*/
+static void
+st_collections_group_parts_part_description_map_on(void)
+{
+   Edje_Part_Collection *pc;
+   Edje_Part *ep;
+   Edje_Part_Description *ed;
+
+   check_arg_count(1);
+   
+   pc = eina_list_data_get(eina_list_last(edje_collections));
+   ep = eina_list_data_get(eina_list_last(pc->parts));
+   
+   ed = ep->default_desc;
+   if (ep->other_desc) ed = eina_list_data_get(eina_list_last(ep->other_desc));
+   ed->map.on = parse_bool(0);
+}
+
+/**
+    @page edcref
+    @property
+        smooth
+    @parameters
+        [1 or 0]
+    @effect
+        This enable smooth map rendering. This may be linear interpolation,
+        anisotropic filtering or anything the engine decides is "smooth".
+        This is a best-effort hint and may not produce precisely the same
+        results in all engines and situations. Default is 1
+    @endproperty
+*/
+static void
+st_collections_group_parts_part_description_map_smooth(void)
+{
+   Edje_Part_Collection *pc;
+   Edje_Part *ep;
+   Edje_Part_Description *ed;
+
+   check_arg_count(1);
+   
+   pc = eina_list_data_get(eina_list_last(edje_collections));
+   ep = eina_list_data_get(eina_list_last(pc->parts));
+   
+   ed = ep->default_desc;
+   if (ep->other_desc) ed = eina_list_data_get(eina_list_last(ep->other_desc));
+   ed->map.smooth = parse_bool(0);
+}
+
+/**
+    @page edcref
+    @property
+        alpha
+    @parameters
+        [1 or 0]
+    @effect
+        This enable alpha channel when map rendering. Default is 1.
+    @endproperty
+*/
+static void
+st_collections_group_parts_part_description_map_alpha(void)
+{
+   Edje_Part_Collection *pc;
+   Edje_Part *ep;
+   Edje_Part_Description *ed;
+
+   check_arg_count(1);
+   
+   pc = eina_list_data_get(eina_list_last(edje_collections));
+   ep = eina_list_data_get(eina_list_last(pc->parts));
+   
+   ed = ep->default_desc;
+   if (ep->other_desc) ed = eina_list_data_get(eina_list_last(ep->other_desc));
+   ed->map.alpha = parse_bool(0);
+}
+
+/**
+    @page edcref
+    @property
+        backface_cull
+    @parameters
+        [1 or 0]
+    @effect
+        This enables backface culling (when the rotated part that normally
+        faces the camera is facing away after being rotated etc.). This means
+        that the object will be hidden when "backface culled".
+    @endproperty
+*/
+static void
+st_collections_group_parts_part_description_map_backface_cull(void)
+{
+   Edje_Part_Collection *pc;
+   Edje_Part *ep;
+   Edje_Part_Description *ed;
+
+   check_arg_count(1);
+   
+   pc = eina_list_data_get(eina_list_last(edje_collections));
+   ep = eina_list_data_get(eina_list_last(pc->parts));
+   
+   ed = ep->default_desc;
+   if (ep->other_desc) ed = eina_list_data_get(eina_list_last(ep->other_desc));
+   ed->map.backcull = parse_bool(0);
+}
+
+/**
+    @page edcref
+    @property
+        perspective_on
+    @parameters
+       [1 or 0]
+    @effect
+        Enable perspective when rotating even without a perspective point object.
+        This would use perspective set for the object itself or for the
+        canvas as a whole as the global perspective with 
+        edje_perspective_set() and edje_perspective_global_set().
+    @endproperty
+*/
+static void
+st_collections_group_parts_part_description_map_perspective_on(void)
+{
+   Edje_Part_Collection *pc;
+   Edje_Part *ep;
+   Edje_Part_Description *ed;
+
+   check_arg_count(1);
+   
+   pc = eina_list_data_get(eina_list_last(edje_collections));
+   ep = eina_list_data_get(eina_list_last(pc->parts));
+   
+   ed = ep->default_desc;
+   if (ep->other_desc) ed = eina_list_data_get(eina_list_last(ep->other_desc));
+   ed->map.persp_on = parse_bool(0);
+}
+/**
+    @page edcref
+    @block
+        rotation
+    @context
+    map {
+        ..
+        rotation {
+            center: "name";
+            x: 45.0;
+            y: 45.0;
+            z: 45.0;
+        }
+        ..
+    }
+    @description
+        Rotates the part, optionally with the center on another part.
+    @endblock
+    
+    @property
+        center
+    @parameters
+        [another part's name]
+    @effect
+        This sets the part that is used as the center of rotation when
+        rotating the part with this description. The part's center point
+        is used as the rotation center when applying rotation around the
+        x, y and z axes. If no center is given, the parts original center
+        itself is used for the rotation center.
+    @endproperty
+*/
+static void
+st_collections_group_parts_part_description_map_rotation_center(void)
+{
+   Edje_Part_Collection *pc;
+   Edje_Part *ep;
+   Edje_Part_Description *ed;
+
+   check_arg_count(1);
+   
+   pc = eina_list_data_get(eina_list_last(edje_collections));
+   ep = eina_list_data_get(eina_list_last(pc->parts));
+   
+   ed = ep->default_desc;
+   if (ep->other_desc) ed = eina_list_data_get(eina_list_last(ep->other_desc));
+     {
+	char *name;
+
+	name = parse_str(0);
+	data_queue_part_lookup(pc, name, &(ed->map.rot.id_center));
+	free(name);
+     }
+}
+
+/**
+    @page edcref
+    @property
+        x
+    @parameters
+        [X degrees]
+    @effect
+        This sets the rotation around the x axis of the part considering
+        the center set. In degrees.
+    @endproperty
+*/
+static void
+st_collections_group_parts_part_description_map_rotation_x(void)
+{
+   Edje_Part_Collection *pc;
+   Edje_Part *ep;
+   Edje_Part_Description *ed;
+
+   check_arg_count(1);
+   
+   pc = eina_list_data_get(eina_list_last(edje_collections));
+   ep = eina_list_data_get(eina_list_last(pc->parts));
+   
+   ed = ep->default_desc;
+   if (ep->other_desc) ed = eina_list_data_get(eina_list_last(ep->other_desc));
+   ed->map.rot.x = FROM_DOUBLE(parse_float(0));
+}
+
+/**
+    @page edcref
+    @property
+        y
+    @parameters
+        [Y degrees]
+    @effect
+        This sets the rotation around the u axis of the part considering
+        the center set. In degrees.
+    @endproperty
+*/
+static void
+st_collections_group_parts_part_description_map_rotation_y(void)
+{
+   Edje_Part_Collection *pc;
+   Edje_Part *ep;
+   Edje_Part_Description *ed;
+
+   check_arg_count(1);
+   
+   pc = eina_list_data_get(eina_list_last(edje_collections));
+   ep = eina_list_data_get(eina_list_last(pc->parts));
+   
+   ed = ep->default_desc;
+   if (ep->other_desc) ed = eina_list_data_get(eina_list_last(ep->other_desc));
+   ed->map.rot.y = FROM_DOUBLE(parse_float(0));
+}
+
+/**
+    @page edcref
+    @property
+        z
+    @parameters
+        [Z degrees]
+    @effect
+        This sets the rotation around the z axis of the part considering
+        the center set. In degrees.
+    @endproperty
+*/
+static void
+st_collections_group_parts_part_description_map_rotation_z(void)
+{
+   Edje_Part_Collection *pc;
+   Edje_Part *ep;
+   Edje_Part_Description *ed;
+
+   check_arg_count(1);
+   
+   pc = eina_list_data_get(eina_list_last(edje_collections));
+   ep = eina_list_data_get(eina_list_last(pc->parts));
+   
+   ed = ep->default_desc;
+   if (ep->other_desc) ed = eina_list_data_get(eina_list_last(ep->other_desc));
+   ed->map.rot.z = FROM_DOUBLE(parse_float(0));
+}
+
+/**
+    @page edcref
+    @block
+        perspective
+    @context
+    description {
+        ..
+        perspective {
+            zplane: 0;
+            focal: 1000;
+        }
+        ..
+    }
+    @description
+        Adds focal and plane perspective to the part. Active if perspective_on is true.
+        Must be provided if the part is being used by other part as it's perspective target.
+    @endblock
+    
+    @property
+        zplane
+    @parameters
+        [unscaled Z value]
+    @effect
+        This sets the z value that will not be scaled. Normally this is 0 as
+        that is the z distance that all objects are at normally.
+    @endproperty
+*/
+static void
+st_collections_group_parts_part_description_perspective_zplane(void)
+{
+   Edje_Part_Collection *pc;
+   Edje_Part *ep;
+   Edje_Part_Description *ed;
+
+   check_arg_count(1);
+   
+   pc = eina_list_data_get(eina_list_last(edje_collections));
+   ep = eina_list_data_get(eina_list_last(pc->parts));
+   
+   ed = ep->default_desc;
+   if (ep->other_desc) ed = eina_list_data_get(eina_list_last(ep->other_desc));
+   ed->persp.zplane = parse_int(0);
+}
+
+
+/**
+    @page edcref
+    @property
+        focal
+    @parameters
+        [distance]
+    @effect
+        This sets the distance from the focal z plane (zplane) and the
+        camera - i.e. very much equating to focal length of the camera
+    @endproperty
+*/
+static void
+st_collections_group_parts_part_description_perspective_focal(void)
+{
+   Edje_Part_Collection *pc;
+   Edje_Part *ep;
+   Edje_Part_Description *ed;
+
+   check_arg_count(1);
+   
+   pc = eina_list_data_get(eina_list_last(edje_collections));
+   ep = eina_list_data_get(eina_list_last(pc->parts));
+   
+   ed = ep->default_desc;
+   if (ep->other_desc) ed = eina_list_data_get(eina_list_last(ep->other_desc));
+   ed->persp.focal = parse_int_range(0, 1, 0x7fffffff);
+}
+
+
+/**
+   @edcsection{description_params,Params state description sub blocks}
+ */
+
+/**
+    @page edcref
+    @block
+        params
+    @context
+    description {
+        ..
+        params {
+            int: "name" 0;
+            double: "other_name" 0.0;
+            string: "another_name" "some text";
+	    bool: "name" 1;
+	    choice: "some_name" "value";
+        }
+        ..
+    }
+    @description
+        Set parameters for EXTERNAL parts. The value overwrites previous
+        definitions with the same name.
+    @endblock
+*/
 static void
 _st_collections_group_parts_part_description_params(Edje_External_Param_Type type)
 {
@@ -5589,9 +6500,9 @@ _st_collections_group_parts_part_description_params(Edje_External_Param_Type typ
 
    if (ep->type != EDJE_PART_TYPE_EXTERNAL)
      {
-	fprintf(stderr, "%s: Error. parse error %s:%i. "
-		"params in non-EXTERNAL part.\n",
-		progname, file_in, line - 1);
+	ERR("%s: Error. parse error %s:%i. "
+	    "params in non-EXTERNAL part.",
+	    progname, file_in, line - 1);
 	exit(-1);
      }
 
@@ -5623,14 +6534,20 @@ _st_collections_group_parts_part_description_params(Edje_External_Param_Type typ
 
    switch (type)
      {
+      case EDJE_EXTERNAL_PARAM_TYPE_BOOL:
       case EDJE_EXTERNAL_PARAM_TYPE_INT:
 	 param->i = parse_int(1);
 	 break;
       case EDJE_EXTERNAL_PARAM_TYPE_DOUBLE:
 	 param->d = parse_float(1);
 	 break;
+      case EDJE_EXTERNAL_PARAM_TYPE_CHOICE:
       case EDJE_EXTERNAL_PARAM_TYPE_STRING:
 	 param->s = parse_str(1);
+	 break;
+      default:
+	 ERR("%s: Error. parse error %s:%i. Invalid param type.\n",
+	     progname, file_in, line - 1);
 	 break;
      }
 
@@ -5641,11 +6558,11 @@ _st_collections_group_parts_part_description_params(Edje_External_Param_Type typ
 /**
     @page edcref
     @property
-        inherit
+        int
     @parameters
         [param_name] [int_value]
     @effect
-	Adds an integer parameter for an external object
+        Adds an integer parameter for an external object
     @endproperty
 */
 static void
@@ -5657,11 +6574,11 @@ st_collections_group_parts_part_description_params_int(void)
 /**
     @page edcref
     @property
-        inherit
+        double
     @parameters
         [param_name] [double_value]
     @effect
-	Adds a double parameter for an external object
+        Adds a double parameter for an external object
     @endproperty
 */
 static void
@@ -5673,11 +6590,11 @@ st_collections_group_parts_part_description_params_double(void)
 /**
     @page edcref
     @property
-        inherit
+        string
     @parameters
         [param_name] [string_value]
     @effect
-	Adds a string parameter for an external object
+        Adds a string parameter for an external object
     @endproperty
 */
 static void
@@ -5685,6 +6602,45 @@ st_collections_group_parts_part_description_params_string(void)
 {
    _st_collections_group_parts_part_description_params(EDJE_EXTERNAL_PARAM_TYPE_STRING);
 }
+
+/**
+    @page edcref
+    @property
+        bool
+    @parameters
+        [param_name] [bool_value]
+    @effect
+        Adds an boolean parameter for an external object. Value must be 0 or 1.
+    @endproperty
+*/
+static void
+st_collections_group_parts_part_description_params_bool(void)
+{
+   _st_collections_group_parts_part_description_params(EDJE_EXTERNAL_PARAM_TYPE_BOOL);
+}
+
+/**
+    @page edcref
+    @property
+        choice
+    @parameters
+        [param_name] [choice_string]
+    @effect
+        Adds a choice parameter for an external object. The possible
+        choice values are defined by external type at their register time
+        and will be validated at runtime.
+    @endproperty
+*/
+static void
+st_collections_group_parts_part_description_params_choice(void)
+{
+   _st_collections_group_parts_part_description_params(EDJE_EXTERNAL_PARAM_TYPE_CHOICE);
+}
+
+
+/**
+   @edcsection{program, Program block}
+ */
 
 /**
     @page edcref
@@ -5698,6 +6654,7 @@ st_collections_group_parts_part_description_params_string(void)
                      name: "programname";
                      signal: "signalname";
                      source: "partname";
+                     filter: "partname" "statename";
                      in: 0.3 0.0;
                      action: STATE_SET "statename" state_value;
                      transition: LINEAR 0.5;
@@ -5758,8 +6715,8 @@ st_collections_group_programs_program_name(void)
 	  {
 	     if ((lep != ep) && (lep->name) && (!strcmp(lep->name, ep->name)))
 	       {
-		  fprintf(stderr, "%s: Error. parse error %s:%i. There is already a program of the name %s\n",
-			  progname, file_in, line - 1, ep->name);
+		  ERR("%s: Error. parse error %s:%i. There is already a program of the name %s\n",
+		      progname, file_in, line - 1, ep->name);
 		  exit(-1);
 	       }
 	  }
@@ -5802,7 +6759,7 @@ st_collections_group_programs_program_signal(void)
     @effect
         Source of accepted signal. Sources may be globbed, but only one source
         keyword per program may be used. ex:source: "button-*"; (Signals from
-        any part or program named "button-*" are accepted)
+        any part or program named "button-*" are accepted).
     @endproperty
 */
 static void
@@ -5816,6 +6773,37 @@ st_collections_group_programs_program_source(void)
    pc = eina_list_data_get(eina_list_last(edje_collections));
    ep = eina_list_data_get(eina_list_last(pc->programs));
    ep->source = parse_str(0);
+}
+
+/**
+    @page edcref
+    @property
+        filter
+    @parameters
+        [part] [state]
+    @effect
+        Filter signals to be only accepted if the part [part] is in state named [state].
+        Only one filter per program can be used. If [state] is not given, the source of
+        the event will be used instead.
+    @endproperty
+*/
+static void
+st_collections_group_programs_program_filter(void)
+{
+   Edje_Part_Collection *pc;
+   Edje_Program *ep;
+
+   check_min_arg_count(1);
+
+   pc = eina_list_data_get(eina_list_last(edje_collections));
+   ep = eina_list_data_get(eina_list_last(pc->programs));
+
+   if(is_param(1)) {
+	   ep->filter.part = parse_str(0);
+	   ep->filter.state = parse_str(1);
+   } else {
+	   ep->filter.state = parse_str(0);
+   }
 }
 
 /**
@@ -5852,11 +6840,18 @@ st_collections_group_programs_program_in(void)
     @effect
         Action to be performed by the program. Valid actions are: STATE_SET,
         ACTION_STOP, SIGNAL_EMIT, DRAG_VAL_SET, DRAG_VAL_STEP, DRAG_VAL_PAGE,
-        FOCUS_SET.
+        FOCUS_SET, PARAM_COPY, PARAM_SET
         Only one action can be specified per program. Examples:\n
            action: STATE_SET "statename" 0.5;\n
-           action: ACTION_STOP "programname";\n
-           action: SIGNAL_EMIT "signalname" "emitter";
+           action: ACTION_STOP;\n
+           action: SIGNAL_EMIT "signalname" "emitter";\n
+           action: DRAG_VAL_SET 0.5 0.0;\n
+           action: DRAG_VAL_STEP 1.0 0.0;\n
+           action: DRAG_VAL_PAGE 0.0 0.0;\n
+           action: FOCUS_SET;\n
+           action: FOCUS_OBJECT;\n
+           action: PARAM_COPY "src_part" "src_param" "dst_part" "dst_param";\n
+	   action: PARAM_SET "part" "param" "value";\n
     @endproperty
 */
 static void
@@ -5877,6 +6872,9 @@ st_collections_group_programs_program_action(void)
 			   "SCRIPT", EDJE_ACTION_TYPE_SCRIPT,
 			   "LUA_SCRIPT", EDJE_ACTION_TYPE_LUA_SCRIPT,
 			   "FOCUS_SET", EDJE_ACTION_TYPE_FOCUS_SET,
+			   "FOCUS_OBJECT", EDJE_ACTION_TYPE_FOCUS_OBJECT,
+			   "PARAM_COPY", EDJE_ACTION_TYPE_PARAM_COPY,
+			   "PARAM_SET", EDJE_ACTION_TYPE_PARAM_SET,
 			   NULL);
    if (ep->action == EDJE_ACTION_TYPE_STATE_SET)
      {
@@ -5903,7 +6901,33 @@ st_collections_group_programs_program_action(void)
 	ep->value = parse_float(1);
 	ep->value2 = parse_float(2);
      }
-   
+   else if (ep->action == EDJE_ACTION_TYPE_PARAM_COPY)
+     {
+	char *src_part, *dst_part;
+
+	src_part = parse_str(1);
+	ep->state = parse_str(2);
+	dst_part = parse_str(3);
+	ep->state2 = parse_str(4);
+
+	data_queue_part_lookup(pc, src_part, &(ep->param.src));
+	data_queue_part_lookup(pc, dst_part, &(ep->param.dst));
+
+	free(src_part);
+	free(dst_part);
+     }
+   else if (ep->action == EDJE_ACTION_TYPE_PARAM_SET)
+     {
+	char *part;
+
+	part = parse_str(1);
+	ep->state = parse_str(2);
+	ep->state2 = parse_str(3);
+
+	data_queue_part_lookup(pc, part, &(ep->param.dst));
+	free(part);
+     }
+
    switch (ep->action)
      {
       case EDJE_ACTION_TYPE_ACTION_STOP:
@@ -5917,9 +6941,16 @@ st_collections_group_programs_program_action(void)
 	/* this is implicitly set by lua_script {} so this is here just for
 	 * completeness */
 	break;
+      case EDJE_ACTION_TYPE_FOCUS_OBJECT:
       case EDJE_ACTION_TYPE_FOCUS_SET:
 	check_arg_count(1);
 	break;
+      case EDJE_ACTION_TYPE_PARAM_COPY:
+	 check_arg_count(5);
+	 break;
+      case EDJE_ACTION_TYPE_PARAM_SET:
+	 check_arg_count(4);
+	 break;
       default:
 	check_arg_count(3);
      }
@@ -5932,9 +6963,9 @@ st_collections_group_programs_program_action(void)
     @parameters
         [type] [length]
     @effect
-        Defines how transistions occur using STATE_SET action.\n
-        Where 'type' is the style of the transistion and 'length' is a double
-        specifying the number of seconds in which to preform the transistion.\n
+        Defines how transitions occur using STATE_SET action.\n
+        Where 'type' is the style of the transition and 'length' is a double
+        specifying the number of seconds in which to preform the transition.\n
         Valid types are: LINEAR, SINUSOIDAL, ACCELERATE, and DECELERATE.
     @endproperty
 */
@@ -5954,7 +6985,7 @@ st_collections_group_programs_program_transition(void)
 			       "ACCELERATE", EDJE_TWEEN_MODE_ACCELERATE,
 			       "DECELERATE", EDJE_TWEEN_MODE_DECELERATE,
 			       NULL);
-   ep->tween.time = parse_float_range(1, 0.0, 999999999.0);
+   ep->tween.time = FROM_DOUBLE(parse_float_range(1, 0.0, 999999999.0));
 }
 
 /**
@@ -6001,9 +7032,9 @@ st_collections_group_programs_program_target(void)
 	  data_queue_part_lookup(pc, name, &(et->id));
 	else
 	  {
-	     fprintf(stderr, "%s: Error. parse error %s:%i. "
-		   "target may only be used after action\n",
-		   progname, file_in, line - 1);
+	     ERR("%s: Error. parse error %s:%i. "
+		 "target may only be used after action",
+		 progname, file_in, line - 1);
 	     exit(-1);
 	  }
 	free(name);
@@ -6047,6 +7078,56 @@ st_collections_group_programs_program_after(void)
      }
 }
 
+/**
+    @page edcref
+    @property
+        api
+    @parameters
+        [name] [description]
+    @effect
+        Specifies a hint to let applications (or IDE's) know how to bind
+	things. The parameter name should contain the name of the function that
+	the application should use, and description describes how it should
+	be used.
+    @endproperty
+*/
+static void
+st_collections_group_programs_program_api(void)
+{
+   Edje_Part_Collection *pc;
+   Edje_Program *ep;
+
+   check_min_arg_count(1);
+
+   pc = eina_list_data_get(eina_list_last(edje_collections));
+   ep = eina_list_data_get(eina_list_last(pc->programs));
+   ep->api.name = parse_str(0);
+
+   if (is_param(1))
+     {
+       check_arg_count(2);
+       ep->api.description = parse_str(1);
+     }
+}
+
+static void
+st_collections_group_parts_part_api(void)
+{
+   Edje_Part_Collection *pc;
+   Edje_Part *ep;
+
+   check_min_arg_count(1);
+
+   pc = eina_list_data_get(eina_list_last(edje_collections));
+   ep = eina_list_data_get(eina_list_last(pc->parts));
+   ep->api.name = parse_str(0);
+   if (is_param(1))
+     {
+       check_arg_count(2);
+       ep->api.description = parse_str(1);
+     }
+}
+
 static void
 ob_collections_group_programs_program_script(void)
 {
@@ -6075,8 +7156,8 @@ ob_collections_group_programs_program_script(void)
 	     cp->script = s;
 	     if (cd->shared && cd->is_lua)
 	       {
-		  fprintf(stderr, "%s: Error. parse error %s:%i. You're trying to mix Embryo and Lua scripting in the same group\n",
-			progname, file_in, line - 1);
+		  ERR("%s: Error. parse error %s:%i. You're trying to mix Embryo and Lua scripting in the same group",
+		      progname, file_in, line - 1);
 		  exit(-1);
 	       }
 	     cd->is_lua = 0;
@@ -6115,8 +7196,8 @@ ob_collections_group_programs_program_lua_script(void)
 	     cp->script = s;
 	     if (cd->shared && !cd->is_lua)
 	       {
-		  fprintf(stderr, "%s: Error. parse error %s:%i. You're trying to mix Embryo and Lua scripting in the same group\n",
-			progname, file_in, line - 1);
+		  ERR("%s: Error. parse error %s:%i. You're trying to mix Embryo and Lua scripting in the same group",
+		      progname, file_in, line - 1);
 		  exit(-1);
 	       }
 	     cd->is_lua = 1;

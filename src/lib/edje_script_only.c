@@ -197,7 +197,7 @@ _oid_freeall_cb(const Eina_Hash *hash __UNUSED__, const void *key __UNUSED__, vo
 
    evas_object_del(oid->obj);
    free(oid);
-   return 1;
+   return EINA_TRUE;
 }
 
 static void
@@ -217,7 +217,7 @@ _oid_moveall_cb(const Eina_Hash *hash __UNUSED__, const void *key __UNUSED__, vo
    Oid *oid = data;
 
    evas_object_move(oid->obj, oid->ed->x + oid->x, oid->ed->y + oid->y);
-   return 1;
+   return EINA_TRUE;
 }
 
 static void
@@ -442,13 +442,13 @@ _exp_e_signal_emit(Embryo_Program * ep, Embryo_Cell * params)
 
 /**********/
 
-int
+Eina_Bool
 _edje_script_only(Edje * ed)
 {
    if ((ed->collection) && (ed->collection->script) &&
        (ed->collection->script_only))
-      return 1;
-   return 0;
+      return EINA_TRUE;
+   return EINA_FALSE;
 }
 
 void
@@ -643,18 +643,18 @@ _call_fn(Edje * ed, const char *fname, Embryo_Function fn)
    ret = embryo_program_run(ed->collection->script, fn);
    if (ret == EMBRYO_PROGRAM_FAIL)
      {
-	printf("EDJE:        ERROR with embryo script.\n"
-	       "ENTRY POINT: %s\n"
-	       "ERROR:       %s\n",
+	ERR("ERROR with embryo script.\n"
+	    "ENTRY POINT: %s\n"
+	    "ERROR:       %s",
 	       fname,
 	       embryo_error_string_get(embryo_program_error_get
 				       (ed->collection->script)));
      }
    else if (ret == EMBRYO_PROGRAM_TOOLONG)
      {
-	printf("EDJE:        ERROR with embryo script.\n"
-	       "ENTRY POINT: %s\n"
-	       "ERROR:       Script exceeded maximum allowed cycle count of %i\n",
-	       fname, embryo_program_max_cycle_run_get(ed->collection->script));
+	ERR("ERROR with embryo script.\n"
+	    "ENTRY POINT: %s\n"
+	    "ERROR:       Script exceeded maximum allowed cycle count of %i",
+	    fname, embryo_program_max_cycle_run_get(ed->collection->script));
      }
 }

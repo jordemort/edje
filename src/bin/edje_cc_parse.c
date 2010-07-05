@@ -31,8 +31,11 @@ void *alloca (size_t);
 #include <sys/stat.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include <math.h>
 
 #include "edje_cc.h"
+#include <Ecore.h>
+#include <Ecore_File.h>
 
 static void  new_object(void);
 static void  new_statement(void);
@@ -111,9 +114,9 @@ new_object(void)
      }
    if (!handled)
      {
-	fprintf(stderr, "%s: Error. %s:%i unhandled keyword %s\n",
-		progname, file_in, line - 1,
-		(char *)eina_list_data_get(eina_list_last(stack)));
+	ERR("%s: Error. %s:%i unhandled keyword %s",
+	    progname, file_in, line - 1,
+	    (char *)eina_list_data_get(eina_list_last(stack)));
 	exit(-1);
      }
    free(id);
@@ -141,9 +144,9 @@ new_statement(void)
      }
    if (!handled)
      {
-	fprintf(stderr, "%s: Error. %s:%i unhandled keyword %s\n",
-		progname, file_in, line - 1,
-		(char *)eina_list_data_get(eina_list_last(stack)));
+	ERR("%s: Error. %s:%i unhandled keyword %s",
+	    progname, file_in, line - 1,
+	    (char *)eina_list_data_get(eina_list_last(stack)));
 	exit(-1);
      }
    free(id);
@@ -244,8 +247,8 @@ next_token(char *p, char *end, char **new_p, int *delim)
 	     tmpstr = alloca(l + 1);
 	     if (!tmpstr)
 	       {
-		  fprintf(stderr, "%s: Error. %s:%i malloc %i bytes failed\n",
-			  progname, file_in, line - 1, l + 1);
+		  ERR("%s: Error. %s:%i malloc %i bytes failed",
+		      progname, file_in, line - 1, l + 1);
 		  exit(-1);
 	       }
 	     strncpy(tmpstr, p, l);
@@ -421,8 +424,8 @@ stack_chop_top(void)
      }
    else
      {
-	fprintf(stderr, "%s: Error. parse error %s:%i. } marker without matching { marker\n",
-		progname, file_in, line - 1);
+	ERR("%s: Error. parse error %s:%i. } marker without matching { marker",
+	    progname, file_in, line - 1);
 	exit(-1);
      }
 }
@@ -436,8 +439,8 @@ parse(char *data, off_t size)
 
    if (verbose)
      {
-	printf("%s: Parsing input file\n",
-	       progname);
+	INF("%s: Parsing input file",
+	    progname);
      }
    p = data;
    end = data + size;
@@ -449,8 +452,8 @@ parse(char *data, off_t size)
 	 */
 	if (do_params && delim && *token != ';')
 	  {
-	     fprintf(stderr, "%s: Error. parse error %s:%i. %c marker before ; marker\n",
-		   progname, file_in, line - 1, *token);
+	     ERR("%s: Error. parse error %s:%i. %c marker before ; marker",
+		 progname, file_in, line - 1, *token);
 	     exit(-1);
 	  }
 	else if (delim)
@@ -460,7 +463,7 @@ parse(char *data, off_t size)
 	       {
 		  if (do_params)
 		    {
-		       fprintf(stderr, "%s: Error. parse error %s:%i. } marker before ; marker\n",
+		       ERR("%s: Error. parse error %s:%i. } marker before ; marker",
 			       progname, file_in, line - 1);
 		       exit(-1);
 		    }
@@ -487,8 +490,8 @@ parse(char *data, off_t size)
 	       {
 		  if (do_params)
 		    {
-		       fprintf(stderr, "%s: Error. parse error %s:%i. { marker before ; marker\n",
-			       progname, file_in, line - 1);
+		       ERR("%s: Error. parse error %s:%i. { marker before ; marker",
+			   progname, file_in, line - 1);
 		       exit(-1);
 		    }
 	       }
@@ -570,8 +573,8 @@ parse(char *data, off_t size)
 			 }
 		       else
 			 {
-			    fprintf(stderr, "%s: Error. parse error %s:%i. { marker does not have matching } marker\n",
-				    progname, file_in, line - 1);
+			    ERR("%s: Error. parse error %s:%i. { marker does not have matching } marker",
+				progname, file_in, line - 1);
 			    exit(-1);
 			 }
 		       new_object();
@@ -582,7 +585,7 @@ parse(char *data, off_t size)
      }
    if (verbose)
      {
-	printf("%s: Parsing done\n",
+	INF("%s: Parsing done",
 	       progname);
      }
 }
@@ -686,7 +689,38 @@ compile(void)
 
 	/*
 	 * Run the input through the C pre-processor.
+	 */
+
+	/*
+	 * On OpenSolaris, the default cpp is located in different places.
+	 * Alan Coppersmith told me to do what xorg does: using /usr/ccs/lib/cpp
 	 *
+	 * Also, that preprocessor is not managing C++ comments, so pass the
+	 * sun cc preprocessor just after.
+	 */
+        ret = -1;
+        if (ecore_file_exists("/usr/ccs/lib/cpp"))
+          {
+             snprintf(buf, sizeof(buf), "/usr/ccs/lib/cpp -I%s %s %s %s",
+                      inc, def, file_in, tmpn);
+             ret = system(buf);
+             if (ret == 0)
+               {
+                  static char tmpn2[4096];
+                  
+                  snprintf (tmpn2, PATH_MAX, "%s/edje_cc.edc-tmp-XXXXXX", tmp_dir);
+                  fd = mkstemp(tmpn2);
+                  if (fd >= 0)
+                    {
+                       close(fd); 
+                       snprintf (buf, 4096, "cc -E -I%s %s -o %s %s",
+                                 inc, def, tmpn2, tmpn);
+                       ret = system(buf);
+                       snprintf(tmpn, 4096, "%s", tmpn2);
+                    }
+               }
+          }
+	/*
 	 * On some BSD based systems (MacOS, OpenBSD), the default cpp
 	 * in the path is a wrapper script that chokes on the -o option.
 	 * If the preprocessor is invoked via gcc -E, it will treat
@@ -695,11 +729,36 @@ compile(void)
 	 *
 	 * Redirecting the output is required for MacOS 10.3, and works fine
 	 * on other systems.
+	 *
+	 * Also, the MacOS preprocessor is not managing C++ comments, so pass gcc
+	 * preprocessor just after. Linux gcc seems to not like it, so guard the
+	 * code so that it is compiled only on MacOS
+	 *
 	 */
-	snprintf(buf, sizeof(buf), "cat %s | cpp -I%s %s > %s",
-		 file_in, inc, def, tmpn);
-	ret = system(buf);
-	if (ret < 0)
+	if (ret != 0)
+	  {
+	     snprintf(buf, sizeof(buf), "cat %s | cpp -I%s %s > %s",
+		      file_in, inc, def, tmpn);
+	     ret = system(buf);
+#if defined (__MacOSX__) || ( defined (__MACH__) && defined (__APPLE__) ) || defined (__OpenBSD__)
+             if (ret == 0)
+               {
+                  static char tmpn2[4096];
+                  
+                  snprintf (tmpn2, PATH_MAX, "%s/edje_cc.edc-tmp-XXXXXX", tmp_dir);
+                  fd = mkstemp(tmpn2);
+                  if (fd >= 0)
+                    {
+                       close(fd); 
+                       snprintf (buf, 4096, "gcc -xc -I%s %s -E -o %s %s",
+                                 inc, def, tmpn2, tmpn);
+                       ret = system(buf);
+                       snprintf(tmpn, 4096, "%s", tmpn2);
+                    }
+               }
+#endif
+	  }
+	if (ret != 0)
 	  {
 	     snprintf(buf, sizeof(buf), "gcc -I%s %s -E -o %s %s",
 		      inc, def, tmpn, file_in);
@@ -725,13 +784,13 @@ compile(void)
    fd = open(file_in, O_RDONLY | O_BINARY, S_IRUSR | S_IWUSR);
    if (fd < 0)
      {
-	fprintf(stderr, "%s: Error. cannot open file \"%s\" for input. %s\n",
-		progname, file_in, strerror(errno));
+	ERR("%s: Error. cannot open file \"%s\" for input. %s",
+	    progname, file_in, strerror(errno));
 	exit(-1);
      }
    if (verbose)
      {
-	printf("%s: Opening \"%s\" for input\n",
+	INF("%s: Opening \"%s\" for input",
 	       progname, file_in);
      }
 
@@ -742,8 +801,8 @@ compile(void)
 	parse(data, size);
    else
      {
-	fprintf(stderr, "%s: Error. cannot read file \"%s\". %s\n",
-		progname, file_in, strerror(errno));
+	ERR("%s: Error. cannot read file \"%s\". %s",
+	    progname, file_in, strerror(errno));
 	exit(-1);
      }
    free(data);
@@ -764,19 +823,19 @@ int
 is_num(int n)
 {
    char *str;
-   long int ret;
    char *end;
+   long val;
 
    str = eina_list_nth(params, n);
    if (!str)
      {
-	fprintf(stderr, "%s: Error. %s:%i no parameter supplied as argument %i\n",
+	ERR("%s: Error. %s:%i no parameter supplied as argument %i",
 		progname, file_in, line - 1, n + 1);
 	exit(-1);
      }
    if (str[0] == 0) return 0;
    end = str;
-   ret = strtol(str, &end, 0);
+   val = strtol(str, &end, 0);
    if ((end != str) && (end[0] == 0)) return 1;
    return 0;
 }
@@ -790,8 +849,8 @@ parse_str(int n)
    str = eina_list_nth(params, n);
    if (!str)
      {
-	fprintf(stderr, "%s: Error. %s:%i no parameter supplied as argument %i\n",
-		progname, file_in, line - 1, n + 1);
+	ERR("%s: Error. %s:%i no parameter supplied as argument %i",
+	    progname, file_in, line - 1, n + 1);
 	exit(-1);
      }
    s = mem_strdup(str);
@@ -814,12 +873,12 @@ _parse_enum(char *str, va_list va)
 	/* End of the list, nothing matched. */
 	if (!s)
 	  {
-	     fprintf(stderr, "%s: Error. %s:%i token %s not one of:",
-		     progname, file_in, line - 1, str);
+ 	     fprintf(stderr, "%s: Error. %s:%i token %s not one of:",
+	 	     progname, file_in, line - 1, str);
 	     s = va_arg(va2, char *);
 	     while (s)
 	       {
-		  v = va_arg(va2, int);
+		  va_arg(va2, int);
 		  fprintf(stderr, " %s", s);
 		  s = va_arg(va2, char *);
 		  if (!s) break;
@@ -853,7 +912,7 @@ parse_enum(int n, ...)
    str = eina_list_nth(params, n);
    if (!str)
      {
-	fprintf(stderr, "%s: Error. %s:%i no parameter supplied as argument %i\n",
+	ERR("%s: Error. %s:%i no parameter supplied as argument %i",
 		progname, file_in, line - 1, n + 1);
 	exit(-1);
      }
@@ -890,8 +949,8 @@ parse_int(int n)
    str = eina_list_nth(params, n);
    if (!str)
      {
-	fprintf(stderr, "%s: Error. %s:%i no parameter supplied as argument %i\n",
-		progname, file_in, line - 1, n + 1);
+	ERR("%s: Error. %s:%i no parameter supplied as argument %i",
+	    progname, file_in, line - 1, n + 1);
 	exit(-1);
      }
    i = my_atoi(str);
@@ -907,15 +966,15 @@ parse_int_range(int n, int f, int t)
    str = eina_list_nth(params, n);
    if (!str)
      {
-	fprintf(stderr, "%s: Error. %s:%i no parameter supplied as argument %i\n",
-		progname, file_in, line - 1, n + 1);
+	ERR("%s: Error. %s:%i no parameter supplied as argument %i",
+	    progname, file_in, line - 1, n + 1);
 	exit(-1);
      }
    i = my_atoi(str);
    if ((i < f) || (i > t))
      {
-	fprintf(stderr, "%s: Error. %s:%i integer %i out of range of %i to %i inclusive\n",
-		progname, file_in, line - 1, i, f, t);
+	ERR("%s: Error. %s:%i integer %i out of range of %i to %i inclusive",
+	    progname, file_in, line - 1, i, f, t);
 	exit(-1);
      }
    return i;
@@ -930,15 +989,15 @@ parse_bool(int n)
    str = eina_list_nth(params, n);
    if (!str)
      {
-	fprintf(stderr, "%s: Error. %s:%i no parameter supplied as argument %i\n",
-		progname, file_in, line - 1, n + 1);
+	ERR("%s: Error. %s:%i no parameter supplied as argument %i",
+	    progname, file_in, line - 1, n + 1);
 	exit(-1);
      }
 
    if (!strstrip(str, buf, sizeof (buf)))
      {
-	fprintf(stderr, "%s: Error. %s:%i expression is too long\n",
-		progname, file_in, line - 1);
+	ERR("%s: Error. %s:%i expression is too long",
+	    progname, file_in, line - 1);
 	return 0;
      }
 
@@ -950,8 +1009,8 @@ parse_bool(int n)
    i = my_atoi(str);
    if ((i < 0) || (i > 1))
      {
-	fprintf(stderr, "%s: Error. %s:%i integer %i out of range of 0 to 1 inclusive\n",
-		progname, file_in, line - 1, i);
+	ERR("%s: Error. %s:%i integer %i out of range of 0 to 1 inclusive",
+	    progname, file_in, line - 1, i);
 	exit(-1);
      }
    return i;
@@ -966,8 +1025,8 @@ parse_float(int n)
    str = eina_list_nth(params, n);
    if (!str)
      {
-	fprintf(stderr, "%s: Error. %s:%i no parameter supplied as argument %i\n",
-		progname, file_in, line - 1, n + 1);
+	ERR("%s: Error. %s:%i no parameter supplied as argument %i",
+	    progname, file_in, line - 1, n + 1);
 	exit(-1);
      }
    i = my_atof(str);
@@ -983,15 +1042,15 @@ parse_float_range(int n, double f, double t)
    str = eina_list_nth(params, n);
    if (!str)
      {
-	fprintf(stderr, "%s: Error. %s:%i no parameter supplied as argument %i\n",
-		progname, file_in, line - 1, n + 1);
+	ERR("%s: Error. %s:%i no parameter supplied as argument %i",
+	    progname, file_in, line - 1, n + 1);
 	exit(-1);
      }
    i = my_atof(str);
    if ((i < f) || (i > t))
      {
-	fprintf(stderr, "%s: Error. %s:%i float %3.3f out of range of %3.3f to %3.3f inclusive\n",
-		progname, file_in, line - 1, i, f, t);
+	ERR("%s: Error. %s:%i float %3.3f out of range of %3.3f to %3.3f inclusive",
+	    progname, file_in, line - 1, i, f, t);
 	exit(-1);
      }
    return i;
@@ -1004,8 +1063,8 @@ check_arg_count(int required_args)
 
    if (num_args != required_args)
      {
-	fprintf(stderr, "%s: Error. %s:%i got %i arguments, but expected %i\n",
-	      progname, file_in, line - 1, num_args, required_args);
+       ERR("%s: Error. %s:%i got %i arguments, but expected %i",
+	   progname, file_in, line - 1, num_args, required_args);
 	exit(-1);
      }
 }
@@ -1017,9 +1076,9 @@ check_min_arg_count(int min_required_args)
 
    if (num_args < min_required_args)
      {
-	fprintf(stderr, "%s: Error. %s:%i got %i arguments, "
-		"but expected at least %i\n",
-		progname, file_in, line - 1, num_args, min_required_args);
+	ERR("%s: Error. %s:%i got %i arguments, "
+		"but expected at least %i",
+	    progname, file_in, line - 1, num_args, min_required_args);
 	exit(-1);
      }
 }
@@ -1037,34 +1096,30 @@ check_min_arg_count(int min_required_args)
 /* int set of function */
 
 static int
-my_atoi(const char * s)
+my_atoi(const char *s)
 {
    int res = 0;
    char buf[4096];
-
-   if (!s)
-     return 0;
-
-   if (!strstrip(s, buf, sizeof (buf)))
+   
+   if (!s) return 0;
+   if (!strstrip(s, buf, sizeof(buf)))
      {
-	fprintf(stderr, "%s: Error. %s:%i expression is too long\n",
-		progname, file_in, line - 1);
+	ERR("%s: Error. %s:%i expression is too long\n",
+	    progname, file_in, line - 1);
 	return 0;
      }
-
    _alphai(buf, &res);
    return res;
 }
 
 static char *
-_deltai(char *s, int * val)
+_deltai(char *s, int *val)
 {
    if (!val) return NULL;
-
    if ('(' != s[0])
      {
-	fprintf(stderr, "%s: Error. %s:%i unexpected character at %s\n",
-		progname, file_in, line - 1, s);
+	ERR("%s: Error. %s:%i unexpected character at %s\n",
+	    progname, file_in, line - 1, s);
 	return s;
      }
    else
@@ -1074,15 +1129,36 @@ _deltai(char *s, int * val)
 	s++;
 	return s;
      }
-
    return s;
 }
 
 static char *
-_gammai(char *s, int * val)
+_funci(char *s, int *val)
+{
+   if (!strncmp(s, "floor(", 6))
+     {
+        s += 5;
+        s = _deltai(s, val);
+        *val = *val;
+     }
+   else if (!strncmp(s, "ceil(", 5))
+     {
+        s += 4;
+        s = _deltai(s, val);
+        *val = *val;
+     }
+   else
+     {
+        ERR("%s: Error. %s:%i unexpected character at %s\n",
+	    progname, file_in, line - 1, s);
+     }
+   return s;
+}
+
+static char *
+_gammai(char *s, int *val)
 {
    if (!val) return NULL;
-
    if (_is_numi(s[0]))
      {
 	s = _get_numi(s, val);
@@ -1094,22 +1170,22 @@ _gammai(char *s, int * val)
 	return s;
      }
    else
-     fprintf(stderr, "%s: Error. %s:%i unexpected character at %s\n",
-	     progname, file_in, line - 1, s);
+     {
+        s = _funci(s, val);
+//        ERR("%s: Error. %s:%i unexpected character at %s\n",
+//                progname, file_in, line - 1, s);
+     }
    return s;
 }
 
 static char *
-_betai(char *s, int * val)
+_betai(char *s, int *val)
 {
    int a1, a2;
    char op;
 
-   if (!val)
-     return NULL;
-
+   if (!val) return NULL;
    s = _gammai(s, &a1);
-
    while (_is_op1i(s[0]))
      {
 	op = s[0];
@@ -1117,23 +1193,18 @@ _betai(char *s, int * val)
 	s = _gammai(s, &a2);
 	a1 = _calci(op, a1, a2);
      }
-
    (*val) = a1;
-
    return s;
 }
 
 static char *
-_alphai(char *s, int * val)
+_alphai(char *s, int *val)
 {
    int a1, a2;
    char op;
-
-   if (!val)
-     return NULL;
-
+   
+   if (!val) return NULL;
    s = _betai(s, &a1);
-
    while (_is_op2i(s[0]))
      {
 	op = s[0];
@@ -1141,32 +1212,26 @@ _alphai(char *s, int * val)
 	s = _betai(s, &a2);
 	a1 = _calci(op, a1, a2);
      }
-
    (*val) = a1;
    return s;
 }
 
 char *
-_get_numi(char *s, int * val)
+_get_numi(char *s, int *val)
 {
    char buf[4096];
    int pos = 0;
-
-   if (!val)
-     return s;
-
-   while (
-	  (('0' <= s[pos]) && ('9' >= s[pos])) ||
-	  ((0 == pos) && ('-' == s[pos]))
-	  )
+   
+   if (!val) return s;
+   while ((('0' <= s[pos]) && ('9' >= s[pos])) ||
+	  ((0 == pos) && ('-' == s[pos])))
      {
 	buf[pos] = s[pos];
 	pos++;
      }
-
    buf[pos] = '\0';
    (*val) = atoi(buf);
-   return (s+pos);
+   return (s + pos);
 }
 
 int
@@ -1183,9 +1248,10 @@ _is_op1i(char c)
 {
    switch(c)
      {
-      case '*':;
-      case '/': return 1;
-      default: return 0;
+     case '*':;
+     case '%':;
+     case '/': return 1;
+     default: return 0;
      }
    return 0;
 }
@@ -1195,9 +1261,9 @@ _is_op2i(char c)
 {
    switch(c)
      {
-      case '+':;
-      case '-': return 1;
-      default: return 0;
+     case '+':;
+     case '-': return 1;
+     default: return 0;
      }
    return 0;
 }
@@ -1207,25 +1273,30 @@ _calci(char op, int a, int b)
 {
    switch(op)
      {
-      case '+':
+     case '+':
 	a += b;
 	return a;
-      case '-':
+     case '-':
 	a -= b;
 	return a;
-      case '/':
-	if(0 != b)
-	  a /= b;
+     case '/':
+	if (0 != b) a /= b;
 	else
-	  fprintf(stderr, "%s: Error. %s:%i divide by zero\n",
-		  progname, file_in, line - 1);
+	  ERR("%s: Error. %s:%i divide by zero\n",
+	      progname, file_in, line - 1);
 	return a;
-      case '*':
+     case '*':
 	a *= b;
 	return a;
-      default:
-	fprintf(stderr, "%s: Error. %s:%i unexpected character '%c'\n",
-		progname, file_in, line - 1, op);
+     case '%':
+	if (0 != b) a = a % b;
+	else
+	  ERR("%s: Error. %s:%i modula by zero\n",
+	      progname, file_in, line - 1);
+	return a;
+     default:
+	ERR("%s: Error. %s:%i unexpected character '%c'\n",
+	    progname, file_in, line - 1, op);
 	return a;
      }
 }
@@ -1233,34 +1304,31 @@ _calci(char op, int a, int b)
 /* float set of functoins */
 
 double
-my_atof(const char * s)
+my_atof(const char *s)
 {
    double res = 0;
    char buf[4096];
-
-   if (!s)
-     return 0;
+   
+   if (!s) return 0;
 
    if (!strstrip(s, buf, sizeof (buf)))
      {
-	fprintf(stderr, "%s: Error. %s:%i expression is too long\n",
-		progname, file_in, line - 1);
+	ERR("%s: Error. %s:%i expression is too long",
+	    progname, file_in, line - 1);
 	return 0;
      }
-
    _alphaf(buf, &res);
    return res;
 }
 
 static char *
-_deltaf(char *s, double * val)
+_deltaf(char *s, double *val)
 {
    if (!val) return NULL;
-
    if ('(' != s[0])
      {
-	fprintf(stderr, "%s: Error. %s:%i unexpected character at %s\n",
-		progname, file_in, line - 1, s);
+	ERR("%s: Error. %s:%i unexpected character at %s",
+	    progname, file_in, line - 1, s);
 	return s;
      }
    else
@@ -1270,15 +1338,37 @@ _deltaf(char *s, double * val)
 	s++;
 	return s;
      }
-
    return s;
 }
 
 static char *
-_gammaf(char *s, double * val)
+_funcf(char *s, double *val)
+{
+   if (!strncmp(s, "floor(", 6))
+     {
+        s += 5;
+        s = _deltaf(s, val);
+        *val = floor(*val);
+     }
+   else if (!strncmp(s, "ceil(", 5))
+     {
+        s += 4;
+        s = _deltaf(s, val);
+        *val = ceil(*val);
+     }
+   else
+     {
+        ERR("%s: Error. %s:%i unexpected character at %s\n",
+	    progname, file_in, line - 1, s);
+     }
+   return s;
+}
+
+static char *
+_gammaf(char *s, double *val)
 {
    if (!val) return NULL;
-
+   
    if (_is_numf(s[0]))
      {
 	s = _get_numf(s, val);
@@ -1290,22 +1380,22 @@ _gammaf(char *s, double * val)
 	return s;
      }
    else
-     fprintf(stderr, "%s: Error. %s:%i unexpected character at %s\n",
-	     progname, file_in, line - 1, s);
+     {
+        s = _funcf(s, val);
+//        ERR("%s: Error. %s:%i unexpected character at %s\n",
+//                progname, file_in, line - 1, s);
+     }
    return s;
 }
 
 static char *
-_betaf(char *s, double * val)
+_betaf(char *s, double *val)
 {
    double a1=0, a2=0;
    char op;
-
-   if (!val)
-     return NULL;
-
+   
+   if (!val) return NULL;
    s = _gammaf(s, &a1);
-
    while (_is_op1f(s[0]))
      {
 	op = s[0];
@@ -1313,23 +1403,18 @@ _betaf(char *s, double * val)
 	s = _gammaf(s, &a2);
 	a1 = _calcf(op, a1, a2);
      }
-
    (*val) = a1;
-
    return s;
 }
 
 static char *
-_alphaf(char *s, double * val)
+_alphaf(char *s, double *val)
 {
    double a1=0, a2=0;
    char op;
 
-   if (!val)
-     return NULL;
-
+   if (!val) return NULL;
    s = _betaf(s, &a1);
-
    while (_is_op2f(s[0]))
      {
 	op = s[0];
@@ -1337,31 +1422,25 @@ _alphaf(char *s, double * val)
 	s = _betaf(s, &a2);
 	a1 = _calcf(op, a1, a2);
      }
-
    (*val) = a1;
-
    return s;
 }
 
 static char *
-_get_numf(char *s, double * val)
+_get_numf(char *s, double *val)
 {
    char buf[4096];
    int pos = 0;
 
-   if (!val)
-     return s;
+   if (!val) return s;
 
-   while (
-	  (('0' <= s[pos]) && ('9' >= s[pos])) ||
+   while ((('0' <= s[pos]) && ('9' >= s[pos])) ||
 	  ('.' == s[pos]) ||
-	  ((0 == pos) && ('-' == s[pos]))
-	  )
+	  ((0 == pos) && ('-' == s[pos])))
      {
 	buf[pos] = s[pos];
 	pos++;
      }
-
    buf[pos] = '\0';
    (*val) = atof(buf);
    return (s+pos);
@@ -1384,9 +1463,10 @@ _is_op1f(char c)
 {
    switch(c)
      {
-      case '*':;
-      case '/': return 1;
-      default: return 0;
+     case '*':;
+     case '%':;
+     case '/': return 1;
+     default: return 0;
      }
    return 0;
 }
@@ -1396,9 +1476,9 @@ _is_op2f(char c)
 {
    switch(c)
      {
-      case '+':;
-      case '-': return 1;
-      default: return 0;
+     case '+':;
+     case '-': return 1;
+     default: return 0;
      }
    return 0;
 }
@@ -1408,24 +1488,30 @@ _calcf(char op, double a, double b)
 {
    switch(op)
      {
-      case '+':
+     case '+':
 	a += b;
 	return a;
-      case '-':
+     case '-':
 	a -= b;
 	return a;
-      case '/':
+     case '/':
 	if (b != 0) a /= b;
 	else
-	  fprintf(stderr, "%s: Error. %s:%i divide by zero\n",
-		  progname, file_in, line - 1);
+	  ERR("%s: Error. %s:%i divide by zero\n",
+	      progname, file_in, line - 1);
 	return a;
-      case '*':
+     case '*':
 	a *= b;
 	return a;
-      default:
-	fprintf(stderr, "%s: Error. %s:%i unexpected character '%c'\n",
-		progname, file_in, line - 1, op);
+     case '%':
+	if (0 != b) a = (double)((int)a % (int)b);
+	else
+	  ERR("%s: Error. %s:%i modula by zero\n",
+	      progname, file_in, line - 1);
+	return a;
+     default:
+	ERR("%s: Error. %s:%i unexpected character '%c'\n",
+	    progname, file_in, line - 1, op);
 	return a;
      }
 }
@@ -1435,11 +1521,10 @@ strstrip(const char *in, char *out, size_t size)
 {
    if ((size -1 ) < strlen(in))
      {
-	fprintf(stderr, "%s: Error. %s:%i expression is too long\n",
+	ERR("%s: Error. %s:%i expression is too long",
 		progname, file_in, line - 1);
 	return 0;
      }
-
    /* remove spaces and tabs */
    while (*in)
      {
@@ -1450,8 +1535,6 @@ strstrip(const char *in, char *out, size_t size)
 	  }
 	in++;
      }
-
    *out = '\0';
-
    return 1;
 }

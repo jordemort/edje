@@ -151,6 +151,19 @@ native       set_min_size     (Float:w, Float:h);
 native       set_max_size     (Float:w, Float:h);
 native       part_swallow     (part_id, GROUP:str[]);
 
+native       external_param_get_int(id, param_name[]);
+native       external_param_set_int(id, param_name[], value);
+native Float:external_param_get_float(id, param_name[]);
+native       external_param_set_float(id, param_name[], Float:value);
+native       external_param_get_strlen(id, param_name[]);
+native       external_param_get_str(id, param_name[], value[], value_maxlen);
+native       external_param_set_str(id, param_name[], value[]);
+native       external_param_get_choice_len(id, param_name[]);
+native       external_param_get_choice(id, param_name[], value[], value_maxlen);
+native       external_param_set_choice(id, param_name[], value[]);
+native       external_param_get_bool(id, param_name[]);
+native       external_param_set_bool(id, param_name[], value);
+
 enum Msg_Type
 {
    MSG_NONE = 0,
@@ -221,7 +234,18 @@ enum State_Param
 	STATE_TEXT_MIN = 28,
 	STATE_TEXT_MAX = 29,
 	STATE_TEXT_ALIGN = 30,
-	STATE_VISIBLE = 31
+	STATE_VISIBLE = 31,
+	STATE_MAP_ON = 32,
+	STATE_MAP_PERSP = 33,
+	STATE_MAP_LIGHT = 34,
+	STATE_MAP_ROT_CENTER = 35,
+	STATE_MAP_ROT_X = 36,
+	STATE_MAP_ROT_Y = 37,
+	STATE_MAP_ROT_Z = 38,
+	STATE_MAP_BACK_CULL = 39,
+	STATE_MAP_PERSP_ON = 40,
+	STATE_PERSP_ZPLANE = 41,
+	STATE_PERSP_FOCAL = 42
 };
 
 native set_state_val(part_id, State_Param:p, ...);

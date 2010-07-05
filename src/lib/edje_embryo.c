@@ -179,7 +179,18 @@ void *alloca (size_t);
  * text[fit_x,fit_y]
  * text[min_x,min_y]
  * text[align_x,align_y]
- * visible
+ * visible[on]
+ * map_on[on]
+ * map_persp[part_id]
+ * map_light[part_id]
+ * map_rot_center[part_id]
+ * map_rot_x[deg]
+ * map_rot_y[deg]
+ * map_rot_z[deg]
+ * map_back_cull[on]
+ * map_persp_on[on]
+ * persp_zplane[z]
+ * persp_focal[z]
  *
  * ** part_id and program_id need to be able to be "found" from strings
  *
@@ -199,6 +210,19 @@ void *alloca (size_t);
  * get_clip(part_id)
  *
  * part_swallow(part_id, group_name)
+ *
+ * external_param_get_int(id, param_name[])
+ * external_param_set_int(id, param_name[], value)
+ * Float:external_param_get_float(id, param_name[])
+ * external_param_set_float(id, param_name[], Float:value)
+ * external_param_get_strlen(id, param_name[])
+ * external_param_get_str(id, param_name[], value[], value_maxlen)
+ * external_param_set_str(id, param_name[], value[])
+ * external_param_get_choice_len(id, param_name[])
+ * external_param_get_choice(id, param_name[], value[], value_maxlen)
+ * external_param_set_choice(id, param_name[], value[])
+ * external_param_get_bool(id, param_name[])
+ * external_param_set_bool(id, param_name[], value)
  *
  * ADD/DEL CUSTOM OBJECTS UNDER SOLE EMBRYO SCRIPT CONTROL
  *
@@ -267,7 +291,7 @@ _edje_embryo_fn_get_str(Embryo_Program *ep, Embryo_Cell *params)
    s = (char *)_edje_var_str_get(ed, (int)params[1]);
    if (s)
      {
-	if (strlen(s) < params[3])
+	if ((int) strlen(s) < params[3])
 	  {
 	     SETSTR(s, params[2]);
 	  }
@@ -490,7 +514,7 @@ _edje_embryo_fn_fetch_str(Embryo_Program *ep, Embryo_Cell *params)
                                            (int) params[2]);
    if (s)
      {
-	if (strlen(s) < params[4])
+	if ((int) strlen(s) < params[4])
 	  {
 	     SETSTR(s, params[3]);
 	  }
@@ -825,7 +849,7 @@ _edje_embryo_fn_set_state(Embryo_Program *ep, Embryo_Cell *params)
      {
 	if (rp->program) _edje_program_end(ed, rp->program);
 	_edje_part_description_apply(ed, rp, state, value, NULL, 0.0);
-	_edje_part_pos_set(ed, rp, EDJE_TWEEN_MODE_LINEAR, 0.0);
+	_edje_part_pos_set(ed, rp, EDJE_TWEEN_MODE_LINEAR, ZERO);
 	_edje_recalc(ed);
      }
    return 0;
@@ -851,7 +875,7 @@ _edje_embryo_fn_get_state(Embryo_Program *ep, Embryo_Cell *params)
 	s = rp->chosen_description->state.name;
 	if (s)
 	  {
-	     if (strlen(s) < params[3])
+	     if ((int) strlen(s) < params[3])
 	       {
 		  SETSTR(s, params[2]);
 	       }
@@ -907,7 +931,7 @@ _edje_embryo_fn_set_tween_state(Embryo_Program *ep, Embryo_Cell *params)
      {
 	if (rp->program) _edje_program_end(ed, rp->program);
 	_edje_part_description_apply(ed, rp, state1, value1, state2, value2);
-	_edje_part_pos_set(ed, rp, EDJE_TWEEN_MODE_LINEAR, tween);
+	_edje_part_pos_set(ed, rp, EDJE_TWEEN_MODE_LINEAR, FROM_DOUBLE(tween));
 	_edje_recalc(ed);
      }
    return 0;
@@ -1067,7 +1091,7 @@ _edje_embryo_fn_get_text(Embryo_Program *ep, Embryo_Cell *params)
    s = (char *)edje_object_part_text_get(ed->obj, rp->part->name);
    if (s)
      {
-	if (strlen(s) < params[3])
+	if ((int) strlen(s) < params[3])
 	  {
 	     SETSTR(s, params[2]);
 	  }
@@ -1306,7 +1330,7 @@ _edje_embryo_fn_send_message(Embryo_Program *ep, Embryo_Cell *params)
    int id, i, n;
    Embryo_Cell *ptr;
 
-   if (params[0] < (sizeof(Embryo_Cell) * (2))) return 0;
+   if (params[0] < (int) (sizeof(Embryo_Cell) * (2))) return 0;
    ed = embryo_program_data_get(ep);
    type = params[1];
    id = params[2];
@@ -1571,6 +1595,8 @@ _edje_embryo_fn_custom_state(Embryo_Program *ep, Embryo_Cell *params)
 	return 0;
      }
 
+   memset(rp->custom, 0, sizeof (Edje_Real_Part_State));
+
    *d = *parent;
 
    d->state.name = (char *)eina_stringshare_add("custom");
@@ -1615,7 +1641,7 @@ _edje_embryo_fn_set_state_val(Embryo_Program *ep, Embryo_Cell *params)
    char *s;
 
    /* we need at least 3 arguments */
-   if (params[0] < (sizeof(Embryo_Cell) * 3))
+   if (params[0] < (int) (sizeof(Embryo_Cell) * 3))
      return 0;
 
    if (params[1] < 0)
@@ -1633,8 +1659,8 @@ _edje_embryo_fn_set_state_val(Embryo_Program *ep, Embryo_Cell *params)
       case EDJE_STATE_PARAM_ALIGNMENT:
 	 CHKPARAM(4);
 
-	 GETFLOAT(rp->custom->description->align.x, params[3]);
-	 GETFLOAT(rp->custom->description->align.y, params[4]);
+	 GETFLOAT_T(rp->custom->description->align.x, params[3]);
+	 GETFLOAT_T(rp->custom->description->align.y, params[4]);
 
 	 break;
       case EDJE_STATE_PARAM_MIN:
@@ -1661,8 +1687,8 @@ _edje_embryo_fn_set_state_val(Embryo_Program *ep, Embryo_Cell *params)
       case EDJE_STATE_PARAM_ASPECT:
 	 CHKPARAM(4);
 
-	 GETFLOAT(rp->custom->description->aspect.min, params[3]);
-	 GETFLOAT(rp->custom->description->aspect.max, params[4]);
+	 GETFLOAT_T(rp->custom->description->aspect.min, params[3]);
+	 GETFLOAT_T(rp->custom->description->aspect.max, params[4]);
 
 	 break;
       case EDJE_STATE_PARAM_ASPECT_PREF:
@@ -1708,8 +1734,8 @@ _edje_embryo_fn_set_state_val(Embryo_Program *ep, Embryo_Cell *params)
       case EDJE_STATE_PARAM_REL1:
 	 CHKPARAM(4);
 
-	 GETFLOAT(rp->custom->description->rel1.relative_x, params[3]);
-	 GETFLOAT(rp->custom->description->rel1.relative_y, params[4]);
+	 GETFLOAT_T(rp->custom->description->rel1.relative_x, params[3]);
+	 GETFLOAT_T(rp->custom->description->rel1.relative_y, params[4]);
 
 	 break;
       case EDJE_STATE_PARAM_REL1_TO:
@@ -1734,8 +1760,8 @@ _edje_embryo_fn_set_state_val(Embryo_Program *ep, Embryo_Cell *params)
       case EDJE_STATE_PARAM_REL2:
 	 CHKPARAM(4);
 
-	 GETFLOAT(rp->custom->description->rel2.relative_x, params[3]);
-	 GETFLOAT(rp->custom->description->rel2.relative_y, params[4]);
+	 GETFLOAT_T(rp->custom->description->rel2.relative_x, params[3]);
+	 GETFLOAT_T(rp->custom->description->rel2.relative_y, params[4]);
 
 	 break;
       case EDJE_STATE_PARAM_REL2_TO:
@@ -1785,8 +1811,8 @@ _edje_embryo_fn_set_state_val(Embryo_Program *ep, Embryo_Cell *params)
 	 if ( (rp->part->type != EDJE_PART_TYPE_IMAGE) ) return 0;
 	 CHKPARAM(6);
 
-	 GETFLOAT(rp->custom->description->fill.pos_rel_x, params[3]);
-	 GETFLOAT(rp->custom->description->fill.pos_rel_y, params[4]);
+	 GETFLOAT_T(rp->custom->description->fill.pos_rel_x, params[3]);
+	 GETFLOAT_T(rp->custom->description->fill.pos_rel_y, params[4]);
 	 GETINT(rp->custom->description->fill.pos_abs_x, params[5]);
 	 GETINT(rp->custom->description->fill.pos_abs_y, params[6]);
 
@@ -1795,8 +1821,8 @@ _edje_embryo_fn_set_state_val(Embryo_Program *ep, Embryo_Cell *params)
 	 if ( (rp->part->type != EDJE_PART_TYPE_IMAGE) ) return 0;
 	 CHKPARAM(6);
 
-	 GETFLOAT(rp->custom->description->fill.rel_x, params[3]);
-	 GETFLOAT(rp->custom->description->fill.rel_y, params[4]);
+	 GETFLOAT_T(rp->custom->description->fill.rel_x, params[3]);
+	 GETFLOAT_T(rp->custom->description->fill.rel_y, params[4]);
 	 GETINT(rp->custom->description->fill.abs_x, params[5]);
 	 GETINT(rp->custom->description->fill.abs_y, params[6]);
 
@@ -1876,8 +1902,8 @@ _edje_embryo_fn_set_state_val(Embryo_Program *ep, Embryo_Cell *params)
 	 if ((rp->part->type != EDJE_PART_TYPE_TEXT)) return 0;
 	 CHKPARAM(4);
 
-	 GETFLOAT(rp->custom->description->text.align.x, params[3]);
-	 GETFLOAT(rp->custom->description->text.align.y, params[4]);
+	 GETFLOAT_T(rp->custom->description->text.align.x, params[3]);
+	 GETFLOAT_T(rp->custom->description->text.align.y, params[4]);
 
 	 break;
       case EDJE_STATE_PARAM_VISIBLE:
@@ -1886,6 +1912,72 @@ _edje_embryo_fn_set_state_val(Embryo_Program *ep, Embryo_Cell *params)
 	 GETINT(rp->custom->description->visible, params[3]);
 
 	 break;
+      case EDJE_STATE_PARAM_MAP_OM:
+        CHKPARAM(3);
+        
+        GETINT(rp->custom->description->map.on, params[3]);
+        
+        break;
+      case EDJE_STATE_PARAM_MAP_PERSP:
+        CHKPARAM(3);
+        
+        GETINT(rp->custom->description->map.id_persp, params[3]);
+        
+        break;
+      case EDJE_STATE_PARAM_MAP_LIGNT:
+        CHKPARAM(3);
+        
+        GETINT(rp->custom->description->map.id_light, params[3]);
+        
+        break;
+      case EDJE_STATE_PARAM_MAP_ROT_CENTER:
+        CHKPARAM(3);
+        
+        GETINT(rp->custom->description->map.rot.id_center, params[3]);
+        
+        break;
+      case EDJE_STATE_PARAM_MAP_ROT_X:
+        CHKPARAM(3);
+
+        GETFLOAT_T(rp->custom->description->map.rot.x, params[3]);
+
+        break;
+      case EDJE_STATE_PARAM_MAP_ROT_Y:
+        CHKPARAM(3);
+        
+        GETFLOAT_T(rp->custom->description->map.rot.y, params[3]);
+        
+        break;
+      case EDJE_STATE_PARAM_MAP_ROT_Z:
+        CHKPARAM(3);
+        
+        GETFLOAT_T(rp->custom->description->map.rot.z, params[3]);
+
+        break;
+      case EDJE_STATE_PARAM_MAP_BACK_CULL:
+        CHKPARAM(3);
+        
+        GETINT(rp->custom->description->map.backcull, params[3]);
+        
+        break;
+      case EDJE_STATE_PARAM_MAP_PERSP_ON:
+        CHKPARAM(3);
+        
+        GETINT(rp->custom->description->map.persp_on, params[3]);
+        
+        break;
+      case EDJE_STATE_PARAM_PERSP_ZPLANE:
+        CHKPARAM(3);
+        
+        GETINT(rp->custom->description->persp.zplane, params[3]);
+        
+        break;
+      case EDJE_STATE_PARAM_PERSP_FOCAL:
+        CHKPARAM(3);
+        
+        GETINT(rp->custom->description->persp.focal, params[3]);
+        
+        break;
       default:
 	 break;
      }
@@ -1906,7 +1998,7 @@ _edje_embryo_fn_get_state_val(Embryo_Program *ep, Embryo_Cell *params)
    char *s;
 
    /* we need at least 3 arguments */
-   if (params[0] < (sizeof(Embryo_Cell) * 3))
+   if (params[0] < (int) (sizeof(Embryo_Cell) * 3))
      return 0;
 
    if (params[1] < 0)
@@ -1924,8 +2016,8 @@ _edje_embryo_fn_get_state_val(Embryo_Program *ep, Embryo_Cell *params)
       case EDJE_STATE_PARAM_ALIGNMENT:
 	 CHKPARAM(4);
 
-	 SETFLOAT(rp->custom->description->align.x, params[3]);
-	 SETFLOAT(rp->custom->description->align.y, params[4]);
+	 SETFLOAT_T(rp->custom->description->align.x, params[3]);
+	 SETFLOAT_T(rp->custom->description->align.y, params[4]);
 
 	 break;
       case EDJE_STATE_PARAM_MIN:
@@ -1952,8 +2044,8 @@ _edje_embryo_fn_get_state_val(Embryo_Program *ep, Embryo_Cell *params)
       case EDJE_STATE_PARAM_ASPECT:
 	 CHKPARAM(4);
 
-	 SETFLOAT(rp->custom->description->aspect.min, params[3]);
-	 SETFLOAT(rp->custom->description->aspect.max, params[4]);
+	 SETFLOAT_T(rp->custom->description->aspect.min, params[3]);
+	 SETFLOAT_T(rp->custom->description->aspect.max, params[4]);
 
 	 break;
       case EDJE_STATE_PARAM_ASPECT_PREF:
@@ -1999,8 +2091,8 @@ _edje_embryo_fn_get_state_val(Embryo_Program *ep, Embryo_Cell *params)
       case EDJE_STATE_PARAM_REL1:
 	 CHKPARAM(4);
 
-	 SETFLOAT(rp->custom->description->rel1.relative_x, params[3]);
-	 SETFLOAT(rp->custom->description->rel1.relative_y, params[4]);
+	 SETFLOAT_T(rp->custom->description->rel1.relative_x, params[3]);
+	 SETFLOAT_T(rp->custom->description->rel1.relative_y, params[4]);
 
 	 break;
       case EDJE_STATE_PARAM_REL1_TO:
@@ -2020,8 +2112,8 @@ _edje_embryo_fn_get_state_val(Embryo_Program *ep, Embryo_Cell *params)
       case EDJE_STATE_PARAM_REL2:
 	 CHKPARAM(4);
 
-	 SETFLOAT(rp->custom->description->rel2.relative_x, params[3]);
-	 SETFLOAT(rp->custom->description->rel2.relative_y, params[4]);
+	 SETFLOAT_T(rp->custom->description->rel2.relative_x, params[3]);
+	 SETFLOAT_T(rp->custom->description->rel2.relative_y, params[4]);
 
 	 break;
       case EDJE_STATE_PARAM_REL2_TO:
@@ -2066,8 +2158,8 @@ _edje_embryo_fn_get_state_val(Embryo_Program *ep, Embryo_Cell *params)
 	 if ( (rp->part->type != EDJE_PART_TYPE_IMAGE) ) return 0;
 	 CHKPARAM(6);
 
-	 SETFLOAT(rp->custom->description->fill.pos_rel_x, params[3]);
-	 SETFLOAT(rp->custom->description->fill.pos_rel_y, params[4]);
+	 SETFLOAT_T(rp->custom->description->fill.pos_rel_x, params[3]);
+	 SETFLOAT_T(rp->custom->description->fill.pos_rel_y, params[4]);
 	 SETINT(rp->custom->description->fill.pos_abs_x, params[5]);
 	 SETINT(rp->custom->description->fill.pos_abs_y, params[6]);
 
@@ -2076,8 +2168,8 @@ _edje_embryo_fn_get_state_val(Embryo_Program *ep, Embryo_Cell *params)
 	 if ( (rp->part->type != EDJE_PART_TYPE_IMAGE) ) return 0;
 	 CHKPARAM(6);
 
-	 SETFLOAT(rp->custom->description->fill.rel_x, params[3]);
-	 SETFLOAT(rp->custom->description->fill.rel_y, params[4]);
+	 SETFLOAT_T(rp->custom->description->fill.rel_x, params[3]);
+	 SETFLOAT_T(rp->custom->description->fill.rel_y, params[4]);
 	 SETINT(rp->custom->description->fill.abs_x, params[5]);
 	 SETINT(rp->custom->description->fill.abs_y, params[6]);
 
@@ -2157,8 +2249,8 @@ _edje_embryo_fn_get_state_val(Embryo_Program *ep, Embryo_Cell *params)
 	 if ((rp->part->type != EDJE_PART_TYPE_TEXT)) return 0;
 	 CHKPARAM(4);
 
-	 SETFLOAT(rp->custom->description->text.align.x, params[3]);
-	 SETFLOAT(rp->custom->description->text.align.y, params[4]);
+	 SETFLOAT_T(rp->custom->description->text.align.x, params[3]);
+	 SETFLOAT_T(rp->custom->description->text.align.y, params[4]);
 
 	 break;
       case EDJE_STATE_PARAM_VISIBLE:
@@ -2210,16 +2302,372 @@ _edje_embryo_fn_part_swallow(Embryo_Program *ep, Embryo_Cell *params)
    return 0;
 }
 
+/* external_param_get_int(id, param_name[]) */
+static Embryo_Cell
+_edje_embryo_fn_external_param_get_int(Embryo_Program *ep, Embryo_Cell *params)
+{
+   Edje *ed;
+   int part_id;
+   Edje_Real_Part *rp;
+   Edje_External_Param eep;
+   char *param_name;
+
+   CHKPARAM(2);
+   ed = embryo_program_data_get(ep);
+
+   part_id = params[1];
+   if (part_id < 0) return 0;
+   rp = ed->table_parts[part_id % ed->table_parts_size];
+
+   GETSTR(param_name, params[2]);
+   if (!param_name) return 0;
+   eep.name = param_name;
+   eep.type = EDJE_EXTERNAL_PARAM_TYPE_INT;
+   eep.i = 0;
+   _edje_external_param_get(rp->swallowed_object, &eep);
+   return eep.i;
+}
+
+/* external_param_set_int(id, param_name[], val) */
+static Embryo_Cell
+_edje_embryo_fn_external_param_set_int(Embryo_Program *ep, Embryo_Cell *params)
+{
+   Edje *ed;
+   int part_id;
+   Edje_Real_Part *rp;
+   Edje_External_Param eep;
+   char *param_name;
+
+   CHKPARAM(3);
+   ed = embryo_program_data_get(ep);
+
+   part_id = params[1];
+   if (part_id < 0) return 0;
+   rp = ed->table_parts[part_id % ed->table_parts_size];
+
+   GETSTR(param_name, params[2]);
+   if (!param_name) return 0;
+   eep.name = param_name;
+   eep.type = EDJE_EXTERNAL_PARAM_TYPE_INT;
+   eep.i = params[3];
+   return _edje_external_param_set(rp->swallowed_object, &eep);
+}
+
+/* Float:external_param_get_float(id, param_name[]) */
+static Embryo_Cell
+_edje_embryo_fn_external_param_get_float(Embryo_Program *ep, Embryo_Cell *params)
+{
+   Edje *ed;
+   int part_id;
+   Edje_Real_Part *rp;
+   Edje_External_Param eep;
+   char *param_name;
+   float v;
+
+   CHKPARAM(2);
+   ed = embryo_program_data_get(ep);
+
+   part_id = params[1];
+   if (part_id < 0) return 0;
+   rp = ed->table_parts[part_id % ed->table_parts_size];
+
+   GETSTR(param_name, params[2]);
+   if (!param_name) return 0;
+   eep.name = param_name;
+   eep.type = EDJE_EXTERNAL_PARAM_TYPE_DOUBLE;
+   eep.d = 0.0;
+   _edje_external_param_get(rp->swallowed_object, &eep);
+   v = eep.d;
+   return EMBRYO_FLOAT_TO_CELL(v);
+}
+
+/* external_param_set_float(id, param_name[], Float:val) */
+static Embryo_Cell
+_edje_embryo_fn_external_param_set_float(Embryo_Program *ep, Embryo_Cell *params)
+{
+   Edje *ed;
+   int part_id;
+   Edje_Real_Part *rp;
+   Edje_External_Param eep;
+   char *param_name;
+
+   CHKPARAM(3);
+   ed = embryo_program_data_get(ep);
+
+   part_id = params[1];
+   if (part_id < 0) return 0;
+   rp = ed->table_parts[part_id % ed->table_parts_size];
+
+   GETSTR(param_name, params[2]);
+   if (!param_name) return 0;
+   eep.name = param_name;
+   eep.type = EDJE_EXTERNAL_PARAM_TYPE_DOUBLE;
+   eep.d = EMBRYO_CELL_TO_FLOAT(params[3]);
+   return _edje_external_param_set(rp->swallowed_object, &eep);
+}
+
+/* external_param_get_strlen(id, param_name[]) */
+static Embryo_Cell
+_edje_embryo_fn_external_param_get_strlen(Embryo_Program *ep, Embryo_Cell *params)
+{
+   Edje *ed;
+   int part_id;
+   Edje_Real_Part *rp;
+   Edje_External_Param eep;
+   char *param_name;
+
+   CHKPARAM(2);
+   ed = embryo_program_data_get(ep);
+
+   part_id = params[1];
+   if (part_id < 0) return 0;
+   rp = ed->table_parts[part_id % ed->table_parts_size];
+
+   GETSTR(param_name, params[2]);
+   if (!param_name) return 0;
+   eep.name = param_name;
+   eep.type = EDJE_EXTERNAL_PARAM_TYPE_STRING;
+   eep.s = NULL;
+   _edje_external_param_get(rp->swallowed_object, &eep);
+   if (!eep.s) return 0;
+   return strlen(eep.s);
+}
+
+/* external_param_get_str(id, param_name[], val[], val_maxlen) */
+static Embryo_Cell
+_edje_embryo_fn_external_param_get_str(Embryo_Program *ep, Embryo_Cell *params)
+{
+   Edje *ed;
+   int part_id;
+   Edje_Real_Part *rp;
+   Edje_External_Param eep;
+   char *param_name;
+   size_t src_len, dst_len;
+
+   CHKPARAM(4);
+   dst_len = params[4];
+   if (dst_len < 1) goto error;
+
+   ed = embryo_program_data_get(ep);
+
+   part_id = params[1];
+   if (part_id < 0) goto error;
+   rp = ed->table_parts[part_id % ed->table_parts_size];
+
+   GETSTR(param_name, params[2]);
+   if (!param_name) return 0;
+   eep.name = param_name;
+   eep.type = EDJE_EXTERNAL_PARAM_TYPE_STRING;
+   eep.s = NULL;
+   _edje_external_param_get(rp->swallowed_object, &eep);
+   if (!eep.s) goto error;
+   src_len = strlen(eep.s);
+   if (src_len < dst_len)
+     {
+	SETSTR(eep.s, params[3]);
+     }
+   else
+     {
+	char *tmp = alloca(dst_len);
+	memcpy(tmp, eep.s, dst_len - 1);
+	tmp[dst_len] = '\0';
+	SETSTR(tmp, params[3]);
+     }
+   return 1;
+
+ error:
+   SETSTR("", params[3]);
+   return 0;
+}
+
+/* external_param_set_str(id, param_name[], val[]) */
+static Embryo_Cell
+_edje_embryo_fn_external_param_set_str(Embryo_Program *ep, Embryo_Cell *params)
+{
+   Edje *ed;
+   int part_id;
+   Edje_Real_Part *rp;
+   Edje_External_Param eep;
+   char *param_name, *val;
+
+   CHKPARAM(3);
+   ed = embryo_program_data_get(ep);
+
+   part_id = params[1];
+   if (part_id < 0) return 0;
+   rp = ed->table_parts[part_id % ed->table_parts_size];
+
+   GETSTR(param_name, params[2]);
+   if (!param_name) return 0;
+   eep.name = param_name;
+   eep.type = EDJE_EXTERNAL_PARAM_TYPE_STRING;
+   GETSTR(val, params[3]);
+   if (!val) return 0;
+   eep.s = val;
+   return _edje_external_param_set(rp->swallowed_object, &eep);
+}
+
+/* external_param_get_choice_len(id, param_name[]) */
+static Embryo_Cell
+_edje_embryo_fn_external_param_get_choice_len(Embryo_Program *ep, Embryo_Cell *params)
+{
+   Edje *ed;
+   int part_id;
+   Edje_Real_Part *rp;
+   Edje_External_Param eep;
+   char *param_name;
+
+   CHKPARAM(2);
+   ed = embryo_program_data_get(ep);
+
+   part_id = params[1];
+   if (part_id < 0) return 0;
+   rp = ed->table_parts[part_id % ed->table_parts_size];
+
+   GETSTR(param_name, params[2]);
+   if (!param_name) return 0;
+   eep.name = param_name;
+   eep.type = EDJE_EXTERNAL_PARAM_TYPE_CHOICE;
+   eep.s = NULL;
+   _edje_external_param_get(rp->swallowed_object, &eep);
+   if (!eep.s) return 0;
+   return strlen(eep.s);
+}
+
+/* external_param_get_choice(id, param_name[], val[], val_maxlen) */
+static Embryo_Cell
+_edje_embryo_fn_external_param_get_choice(Embryo_Program *ep, Embryo_Cell *params)
+{
+   Edje *ed;
+   int part_id;
+   Edje_Real_Part *rp;
+   Edje_External_Param eep;
+   char *param_name;
+   size_t src_len, dst_len;
+
+   CHKPARAM(4);
+   dst_len = params[4];
+   if (dst_len < 1) goto error;
+
+   ed = embryo_program_data_get(ep);
+
+   part_id = params[1];
+   if (part_id < 0) goto error;
+   rp = ed->table_parts[part_id % ed->table_parts_size];
+
+   GETSTR(param_name, params[2]);
+   if (!param_name) return 0;
+   eep.name = param_name;
+   eep.type = EDJE_EXTERNAL_PARAM_TYPE_CHOICE;
+   eep.s = NULL;
+   _edje_external_param_get(rp->swallowed_object, &eep);
+   if (!eep.s) goto error;
+   src_len = strlen(eep.s);
+   if (src_len < dst_len)
+     {
+	SETSTR(eep.s, params[3]);
+     }
+   else
+     {
+	char *tmp = alloca(dst_len);
+	memcpy(tmp, eep.s, dst_len - 1);
+	tmp[dst_len] = '\0';
+	SETSTR(tmp, params[3]);
+     }
+   return 1;
+
+ error:
+   SETSTR("", params[3]);
+   return 0;
+}
+
+/* external_param_set_choice(id, param_name[], val[]) */
+static Embryo_Cell
+_edje_embryo_fn_external_param_set_choice(Embryo_Program *ep, Embryo_Cell *params)
+{
+   Edje *ed;
+   int part_id;
+   Edje_Real_Part *rp;
+   Edje_External_Param eep;
+   char *param_name, *val;
+
+   CHKPARAM(3);
+   ed = embryo_program_data_get(ep);
+
+   part_id = params[1];
+   if (part_id < 0) return 0;
+   rp = ed->table_parts[part_id % ed->table_parts_size];
+
+   GETSTR(param_name, params[2]);
+   if (!param_name) return 0;
+   eep.name = param_name;
+   eep.type = EDJE_EXTERNAL_PARAM_TYPE_CHOICE;
+   GETSTR(val, params[3]);
+   if (!val) return 0;
+   eep.s = val;
+   return _edje_external_param_set(rp->swallowed_object, &eep);
+}
+
+/* external_param_get_bool(id, param_name[]) */
+static Embryo_Cell
+_edje_embryo_fn_external_param_get_bool(Embryo_Program *ep, Embryo_Cell *params)
+{
+   Edje *ed;
+   int part_id;
+   Edje_Real_Part *rp;
+   Edje_External_Param eep;
+   char *param_name;
+
+   CHKPARAM(2);
+   ed = embryo_program_data_get(ep);
+
+   part_id = params[1];
+   if (part_id < 0) return 0;
+   rp = ed->table_parts[part_id % ed->table_parts_size];
+
+   GETSTR(param_name, params[2]);
+   if (!param_name) return 0;
+   eep.name = param_name;
+   eep.type = EDJE_EXTERNAL_PARAM_TYPE_BOOL;
+   eep.i = 0;
+   _edje_external_param_get(rp->swallowed_object, &eep);
+   return eep.i;
+}
+
+/* external_param_set_bool(id, param_name[], val) */
+static Embryo_Cell
+_edje_embryo_fn_external_param_set_bool(Embryo_Program *ep, Embryo_Cell *params)
+{
+   Edje *ed;
+   int part_id;
+   Edje_Real_Part *rp;
+   Edje_External_Param eep;
+   char *param_name;
+
+   CHKPARAM(3);
+   ed = embryo_program_data_get(ep);
+
+   part_id = params[1];
+   if (part_id < 0) return 0;
+   rp = ed->table_parts[part_id % ed->table_parts_size];
+
+   GETSTR(param_name, params[2]);
+   if (!param_name) return 0;
+   eep.name = param_name;
+   eep.type = EDJE_EXTERNAL_PARAM_TYPE_BOOL;
+   eep.i = params[3];
+   return _edje_external_param_set(rp->swallowed_object, &eep);
+}
+
 void
-_edje_embryo_script_init(Edje *ed)
+_edje_embryo_script_init(Edje_Part_Collection *edc)
 {
    Embryo_Program *ep;
 
-   if (!ed) return;
-   if (!ed->collection) return;
-   if (!ed->collection->script) return;
-   ep = ed->collection->script;
-   embryo_program_data_set(ep, ed);
+   if (!edc) return;
+   if (!edc->script) return;
+   
+   ep = edc->script;
    /* first advertise all the edje "script" calls */
    embryo_program_native_call_add(ep, "get_int", _edje_embryo_fn_get_int);
    embryo_program_native_call_add(ep, "set_int", _edje_embryo_fn_set_int);
@@ -2289,20 +2737,28 @@ _edje_embryo_script_init(Edje *ed)
 
    embryo_program_native_call_add(ep, "part_swallow", _edje_embryo_fn_part_swallow);
 
-//   embryo_program_vm_push(ed->collection->script);
-//   _edje_embryo_globals_init(ed);
+   embryo_program_native_call_add(ep, "external_param_get_int", _edje_embryo_fn_external_param_get_int);
+   embryo_program_native_call_add(ep, "external_param_set_int", _edje_embryo_fn_external_param_set_int);
+   embryo_program_native_call_add(ep, "external_param_get_float", _edje_embryo_fn_external_param_get_float);
+   embryo_program_native_call_add(ep, "external_param_set_float", _edje_embryo_fn_external_param_set_float);
+   embryo_program_native_call_add(ep, "external_param_get_strlen", _edje_embryo_fn_external_param_get_strlen);
+   embryo_program_native_call_add(ep, "external_param_get_str", _edje_embryo_fn_external_param_get_str);
+   embryo_program_native_call_add(ep, "external_param_set_str", _edje_embryo_fn_external_param_set_str);
+   embryo_program_native_call_add(ep, "external_param_get_choice_len", _edje_embryo_fn_external_param_get_choice_len);
+   embryo_program_native_call_add(ep, "external_param_get_choice", _edje_embryo_fn_external_param_get_choice);
+   embryo_program_native_call_add(ep, "external_param_set_choice", _edje_embryo_fn_external_param_set_choice);
+   embryo_program_native_call_add(ep, "external_param_get_bool", _edje_embryo_fn_external_param_get_bool);
+   embryo_program_native_call_add(ep, "external_param_set_bool", _edje_embryo_fn_external_param_set_bool);
 }
 
 void
-_edje_embryo_script_shutdown(Edje *ed)
+_edje_embryo_script_shutdown(Edje_Part_Collection *edc)
 {
-   if (!ed) return;
-   if (!ed->collection) return;
-   if (!ed->collection->script) return;
-   if (embryo_program_recursion_get(ed->collection->script) > 0) return;
-//   embryo_program_vm_pop(ed->collection->script);
-   embryo_program_free(ed->collection->script);
-   ed->collection->script = NULL;
+   if (!edc) return;
+   if (!edc->script) return;
+   if (embryo_program_recursion_get(edc->script) > 0) return;
+   embryo_program_free(edc->script);
+   edc->script = NULL;
 }
 
 void
@@ -2354,19 +2810,19 @@ _edje_embryo_test_run(Edje *ed, const char *fname, const char *sig, const char *
 	ret = embryo_program_run(ed->collection->script, fn);
 	if (ret == EMBRYO_PROGRAM_FAIL)
 	  {
-	     printf("EDJE:        ERROR with embryo script.\n"
-		    "ENTRY POINT: %s\n"
-		    "ERROR:       %s\n",
-		    fname,
-		    embryo_error_string_get(embryo_program_error_get(ed->collection->script)));
+ 	     ERR("ERROR with embryo script.\n"
+	 	 "ENTRY POINT: %s\n"
+		 "ERROR:       %s",
+		 fname,
+		 embryo_error_string_get(embryo_program_error_get(ed->collection->script)));
 	  }
 	else if (ret == EMBRYO_PROGRAM_TOOLONG)
 	  {
-	     printf("EDJE:        ERROR with embryo script.\n"
-		    "ENTRY POINT: %s\n"
-		    "ERROR:       Script exceeded maximum allowed cycle count of %i\n",
-		    fname,
-		    embryo_program_max_cycle_run_get(ed->collection->script));
+	     ERR("ERROR with embryo script.\n"
+		 "ENTRY POINT: %s\n"
+		 "ERROR:       Script exceeded maximum allowed cycle count of %i",
+		 fname,
+		 embryo_program_max_cycle_run_get(ed->collection->script));
 	  }
 	embryo_program_data_set(ed->collection->script, pdata);
      }
