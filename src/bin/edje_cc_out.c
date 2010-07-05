@@ -40,7 +40,7 @@ typedef struct _External_Lookup External_Lookup;
 typedef struct _Part_Lookup Part_Lookup;
 typedef struct _Program_Lookup Program_Lookup;
 typedef struct _Group_Lookup Group_Lookup;
-typedef struct _String_Lookup Image_Lookup;
+typedef struct _Image_Lookup Image_Lookup;
 typedef struct _String_Lookup Spectrum_Lookup;
 typedef struct _Slave_Lookup Slave_Lookup;
 typedef struct _Code_Lookup Code_Lookup;
@@ -76,6 +76,13 @@ struct _String_Lookup
    int *dest;
 };
 
+struct _Image_Lookup
+{
+   char *name;
+   int *dest;
+   Eina_Bool *set;
+};
+
 struct _Slave_Lookup
 {
    int *master;
@@ -87,6 +94,7 @@ struct _Code_Lookup
    char *ptr;
    int   len;
    int   val;
+   Eina_Bool set;
 };
 
 static void data_process_string(Edje_Part_Collection *pc, const char *prefix, char *s, void (*func)(Edje_Part_Collection *pc, char *name, char *ptr, int len));
@@ -208,6 +216,7 @@ check_part (Edje_Part_Collection *pc, Edje_Part *ep, Eet_File *ef)
    Eina_List *l;
    Edje_Part_Description *data;
 
+   /* FIXME: check image set and sort them. */
    if (!epd)
      error_and_abort(ef, "Collection %i: default description missing "
 		     "for part \"%s\"\n", pc->id, ep->name);
@@ -382,6 +391,88 @@ data_write_fonts(Eet_File *ef, int *font_num, int *input_bytes, int *input_raw_b
    return total_bytes;
 }
 
+static void
+error_and_abort_image_load_error(Eet_File *ef, const char *file, int error)
+{
+   const char *errmsg = evas_load_error_str(error);
+   char hint[1024] = "";
+
+   if (error == EVAS_LOAD_ERROR_DOES_NOT_EXIST)
+     {
+	snprintf
+	  (hint, sizeof(hint),
+	   " Check if path to file \"%s\" is correct "
+	   "(both directory and file name).",
+	   file);
+     }
+   else if (error == EVAS_LOAD_ERROR_CORRUPT_FILE)
+     {
+	snprintf
+	  (hint, sizeof(hint),
+	   " Check if file \"%s\" is consistent.",
+	   file);
+     }
+   else if (error == EVAS_LOAD_ERROR_UNKNOWN_FORMAT)
+     {
+	const char *ext = strrchr(file, '.');
+	const char **itr, *known_loaders[] = {
+	  /* list from evas_image_load.c */
+	  "png",
+	  "jpg",
+	  "jpeg",
+	  "jfif",
+	  "eet",
+	  "edj",
+	  "eap",
+	  "edb",
+	  "xpm",
+	  "tiff",
+	  "tif",
+	  "svg",
+	  "svgz",
+	  "gif",
+	  "pbm",
+	  "pgm",
+	  "ppm",
+	  "pnm",
+	  NULL
+	};
+
+	if (!ext)
+	  {
+	     snprintf
+	       (hint, sizeof(hint),
+		" File \"%s\" does not have an extension, "
+		"maybe it should?",
+		file);
+	     goto show_err;
+	  }
+
+	ext++;
+	for (itr = known_loaders; *itr; itr++)
+	  {
+	     if (strcasecmp(ext, *itr) == 0)
+	       {
+		  snprintf
+		    (hint, sizeof(hint),
+		     " Check if Evas was compiled with %s module enabled and "
+		     "all required dependencies exist.",
+		     ext);
+		  goto show_err;
+	       }
+	  }
+
+	snprintf(hint, sizeof(hint),
+		 " Check if Evas supports loading files of type \"%s\" (%s) "
+		 "and this module was compiled and all its dependencies exist.",
+		 ext, file);
+     }
+ show_err:
+   error_and_abort
+     (ef, "Unable to load image \"%s\" used by file \"%s\": %s.%s\n",
+      file, file_out, errmsg, hint);
+}
+
 static int
 data_write_images(Eet_File *ef, int *image_num, int *input_bytes, int *input_raw_bytes)
 {
@@ -414,6 +505,7 @@ data_write_images(Eet_File *ef, int *image_num, int *input_bytes, int *input_raw
 		  Evas_Object *im;
 		  Eina_List *ll;
 		  char *data;
+		  int load_err = EVAS_LOAD_ERROR_NONE;
 
 		  im = NULL;
 		  EINA_LIST_FOREACH(img_dirs, ll, data)
@@ -426,23 +518,23 @@ data_write_images(Eet_File *ef, int *image_num, int *input_bytes, int *input_raw
 		       if (im)
 			 {
 			    evas_object_image_file_set(im, buf, NULL);
-			    if (evas_object_image_load_error_get(im) ==
-				EVAS_LOAD_ERROR_NONE)
-			      {
-				 break;
-			      }
+			    load_err = evas_object_image_load_error_get(im);
+			    if (load_err == EVAS_LOAD_ERROR_NONE)
+			      break;
 			    evas_object_del(im);
 			    im = NULL;
+			    if (load_err != EVAS_LOAD_ERROR_DOES_NOT_EXIST)
+			      break;
 			 }
 		    }
-		  if (!im)
+		  if ((!im) && (load_err == EVAS_LOAD_ERROR_DOES_NOT_EXIST))
 		    {
 		       im = evas_object_image_add(evas);
 		       if (im)
 			 {
 			    evas_object_image_file_set(im, img->entry, NULL);
-			    if (evas_object_image_load_error_get(im) !=
-				EVAS_LOAD_ERROR_NONE)
+			    load_err = evas_object_image_load_error_get(im);
+			    if (load_err != EVAS_LOAD_ERROR_NONE)
 			      {
 				 evas_object_del(im);
 				 im = NULL;
@@ -464,7 +556,6 @@ data_write_images(Eet_File *ef, int *image_num, int *input_bytes, int *input_raw
 			    int mode, qual;
 
 			    snprintf(buf, sizeof(buf), "images/%i", img->id);
-			    mode = 2;
 			    qual = 80;
 			    if ((img->source_type == EDJE_IMAGE_SOURCE_TYPE_INLINE_PERFECT) &&
 				(img->source_param == 0))
@@ -521,10 +612,8 @@ data_write_images(Eet_File *ef, int *image_num, int *input_bytes, int *input_raw
 			 }
 		       else
 			 {
-			    error_and_abort(ef, "Unable to load image for "
-					    "image part \"%s\" as \"%s\" part "
-					    "entry to %s\n", img->entry, buf,
-					    file_out);
+			    error_and_abort_image_load_error
+			      (ef, img->entry, load_err);
 			 }
 
 		       if (verbose)
@@ -547,8 +636,8 @@ data_write_images(Eet_File *ef, int *image_num, int *input_bytes, int *input_raw
 		    }
 		  else
 		    {
-		       error_and_abort(ef, "Unable to load image for image \"%s\" part entry to %s. Missing PNG or JPEG loader modules for Evas or file does not exist, or is not readable.\n",
-				       img->entry, file_out);
+		       error_and_abort_image_load_error
+			 (ef, img->entry, load_err);
 		    }
 	       }
 	  }
@@ -746,7 +835,6 @@ compile_script_file(Eet_File *ef, const char *source, const char *output,
 
    if (size > 0)
      {
-	int bt;
 	void *data = malloc(size);
 
 	if (data)
@@ -756,7 +844,7 @@ compile_script_file(Eet_File *ef, const char *source, const char *output,
 			       "\"%s\"\n", output);
 
 	     snprintf(buf, sizeof(buf), "scripts/%i", script_num);
-	     bt = eet_write(ef, buf, data, size, 1);
+	     eet_write(ef, buf, data, size, 1);
 	     free(data);
 	  }
      }
@@ -779,8 +867,8 @@ data_write_scripts(Eet_File *ef)
 
    for (i = 0, l = codes; l; l = eina_list_next(l), i++)
      {
-	char tmpn[4096];
-	char tmpo[4096];
+	char tmpn[PATH_MAX];
+	char tmpo[PATH_MAX];
 	int fd;
 	Code *cd = eina_list_data_get(l);
 	
@@ -938,7 +1026,7 @@ data_write_lua_scripts(Eet_File *ef)
 	  _edje_lua_error_and_abort(L, err_code, ef);
 	lua_dump(L, _edje_lua_script_writer, &data);
 #else // LUA_PLAIN_TEXT
-	data.buf = lua_tostring(L, -1);
+	data.buf = (char *)lua_tostring(L, -1);
 	data.size = strlen(data.buf);
 #endif
 	//printf("lua chunk size: %d\n", data.size);
@@ -979,8 +1067,8 @@ data_write(void)
    ef = eet_open(file_out, EET_FILE_MODE_WRITE);
    if (!ef)
      {
-	fprintf(stderr, "%s: Error. Unable to open \"%s\" for writing output\n",
-		progname, file_out);
+	ERR("%s: Error. Unable to open \"%s\" for writing output",
+	    progname, file_out);
 	exit(-1);
      }
 
@@ -1081,7 +1169,7 @@ data_queue_program_lookup(Edje_Part_Collection *pc, char *name, int *dest)
 }
 
 void
-data_queue_image_lookup(char *name, int *dest)
+data_queue_image_lookup(char *name, int *dest, Eina_Bool *set)
 {
    Image_Lookup *il;
 
@@ -1089,6 +1177,7 @@ data_queue_image_lookup(char *name, int *dest)
    image_lookups = eina_list_append(image_lookups, il);
    il->name = mem_strdup(name);
    il->dest = dest;
+   il->set = set;
 }
 
 void
@@ -1169,8 +1258,8 @@ data_process_lookups(void)
 	  }
 	if (!l)
 	  {
-	     fprintf(stderr, "%s: Error. Unable to find part name \"%s\".\n",
-		     progname, pl->name);
+	     ERR("%s: Error. Unable to find part name \"%s\".",
+		 progname, pl->name);
 	     exit(-1);
 	  }
 	part_lookups = eina_list_remove(part_lookups, pl);
@@ -1195,8 +1284,8 @@ data_process_lookups(void)
 	  }
 	if (!l)
 	  {
-	     fprintf(stderr, "%s: Error. Unable to find program name \"%s\".\n",
-		     progname, pl->name);
+	     ERR("%s: Error. Unable to find program name \"%s\".",
+		 progname, pl->name);
 	     exit(-1);
 	  }
 	program_lookups = eina_list_remove(program_lookups, pl);
@@ -1220,8 +1309,8 @@ data_process_lookups(void)
           }
         if (!l)
           {
-             fprintf(stderr, "%s: Error. Unable to find group name \"%s\".\n",
-                     progname, gl->name);
+             ERR("%s: Error. Unable to find group name \"%s\".",
+		 progname, gl->name);
              exit(-1);
           }
         group_lookups = eina_list_remove(group_lookups, gl);
@@ -1249,15 +1338,32 @@ data_process_lookups(void)
 			 *(il->dest) = -de->id - 1;
 		       else
 			 *(il->dest) = de->id;
+		       *(il->set) = EINA_FALSE;
 		       break;
 		    }
+	       }
+
+	     if (!l)
+	       {
+		 Edje_Image_Directory_Set *set;
+
+		 EINA_LIST_FOREACH(edje_file->image_dir->sets, l, set)
+		   {
+		     if ((set->name) && (!strcmp(set->name, il->name)))
+		       {
+			 handle_slave_lookup(image_slave_lookups, il->dest, set->id);
+			 *(il->dest) = set->id;
+			 *(il->set) = EINA_TRUE;
+			 break;
+		       }
+		   }
 	       }
 	  }
 
 	if (!l)
 	  {
-	     fprintf(stderr, "%s: Error. Unable to find image name \"%s\".\n",
-		     progname, il->name);
+	     ERR("%s: Error. Unable to find image name \"%s\".",
+		 progname, il->name);
 	     exit(-1);
 	  }
 	image_lookups = eina_list_remove(image_lookups, il);
@@ -1290,8 +1396,8 @@ data_process_lookups(void)
 
 	if (!l)
 	  {
-	     fprintf(stderr, "%s: Error. unable to find spectrum name %s\n",
-		     progname, il->name);
+	     ERR("%s: Error. unable to find spectrum name %s",
+		 progname, il->name);
 	     exit(-1);
 	  }
 	spectrum_lookups = eina_list_remove(spectrum_lookups, il);
@@ -1468,7 +1574,7 @@ _data_queue_image_pc_lookup(Edje_Part_Collection *pc __UNUSED__, char *name, cha
    cl->ptr = ptr;
    cl->len = len;
 
-   data_queue_image_lookup(name, &(cl->val));
+   data_queue_image_lookup(name, &(cl->val),  &(cl->set));
 
    code_lookups = eina_list_append(code_lookups, cl);
 }
@@ -1522,11 +1628,12 @@ data_process_script_lookups(void)
 	char buf[12];
 	int n;
 
+	/* FIXME !! Handle set in program */
 	n = eina_convert_itoa(cl->val, buf);
 	if (n > cl->len)
 	  {
-	     fprintf(stderr, "%s: Error. The unexpected happened. A numeric replacement string was larger than the original!\n",
-		     progname);
+	     ERR("%s: Error. The unexpected happened. A numeric replacement string was larger than the original!",
+		 progname);
 	     exit(-1);
 	  }
 	memset(cl->ptr, ' ', cl->len);

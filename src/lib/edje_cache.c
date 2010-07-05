@@ -88,6 +88,7 @@ _edje_file_coll_open(Edje_File *edf, const char *coll)
    if (data)
      {
 	edc->script = embryo_program_new(data, size);
+        _edje_embryo_script_init(edc);
 	free(data);
      }
 
@@ -96,21 +97,24 @@ _edje_file_coll_open(Edje_File *edf, const char *coll)
 
    if (data)
      {
+#ifdef LUA2
+        _edje_lua2_script_load(edc, data, size);
+#else        
 	int err_code;
 
 	//printf("lua chunk size: %d\n", size);
-	edc->L = _edje_lua_new_thread(_edje_lua_state_get()); // gets freed in 'edje_load::_edje_collection_free'
-	_edje_lua_new_reg(edc->L, -1, edc); // gets freed in 'edje_load::_edje_collectoin_free'
+	_edje_lua_new_reg(_edje_lua_state_get(), -1, edc); // gets freed in 'edje_load::_edje_collectoin_free'
 
-	if ((err_code = luaL_loadbuffer(edc->L, data, size, "edje_lua_script")))
+	if ((err_code = luaL_loadbuffer(_edje_lua_state_get(), data, size, "edje_lua_script")))
 	  {
 	     if (err_code == LUA_ERRSYNTAX)
-	       printf("lua load syntax error: %s\n", lua_tostring(edc->L, -1));
+	       ERR("lua load syntax error: %s", lua_tostring(_edje_lua_state_get(), -1));
 	     else if (err_code == LUA_ERRMEM)
-	       printf("lua load memory allocation error: %s\n", lua_tostring(edc->L, -1));
+	       ERR("lua load memory allocation error: %s", lua_tostring(_edje_lua_state_get(), -1));
 	  }
-	if (lua_pcall(edc->L, 0, 0, 0))
-	  printf("lua call error: %s\n", lua_tostring(edc->L, -1));
+	if (lua_pcall(_edje_lua_state_get(), 0, 0, 0))
+	  ERR("lua call error: %s", lua_tostring(_edje_lua_state_get(), -1));
+#endif        
 	free(data);
      }
    
@@ -189,6 +193,7 @@ _edje_file_open(const char *file, const char *coll, int *error_ret, Edje_Part_Co
    edf->free_strings = eet_dictionary_get(ef) ? 0 : 1;
 
    edf->ef = ef;
+   edf->mtime = st.st_mtime;
 
    if (edf->version != EDJE_FILE_VERSION)
      {
@@ -231,43 +236,86 @@ _edje_file_open(const char *file, const char *coll, int *error_ret, Edje_Part_Co
    return edf;
 }
 
+static void
+_edje_file_dangling(Edje_File *edf)
+{
+   if (edf->dangling) return;
+   edf->dangling = EINA_TRUE;
+
+   eina_hash_del(_edje_file_hash, edf->path, edf);
+   if (!eina_hash_population(_edje_file_hash))
+     {
+       eina_hash_free(_edje_file_hash);
+       _edje_file_hash = NULL;
+     }
+}
+
 Edje_File *
 _edje_cache_file_coll_open(const char *file, const char *coll, int *error_ret, Edje_Part_Collection **edc_ret)
 {
-   Edje_File *edf;
+   Edje_File *edf = NULL;
    Eina_List *l, *hist;
    Edje_Part_Collection *edc;
    Edje_Part *ep;
+   struct stat st;
+
+   if (stat(file, &st) != 0)
+     {
+	return NULL;
+     }
 
    if (!_edje_file_hash)
-     _edje_file_hash = eina_hash_string_small_new(NULL);
-   edf = eina_hash_find(_edje_file_hash, file);
+     {
+	_edje_file_hash = eina_hash_string_small_new(NULL);
+	goto open_new;
+     }
 
+   edf = eina_hash_find(_edje_file_hash, file);
    if (edf)
      {
-	edf->references++;
-     }
-   else
-     {
-        EINA_LIST_FOREACH(_edje_file_cache, l, edf)
+	if (edf->mtime != st.st_mtime)
 	  {
-	     if (!strcmp(edf->path, file))
-	       {
-		  edf->references = 1;
-		  _edje_file_cache = eina_list_remove_list(_edje_file_cache, l);
-		  eina_hash_add(_edje_file_hash, file, edf);
-		  break;
-	       }
+	     _edje_file_dangling(edf);
 	     edf = NULL;
+	     goto open_new;
 	  }
+
+	edf->references++;
+	goto open;
      }
+
+   EINA_LIST_FOREACH(_edje_file_cache, l, edf)
+     {
+	if (!strcmp(edf->path, file))
+	  {
+	     if (edf->mtime != st.st_mtime)
+	       {
+		  _edje_file_cache = eina_list_remove_list(_edje_file_cache, l);
+		  _edje_file_free(edf);
+		  edf = NULL;
+		  goto open_new;
+	       }
+
+	     edf->references = 1;
+	     _edje_file_cache = eina_list_remove_list(_edje_file_cache, l);
+	     eina_hash_add(_edje_file_hash, file, edf);
+	     break;
+	  }
+	edf = NULL;
+     }
+
+ open_new:
    if (!edf)
      {
+	if (!_edje_file_hash)
+	  _edje_file_hash = eina_hash_string_small_new(NULL);
 	edf = _edje_file_open(file, coll, error_ret, edc_ret);
 	if (!edf) return NULL;
 	eina_hash_add(_edje_file_hash, file, edf);
 	return edf;
      }
+
+ open:
 
    if (!coll) return edf;
 
@@ -315,7 +363,7 @@ _edje_cache_file_coll_open(const char *file, const char *coll, int *error_ret, E
 		       ep2 = eina_list_nth(edc->parts, ep2->dragable.confine_id);
 		       if (eina_list_data_find(hist, ep2))
 			 {
-			    printf("EDJE ERROR: confine_to loops. invalidating loop.\n");
+			    ERR("confine_to loops. invalidating loop.");
 			    ep2->dragable.confine_id = -1;
 			    break;
 			 }
@@ -340,7 +388,7 @@ _edje_cache_file_coll_open(const char *file, const char *coll, int *error_ret, E
 
 		       if (eina_list_data_find(hist, ep2))
 			 {
-			    printf("EDJE ERROR: events_to loops. invalidating loop.\n");
+			    ERR("events_to loops. invalidating loop.");
 			    ep2->dragable.events_id = -1;
 			    break;
 			 }
@@ -355,7 +403,7 @@ _edje_cache_file_coll_open(const char *file, const char *coll, int *error_ret, E
 		       ep2 = eina_list_nth(edc->parts, ep2->clip_to_id);
 		       if (eina_list_data_find(hist, ep2))
 			 {
-			    printf("EDJE ERROR: clip_to loops. invalidating loop.\n");
+			    ERR("clip_to loops. invalidating loop.");
 			    ep2->clip_to_id = -1;
 			    break;
 			 }
@@ -443,6 +491,12 @@ _edje_cache_file_unref(Edje_File *edf)
 {
    edf->references--;
    if (edf->references != 0) return;
+
+   if (edf->dangling)
+     {
+	_edje_file_free(edf);
+	return;
+     }
 
    eina_hash_del(_edje_file_hash, edf->path, edf);
    if (!eina_hash_population(_edje_file_hash))

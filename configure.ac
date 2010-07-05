@@ -1,8 +1,25 @@
-# get rid of that stupid cache mechanism
-rm -f config.cache
+##--##--##--##--##--##--##--##--##--##--##--##--##--##--##--##--##
+##--##--##--##--##--##--##--##--##--##--##--##--##--##--##--##--##
+m4_define([v_maj], [0])
+m4_define([v_min], [9])
+m4_define([v_mic], [99])
+m4_define([v_rev], m4_esyscmd([(svnversion "${SVN_REPO_PATH:-.}" | grep -v export || echo 0) | awk -F : '{printf("%s\n", $1);}' | tr -d ' :MSP\n']))
+m4_if(v_rev, [0], [m4_define([v_rev], m4_esyscmd([git log 2> /dev/null | (grep -m1 git-svn-id || echo 0) | sed -e 's/.*@\([0-9]*\).*/\1/' | tr -d '\n']))])
+##--   When released, remove the dnl on the below line
+dnl m4_undefine([v_rev])
+##--   When doing snapshots - change soname. remove dnl on below line
+m4_define([relname], [ver-svn-06])
+m4_define([v_rel], [-release relname])
+##--##--##--##--##--##--##--##--##--##--##--##--##--##--##--##--##
+m4_ifdef([v_rev], [m4_define([v_ver], [v_maj.v_min.v_mic.v_rev])],
+[m4_define([v_ver], [v_maj.v_min.v_mic])])
+m4_define([lt_rev], m4_eval(v_maj + v_min))
+m4_define([lt_cur], v_mic)
+m4_define([lt_age], v_min)
+##--##--##--##--##--##--##--##--##--##--##--##--##--##--##--##--##
+##--##--##--##--##--##--##--##--##--##--##--##--##--##--##--##--##
 
-AC_INIT([edje], [0.9.93.063], [enlightenment-devel@lists.sourceforge.net])
-release="ver-svn-05"
+AC_INIT([edje], [v_ver], [enlightenment-devel@lists.sourceforge.net])
 AC_PREREQ([2.52])
 AC_CONFIG_SRCDIR([configure.ac])
 AC_CONFIG_MACRO_DIR([m4])
@@ -19,22 +36,24 @@ define([AC_LIBTOOL_LANG_CXX_CONFIG], [:])dnl
 define([AC_LIBTOOL_LANG_F77_CONFIG], [:])dnl
 AC_PROG_LIBTOOL
 
-VMAJ=`echo $PACKAGE_VERSION | awk -F. '{printf("%s", $1);}'`
-VMIN=`echo $PACKAGE_VERSION | awk -F. '{printf("%s", $2);}'`
-VMIC=`echo $PACKAGE_VERSION | awk -F. '{printf("%s", $3);}'`
-SNAP=`echo $PACKAGE_VERSION | awk -F. '{printf("%s", $4);}'`
-version_info=`expr $VMAJ + $VMIN`":$VMIC:$VMIN"
+##--##--##--##--##--##--##--##--##--##--##--##--##--##--##--##--##
+##--##--##--##--##--##--##--##--##--##--##--##--##--##--##--##--##
+m4_ifdef([v_rev], , [m4_define([v_rev], [0])])
+m4_ifdef([v_rel], , [m4_define([v_rel], [])])
+AC_DEFINE_UNQUOTED(VMAJ, [v_maj], [Major version])
+AC_DEFINE_UNQUOTED(VMIN, [v_min], [Minor version])
+AC_DEFINE_UNQUOTED(VMIC, [v_mic], [Micro version])
+AC_DEFINE_UNQUOTED(VREV, [v_rev], [Revison])
+version_info="lt_rev:lt_cur:lt_age"
+release_info="v_rel"
 AC_SUBST(version_info)
-
-case "$host_os" in
-   mingw32ce* | cegcc*)
-      ;;
-   *)
-      release_info="-release $release"
-      ;;
-esac
 AC_SUBST(release_info)
+##--##--##--##--##--##--##--##--##--##--##--##--##--##--##--##--##
+##--##--##--##--##--##--##--##--##--##--##--##--##--##--##--##--##
 
+AC_DEFINE_UNQUOTED([SHARED_LIB_SUFFIX], ["$shrext_cmds"], [Suffix for shared objects])
+
+EFL_CHECK_PATH_MAX
 
 ### Default options with respect to host
 
@@ -64,35 +83,12 @@ AC_ARG_ENABLE([amalgamation],
    ],
    [do_amalgamation="no"]
 )
-AM_CONDITIONAL(EDJE_AMALGAMATION, test "x${do_amalgamation}" = "xyes")
+AM_CONDITIONAL([EDJE_AMALGAMATION], [test "x${do_amalgamation}" = "xyes"])
 
-AC_ARG_ENABLE([edje-cc],
-   [AC_HELP_STRING([--disable-edje-cc], [disable building of edje_cc])],
-   [
-    if test "x${enableval}" = "xyes" ; then
-       have_edje_cc="yes"
-    else
-       have_edje_cc="no"
-    fi
-   ]
-)
-AC_MSG_CHECKING(whether to build edje_cc)
-AC_MSG_RESULT([${have_edje_cc}])
-
-AM_CONDITIONAL(BUILD_EDJE_CC, test "x${have_edje_cc}" = "xyes")
-AM_CONDITIONAL(BUILD_EDJE_DECC, test "x${have_edje_cc}" = "xyes")
-
-EDJE_CC_PRG=""
-EDJE_DECC_PRG=""
-EDJE_RECC_PRG=""
-if test "x${have_edje_cc}" = "xyes"; then
-   EDJE_CC_PRG="edje_cc"
-   EDJE_DECC_PRG="edje_decc"
-   EDJE_RECC_PRG="edje_recc"
-fi
-AC_SUBST(EDJE_CC_PRG)
-AC_SUBST(EDJE_DECC_PRG)
-AC_SUBST(EDJE_RECC_PRG)
+EFL_ENABLE_BIN([edje-cc])
+EFL_ENABLE_BIN([edje-decc])
+EFL_ENABLE_BIN([edje-recc])
+EFL_ENABLE_BIN([edje-player])
 
 # Optional EDJE_PROGRAM_CACHE (use much more ram, but increase speed in some cases)
 want_edje_program_cache="no"
@@ -104,10 +100,10 @@ AC_ARG_ENABLE([edje-program-cache],
     )],
    [want_edje_program_cache=$enableval]
 )
-AM_CONDITIONAL(EDJE_PROGRAM_CACHE, test "x${want_edje_program_cache}" = "xyes")
+AM_CONDITIONAL([EDJE_PROGRAM_CACHE], [test "x${want_edje_program_cache}" = "xyes"])
 
 if test "x${want_edje_program_cache}" = "xyes" ; then
-   AC_DEFINE(EDJE_PROGRAM_CACHE, 1, [Cache result of program glob matches - this uses up extra ram with the gain of faster program matching])
+   AC_DEFINE([EDJE_PROGRAM_CACHE], [1], [Cache result of program glob matches - this uses up extra ram with the gain of faster program matching])
 fi
 
 # Optional EDJE_CALC_CACHE (use more ram, but increase speed by reducing the need to recalculate static stuff)
@@ -120,10 +116,26 @@ AC_ARG_ENABLE([edje-calc-cache],
     )],
    [want_edje_calc_cache=$enableval]
 )
-AM_CONDITIONAL(EDJE_CALC_CACHE, test "x${want_edje_calc_cache}" = "xyes")
+AM_CONDITIONAL([EDJE_CALC_CACHE], [test "x${want_edje_calc_cache}" = "xyes"])
 
 if test "x${want_edje_calc_cache}" = "xyes" ; then
-   AC_DEFINE(EDJE_CALC_CACHE, 1, [Cache result of edje_part_recalc - this uses up extra ram with the gain of reducing CPU usage when edje object are not resized])
+   AC_DEFINE([EDJE_CALC_CACHE], [1], [Cache result of edje_part_recalc - this uses up extra ram with the gain of reducing CPU usage when edje object are not resized])
+fi
+
+# Enable Fixed Point use
+want_fixed_point="no"
+
+AC_ARG_ENABLE([fixed-point],
+   [AC_HELP_STRING(
+       [--enable-fixed-point],
+       [reduce use of FPU by using Fixed Point provided by Eina and Eet, [[default=disabled]]]
+    )],
+    [want_fixed_point=$enableval]
+)
+AM_CONDITIONAL([BUILD_EDJE_FP], [test "x${want_fixed_point}" = "xyes"])
+
+if test "x${want_fixed_point}" = "xyes" ; then
+   AC_DEFINE([BUILD_EDJE_FP], [1], [Use Fixed Point instead of FPU])
 fi
 
 install_vim="yes"
@@ -194,7 +206,7 @@ EFL_EDJE_BUILD=""
 case "$host_os" in
    mingw* | cegcc*)
       PKG_CHECK_MODULES([EVIL], [evil])
-      AC_DEFINE(HAVE_EVIL, 1, [Set to 1 if Evil library is installed])
+      AC_DEFINE([HAVE_EVIL], [1], [Set to 1 if Evil library is installed])
       requirement_edje="evil ${requirement_edje}"
       EFL_EDJE_BUILD="-DEFL_EDJE_BUILD"
    ;;
@@ -204,32 +216,45 @@ AC_SUBST(EFL_EDJE_BUILD)
 # Dependencies for the library
 
 # Lua pkg-config hack for different naming conventions
+have_lua="yes"
 requirement_lua=""
+lua_libs=""
 PKG_CHECK_MODULES([LUA], [lua >= 5.1.0], requirement_lua="lua",
-	[PKG_CHECK_MODULES([LUA], [lua5.1 >= 5.1.0], requirement_lua="lua5.1",
-		[PKG_CHECK_MODULES([LUA], [lua-5.1 >= 5.1.0], requirement_lua="lua-5.1",
-			[PKG_CHECK_MODULES([LUA], [lua51 >= 5.1.0], requirement_lua="lua51",
-				AC_MSG_ERROR([unable to find Lua])
-			)
-		])
-	])
-])
+   [PKG_CHECK_MODULES([LUA], [lua5.1 >= 5.1.0], requirement_lua="lua5.1",
+      [PKG_CHECK_MODULES([LUA], [lua-5.1 >= 5.1.0], requirement_lua="lua-5.1",
+         [PKG_CHECK_MODULES([LUA], [lua51 >= 5.1.0], requirement_lua="lua51",
+            [have_lua="no"])])])])
+
+if test "x${have_lua}" = "xno" ; then
+   AC_MSG_CHECKING([whether lua_newstate() is in liblua])
+   AC_CHECK_LIB([lua], [lua_newstate],
+      [
+       have_lua="yes"
+       lua_libs="-llua"
+      ],
+      [have_lua="no"])
+   AC_MSG_RESULT([${have_lua}])
+fi
+AC_SUBST(lua_libs)
+
+if test "x${have_lua}" = "xno" ; then
+   AC_MSG_ERROR([Cannot find lua library. Be sure that you have installed it and set CFLAGS and LDFLAGS correctly])
+fi
 
 PKG_CHECK_MODULES([EDJE],
    [
     eina-0
-    eet >= 1.0.1
+    eet >= 1.2.3
     evas >= 0.9.9
     ecore >= 0.9.9
-    ecore-job >= 0.9.9
     ecore-file >= 0.9.9
     embryo >= 0.9.1
    ])
 
-EDJE_LIBS="$EDJE_LIBS $LUA_LIBS"
-EDJE_CFLAGS="$EDJE_CFLAGS $LUA_CFLAGS"
+EDJE_LIBS="${EDJE_LIBS} ${LUA_LIBS} ${lua_libs}"
+EDJE_CFLAGS="${EDJE_CFLAGS} ${LUA_CFLAGS}"
 
-requirement_edje="embryo ecore-job ecore evas eet eina-0 ${requirement_edje}"
+requirement_edje="embryo ecore evas eet eina-0 ${requirement_edje}"
 requirement_edje="${requirement_lua} ${requirement_edje}"
 
 have_ecore_imf="no"
@@ -239,7 +264,7 @@ PKG_CHECK_MODULES([ECORE_IMF],
     ecore-imf-evas >= 0.9.9
    ],
    [
-    AC_DEFINE(HAVE_ECORE_IMF, 1, [Input Method Support for Edje Entry])
+    AC_DEFINE([HAVE_ECORE_IMF], [1], [Input Method Support for Edje Entry])
     have_ecore_imf="yes"
     requirement_edje="ecore-imf-evas ecore-imf ${requirement_edje}"
    ],
@@ -249,6 +274,10 @@ PKG_CHECK_MODULES([ECORE_IMF],
 
 if test "x$have_edje_cc" = "xyes"; then
    PKG_CHECK_MODULES([ECORE_FILE], [ecore-file >= 0.9.9])
+   PKG_CHECK_MODULES([ECORE_EVAS], [ecore-evas >= 0.9.9])
+fi
+
+if test "x$have_edje_player" = "xyes"; then
    PKG_CHECK_MODULES([ECORE_EVAS], [ecore-evas >= 0.9.9])
 fi
 
@@ -296,7 +325,7 @@ AC_FUNC_ALLOCA
 
 case "$host_os" in
    mingw* | cegcc*)
-      AC_DEFINE(HAVE_REALPATH, 1, [Define to 1 if you have the `realpath' function.])
+      AC_DEFINE([HAVE_REALPATH], [1], [Define to 1 if you have the `realpath' function.])
       ;;
    *)
       AC_CHECK_FUNCS([realpath])
@@ -337,14 +366,20 @@ echo "  Amalgamation.........: ${do_amalgamation}"
 echo "  Ecore IMF............: $have_ecore_imf"
 echo "  EDJE_PROGRAM_CACHE...: $want_edje_program_cache"
 echo "  EDJE_CALC_CACHE......: $want_edje_calc_cache"
+echo "  Fixed point..........: $want_fixed_point"
 echo
-echo "  Build binaries.......: $have_edje_cc"
+echo "  Build edje_cc........: $have_edje_cc"
+echo "  Build edje_decc......: $have_edje_decc"
+echo "  Build edje_recc......: $have_edje_recc"
+echo "  Build edje_player....: $have_edje_player"
 echo
 echo "  Documentation........: ${build_doc}"
 echo
-echo "  Compilation..........: make"
+echo "Compilation............: make (or gmake)"
+echo "  CPPFLAGS.............: $CPPFLAGS"
+echo "  CFLAGS...............: $CFLAGS"
+echo "  LDFLAGS..............: $LDFLAGS"
 echo
-echo "  Installation.........: make install"
-echo
-echo "    prefix.............: $prefix"
+echo "Installation...........: make install (as root if needed, with 'su' or 'sudo')"
+echo "  prefix...............: $prefix"
 echo

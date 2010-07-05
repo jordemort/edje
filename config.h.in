@@ -1,5 +1,8 @@
 /* config.h.in.  Generated from configure.ac by autoheader.  */
 
+/* Use Fixed Point instead of FPU */
+#undef BUILD_EDJE_FP
+
 /* Define to one of `_getb67', `GETB67', `getb67' for Cray-2 and Cray-YMP
    systems. This function is required for `alloca.c' support on those systems.
    */
@@ -90,8 +93,17 @@
 /* Define to the one symbol short name of this package. */
 #undef PACKAGE_TARNAME
 
+/* Define to the home page for this package. */
+#undef PACKAGE_URL
+
 /* Define to the version of this package. */
 #undef PACKAGE_VERSION
+
+/* default value since PATH_MAX is not defined */
+#undef PATH_MAX
+
+/* Suffix for shared objects */
+#undef SHARED_LIB_SUFFIX
 
 /* If using the C implementation of alloca, define if you know the
    direction of stack growth for your system; otherwise it will be
@@ -106,6 +118,18 @@
 
 /* Version number of package */
 #undef VERSION
+
+/* Major version */
+#undef VMAJ
+
+/* Micro version */
+#undef VMIC
+
+/* Minor version */
+#undef VMIN
+
+/* Revison */
+#undef VREV
 
 /* Macro declaring a function argument to be unused */
 #undef __UNUSED__

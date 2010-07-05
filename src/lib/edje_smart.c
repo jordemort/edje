@@ -15,6 +15,9 @@ static void _edje_smart_clip_set(Evas_Object * obj, Evas_Object * clip);
 static void _edje_smart_clip_unset(Evas_Object * obj);
 static void _edje_smart_calculate(Evas_Object * obj);
 
+static Eina_Bool _edje_smart_file_set(Evas_Object *obj, const char *file, const char *group);
+
+static Edje_Smart_Api _edje_smart_class = EDJE_SMART_API_INIT_NAME_VERSION("edje");
 static Evas_Smart *_edje_smart = NULL;
 
 Eina_List *_edje_edjes = NULL;
@@ -33,27 +36,45 @@ edje_object_add(Evas *evas)
 {
    if (!_edje_smart)
      {
-        static const Evas_Smart_Class sc =
-	  {
-	     "edje",
-	       EVAS_SMART_CLASS_VERSION,
-	       _edje_smart_add,
-	       _edje_smart_del,
-	       _edje_smart_move,
-	       _edje_smart_resize,
-	       _edje_smart_show,
-	       _edje_smart_hide,
-	       _edje_smart_color_set,
-	       _edje_smart_clip_set,
-	       _edje_smart_clip_unset,
-	       _edje_smart_calculate,
-	       NULL,
-	       NULL,
-	       NULL
-	  };
-	_edje_smart = evas_smart_class_new(&sc);
+	_edje_object_smart_set(&_edje_smart_class);
+	_edje_smart = evas_smart_class_new((Evas_Smart_Class *)&_edje_smart_class);
      }
    return evas_object_smart_add(evas, _edje_smart);
+}
+
+void
+_edje_object_smart_set(Edje_Smart_Api *sc)
+{
+   if (!sc)
+     return;
+
+   sc->base.add = _edje_smart_add;
+   sc->base.del = _edje_smart_del;
+   sc->base.move = _edje_smart_move;
+   sc->base.resize = _edje_smart_resize;
+   sc->base.show = _edje_smart_show;
+   sc->base.hide = _edje_smart_hide;
+   sc->base.color_set = _edje_smart_color_set;
+   sc->base.clip_set = _edje_smart_clip_set;
+   sc->base.clip_unset = _edje_smart_clip_unset;
+   sc->base.calculate = _edje_smart_calculate;
+   sc->base.member_add = NULL;
+   sc->base.member_del = NULL;
+   sc->file_set = _edje_smart_file_set;
+}
+
+const Edje_Smart_Api *
+_edje_object_smart_class_get(void)
+{
+   static const Edje_Smart_Api *class = NULL;
+
+   if (class)
+     return class;
+
+   _edje_object_smart_set(&_edje_smart_class);
+   class = &_edje_smart_class;
+
+   return class;
 }
 
 /* Private Routines */
@@ -62,13 +83,35 @@ _edje_smart_add(Evas_Object *obj)
 {
    Edje *ed;
 
-   ed = _edje_add(obj);
-   if (!ed) return;
-   evas_object_smart_data_set(obj, ed);
+   ed = evas_object_smart_data_get(obj);
+   if (!ed)
+     {
+	const Evas_Smart *smart;
+	const Evas_Smart_Class *sc;
+
+	ed = calloc(1, sizeof(Edje));
+	if (!ed) return;
+
+	smart = evas_object_smart_smart_get(obj);
+	sc = evas_smart_class_get(smart);
+	ed->api = (const Edje_Smart_Api *)sc;
+
+	evas_object_smart_data_set(obj, ed);
+     }
+
+   ed->evas = evas_object_evas_get(obj);
+   ed->clipper = evas_object_rectangle_add(ed->evas);
+   evas_object_smart_member_add(ed->clipper, obj);
+   evas_object_color_set(ed->clipper, 255, 255, 255, 255);
+   evas_object_move(ed->clipper, -10000, -10000);
+   evas_object_resize(ed->clipper, 20000, 20000);
+   evas_object_pass_events_set(ed->clipper, 1);
+   ed->have_objects = 1;
+   ed->references = 1;
+
    evas_object_geometry_get(obj, &(ed->x), &(ed->y), &(ed->w), &(ed->h));
    ed->obj = obj;
    _edje_edjes = eina_list_append(_edje_edjes, obj);
-//**//   _edje_entry_init(ed);
 /*
      {
 	Eina_List *l;
@@ -93,14 +136,14 @@ _edje_smart_del(Evas_Object * obj)
    ed = evas_object_smart_data_get(obj);
    if (!ed) return;
    _edje_block_violate(ed);
-//**//   _edje_entry_shutdown(ed);
    ed->delete_me = 1;
-   _edje_clean_objects(ed);
    _edje_edjes = eina_list_remove(_edje_edjes, obj);
    evas_object_smart_data_set(obj, NULL);
    if (_edje_script_only(ed)) _edje_script_only_shutdown(ed);
    if (_edje_lua_script_only(ed)) _edje_lua_script_only_shutdown(ed);
+   if (ed->persp) edje_object_perspective_set(obj, NULL);
    _edje_file_del(ed);
+   _edje_clean_objects(ed);
    _edje_unref(ed);
 }
 
@@ -123,26 +166,34 @@ _edje_smart_move(Evas_Object * obj, Evas_Coord x, Evas_Coord y)
 	return;
      }
    if (_edje_lua_script_only(ed))
-   {
-      _edje_lua_script_only_move(ed);
-      return;
-   }
-   
-   for (i = 0; i < ed->table_parts_size; i++)
      {
-	Edje_Real_Part *ep;
-	Evas_Coord ox, oy;
+        _edje_lua_script_only_move(ed);
+        return;
+     }
 
-	ep = ed->table_parts[i];
-	evas_object_geometry_get(ep->object, &ox, &oy, NULL, NULL);
-	evas_object_move(ep->object, ed->x + ep->x + ep->text.offset.x, ed->y + ep->y + ep->text.offset.y);
-	if (ep->part->entry_mode > EDJE_ENTRY_EDIT_MODE_NONE)
-	  _edje_entry_real_part_configure(ep);
-	if (ep->swallowed_object)
-	  {
-	     evas_object_geometry_get(ep->swallowed_object, &ox, &oy, NULL, NULL);
-	     evas_object_move(ep->swallowed_object, ed->x + ep->x + ep->text.offset.x, ed->y + ep->y + ep->text.offset.y);
-	  }
+   if (ed->have_mapped_part)
+     {
+        ed->dirty = 1;
+        _edje_recalc_do(ed);
+     }
+   else
+     {
+        for (i = 0; i < ed->table_parts_size; i++)
+          {
+             Edje_Real_Part *ep;
+             Evas_Coord ox, oy;
+             
+             ep = ed->table_parts[i];
+             evas_object_geometry_get(ep->object, &ox, &oy, NULL, NULL);
+             evas_object_move(ep->object, ed->x + ep->x + ep->text.offset.x, ed->y + ep->y + ep->text.offset.y);
+             if (ep->part->entry_mode > EDJE_ENTRY_EDIT_MODE_NONE)
+               _edje_entry_real_part_configure(ep);
+             if (ep->swallowed_object)
+               {
+                  evas_object_geometry_get(ep->swallowed_object, &ox, &oy, NULL, NULL);
+                  evas_object_move(ep->swallowed_object, ed->x + ep->x + ep->text.offset.x, ed->y + ep->y + ep->text.offset.y);
+               }
+          }
      }
 //   _edje_emit(ed, "move", NULL);
 }
@@ -192,10 +243,10 @@ _edje_smart_show(Evas_Object * obj)
 	return;
      }
    if (_edje_lua_script_only(ed))
-   {
-      _edje_lua_script_only_show(ed);
-      return;
-   }
+     {
+        _edje_lua_script_only_show(ed);
+        return;
+     }
    _edje_emit(ed, "show", NULL);
 }
 
@@ -215,10 +266,10 @@ _edje_smart_hide(Evas_Object * obj)
 	return;
      }
    if (_edje_lua_script_only(ed))
-   {
-      _edje_lua_script_only_hide(ed);
-      return;
-   }
+     {
+        _edje_lua_script_only_hide(ed);
+        return;
+     }
    _edje_emit(ed, "hide", NULL);
 }
 
@@ -265,4 +316,10 @@ _edje_smart_calculate(Evas_Object *obj)
    ed = evas_object_smart_data_get(obj);
    if (!ed) return;
    _edje_recalc_do(ed);
+}
+
+static Eina_Bool
+_edje_smart_file_set(Evas_Object *obj, const char *file, const char *group)
+{
+   return _edje_object_file_set_internal(obj, file, group, NULL);
 }

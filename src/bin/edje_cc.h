@@ -12,6 +12,23 @@
 # define O_BINARY 0
 #endif
 
+/* logging variables */
+extern int _edje_cc_log_dom ;
+#define EDJE_CC_DEFAULT_LOG_COLOR EINA_COLOR_CYAN
+#ifdef ERR
+# undef ERR
+#endif
+#define ERR(...) EINA_LOG_DOM_ERR(_edje_cc_log_dom, __VA_ARGS__)
+#ifdef INF
+# undef INF
+#endif
+#define INF(...) EINA_LOG_DOM_INFO(_edje_cc_log_dom, __VA_ARGS__)
+#ifdef WRN
+# undef WRN
+#endif
+#define WRN(...) EINA_LOG_DOM_WARN(_edje_cc_log_dom, __VA_ARGS__)
+
+
 /* types */
 typedef struct _New_Object_Handler    New_Object_Handler;
 typedef struct _New_Statement_Handler New_Statement_Handler;
@@ -88,7 +105,7 @@ void    data_setup(void);
 void    data_write(void);
 void    data_queue_part_lookup(Edje_Part_Collection *pc, char *name, int *dest);
 void    data_queue_program_lookup(Edje_Part_Collection *pc, char *name, int *dest);
-void    data_queue_image_lookup(char *name, int *dest);
+void    data_queue_image_lookup(char *name, int *dest, Eina_Bool *set);
 void    data_queue_part_slave_lookup(int *master, int *slave);
 void    data_queue_image_slave_lookup(int *master, int *slave);
 void    data_queue_spectrum_lookup(char *name, int *dest);

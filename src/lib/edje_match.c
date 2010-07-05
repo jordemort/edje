@@ -262,10 +262,12 @@ _edje_match_patterns_exec_init_states(Edje_States       *states,
                                                                 \
      r = malloc(sizeof (Edje_Patterns) +                        \
                 eina_list_count(lst)                            \
-                * sizeof (*r->finals)                           \
+                * sizeof(*r->finals)                            \
                 * sizeof(*r->patterns));                        \
      if (!r) return NULL;                                       \
                                                                 \
+     r->ref = 1;						\
+     r->delete_me = 0;						\
      r->patterns_size = eina_list_count(lst);                   \
      r->max_length = 0;                                         \
      r->patterns = (const char **) r->finals + r->patterns_size + 1;    \
@@ -288,7 +290,7 @@ _edje_match_patterns_exec_init_states(Edje_States       *states,
           r->patterns[i] = str;                                 \
                                                                 \
           if (Show)                                             \
-            fprintf(stderr, "%i [%s]\n", i, str);               \
+            INF("%lu [%s]", (unsigned long)i, str);	        \
                                                                 \
           r->finals[i] = 0;                                     \
           for (j = 0; str[j]; ++j)                              \
@@ -326,7 +328,7 @@ EDJE_MATCH_INIT(edje_match_callback_source_init,
                 Edje_Signal_Callback,
                 source, 0);
 
-static int
+static Eina_Bool
 _edje_match_collection_dir_exec_finals(const size_t      *finals,
                                        const Edje_States *states)
 {
@@ -334,17 +336,17 @@ _edje_match_collection_dir_exec_finals(const size_t      *finals,
 
    for (i = 0; i < states->size; ++i)
      if (states->states[i].pos >= finals[states->states[i].idx])
-       return 1;
-   return 0;
+       return EINA_TRUE;
+   return EINA_FALSE;
 }
 
-static int
+static Eina_Bool
 edje_match_programs_exec_check_finals(const size_t      *signal_finals,
                                       const size_t      *source_finals,
                                       const Edje_States *signal_states,
                                       const Edje_States *source_states,
                                       Eina_List         *programs,
-                                      int (*func)(Edje_Program *pr, void *data),
+                                      Eina_Bool (*func)(Edje_Program *pr, void *data),
                                       void              *data)
 {
    size_t       i;
@@ -362,15 +364,17 @@ edje_match_programs_exec_check_finals(const size_t      *signal_finals,
               if (pr)
                 {
                    if (func(pr, data))
-                     return 0;
+                     return EINA_FALSE;
                 }
        }
 
-   return 1;
+   return EINA_TRUE;
 }
 
 static int
-edje_match_callback_exec_check_finals(const size_t      *signal_finals,
+edje_match_callback_exec_check_finals(const Edje_Patterns *singal_ppat,
+                                      const Edje_Patterns *source_ppat,
+                                      const size_t      *signal_finals,
                                       const size_t      *source_finals,
                                       const Edje_States *signal_states,
                                       const Edje_States *source_states,
@@ -401,6 +405,8 @@ edje_match_callback_exec_check_finals(const size_t      *signal_finals,
                         r = 2;
                      }
                    if (_edje_block_break(ed))
+                     return 0;
+                   if ((singal_ppat->delete_me) || (source_ppat->delete_me))
                      return 0;
                 }
        }
@@ -459,12 +465,12 @@ _edje_match_fn(const Edje_Patterns      *ppat,
    return states;
 }
 
-int
+Eina_Bool
 edje_match_collection_dir_exec(const Edje_Patterns      *ppat,
                                const char               *string)
 {
    Edje_States  *result;
-   int           r = 0;
+   Eina_Bool     r = EINA_FALSE;
 
    _edje_match_patterns_exec_init_states(ppat->states, ppat->patterns_size, ppat->max_length);
 
@@ -476,18 +482,18 @@ edje_match_collection_dir_exec(const Edje_Patterns      *ppat,
    return r;
 }
 
-int
+Eina_Bool
 edje_match_programs_exec(const Edje_Patterns    *ppat_signal,
                          const Edje_Patterns    *ppat_source,
                          const char             *signal,
                          const char             *source,
                          Eina_List              *programs,
-                         int (*func)(Edje_Program *pr, void *data),
+                         Eina_Bool (*func)(Edje_Program *pr, void *data),
                          void                   *data)
 {
    Edje_States  *signal_result;
    Edje_States  *source_result;
-   int           r = 0;
+   Eina_Bool     r = EINA_FALSE;
 
    _edje_match_patterns_exec_init_states(ppat_signal->states,
                                          ppat_signal->patterns_size,
@@ -511,8 +517,8 @@ edje_match_programs_exec(const Edje_Patterns    *ppat_signal,
 }
 
 int
-edje_match_callback_exec(const Edje_Patterns    *ppat_signal,
-                         const Edje_Patterns    *ppat_source,
+edje_match_callback_exec(Edje_Patterns          *ppat_signal,
+                         Edje_Patterns          *ppat_source,
                          const char             *signal,
                          const char             *source,
                          Eina_List              *callbacks,
@@ -522,6 +528,8 @@ edje_match_callback_exec(const Edje_Patterns    *ppat_signal,
    Edje_States  *source_result;
    int           r = 0;
 
+   ppat_signal->ref++;
+   ppat_source->ref++;
    _edje_match_patterns_exec_init_states(ppat_signal->states,
                                          ppat_signal->patterns_size,
                                          ppat_signal->max_length);
@@ -533,7 +541,9 @@ edje_match_callback_exec(const Edje_Patterns    *ppat_signal,
    source_result = _edje_match_fn(ppat_source, source, ppat_source->states);
 
    if (signal_result && source_result)
-     r = edje_match_callback_exec_check_finals(ppat_signal->finals,
+     r = edje_match_callback_exec_check_finals(ppat_signal,
+                                               ppat_source,
+                                               ppat_signal->finals,
                                                ppat_source->finals,
                                                signal_result,
                                                source_result,
@@ -541,12 +551,19 @@ edje_match_callback_exec(const Edje_Patterns    *ppat_signal,
                                                source,
                                                callbacks,
                                                ed);
+   ppat_signal->ref--;
+   ppat_source->ref--;
+   if (ppat_signal->ref <= 0) edje_match_patterns_free(ppat_signal);
+   if (ppat_source->ref <= 0) edje_match_patterns_free(ppat_source);
    return r;
 }
 
 void
 edje_match_patterns_free(Edje_Patterns *ppat)
 {
+   ppat->delete_me = 1;
+   ppat->ref--;
+   if (ppat->ref > 0) return;
    _edje_match_states_free(ppat->states, 2);
    free(ppat);
 }

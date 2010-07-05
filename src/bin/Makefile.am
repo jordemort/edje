@@ -13,26 +13,11 @@ AM_CPPFLAGS = \
 @ECORE_FILE_CFLAGS@ \
 @EVIL_CFLAGS@
 
-if BUILD_EDJE_CC
-EDJE_CC = edje_cc
-else
-EDJE_CC =
-endif
+bin_SCRIPTS = @EDJE_RECC_PRG@
 
-if BUILD_EDJE_DECC
-EDJE_DECC = edje_decc
-else
-EDJE_DECC =
-endif
+bin_PROGRAMS = @EDJE_CC_PRG@ @EDJE_DECC_PRG@ @EDJE_PLAYER_PRG@
 
-bin_SCRIPTS = \
-@EDJE_RECC_PRG@
-
-bin_PROGRAMS = $(EDJE_CC) $(EDJE_DECC)
-
-EXTRA_PROGRAMS = \
-edje_cc \
-edje_decc
+EXTRA_PROGRAMS = edje_cc edje_decc edje_player
 
 edje_cc_SOURCES = \
 edje_cc.c \
@@ -55,6 +40,10 @@ edje_cc_sources.c
 
 edje_decc_LDADD = $(top_builddir)/src/lib/libedje.la $(ECORE_EVAS_LIBS) $(ECORE_FILE_LIBS)
 edje_decc_LDFLAGS = @lt_enable_auto_import@
+
+edje_player_SOURCES = edje_player.c
+edje_player_LDADD = $(top_builddir)/src/lib/libedje.la $(ECORE_EVAS_LIBS) $(EVIL_LIBS)
+edje_player_LDFLAGS = @lt_enable_auto_import@
 
 EXTRA_DIST = @EDJE_RECC_PRG@ edje_prefix.h edje_cc.h
 EXTRA_SCRIPTS = edje_recc

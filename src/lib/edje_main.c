@@ -6,20 +6,13 @@
 
 #include "edje_private.h"
 
+static Edje_Version _version = { VMAJ, VMIN, VMIC, VREV };
+EAPI Edje_Version *edje_version = &_version;
+
 static int _edje_init_count = 0;
-static int _edje_log_dom_global = -1;
+int _edje_default_log_dom = -1;
 Eina_Mempool *_edje_real_part_mp = NULL;
 Eina_Mempool *_edje_real_part_state_mp = NULL;
-
-#ifdef EDJE_DEFAULT_LOG_COLOR
-# undef EDJE_DEFAULT_LOG_COLOR
-#endif
-#define EDJE_DEFAULT_LOG_COLOR EINA_COLOR_CYAN
-#ifdef ERR
-# undef ERR
-#endif
-#define ERR(...) EINA_LOG_DOM_ERR(_edje_log_dom_global, __VA_ARGS__)
-
 
 /*============================================================================*
  *                                   API                                      *
@@ -42,13 +35,13 @@ Eina_Mempool *_edje_real_part_state_mp = NULL;
  *
  * This function initializes the ejde library, making the propers
  * calls to initialization functions. It makes calls to functions
- * eina_init(), ecore_job_init(), embryo_init() and eet_init() so
+ * eina_init(), ecore_init(), embryo_init() and eet_init() so
  * there is no need to call those functions again in your code. To
  * shutdown edje there is a function edje_shutdown().
  *
  * @see edje_shutdown()
  * @see eina_init()
- * @see ecore_job_init()
+ * @see ecore_init()
  * @see embryo_init()
  * @see eet_init()
  *
@@ -68,30 +61,32 @@ edje_init(void)
 	return --_edje_init_count;
      }
 
-   _edje_log_dom_global = eina_log_domain_register("Edje", EDJE_DEFAULT_LOG_COLOR);
-   if (_edje_log_dom_global < 0)
+   _edje_default_log_dom = eina_log_domain_register("Edje", EDJE_DEFAULT_LOG_COLOR);
+   if (_edje_default_log_dom < 0)
      {
 	EINA_LOG_ERR("Edje Can not create a general log domain.");
 	goto shutdown_eina;
      }
 
-   if (!ecore_job_init())
+   if (!ecore_init())
      {
-	ERR("Edje: Ecore_Job init failed");
+	ERR("Ecore init failed");
 	goto unregister_log_domain;
      }
 
    if (!embryo_init())
      {
-	ERR("Edje: Embryo init failed");
-	goto shutdown_ecore_job;
+	ERR("Embryo init failed");
+	goto shutdown_ecore;
      }
 
    if (!eet_init())
      {
-	ERR("Edje: Eet init failed");
+	ERR("Eet init failed");
 	goto shutdown_embryo;
      }
+
+   _edje_scale = FROM_DOUBLE(1.0);
 
    _edje_edd_init();
    _edje_text_init();
@@ -106,7 +101,7 @@ edje_init(void)
 					 sizeof (Edje_Real_Part), 128);
    if (!_edje_real_part_mp)
      {
-	ERR("ERROR: Mempool for Edje_Real_Part cannot be allocated.\n");
+	ERR("Mempool for Edje_Real_Part cannot be allocated.");
 	goto shutdown_eet;
      }
 
@@ -115,7 +110,7 @@ edje_init(void)
 					       sizeof (Edje_Real_Part_State), 256);
    if (!_edje_real_part_state_mp)
      {
-	ERR("ERROR: Mempool for Edje_Real_Part_State cannot be allocated.\n");
+	ERR("Mempool for Edje_Real_Part_State cannot be allocated.");
 	goto shutdown_eet;
      }
 
@@ -137,11 +132,11 @@ edje_init(void)
    eet_shutdown();
  shutdown_embryo:
    embryo_shutdown();
- shutdown_ecore_job:
-   ecore_job_shutdown();
+ shutdown_ecore:
+   ecore_shutdown();
  unregister_log_domain:
-   eina_log_domain_unregister(_edje_log_dom_global);
-   _edje_log_dom_global = -1;
+   eina_log_domain_unregister(_edje_default_log_dom);
+   _edje_default_log_dom = -1;
  shutdown_eina:
    eina_shutdown();
    return --_edje_init_count;
@@ -154,13 +149,13 @@ edje_init(void)
  *         shutdown.
  *
  * This function shuts down the edje library. It calls the functions
- * eina_shutdown(), ecore_job_shutdown(), embryo_shutdown() and
+ * eina_shutdown(), ecore_shutdown(), embryo_shutdown() and
  * eet_shutdown(), so there is no need to call these functions again
  * in your code.
  *
  * @see edje_init()
  * @see eina_shutdown()
- * @see ecore_job_shutdown()
+ * @see ecore_shutdown()
  * @see embryo_shutdown()
  * @see eet_shutdown()
  *
@@ -196,34 +191,15 @@ edje_shutdown(void)
 
    eet_shutdown();
    embryo_shutdown();
-   ecore_job_shutdown();
-   eina_log_domain_unregister(_edje_log_dom_global);
-   _edje_log_dom_global = -1;
+   ecore_shutdown();
+   eina_log_domain_unregister(_edje_default_log_dom);
+   _edje_default_log_dom = -1;
    eina_shutdown();
 
    return _edje_init_count;
 }
 
 /* Private Routines */
-
-Edje *
-_edje_add(Evas_Object *obj)
-{
-   Edje *ed;
-
-   ed = calloc(1, sizeof(Edje));
-   if (!ed) return NULL;
-   ed->evas = evas_object_evas_get(obj);
-   ed->clipper = evas_object_rectangle_add(ed->evas);
-   evas_object_smart_member_add(ed->clipper, obj);
-   evas_object_color_set(ed->clipper, 255, 255, 255, 255);
-   evas_object_move(ed->clipper, -10000, -10000);
-   evas_object_resize(ed->clipper, 20000, 20000);
-   evas_object_pass_events_set(ed->clipper, 1);
-   ed->have_objects = 1;
-   ed->references = 1;
-   return ed;
-}
 
 void
 _edje_del(Edje *ed)
@@ -289,6 +265,15 @@ _edje_del(Edje *ed)
 	if (tc->name) eina_stringshare_del(tc->name);
 	if (tc->font) eina_stringshare_del(tc->font);
 	free(tc);
+     }
+   while (ed->text_insert_filter_callbacks)
+     {
+        Edje_Text_Insert_Filter_Callback *cb;
+        
+        cb = eina_list_data_get(ed->text_insert_filter_callbacks);
+        ed->text_insert_filter_callbacks = eina_list_remove(ed->text_insert_filter_callbacks, cb);
+        eina_stringshare_del(cb->part);
+        free(cb);
      }
    free(ed);
 }

@@ -12,20 +12,43 @@
 #include <Eina.h>
 #include <Evas.h>
 #include <Ecore.h>
-#include <Ecore_Str.h>
-#include <Ecore_Job.h>
 #ifdef HAVE_ECORE_IMF
 # include <Ecore_IMF.h>
 #endif
 #include <Eet.h>
 #include <Embryo.h>
+#include <time.h>
 
 #include "Edje.h"
 #include "Edje_Edit.h"
 
 #include <lua.h>
+#include <lualib.h>
 #include <lauxlib.h>
+#include <setjmp.h>
 
+EAPI extern int _edje_default_log_dom ; 
+
+#ifdef EDJE_DEFAULT_LOG_COLOR
+# undef EDJE_DEFAULT_LOG_COLOR
+#endif
+#define EDJE_DEFAULT_LOG_COLOR EINA_COLOR_CYAN
+#ifdef ERR
+# undef ERR
+#endif
+#define ERR(...) EINA_LOG_DOM_ERR(_edje_default_log_dom, __VA_ARGS__)
+#ifdef INF
+# undef INF
+#endif
+#define INF(...) EINA_LOG_DOM_INFO(_edje_default_log_dom, __VA_ARGS__)
+#ifdef WRN
+# undef WRN
+#endif
+#define WRN(...) EINA_LOG_DOM_WARN(_edje_default_log_dom, __VA_ARGS__)
+#ifdef CRIT
+# undef CRIT
+#endif
+#define CRIT(...) EINA_LOG_DOM_CRIT(_edje_default_log_dom, __VA_ARGS__)
 #ifdef __GNUC__
 # if __GNUC__ >= 4
 // BROKEN in gcc 4 on amd64
@@ -45,6 +68,69 @@
 #define MIN(a, b) (((a) < (b)) ? (a) : (b))
 #endif
 
+
+#ifdef BUILD_EDJE_FP
+
+#define FLOAT_T Eina_F32p32
+#define EDJE_T_FLOAT EET_T_F32P32
+#define MUL(a, b) eina_f32p32_mul(a, b)
+#define SCALE(a, b) eina_f32p32_scale(a, b)
+#define DIV(a, b) eina_f32p32_div(a, b)
+#define DIV2(a) ((a) >> 1)
+#define ADD(a, b) eina_f32p32_add(a, b)
+#define SUB(a, b) eina_f32p32_sub(a, b)
+#define SQRT(a) eina_f32p32_sqrt(a)
+#define TO_DOUBLE(a) eina_f32p32_double_to(a)
+#define FROM_DOUBLE(a) eina_f32p32_double_from(a)
+#define FROM_INT(a) eina_f32p32_int_from(a)
+#define TO_INT(a) eina_f32p32_int_to(a)
+#define ZERO 0
+#define COS(a) eina_f32p32_cos(a)
+#define SIN(a) eina_f32p32_sin(a)
+#define PI EINA_F32P32_PI
+
+#else
+
+#define FLOAT_T double
+#define EDJE_T_FLOAT EET_T_DOUBLE
+#define MUL(a, b) ((a) * (b))
+#define SCALE(a, b) ((a) * (double)(b))
+#define DIV(a, b) ((a) / (b))
+#define DIV2(a) ((a) / 2.0)
+#define ADD(a, b) ((a) + (b))
+#define SUB(a, b) ((a) - (b))
+#define SQRT(a) sqrt(a)
+#define TO_DOUBLE(a) (double)(a)
+#define FROM_DOUBLE(a) (a)
+#define FROM_INT(a) (double)(a)
+#define TO_INT(a) (int)(a)
+#define ZERO 0.0
+#define COS(a) cos(a)
+#define SIN(a) sin(a)
+#define PI 3.14159265358979323846
+
+#endif
+
+/* Inheritable Edje Smart API. For now private so only Edje Edit makes
+ * use of this, but who knows what will be possible in the future */
+#define EDJE_SMART_API_VERSION 1
+
+typedef struct _Edje_Smart_Api Edje_Smart_Api;
+
+struct _Edje_Smart_Api
+{
+   Evas_Smart_Class base;
+   int version;
+   Eina_Bool (*file_set)(Evas_Object *obj, const char *file, const char *group);
+};
+
+/* Basic macro to init the Edje Smart API */
+#define EDJE_SMART_API_INIT(smart_class_init) {smart_class_init, EDJE_SMART_API_VERSION, NULL}
+
+#define EDJE_SMART_API_INIT_NULL EDJE_SMART_API_INIT(EVAS_SMART_CLASS_INIT_NULL)
+#define EDJE_SMART_API_INIT_VERSION EDJE_SMART_API_INIT(EVAS_SMART_CLASS_INIT_VERSION)
+#define EDJE_SMART_API_INIT_NAME_VERSION(name) EDJE_SMART_API_INIT(EVAS_SMART_CLASS_INIT_NAME_VERSION(name))
+
 /* increment this when the EET data descriptors have changed and old
  * EETs cannot be loaded/used correctly anymore.
  */
@@ -63,9 +149,18 @@
  * ? all unsafe calls that may result in callbacks must be marked and dealt with
  */
 
+struct _Edje_Perspective
+{
+   Evas_Object *obj;
+   Evas        *e;
+   Evas_Coord   px, py, z0, foc;
+   Eina_List   *users;
+   Eina_Bool    global : 1;
+};
+
 struct _Edje_Position_Scale
 {
-   double x, y;
+   FLOAT_T x, y;
 };
 
 struct _Edje_Position
@@ -90,7 +185,7 @@ struct _Edje_Color
 
 struct _Edje_Aspect_Prefer
 {
-   double min, max;
+   FLOAT_T min, max;
    enum {
      EDJE_ASPECT_PREFER_NONE,
      EDJE_ASPECT_PREFER_VERTICAL,
@@ -124,6 +219,8 @@ typedef struct _Edje_Font_Directory                  Edje_Font_Directory;
 typedef struct _Edje_Font_Directory_Entry            Edje_Font_Directory_Entry;
 typedef struct _Edje_Image_Directory                 Edje_Image_Directory;
 typedef struct _Edje_Image_Directory_Entry           Edje_Image_Directory_Entry;
+typedef struct _Edje_Image_Directory_Set             Edje_Image_Directory_Set;
+typedef struct _Edje_Image_Directory_Set_Entry       Edje_Image_Directory_Set_Entry;
 typedef struct _Edje_Spectrum_Directory              Edje_Spectrum_Directory;
 typedef struct _Edje_Spectrum_Directory_Entry        Edje_Spectrum_Directory_Entry;
 typedef struct _Edje_Program                         Edje_Program;
@@ -138,8 +235,6 @@ typedef struct _Edje_Part_Image_Id                   Edje_Part_Image_Id;
 typedef struct _Edje_Part_Description                Edje_Part_Description;
 typedef struct _Edje_Spectrum_Color                  Edje_Spectrum_Color;
 typedef struct _Edje_Patterns                        Edje_Patterns;
-
-#define PI 3.14159265358979323846
 
 #define EDJE_INF_MAX_W 100000
 #define EDJE_INF_MAX_H 100000
@@ -159,39 +254,50 @@ typedef struct _Edje_Patterns                        Edje_Patterns;
 
 #define EDJE_VAR_MAGIC_BASE 0x12fe84ba
 
-#define EDJE_STATE_PARAM_NONE         0
-#define EDJE_STATE_PARAM_ALIGNMENT    1
-#define EDJE_STATE_PARAM_MIN          2
-#define EDJE_STATE_PARAM_MAX          3
-#define EDJE_STATE_PARAM_STEP         4
-#define EDJE_STATE_PARAM_ASPECT       5
-#define EDJE_STATE_PARAM_ASPECT_PREF  6
-#define EDJE_STATE_PARAM_COLOR        7
-#define EDJE_STATE_PARAM_COLOR2       8
-#define EDJE_STATE_PARAM_COLOR3       9
-#define EDJE_STATE_PARAM_COLOR_CLASS  10
-#define EDJE_STATE_PARAM_REL1         11
-#define EDJE_STATE_PARAM_REL1_TO      12
-#define EDJE_STATE_PARAM_REL1_OFFSET  13
-#define EDJE_STATE_PARAM_REL2         14
-#define EDJE_STATE_PARAM_REL2_TO      15
-#define EDJE_STATE_PARAM_REL2_OFFSET  16
-#define EDJE_STATE_PARAM_IMAGE        17
-#define EDJE_STATE_PARAM_BORDER       18
-#define EDJE_STATE_PARAM_FILL_SMOOTH  19
-#define EDJE_STATE_PARAM_FILL_POS     20
-#define EDJE_STATE_PARAM_FILL_SIZE    21
-#define EDJE_STATE_PARAM_TEXT         22
-#define EDJE_STATE_PARAM_TEXT_CLASS   23
-#define EDJE_STATE_PARAM_TEXT_FONT    24
-#define EDJE_STATE_PARAM_TEXT_STYLE   25
-#define EDJE_STATE_PARAM_TEXT_SIZE    26
-#define EDJE_STATE_PARAM_TEXT_FIT     27
-#define EDJE_STATE_PARAM_TEXT_MIN     28
-#define EDJE_STATE_PARAM_TEXT_MAX     29
-#define EDJE_STATE_PARAM_TEXT_ALIGN   30
-#define EDJE_STATE_PARAM_VISIBLE      31
-#define EDJE_STATE_PARAM_LAST         32
+#define EDJE_STATE_PARAM_NONE            0
+#define EDJE_STATE_PARAM_ALIGNMENT       1
+#define EDJE_STATE_PARAM_MIN             2
+#define EDJE_STATE_PARAM_MAX             3
+#define EDJE_STATE_PARAM_STEP            4
+#define EDJE_STATE_PARAM_ASPECT          5
+#define EDJE_STATE_PARAM_ASPECT_PREF     6
+#define EDJE_STATE_PARAM_COLOR           7
+#define EDJE_STATE_PARAM_COLOR2          8
+#define EDJE_STATE_PARAM_COLOR3          9
+#define EDJE_STATE_PARAM_COLOR_CLASS    10
+#define EDJE_STATE_PARAM_REL1           11
+#define EDJE_STATE_PARAM_REL1_TO        12
+#define EDJE_STATE_PARAM_REL1_OFFSET    13
+#define EDJE_STATE_PARAM_REL2           14
+#define EDJE_STATE_PARAM_REL2_TO        15
+#define EDJE_STATE_PARAM_REL2_OFFSET    16
+#define EDJE_STATE_PARAM_IMAGE          17
+#define EDJE_STATE_PARAM_BORDER         18
+#define EDJE_STATE_PARAM_FILL_SMOOTH    19
+#define EDJE_STATE_PARAM_FILL_POS       20
+#define EDJE_STATE_PARAM_FILL_SIZE      21
+#define EDJE_STATE_PARAM_TEXT           22
+#define EDJE_STATE_PARAM_TEXT_CLASS     23
+#define EDJE_STATE_PARAM_TEXT_FONT      24
+#define EDJE_STATE_PARAM_TEXT_STYLE     25
+#define EDJE_STATE_PARAM_TEXT_SIZE      26
+#define EDJE_STATE_PARAM_TEXT_FIT       27
+#define EDJE_STATE_PARAM_TEXT_MIN       28
+#define EDJE_STATE_PARAM_TEXT_MAX       29
+#define EDJE_STATE_PARAM_TEXT_ALIGN     30
+#define EDJE_STATE_PARAM_VISIBLE        31
+#define EDJE_STATE_PARAM_MAP_OM         32
+#define EDJE_STATE_PARAM_MAP_PERSP      33
+#define EDJE_STATE_PARAM_MAP_LIGNT      34
+#define EDJE_STATE_PARAM_MAP_ROT_CENTER 35
+#define EDJE_STATE_PARAM_MAP_ROT_X      36
+#define EDJE_STATE_PARAM_MAP_ROT_Y      37
+#define EDJE_STATE_PARAM_MAP_ROT_Z      38
+#define EDJE_STATE_PARAM_MAP_BACK_CULL  39
+#define EDJE_STATE_PARAM_MAP_PERSP_ON   40
+#define EDJE_STATE_PARAM_PERSP_ZPLANE   41
+#define EDJE_STATE_PARAM_PERSP_FOCAL    42
+#define EDJE_STATE_PARAM_LAST           43
 
 #define EDJE_ENTRY_EDIT_MODE_NONE 0
 #define EDJE_ENTRY_EDIT_MODE_SELECTABLE 1
@@ -203,11 +309,14 @@ typedef struct _Edje_Patterns                        Edje_Patterns;
 
 #define EDJE_PART_PATH_SEPARATOR ':'
 #define EDJE_PART_PATH_SEPARATOR_STRING ":"
+#define EDJE_PART_PATH_SEPARATOR_INDEXL '['
+#define EDJE_PART_PATH_SEPARATOR_INDEXR ']'
 /*----------*/
 
 struct _Edje_File
 {
    const char                     *path;
+   time_t                          mtime;
 
    Edje_External_Directory        *external_dir;
    Edje_Font_Directory            *font_dir;
@@ -229,8 +338,9 @@ struct _Edje_File
    Eina_Hash                      *data_cache;
 
    Eet_File                       *ef;
-
+   
    unsigned int                    free_strings : 1;
+   unsigned int                    dangling : 1;
 };
 
 struct _Edje_Style
@@ -268,6 +378,7 @@ struct _Edje_Font_Directory_Entry
 {
    const char *entry; /* the name of the font */
    const char *path;
+   const char *file; /* the name of the file */
 };
 
 /*----------*/
@@ -292,6 +403,7 @@ struct _Edje_External_Directory_Entry
 struct _Edje_Image_Directory
 {
    Eina_List *entries; /* a list of Edje_Image_Directory_Entry */
+   Eina_List *sets; /* a list of Edje_Image_Directory_Set */
 };
 
 struct _Edje_Image_Directory_Entry
@@ -300,6 +412,27 @@ struct _Edje_Image_Directory_Entry
    int   source_type; /* alternate source mode. 0 = none */
    int   source_param; /* extra params on encoding */
    int   id; /* the id no. of the image */
+};
+
+struct _Edje_Image_Directory_Set
+{
+   char *name;
+   Eina_List *entries;
+
+   int id;
+};
+
+struct _Edje_Image_Directory_Set_Entry
+{
+   char *name;
+   int id;
+
+   struct {
+     struct {
+       int w;
+       int h;
+     } min, max;
+   } size;
 };
 
 /*----------*/
@@ -336,6 +469,11 @@ struct _Edje_Program /* a conditional program to be run */
    const char *source; /* if part that emitted this (name) matches this glob */
 
    struct {
+      const char *part;
+      const char *state; /* if state is not set, we will try with source */
+   } filter; /* the part filter.part should be in state filter.state for signal to be accepted */
+
+   struct {
       double   from;
       double   range;
    } in;
@@ -348,12 +486,23 @@ struct _Edje_Program /* a conditional program to be run */
 
    struct {
       int      mode; /* how to tween - linear, sinusoidal etc. */
-      double   time; /* time to graduate between current and new state */
+      FLOAT_T  time; /* time to graduate between current and new state */
    } tween;
 
    Eina_List  *targets; /* list of target parts to apply the state to */
 
    Eina_List  *after; /* list of actions to run at the end of this, for looping */
+
+   struct {
+      const char *name;
+      const char *description;
+   } api;
+
+   /* used for PARAM_COPY (param names in state and state2 above!) */
+   struct {
+      int src; /* part where parameter is being retrieved */
+      int dst; /* part where parameter is being stored */
+   } param;
 };
 
 struct _Edje_Program_Target /* the target of an action */
@@ -430,8 +579,7 @@ struct _Edje_Part_Collection
    
    unsigned char    script_only;
 
-   unsigned char	lua_script_only;
-   lua_State		*L;
+   unsigned char    lua_script_only;
 };
 
 struct _Edje_Part
@@ -470,11 +618,16 @@ struct _Edje_Part
    unsigned char          entry_mode;
    unsigned char          select_mode;
    unsigned char          multiline;
+   struct {
+      const char         *name;
+      const char         *description;
+   } api;
 };
 
 struct _Edje_Part_Image_Id
 {
    int id;
+   Eina_Bool set;
 };
 
 struct _Edje_Part_Description
@@ -495,8 +648,8 @@ struct _Edje_Part_Description
    Edje_Aspect_Prefer aspect;
 
    struct {
-      double         relative_x;
-      double         relative_y;
+      FLOAT_T        relative_x;
+      FLOAT_T	     relative_y;
       int            offset_x;
       int            offset_y;
       int            id_x; /* -1 = whole part collection, or part ID */
@@ -507,6 +660,7 @@ struct _Edje_Part_Description
       Eina_List     *tween_list; /* list of Edje_Part_Image_Id */
       int            id; /* the image id to use */
       int            scale_hint; /* evas scale hint */
+      Eina_Bool      set; /* if image condition it's content */
    } image;
 
    struct {
@@ -515,8 +669,8 @@ struct _Edje_Part_Description
       int            id; /* the spectrum id to use */
       int            use_rel; /* 1 - use rel1,rel2; 0 - use fill */
       struct {
-         double      relative_x;
-         double      relative_y;
+         FLOAT_T     relative_x;
+         FLOAT_T     relative_y;
          int         offset_x;
          int         offset_y;
       } rel1, rel2; /* linear gradient fill options */
@@ -525,13 +679,14 @@ struct _Edje_Part_Description
    struct {
       int            l, r, t, b; /* border scaling on image fill */
       unsigned char  no_fill; /* do we fill the center of the image if bordered? 1 == NO!!!! */
+      unsigned char  scale; /* scale image border by same as scale factor */
    } border;
 
    struct {
-      double         pos_rel_x; /* fill offset x relative to area */
-      double         rel_x; /* relative size compared to area */
-      double         pos_rel_y; /* fill offset y relative to area */
-      double         rel_y; /* relative size compared to area */
+      FLOAT_T        pos_rel_x; /* fill offset x relative to area */
+      FLOAT_T        rel_x; /* relative size compared to area */
+      FLOAT_T        pos_rel_y; /* fill offset y relative to area */
+      FLOAT_T        rel_y; /* relative size compared to area */
       int            pos_abs_x; /* fill offset x added to fill offset */
       int            abs_x; /* size of fill added to relative fill */
       int            pos_abs_y; /* fill offset y added to fill offset */
@@ -585,17 +740,24 @@ struct _Edje_Part_Description
       } padding;
    } table;
    
-#if 0
-   // // // // //
    struct {
+      int id_persp;
+      int id_light;
       struct {
-         double ax, ay, az;
+         int id_center;
+         FLOAT_T x, y, z;
       } rot;
-      // FIXME: center point is another part id
-      // FIXME: perspective should other part or global value/obj
+      unsigned char backcull;
+      unsigned char on;
+      unsigned char persp_on;
+      unsigned char smooth;
+      unsigned char alpha;
    } map;
-   // // // // //
-#endif
+   
+   struct {
+      int zplane;
+      int focal;
+   } persp;
    
    Edje_Color color, color2, color3;  /* color for rect or text, shadow etc. */
    Eina_List *external_params; /* parameters for external objects */
@@ -610,6 +772,7 @@ struct _Edje_Part_Description
 typedef struct _Edje Edje;
 typedef struct _Edje_Real_Part_State Edje_Real_Part_State;
 typedef struct _Edje_Real_Part_Drag Edje_Real_Part_Drag;
+typedef struct _Edje_Real_Part_Set Edje_Real_Part_Set;
 typedef struct _Edje_Real_Part Edje_Real_Part;
 typedef struct _Edje_Running_Program Edje_Running_Program;
 typedef struct _Edje_Signal_Callback Edje_Signal_Callback;
@@ -628,6 +791,7 @@ typedef struct _Edje_Var_Animator Edje_Var_Animator;
 typedef struct _Edje_Var_Timer Edje_Var_Timer;
 typedef struct _Edje_Var_Pool Edje_Var_Pool;
 typedef struct _Edje_Signal_Source_Char Edje_Signal_Source_Char;
+typedef struct _Edje_Text_Insert_Filter_Callback Edje_Text_Insert_Filter_Callback;
 
 struct _Edje_Signal_Source_Char
 {
@@ -652,6 +816,7 @@ typedef struct _Edje_Signals_Sources_Patterns Edje_Signals_Sources_Patterns;
 
 struct _Edje
 {
+   const Edje_Smart_Api *api;
    const char           *path;
    const char           *group;
    const char           *parent;
@@ -676,9 +841,12 @@ struct _Edje
    Edje_Program        **table_programs;
    Edje_Real_Part       *focused_part;
    Eina_List            *subobjs;
+   Eina_List            *text_insert_filter_callbacks;
    void                 *script_only_data;
    int                   table_programs_size;
    int                   table_parts_size;
+   
+   Edje_Perspective     *persp;
 
    struct {
       Edje_Signals_Sources_Patterns callbacks;
@@ -689,7 +857,7 @@ struct _Edje
    int                   block;
    int                   load_error;
    int                   freeze;
-   double                scale;
+   FLOAT_T		 scale;
 
    struct {
       void (*func) (void *data, Evas_Object *obj, const char *part);
@@ -705,24 +873,38 @@ struct _Edje
 
    int                   state;
 
-   unsigned short        dirty : 1;
-   unsigned short        recalc : 1;
-   unsigned short        walking_callbacks : 1;
-   unsigned short        delete_callbacks : 1;
-   unsigned short        just_added_callbacks : 1;
-   unsigned short        have_objects : 1;
-   unsigned short        paused : 1;
-   unsigned short        no_anim : 1;
-   unsigned short        calc_only : 1;
-   unsigned short        walking_actions : 1;
-   unsigned short        block_break : 1;
-   unsigned short        delete_me : 1;
-   unsigned short        postponed : 1;
+   int			 preload_count;
+
+   unsigned int          dirty : 1;
+   unsigned int          recalc : 1;
+   unsigned int          walking_callbacks : 1;
+   unsigned int          delete_callbacks : 1;
+   unsigned int          just_added_callbacks : 1;
+   unsigned int          have_objects : 1;
+   unsigned int          paused : 1;
+   unsigned int          no_anim : 1;
+   unsigned int          calc_only : 1;
+   unsigned int          walking_actions : 1;
+   unsigned int          block_break : 1;
+   unsigned int          delete_me : 1;
+   unsigned int          postponed : 1;
+   unsigned int          freeze_calc : 1;
+   unsigned int          has_entries : 1;
+   unsigned int          entries_inited : 1;
 #ifdef EDJE_CALC_CACHE
-   unsigned short        text_part_change : 1;
-   unsigned short        all_part_change : 1;
+   unsigned int          text_part_change : 1;
+   unsigned int          all_part_change : 1;
 #endif
-   lua_State *L;
+   unsigned int          have_mapped_part : 1;
+
+   lua_State            *L;
+   Eina_Inlist          *lua_objs;
+   int                   lua_ref;
+   
+   struct {
+      Evas_Object *(*func) (void *data, Evas_Object *obj, const char *part, const char *item);
+      void *data;
+   } item_provider;
 };
 
 struct _Edje_Calc_Params
@@ -757,8 +939,16 @@ struct _Edje_Calc_Params
       } text; // 36
    } type; // 40
    unsigned char    visible : 1;
-   unsigned char    smooth : 1; // 4
+   unsigned char    smooth : 1; // 1
 }; // 96
+
+struct _Edje_Real_Part_Set
+{
+  Edje_Image_Directory_Set_Entry *entry; // 4
+  Edje_Image_Directory_Set       *set; // 4
+
+  int                             id; // 4
+};
 
 struct _Edje_Real_Part_State
 {
@@ -772,12 +962,13 @@ struct _Edje_Real_Part_State
    Edje_Calc_Params       p; // 96
 #endif
    void                  *external_params; // 4
-}; // 24
-// WITH EDJE_CALC_CACHE 124
+   Edje_Real_Part_Set    *set; // 4
+}; // 28
+// WITH EDJE_CALC_CACHE 128
 
 struct _Edje_Real_Part_Drag
 {
-   double		 x, y; // 16
+   FLOAT_T		 x, y; // 16
    Edje_Position_Scale	 val, size, step, page; // 64
    struct {
       unsigned int	 count; // 4
@@ -826,7 +1017,7 @@ struct _Edje_Real_Part
 	 const char	    *in_str; // 4 text only
 	 const char         *out_str; // 4 text only
 	 int                 out_size; // 4 text only
-	 double              align_x, align_y; // 16 text only
+	 FLOAT_T             align_x, align_y; // 16 text only
 	 double              elipsis; // 8 text only
 	 int                 fit_x, fit_y; // 8 text only
       } cache; // 64
@@ -834,7 +1025,7 @@ struct _Edje_Real_Part
                  // if part type is TEXT move common members textblock +
                  // text to front and have smaller struct for textblock
 
-   double                    description_pos; // 8
+   FLOAT_T                   description_pos; // 8
    Edje_Part_Description    *chosen_description; // 4
    Edje_Real_Part_State      param1; // 20
    // WITH EDJE_CALC_CACHE: 140
@@ -854,9 +1045,9 @@ struct _Edje_Real_Part
    unsigned char             calculated; // 1
    unsigned char             calculating; // 1
 
-   unsigned char             still_in   : 1; // 2
+   unsigned char             still_in   : 1; // 1
 #ifdef EDJE_CALC_CACHE
-   unsigned char             invalidate : 1;
+   unsigned char             invalidate : 1; // 0
 #endif
 }; //  260
 // WITH EDJE_CALC_CACHE: 400
@@ -877,6 +1068,13 @@ struct _Edje_Signal_Callback
    void  *data;
    unsigned char just_added : 1;
    unsigned char delete_me : 1;
+};
+
+struct _Edje_Text_Insert_Filter_Callback
+{
+   const char  *part;
+   void       (*func) (void *data, Evas_Object *obj, const char *part, char **text);
+   void        *data;
 };
 
 struct _Edje_Pending_Program
@@ -983,7 +1181,6 @@ struct _Edje_Var
    unsigned char type;
 };
 
-
 typedef enum _Edje_Queue
 {
    EDJE_QUEUE_APP,
@@ -1029,6 +1226,9 @@ struct _Edje_Patterns
 
    Edje_States    *states;
 
+   int             ref;
+   Eina_Bool       delete_me : 1;
+   
    size_t          patterns_size;
    size_t          max_length;
    size_t          finals[];
@@ -1040,17 +1240,17 @@ Edje_Patterns   *edje_match_programs_source_init(Eina_List *lst);
 Edje_Patterns   *edje_match_callback_signal_init(Eina_List *lst);
 Edje_Patterns   *edje_match_callback_source_init(Eina_List *lst);
 
-int              edje_match_collection_dir_exec(const Edje_Patterns      *ppat,
+Eina_Bool        edje_match_collection_dir_exec(const Edje_Patterns      *ppat,
 						const char               *string);
-int              edje_match_programs_exec(const Edje_Patterns    *ppat_signal,
+Eina_Bool        edje_match_programs_exec(const Edje_Patterns    *ppat_signal,
 					  const Edje_Patterns    *ppat_source,
 					  const char             *signal,
 					  const char             *source,
 					  Eina_List              *programs,
-					  int (*func)(Edje_Program *pr, void *data),
+					  Eina_Bool (*func)(Edje_Program *pr, void *data),
 					  void                   *data);
-int              edje_match_callback_exec(const Edje_Patterns    *ppat_signal,
-					  const Edje_Patterns    *ppat_source,
+int              edje_match_callback_exec(Edje_Patterns          *ppat_signal,
+					  Edje_Patterns          *ppat_source,
 					  const char             *signal,
 					  const char             *source,
 					  Eina_List              *callbacks,
@@ -1093,44 +1293,45 @@ extern Eina_List       *_edje_animators;
 extern Eina_List       *_edje_edjes;
 
 extern char            *_edje_fontset_append;
-extern double           _edje_scale;
+extern FLOAT_T          _edje_scale;
 extern int              _edje_freeze_val;
 extern int              _edje_freeze_calc_count;
+extern Eina_List       *_edje_freeze_calc_list;
 
 extern Eina_Mempool *_edje_real_part_mp;
 extern Eina_Mempool *_edje_real_part_state_mp;
 
-void  _edje_part_pos_set(Edje *ed, Edje_Real_Part *ep, int mode, double pos);
+void  _edje_part_pos_set(Edje *ed, Edje_Real_Part *ep, int mode, FLOAT_T pos);
 Edje_Part_Description *_edje_part_description_find(Edje *ed, Edje_Real_Part *rp, const char *name, double val);
 void  _edje_part_description_apply(Edje *ed, Edje_Real_Part *ep, const char  *d1, double v1, const char *d2, double v2);
 void  _edje_recalc(Edje *ed);
 void  _edje_recalc_do(Edje *ed);
-int   _edje_part_dragable_calc(Edje *ed, Edje_Real_Part *ep, double *x, double *y);
-void  _edje_dragable_pos_set(Edje *ed, Edje_Real_Part *ep, double x, double y);
+void  _edje_part_recalc_1(Edje *ed, Edje_Real_Part *ep);
+int   _edje_part_dragable_calc(Edje *ed, Edje_Real_Part *ep, FLOAT_T *x, FLOAT_T *y);
+void  _edje_dragable_pos_set(Edje *ed, Edje_Real_Part *ep, FLOAT_T x, FLOAT_T y);
 
-void  _edje_mouse_in_cb(void *data, Evas * e, Evas_Object * obj, void *event_info);
-void  _edje_mouse_out_cb(void *data, Evas * e, Evas_Object * obj, void *event_info);
-void  _edje_mouse_down_cb(void *data, Evas * e, Evas_Object * obj, void *event_info);
-void  _edje_mouse_up_cb(void *data, Evas * e, Evas_Object * obj, void *event_info);
-void  _edje_mouse_move_cb(void *data, Evas * e, Evas_Object * obj, void *event_info);
-void  _edje_mouse_wheel_cb(void *data, Evas * e, Evas_Object * obj, void *event_info);
-int   _edje_timer_cb(void *data);
-int   _edje_pending_timer_cb(void *data);
+Eina_Bool _edje_timer_cb(void *data);
+Eina_Bool _edje_pending_timer_cb(void *data);
 void  _edje_callbacks_add(Evas_Object *obj, Edje *ed, Edje_Real_Part *rp);
-void  _edje_callbacks_del(Evas_Object *obj);
+void  _edje_callbacks_focus_add(Evas_Object *obj, Edje *ed, Edje_Real_Part *rp);
+void  _edje_callbacks_del(Evas_Object *obj, Edje *ed);
+void  _edje_callbacks_focus_del(Evas_Object *obj, Edje *ed);
 
 void  _edje_edd_init(void);
 void  _edje_edd_shutdown(void);
+
+int _edje_object_file_set_internal(Evas_Object *obj, const char *file, const char *group, Eina_List *group_path);
 
 void  _edje_file_add(Edje *ed);
 void  _edje_file_del(Edje *ed);
 void  _edje_file_free(Edje_File *edf);
 void  _edje_file_cache_shutdown(void);
 void  _edje_collection_free(Edje_File *edf, Edje_Part_Collection *ec);
-void  _edje_collection_free_part_description_free(Edje_Part_Description *desc, unsigned int free_strings);
+void  _edje_collection_free_part_description_free(Edje_Part_Description *desc, Eina_Bool free_strings);
 
+void  _edje_object_smart_set(Edje_Smart_Api *sc);
+const Edje_Smart_Api * _edje_object_smart_class_get(void);
 
-Edje *_edje_add(Evas_Object *obj);
 void  _edje_del(Edje *ed);
 void  _edje_ref(Edje *ed);
 void  _edje_unref(Edje *ed);
@@ -1138,9 +1339,11 @@ void  _edje_clean_objects(Edje *ed);
 void  _edje_ref(Edje *ed);
 void  _edje_unref(Edje *ed);
 
-int   _edje_program_run_iterate(Edje_Running_Program *runp, double tim);
+Eina_Bool _edje_program_run_iterate(Edje_Running_Program *runp, double tim);
 void  _edje_program_end(Edje *ed, Edje_Running_Program *runp);
-void  _edje_program_run(Edje *ed, Edje_Program *pr, int force, const char *ssig, const char *ssrc);
+void  _edje_program_run(Edje *ed, Edje_Program *pr, Eina_Bool force, const char *ssig, const char *ssrc);
+void _edje_programs_patterns_clean(Edje *ed);
+void _edje_programs_patterns_init(Edje *ed);
 void  _edje_emit(Edje *ed, const char *sig, const char *src);
 void  _edje_emit_handle(Edje *ed, const char *sig, const char *src);
 void  _edje_signals_sources_patterns_clean(Edje_Signals_Sources_Patterns *ssp);
@@ -1194,9 +1397,14 @@ Eina_Bool         _edje_real_part_box_remove_all(Edje_Real_Part *rp, Eina_Bool c
 Eina_Bool         _edje_real_part_table_pack(Edje_Real_Part *rp, Evas_Object *child_obj, unsigned short col, unsigned short row, unsigned short colspan, unsigned short rowspan);
 Eina_Bool         _edje_real_part_table_unpack(Edje_Real_Part *rp, Evas_Object *child_obj);
 void              _edje_real_part_table_clear(Edje_Real_Part *rp, Eina_Bool clear);
+Evas_Object      *_edje_children_get(Edje_Real_Part *rp, const char *partid);
 
-void          _edje_embryo_script_init      (Edje *ed);
-void          _edje_embryo_script_shutdown  (Edje *ed);
+Eina_Bool         _edje_object_part_text_raw_set(Evas_Object *obj, Edje_Real_Part *rp, const char *part, const char *text);
+char             *_edje_text_escape(const char *text);
+char             *_edje_text_unescape(const char *text);
+
+void          _edje_embryo_script_init      (Edje_Part_Collection *edc);
+void          _edje_embryo_script_shutdown  (Edje_Part_Collection *edc);
 void          _edje_embryo_script_reset     (Edje *ed);
 void          _edje_embryo_test_run         (Edje *ed, const char *fname, const char *sig, const char *src);
 Edje_Var     *_edje_var_new                 (void);
@@ -1294,7 +1502,17 @@ void _edje_embryo_globals_init(Edje *ed);
    float *___cptr; \
    if ((___cptr = (float *)embryo_data_address_get(ep, (par)))) { \
       val = *___cptr; } }
-#define GETINT(val, par) { \
+
+#define GETFLOAT_T(val, par)						\
+  {									\
+     float *___cptr;							\
+     if ((___cptr = (float *)embryo_data_address_get(ep, (par))))	\
+       {								\
+	  val = FROM_DOUBLE(*___cptr);					\
+       }								\
+  }
+
+#define GETINT(val, par) {			\
    int *___cptr; \
    if ((___cptr = (int *)embryo_data_address_get(ep, (par)))) { \
       val = *___cptr; } }
@@ -1302,28 +1520,38 @@ void _edje_embryo_globals_init(Edje *ed);
    Embryo_Cell *___cptr; \
    if ((___cptr = embryo_data_address_get(ep, (par)))) { \
       embryo_data_string_set(ep, str, ___cptr); } }
-#define SETSTRALLOCATE(s) { \
-   if (s) { \
-      if (strlen((s)) < params[4]) { \
-	 SETSTR((s), params[3]); } \
-      else { \
-	 char *ss; \
-	 ss = alloca(strlen((s)) + 1); \
-	 strcpy(ss, (s)); \
-	 ss[params[4] - 2] = 0; \
-	 SETSTR(ss, params[3]); } } \
-   else \
-     SETSTR("", params[3]); }
+#define SETSTRALLOCATE(s)			\
+  {						\
+     if (s) {					\
+	if ((int) strlen((s)) < params[4]) {	\
+	   SETSTR((s), params[3]); }		\
+	else {					\
+	   char *ss;				\
+	   ss = alloca(strlen((s)) + 1);	\
+	   strcpy(ss, (s));			\
+	   ss[params[4] - 2] = 0;		\
+	   SETSTR(ss, params[3]); } }		\
+     else					\
+       SETSTR("", params[3]);			\
+  }
 #define SETFLOAT(val, par) { \
    float *___cptr; \
    if ((___cptr = (float *)embryo_data_address_get(ep, (par)))) { \
       *___cptr = (float)val; } }
+#define SETFLOAT_T(val, par)						\
+  {									\
+     float *___cptr;							\
+     if ((___cptr = (float *)embryo_data_address_get(ep, (par))))	\
+       {								\
+	  *___cptr = (float) TO_DOUBLE(val);				\
+       }								\
+  }
 #define SETINT(val, par) { \
    int *___cptr; \
    if ((___cptr = (int *)embryo_data_address_get(ep, (par)))) { \
       *___cptr = (int)val; } }
 
-int _edje_script_only(Edje *ed);
+Eina_Bool _edje_script_only(Edje *ed);
 void _edje_script_only_init(Edje *ed);
 void _edje_script_only_shutdown(Edje *ed);
 void _edje_script_only_show(Edje *ed);
@@ -1332,9 +1560,12 @@ void _edje_script_only_move(Edje *ed);
 void _edje_script_only_resize(Edje *ed);
 void _edje_script_only_message(Edje *ed, Edje_Message *em);
 
+extern jmp_buf _edje_lua_panic_jmp;
+#define _edje_lua_panic_here() setjmp(_edje_lua_panic_jmp)
+
 lua_State *_edje_lua_state_get();
-lua_State *_edje_lua_new_thread(lua_State *L);
-void _edje_lua_free_thread(lua_State *L);
+lua_State *_edje_lua_new_thread(Edje *ed, lua_State *L);
+void _edje_lua_free_thread(Edje *ed, lua_State *L);
 void _edje_lua_new_reg(lua_State *L, int index, void *ptr);
 void _edje_lua_get_reg(lua_State *L, void *ptr);
 void _edje_lua_free_reg(lua_State *L, void *ptr);
@@ -1342,9 +1573,12 @@ void _edje_lua_script_fn_new(Edje *ed);
 void _edje_lua_group_fn_new(Edje *ed);
 void _edje_lua_init();
 void _edje_lua_shutdown();
-void _edje_lua_error(lua_State *L, int err_code);
 
-int  _edje_lua_script_only(Edje *ed);
+void __edje_lua_error(const char *file, const char *fnc, int line, lua_State *L, int err_code);
+#define _edje_lua_error(L, err_code)					\
+  __edje_lua_error(__FILE__, __FUNCTION__, __LINE__, L, err_code)
+
+Eina_Bool  _edje_lua_script_only(Edje *ed);
 void _edje_lua_script_only_init(Edje *ed);
 void _edje_lua_script_only_shutdown(Edje *ed);
 void _edje_lua_script_only_show(Edje *ed);
@@ -1364,12 +1598,18 @@ void _edje_entry_text_markup_set(Edje_Real_Part *rp, const char *text);
 void _edje_entry_text_markup_insert(Edje_Real_Part *rp, const char *text);
 void _edje_entry_set_cursor_start(Edje_Real_Part *rp);
 void _edje_entry_set_cursor_end(Edje_Real_Part *rp);
+void _edje_entry_cursor_copy(Edje_Real_Part *rp, Edje_Cursor cur, Edje_Cursor dst);
 void _edje_entry_select_none(Edje_Real_Part *rp);
 void _edje_entry_select_all(Edje_Real_Part *rp);
+void _edje_entry_select_begin(Edje_Real_Part *rp);
+void _edje_entry_select_extend(Edje_Real_Part *rp);
 const Eina_List *_edje_entry_anchor_geometry_get(Edje_Real_Part *rp, const char *anchor);
 const Eina_List *_edje_entry_anchors_list(Edje_Real_Part *rp);
+Eina_Bool _edje_entry_item_geometry_get(Edje_Real_Part *rp, const char *item, Evas_Coord *cx, Evas_Coord *cy, Evas_Coord *cw, Evas_Coord *ch);
+const Eina_List *_edje_entry_items_list(Edje_Real_Part *rp);
 void _edje_entry_cursor_geometry_get(Edje_Real_Part *rp, Evas_Coord *cx, Evas_Coord *cy, Evas_Coord *cw, Evas_Coord *ch);
 void _edje_entry_select_allow_set(Edje_Real_Part *rp, Eina_Bool allow);
+Eina_Bool _edje_entry_select_allow_get(const Edje_Real_Part *rp);
 void _edje_entry_select_abort(Edje_Real_Part *rp);
 
 Eina_Bool _edje_entry_cursor_next(Edje_Real_Part *rp, Edje_Cursor cur);
@@ -1386,14 +1626,34 @@ const char *_edje_entry_cursor_content_get(Edje_Real_Part *rp, Edje_Cursor cur);
     
 void _edje_external_init();
 void _edje_external_shutdown();
-Evas_Object *_edje_external_type_add(const char *type_name, Evas *evas, Evas_Object *parent, const Eina_List *params);
+Evas_Object *_edje_external_type_add(const char *type_name, Evas *evas, Evas_Object *parent, const Eina_List *params, const char *part_name);
 void _edje_external_signal_emit(Evas_Object *obj, const char *emission, const char *source);
-void _edje_external_params_free(Eina_List *params, unsigned int free_strings);
+Eina_Bool _edje_external_param_set(Evas_Object *obj, const Edje_External_Param *param) EINA_ARG_NONNULL(1, 2);
+Eina_Bool _edje_external_param_get(const Evas_Object *obj, Edje_External_Param *param) EINA_ARG_NONNULL(1, 2);
+void _edje_external_params_free(Eina_List *params, Eina_Bool free_strings);
 void _edje_external_recalc_apply(Edje *ed, Edje_Real_Part *ep, Edje_Calc_Params *params, Edje_Part_Description *chosen_desc);
 void *_edje_external_params_parse(Evas_Object *obj, const Eina_List *params);
 void _edje_external_parsed_params_free(Evas_Object *obj, void *params);
 
 void _edje_module_init();
 void _edje_module_shutdown();
+
+
+
+
+
+
+
+// new lua stuff - supercedes the old
+//#define LUA2 1
+
+#ifdef LUA2
+void _edje_lua2_error_full(const char *file, const char *fnc, int line, lua_State *L, int err_code);
+#define _edje_lua2_error(L, err_code) _edje_lua2_error_full(__FILE__, __FUNCTION__, __LINE__, L, err_code)
+void _edje_lua2_script_init(Edje *ed);
+void _edje_lua2_script_shutdown(Edje *ed);
+void _edje_lua2_script_load(Edje_Part_Collection *edc, void *data, int size);
+void _edje_lua2_script_unload(Edje_Part_Collection *edc);
+#endif
 
 #endif
