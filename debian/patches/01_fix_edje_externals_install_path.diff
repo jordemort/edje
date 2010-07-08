@@ -1,0 +1,13 @@
+diff --git a/src/lib/edje_module.c b/src/lib/edje_module.c
+index 9e53cb9..6b61cee 100644
+--- a/src/lib/edje_module.c
++++ b/src/lib/edje_module.c
+@@ -87,7 +87,7 @@ _edje_module_init(void)
+ 
+    _registered_modules = eina_hash_string_small_new(NULL);
+    _available_modules = eina_module_list_get(_available_modules,
+-           PACKAGE_LIB_DIR "/edje", 0, NULL, NULL);
++           PACKAGE_LIB_DIR "/edje/ver-svn-06", 0, NULL, NULL);
+ 
+    if (!_available_modules)
+      {
