@@ -1,9 +1,15 @@
-edje (0.9.99.49898-1) UNRELEASED; urgency=low
+edje (0.9.99.49898-1) unstable; urgency=low
 
   * New upstream snapshot
     - Fix FTBFS on Hurd (Closes: #535771)
+  * Bump Standards-Version, no change required
+  * Remove Xavier Oswald from uploaders, he is no longer active
+  * Switch to '3.0 (quilt)' source format
+  * Add edje_player to libedje-bin
+  * Add patches/01_fix_edje_externals_install_path.diff:
+    - Make the external modules path versionned
 
- -- Albin Tonnerre <lutin@debian.org>  Mon, 05 Jul 2010 08:29:17 +0200
+ -- Albin Tonnerre <lutin@debian.org>  Thu, 22 Jul 2010 20:08:29 +0200
 
 edje (0.9.93.063-2) unstable; urgency=low
 
