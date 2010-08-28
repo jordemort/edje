@@ -1,2 +1,2 @@
 version=3
-http://download.enlightenment.org/snapshots/LATEST/edje-(.*)\.tar\.gz
+http://download.enlightenment.org/releases/edje-(.*)\.tar\.gz
