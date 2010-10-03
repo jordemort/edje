@@ -1,7 +1,3 @@
-/*
- * vim:ts=8:sw=3:sts=8:noexpandtab:cino=>5n-3f0^-2{2
- */
-
 #include "edje_private.h"
 #include "edje_container.h"
 
@@ -253,7 +249,7 @@ edje_item_del(Edje_Item *ei)
 /**
  * @brief Return the smart object of the edje item.
  *
- * @param ei The edje item wich the smart object of type Evas_Object is get
+ * @param ei The edje item which the smart object of type Evas_Object is get
  * from.
  *
  * This function returns the smart object in the edje item.
@@ -267,7 +263,7 @@ edje_item_container_get(Edje_Item *ei)
    return ((Smart_Data *)(ei->sd))->smart_obj;
 }
 
-/* an arbitary data pointer to use to track other data */
+/* an arbitrary data pointer to use to track other data */
 /**
  * @brief Set the edje item data.
  *

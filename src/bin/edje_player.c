@@ -137,7 +137,7 @@ _slave_mode_help(Evas_Object *edje __UNUSED__, char *args __UNUSED__)
 	"\t<command> [arguments]\n"
 	"\n"
 	"Available commands:\n"
-	"\tsignal <source> <emission>\n"
+	"\tsignal <emission> <source>\n"
 	"\t   sends a signal to edje\n"
 	"\tinfo <part>\n"
 	"\t   Print part geometry: <x>,<y>,<w>,<h>\n"
@@ -226,7 +226,7 @@ _slave_mode(void *data, Ecore_Fd_Handler *fd_handler)
 	  }
      }
 
-   for (itr = _slave_mode_commands; itr->cmd != NULL; itr++)
+   for (itr = _slave_mode_commands; itr->cmd; itr++)
      {
 	if (strcmp(itr->cmd, buf) == 0)
 	  {
@@ -608,6 +608,7 @@ int main(int argc, char **argv)
      return EXIT_FAILURE;
    if (!edje_init())
      goto shutdown_ecore_evas;
+   edje_frametime_set(1.0/60.0);
 
    args = ecore_getopt_parse(&optdesc, values, argc, argv);
    if (args < 0)

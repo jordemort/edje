@@ -1,7 +1,3 @@
-/*
- * vim:ts=8:sw=3:sts=8:noexpandtab:cino=>5n-3f0^-2{2
- */
-
 #ifdef HAVE_CONFIG_H
 # include <config.h>
 #endif
@@ -318,8 +314,12 @@ next_token(char *p, char *end, char **new_p, int *delim)
 			   ((*delim) && (!isdelim(*p))) ||
 			   (isdelim(*p))
 			   )
-			 {
+			 {/*the line below this is never  used because it skips to
+                           * the 'done' label which is after the return call for
+                           * in_tok being 0. is this intentional?
+                           */
 			    in_tok = 0;
+
 			    tok_end = p - 1;
 			    if (*p == '\n') line--;
 			    goto done;
@@ -445,7 +445,7 @@ parse(char *data, off_t size)
    p = data;
    end = data + size;
    line = 1;
-   while ((token = next_token(p, end, &p, &delim)) != NULL)
+   while ((token = next_token(p, end, &p, &delim)))
      {
 	/* if we are in param mode, the only delimiter
 	 * we'll accept is the semicolon
@@ -644,6 +644,8 @@ compile(void)
    int fd;
    off_t size;
    char *data, *p;
+   Eina_List *l;
+   Edje_Style *stl;
 
    if (!tmp_dir)
 #ifdef HAVE_EVIL
@@ -807,6 +809,13 @@ compile(void)
      }
    free(data);
    close(fd);
+
+   EINA_LIST_FOREACH(edje_file->styles, l, stl)
+      if (!stl->name)
+	{
+	   ERR("%s: Error. style must have a name.", progname);
+	   exit(-1);
+	}
 }
 
 int
@@ -824,8 +833,8 @@ is_num(int n)
 {
    char *str;
    char *end;
-   long val;
-
+   long int ret;
+   
    str = eina_list_nth(params, n);
    if (!str)
      {
@@ -835,7 +844,11 @@ is_num(int n)
      }
    if (str[0] == 0) return 0;
    end = str;
-   val = strtol(str, &end, 0);
+   ret = strtol(str, &end, 0);
+   if ((ret == LONG_MIN) || (ret == LONG_MAX))
+     {
+        n = 0; // do nothing. shut gcc warnings up
+     }
    if ((end != str) && (end[0] == 0)) return 1;
    return 0;
 }

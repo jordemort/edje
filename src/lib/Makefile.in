@@ -36,7 +36,7 @@ POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
 subdir = src/lib
-DIST_COMMON = $(include_HEADERS) $(srcdir)/Makefile.am \
+DIST_COMMON = $(includes_HEADERS) $(srcdir)/Makefile.am \
 	$(srcdir)/Makefile.in
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/ac_attribute.m4 \
@@ -72,24 +72,24 @@ am__nobase_list = $(am__nobase_strip_setup); \
 am__base_list = \
   sed '$$!N;$$!N;$$!N;$$!N;$$!N;$$!N;$$!N;s/\n/ /g' | \
   sed '$$!N;$$!N;$$!N;$$!N;s/\n/ /g'
-am__installdirs = "$(DESTDIR)$(libdir)" "$(DESTDIR)$(includedir)"
+am__installdirs = "$(DESTDIR)$(libdir)" "$(DESTDIR)$(includesdir)"
 LTLIBRARIES = $(lib_LTLIBRARIES)
 libedje_la_DEPENDENCIES =
-am__libedje_la_SOURCES_DIST = edje_calc.c edje_callbacks.c edje_data.c \
-	edje_embryo.c edje_lua.c edje_lua2.c edje_load.c edje_main.c \
-	edje_misc.c edje_program.c edje_smart.c edje_text.c \
-	edje_util.c edje_var.c edje_container.c edje_message_queue.c \
-	edje_cache.c edje_match.c edje_textblock_styles.c edje_edit.c \
-	edje_script_only.c edje_lua_script_only.c edje_entry.c \
-	edje_external.c edje_module.c
-am__objects_1 = edje_calc.lo edje_callbacks.lo edje_data.lo \
-	edje_embryo.lo edje_lua.lo edje_lua2.lo edje_load.lo \
-	edje_main.lo edje_misc.lo edje_program.lo edje_smart.lo \
-	edje_text.lo edje_util.lo edje_var.lo edje_container.lo \
-	edje_message_queue.lo edje_cache.lo edje_match.lo \
-	edje_textblock_styles.lo edje_edit.lo edje_script_only.lo \
-	edje_lua_script_only.lo edje_entry.lo edje_external.lo \
-	edje_module.lo
+am__libedje_la_SOURCES_DIST = edje_box_layout.c edje_cache.c \
+	edje_calc.c edje_callbacks.c edje_container.c edje_data.c \
+	edje_edit.c edje_embryo.c edje_entry.c edje_external.c \
+	edje_load.c edje_lua.c edje_lua2.c edje_lua_script_only.c \
+	edje_main.c edje_match.c edje_message_queue.c edje_misc.c \
+	edje_module.c edje_program.c edje_script_only.c edje_smart.c \
+	edje_text.c edje_textblock_styles.c edje_util.c edje_var.c
+am__objects_1 = edje_box_layout.lo edje_cache.lo edje_calc.lo \
+	edje_callbacks.lo edje_container.lo edje_data.lo edje_edit.lo \
+	edje_embryo.lo edje_entry.lo edje_external.lo edje_load.lo \
+	edje_lua.lo edje_lua2.lo edje_lua_script_only.lo edje_main.lo \
+	edje_match.lo edje_message_queue.lo edje_misc.lo \
+	edje_module.lo edje_program.lo edje_script_only.lo \
+	edje_smart.lo edje_text.lo edje_textblock_styles.lo \
+	edje_util.lo edje_var.lo
 @EDJE_AMALGAMATION_FALSE@am_libedje_la_OBJECTS = $(am__objects_1)
 @EDJE_AMALGAMATION_TRUE@nodist_libedje_la_OBJECTS =  \
 @EDJE_AMALGAMATION_TRUE@	edje_amalgamation.lo
@@ -129,7 +129,7 @@ am__v_GEN_ = $(am__v_GEN_$(AM_DEFAULT_VERBOSITY))
 am__v_GEN_0 = @echo "  GEN   " $@;
 SOURCES = $(libedje_la_SOURCES) $(nodist_libedje_la_SOURCES)
 DIST_SOURCES = $(am__libedje_la_SOURCES_DIST)
-HEADERS = $(include_HEADERS)
+HEADERS = $(includes_HEADERS)
 ETAGS = etags
 CTAGS = ctags
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
@@ -165,6 +165,7 @@ ECORE_IMF_CFLAGS = @ECORE_IMF_CFLAGS@
 ECORE_IMF_LIBS = @ECORE_IMF_LIBS@
 EDJE_CC_PRG = @EDJE_CC_PRG@
 EDJE_CFLAGS = @EDJE_CFLAGS@
+EDJE_CONVERT_PRG = @EDJE_CONVERT_PRG@
 EDJE_DECC_PRG = @EDJE_DECC_PRG@
 EDJE_LIBS = @EDJE_LIBS@
 EDJE_PLAYER_PRG = @EDJE_PLAYER_PRG@
@@ -192,7 +193,10 @@ LTLIBOBJS = @LTLIBOBJS@
 LUA_CFLAGS = @LUA_CFLAGS@
 LUA_LIBS = @LUA_LIBS@
 MAKEINFO = @MAKEINFO@
+MINIMAL_CFLAGS = @MINIMAL_CFLAGS@
+MINIMAL_LIBS = @MINIMAL_LIBS@
 MKDIR_P = @MKDIR_P@
+MODULE_ARCH = @MODULE_ARCH@
 NM = @NM@
 NMEDIT = @NMEDIT@
 OBJDUMP = @OBJDUMP@
@@ -219,6 +223,7 @@ SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
 STRIP = @STRIP@
 VERSION = @VERSION@
+VMAJ = @VMAJ@
 abs_builddir = @abs_builddir@
 abs_srcdir = @abs_srcdir@
 abs_top_builddir = @abs_top_builddir@
@@ -299,39 +304,41 @@ AM_CPPFLAGS = \
 @EFL_EDJE_BUILD@
 
 lib_LTLIBRARIES = libedje.la
-include_HEADERS = Edje.h Edje_Edit.h
+includes_HEADERS = Edje.h Edje_Edit.h
+includesdir = $(includedir)/edje-@VMAJ@
 base_sources = \
+edje_box_layout.c \
+edje_cache.c \
 edje_calc.c \
 edje_callbacks.c \
-edje_data.c \
-edje_embryo.c \
-edje_lua.c \
-edje_lua2.c \
-edje_load.c \
-edje_main.c \
-edje_misc.c \
-edje_program.c \
-edje_smart.c \
-edje_text.c \
-edje_util.c \
-edje_var.c \
 edje_container.c \
-edje_message_queue.c \
-edje_cache.c \
-edje_match.c \
-edje_textblock_styles.c \
+edje_data.c \
 edje_edit.c \
-edje_script_only.c \
-edje_lua_script_only.c \
+edje_embryo.c \
 edje_entry.c \
 edje_external.c \
-edje_module.c
+edje_load.c \
+edje_lua.c \
+edje_lua2.c \
+edje_lua_script_only.c \
+edje_main.c \
+edje_match.c \
+edje_message_queue.c \
+edje_misc.c \
+edje_module.c \
+edje_program.c \
+edje_script_only.c \
+edje_smart.c \
+edje_text.c \
+edje_textblock_styles.c \
+edje_util.c \
+edje_var.c
 
 @EDJE_AMALGAMATION_TRUE@nodist_libedje_la_SOURCES = edje_amalgamation.c
 @EDJE_AMALGAMATION_FALSE@libedje_la_SOURCES = $(base_sources)
 libedje_la_LIBADD = @EDJE_LIBS@ @ECORE_IMF_LIBS@ @EVIL_LIBS@ -lm
 libedje_la_LDFLAGS = -no-undefined @lt_enable_auto_import@ -version-info @version_info@ @release_info@
-EXTRA_DIST = edje_private.h edje_container.h
+EXTRA_DIST = edje_private.h edje_container.h edje_convert.h
 all: all-am
 
 .SUFFIXES:
@@ -407,6 +414,7 @@ distclean-compile:
 	-rm -f *.tab.c
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/edje_amalgamation.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/edje_box_layout.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/edje_cache.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/edje_calc.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/edje_callbacks.Plo@am__quote@
@@ -462,26 +470,26 @@ mostlyclean-libtool:
 
 clean-libtool:
 	-rm -rf .libs _libs
-install-includeHEADERS: $(include_HEADERS)
+install-includesHEADERS: $(includes_HEADERS)
 	@$(NORMAL_INSTALL)
-	test -z "$(includedir)" || $(MKDIR_P) "$(DESTDIR)$(includedir)"
-	@list='$(include_HEADERS)'; test -n "$(includedir)" || list=; \
+	test -z "$(includesdir)" || $(MKDIR_P) "$(DESTDIR)$(includesdir)"
+	@list='$(includes_HEADERS)'; test -n "$(includesdir)" || list=; \
 	for p in $$list; do \
 	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
 	  echo "$$d$$p"; \
 	done | $(am__base_list) | \
 	while read files; do \
-	  echo " $(INSTALL_HEADER) $$files '$(DESTDIR)$(includedir)'"; \
-	  $(INSTALL_HEADER) $$files "$(DESTDIR)$(includedir)" || exit $$?; \
+	  echo " $(INSTALL_HEADER) $$files '$(DESTDIR)$(includesdir)'"; \
+	  $(INSTALL_HEADER) $$files "$(DESTDIR)$(includesdir)" || exit $$?; \
 	done
 
-uninstall-includeHEADERS:
+uninstall-includesHEADERS:
 	@$(NORMAL_UNINSTALL)
-	@list='$(include_HEADERS)'; test -n "$(includedir)" || list=; \
+	@list='$(includes_HEADERS)'; test -n "$(includesdir)" || list=; \
 	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
 	test -n "$$files" || exit 0; \
-	echo " ( cd '$(DESTDIR)$(includedir)' && rm -f" $$files ")"; \
-	cd "$(DESTDIR)$(includedir)" && rm -f $$files
+	echo " ( cd '$(DESTDIR)$(includesdir)' && rm -f" $$files ")"; \
+	cd "$(DESTDIR)$(includesdir)" && rm -f $$files
 
 ID: $(HEADERS) $(SOURCES) $(LISP) $(TAGS_FILES)
 	list='$(SOURCES) $(HEADERS) $(LISP) $(TAGS_FILES)'; \
@@ -569,7 +577,7 @@ check-am: all-am
 check: check-am
 all-am: Makefile $(LTLIBRARIES) $(HEADERS)
 installdirs:
-	for dir in "$(DESTDIR)$(libdir)" "$(DESTDIR)$(includedir)"; do \
+	for dir in "$(DESTDIR)$(libdir)" "$(DESTDIR)$(includesdir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
 	done
 install: install-am
@@ -621,7 +629,7 @@ info: info-am
 
 info-am:
 
-install-data-am: install-includeHEADERS
+install-data-am: install-includesHEADERS
 
 install-dvi: install-dvi-am
 
@@ -667,7 +675,7 @@ ps: ps-am
 
 ps-am:
 
-uninstall-am: uninstall-includeHEADERS uninstall-libLTLIBRARIES
+uninstall-am: uninstall-includesHEADERS uninstall-libLTLIBRARIES
 
 .MAKE: install-am install-strip
 
@@ -677,13 +685,13 @@ uninstall-am: uninstall-includeHEADERS uninstall-libLTLIBRARIES
 	distclean-tags distdir dvi dvi-am html html-am info info-am \
 	install install-am install-data install-data-am install-dvi \
 	install-dvi-am install-exec install-exec-am install-html \
-	install-html-am install-includeHEADERS install-info \
+	install-html-am install-includesHEADERS install-info \
 	install-info-am install-libLTLIBRARIES install-man install-pdf \
 	install-pdf-am install-ps install-ps-am install-strip \
 	installcheck installcheck-am installdirs maintainer-clean \
 	maintainer-clean-generic mostlyclean mostlyclean-compile \
 	mostlyclean-generic mostlyclean-libtool pdf pdf-am ps ps-am \
-	tags uninstall uninstall-am uninstall-includeHEADERS \
+	tags uninstall uninstall-am uninstall-includesHEADERS \
 	uninstall-libLTLIBRARIES
 
 
@@ -694,9 +702,9 @@ uninstall-am: uninstall-includeHEADERS uninstall-libLTLIBRARIES
 @EDJE_AMALGAMATION_TRUE@	@echo "# include \"config.h\"" >> edje_amalgamation.c
 @EDJE_AMALGAMATION_TRUE@	@echo "#endif" >> edje_amalgamation.c
 
-@EDJE_AMALGAMATION_TRUE@	@echo "#ifndef _WIN32" >> eina_amalgamation.c
-@EDJE_AMALGAMATION_TRUE@	@echo "#define _GNU_SOURCE" >> eina_amalgamation.c
-@EDJE_AMALGAMATION_TRUE@	@echo "#endif" >> eina_amalgamation.c
+@EDJE_AMALGAMATION_TRUE@	@echo "#ifndef _WIN32" >> edje_amalgamation.c
+@EDJE_AMALGAMATION_TRUE@	@echo "#define _GNU_SOURCE" >> edje_amalgamation.c
+@EDJE_AMALGAMATION_TRUE@	@echo "#endif" >> edje_amalgamation.c
 
 @EDJE_AMALGAMATION_TRUE@	@echo "#ifdef HAVE_ALLOCA_H" >> edje_amalgamation.c
 @EDJE_AMALGAMATION_TRUE@	@echo "# include <alloca.h>" >> edje_amalgamation.c

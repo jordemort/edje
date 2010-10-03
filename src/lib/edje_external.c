@@ -1,7 +1,3 @@
-/*
- * vim:ts=8:sw=3:sts=8:noexpandtab:cino=>5n-3f0^-2{2
- */
-
 #include "edje_private.h"
 
 static Eina_Hash *type_registry = NULL;
@@ -181,6 +177,29 @@ edje_object_part_external_param_get(const Evas_Object *obj, const char *part, Ed
    return _edje_external_param_get(rp->swallowed_object, param);
 }
 
+
+
+EAPI Evas_Object*
+edje_object_part_external_content_get(const Evas_Object *obj, const char *part, const char *content)
+{
+   Edje *ed;
+   Edje_Real_Part *rp;
+
+   if (!content) return EINA_FALSE;
+
+   ed = _edje_fetch(obj);
+   if ((!ed) || (!part)) return EINA_FALSE;
+
+   rp = _edje_real_part_recursive_get(ed, (char *)part);
+   if (!rp)
+     {
+	ERR("no part '%s'", part);
+	return EINA_FALSE;
+     }
+
+   return _edje_external_content_get(rp->swallowed_object, content);
+}
+
 /**
  * Facility to query the type of the given parameter of the given part.
  *
@@ -220,7 +239,7 @@ edje_object_part_external_param_type_get(const Evas_Object *obj, const char *par
 	    type->module_name);
 	return EDJE_EXTERNAL_PARAM_TYPE_MAX;
      }
-   for (info = type->parameters_info; info->name != NULL; info++)
+   for (info = type->parameters_info; info->name; info++)
      if (strcmp(info->name, param) == 0)
        return info->type;
 
@@ -293,11 +312,11 @@ edje_external_type_unregister(const char *type_name)
  *
  * @note the given array is not modified, but the type name strings
  *       are @b not duplicated! That is, all type names must be @b
- *       live until they are unregistered! This was choosen to save
+ *       live until they are unregistered! This was chosen to save
  *       some memory and most people will just define the array as a
  *       global static const type anyway.
  *
- * @param arrray @c NULL terminated array with type name and
+ * @param array @c NULL terminated array with type name and
  *        information. Note that type name or information are not
  *        modified by are @b referenced, so they must keep alive after
  *        this function returns!
@@ -594,11 +613,29 @@ _edje_external_param_get(const Evas_Object *obj, Edje_External_Param *param)
      }
    if (!type->param_get)
      {
-	ERR("external type '%s' from module '%s' does not provide param_set()",
+	ERR("external type '%s' from module '%s' does not provide param_get()",
 	    type->module_name, type->module);
 	return EINA_FALSE;
      }
    return type->param_get(type->data, obj, param);
+}
+
+Evas_Object*
+_edje_external_content_get(const Evas_Object *obj, const char *content)
+{
+   Edje_External_Type *type = evas_object_data_get(obj, "Edje_External_Type");
+   if (!type)
+     {
+	ERR("no external type for object %p", obj);
+	return EINA_FALSE;
+     }
+   if (!type->content_get)
+     {
+	ERR("external type '%s' from module '%s' does not provide content_get()",
+	    type->module_name, type->module);
+	return EINA_FALSE;
+     }
+   return type->content_get(type->data, obj, content);
 }
 
 void
@@ -618,31 +655,34 @@ _edje_external_params_free(Eina_List *external_params, Eina_Bool free_strings)
 }
 
 void
-_edje_external_recalc_apply(Edje *ed, Edje_Real_Part *ep,
-			    Edje_Calc_Params *params,
-			    Edje_Part_Description *chosen_desc)
+_edje_external_recalc_apply(Edje *ed __UNUSED__, Edje_Real_Part *ep,
+			    Edje_Calc_Params *params __UNUSED__,
+			    Edje_Part_Description_Common *chosen_desc __UNUSED__)
 {
    Edje_External_Type *type;
+   Edje_Part_Description_External *ext;
    void *params1, *params2 = NULL;
-   if (!ep->swallowed_object) return;
 
+   if (!ep->swallowed_object) return;
    type = evas_object_data_get(ep->swallowed_object, "Edje_External_Type");
 
-   if (!type) return;
+   if ((!type) || (!type->state_set)) return;
 
-   if (!type->state_set) return;
+   ext = (Edje_Part_Description_External*) ep->param1.description;
 
    params1 = ep->param1.external_params ?
-		  ep->param1.external_params :
-		  ep->param1.description->external_params;
+     ep->param1.external_params : ext->external_params;
 
    if (ep->param2 && ep->param2->description)
-     params2 = ep->param2->external_params ?
-		  ep->param2->external_params :
-		  ep->param2->description->external_params;
+     {
+	ext = (Edje_Part_Description_External*) ep->param2->description;
+
+	params2 = ep->param2->external_params ?
+          ep->param2->external_params : ext->external_params;
+     }
 
    type->state_set(type->data, ep->swallowed_object,
-	 params1, params2, ep->description_pos);
+                   params1, params2, ep->description_pos);
 }
 
 void *

@@ -1,7 +1,3 @@
-/*
- * vim:ts=8:sw=3:sts=8:noexpandtab:cino=>5n-3f0^-2{2
- */
-
 #include "edje_private.h"
 
 static void _edje_smart_add(Evas_Object * obj);
@@ -101,6 +97,7 @@ _edje_smart_add(Evas_Object *obj)
 
    ed->evas = evas_object_evas_get(obj);
    ed->clipper = evas_object_rectangle_add(ed->evas);
+   evas_object_static_clip_set(ed->clipper, 1);
    evas_object_smart_member_add(ed->clipper, obj);
    evas_object_color_set(ed->clipper, 255, 255, 255, 255);
    evas_object_move(ed->clipper, -10000, -10000);
@@ -151,7 +148,6 @@ static void
 _edje_smart_move(Evas_Object * obj, Evas_Coord x, Evas_Coord y)
 {
    Edje *ed;
-   int i;
 
    ed = evas_object_smart_data_get(obj);
    if (!ed) return;
@@ -178,6 +174,8 @@ _edje_smart_move(Evas_Object * obj, Evas_Coord x, Evas_Coord y)
      }
    else
      {
+	unsigned int i;
+
         for (i = 0; i < ed->table_parts_size; i++)
           {
              Edje_Real_Part *ep;
@@ -234,6 +232,7 @@ _edje_smart_show(Evas_Object * obj)
 
    ed = evas_object_smart_data_get(obj);
    if (!ed) return;
+   if (evas_object_visible_get(obj)) return;
    if (evas_object_visible_get(ed->clipper)) return;
    if ((ed->collection) && (evas_object_clipees_get(ed->clipper)))
      evas_object_show(ed->clipper);
@@ -257,6 +256,7 @@ _edje_smart_hide(Evas_Object * obj)
 
    ed = evas_object_smart_data_get(obj);
    if (!ed) return;
+   if (!evas_object_visible_get(obj)) return;
    if (!evas_object_visible_get(ed->clipper)) return;
    if ((ed->collection) && (evas_object_clipees_get(ed->clipper)))
      evas_object_hide(ed->clipper);

@@ -1,7 +1,3 @@
-/*
- * vim:ts=8:sw=3:sts=8:noexpandtab:cino=>5n-3f0^-2{2
- */
-
 #ifdef HAVE_CONFIG_H
 # include "config.h"
 #endif
@@ -202,6 +198,7 @@ main(int argc, char **argv)
    edje_file = mem_alloc(SZ(Edje_File));
    edje_file->compiler = strdup("edje_cc");
    edje_file->version = EDJE_FILE_VERSION;
+   edje_file->minor = EDJE_FILE_MINOR;
    edje_file->feature_ver = 1; /* increment this every time we add a field
 				* or feature to the edje file format that
 				* does not load nicely as a NULL or 0 value

@@ -1,9 +1,3 @@
-/*
- * vim:ts=8:sw=3:sts=8:noexpandtab:cino=>5n-3f0^-2{2
- */
-
-#include <string.h>
-
 #include "edje_private.h"
 
 
@@ -40,34 +34,46 @@ _edje_text_init(void)
 void
 _edje_text_part_on_add(Edje *ed, Edje_Real_Part *ep)
 {
-   Eina_List *tmp;
    Edje_Part *pt = ep->part;
-   Edje_Part_Description *desc;
+   Edje_Part_Description_Text *desc;
+   unsigned int i;
 
    if (ep->part->type != EDJE_PART_TYPE_TEXT) return;
 
    /* if text class exists for this part, add the edje to the tc member list */
-   if ((pt->default_desc) && (pt->default_desc->text.text_class))
-     _edje_text_class_member_add(ed, pt->default_desc->text.text_class);
+   desc = (Edje_Part_Description_Text *) pt->default_desc;
+   if ((pt->default_desc) && (desc->text.text_class))
+     _edje_text_class_member_add(ed, desc->text.text_class);
 
    /* If any other classes exist add them */
-   EINA_LIST_FOREACH(pt->other_desc, tmp, desc)
-     if ((desc) && (desc->text.text_class))
-       _edje_text_class_member_add(ed, desc->text.text_class);
+   for (i = 0; i < pt->other.desc_count; ++i)
+     {
+	desc = (Edje_Part_Description_Text *) pt->other.desc[i];
+	if ((desc) && (desc->text.text_class))
+	  _edje_text_class_member_add(ed, desc->text.text_class);
+     }
 }
 
 void
 _edje_text_part_on_del(Edje *ed, Edje_Part *pt)
 {
-   Eina_List *tmp;
-   Edje_Part_Description *desc;
+   Edje_Part_Description_Text *desc;
+   unsigned int i;
 
-   if ((pt->default_desc) && (pt->default_desc->text.text_class))
-     _edje_text_class_member_del(ed, pt->default_desc->text.text_class);
+   if (pt->type != EDJE_PART_TYPE_TEXT
+       && pt->type != EDJE_PART_TYPE_TEXTBLOCK)
+     return ;
 
-   EINA_LIST_FOREACH(pt->other_desc, tmp, desc)
-     if (desc->text.text_class)
-       _edje_text_class_member_del(ed, desc->text.text_class);
+   desc = (Edje_Part_Description_Text *) pt->default_desc;
+   if ((pt->default_desc) && (desc->text.text_class))
+     _edje_text_class_member_del(ed, desc->text.text_class);
+
+   for (i = 0; i < pt->other.desc_count; ++i)
+     {
+	desc = (Edje_Part_Description_Text *) pt->other.desc[i];
+	if (desc->text.text_class)
+	  _edje_text_class_member_del(ed, desc->text.text_class);
+     }
 }
 
 static void
@@ -267,12 +273,12 @@ _edje_text_font_get(const char *base, const char *new, char **free_later)
 }
 
 const char *
-_edje_text_class_font_get(Edje *ed, Edje_Part_Description *chosen_desc, int *size, char **free_later)
+_edje_text_class_font_get(Edje *ed, Edje_Part_Description_Text *chosen_desc, int *size, char **free_later)
 {
    Edje_Text_Class *tc;
    const char *text_class_name, *font;
 
-   font = chosen_desc->text.font;
+   font = edje_string_get(&chosen_desc->text.font);
    *size = chosen_desc->text.size;
 
    text_class_name = chosen_desc->text.text_class;
@@ -283,7 +289,7 @@ _edje_text_class_font_get(Edje *ed, Edje_Part_Description *chosen_desc, int *siz
    if (!tc)
      return font;
 
-   font = _edje_text_font_get(chosen_desc->text.font, tc->font, free_later);
+   font = _edje_text_font_get(edje_string_get(&chosen_desc->text.font), tc->font, free_later);
    *size = _edje_text_size_calc(*size, tc);
 
    return font;
@@ -292,7 +298,7 @@ _edje_text_class_font_get(Edje *ed, Edje_Part_Description *chosen_desc, int *siz
 void
 _edje_text_recalc_apply(Edje *ed, Edje_Real_Part *ep,
 			Edje_Calc_Params *params,
-			Edje_Part_Description *chosen_desc)
+			Edje_Part_Description_Text *chosen_desc)
 {
    const char	*text;
    const char	*font;
@@ -306,7 +312,7 @@ _edje_text_recalc_apply(Edje *ed, Edje_Real_Part *ep,
 
    sc = ed->scale;
    if (sc == 0.0) sc = _edje_scale;
-   text = chosen_desc->text.text;
+   text = edje_string_get(&chosen_desc->text.text);
    font = _edje_text_class_font_get(ed, chosen_desc, &size, &sfont);
 
    if (ep->text.text) text = (char *) ep->text.text;
@@ -315,13 +321,13 @@ _edje_text_recalc_apply(Edje *ed, Edje_Real_Part *ep,
 
    if (ep->text.text_source)
      {
-	text = ep->text.text_source->chosen_description->text.text;
+	text = edje_string_get(&(((Edje_Part_Description_Text *)ep->text.text_source->chosen_description)->text.text));
 	if (ep->text.text_source->text.text) text = ep->text.text_source->text.text;
      }
    if (ep->text.source)
      {
-	font = ep->text.source->chosen_description->text.font;
-	size = ep->text.source->chosen_description->text.size;
+	font = edje_string_get(&(((Edje_Part_Description_Text *)ep->text.source->chosen_description)->text.font));
+	size = ((Edje_Part_Description_Text *)ep->text.source->chosen_description)->text.size;
 	if (ep->text.source->text.font) font = ep->text.source->text.font;
 	if (ep->text.source->text.size > 0) size = ep->text.source->text.size;
      }
@@ -330,13 +336,15 @@ _edje_text_recalc_apply(Edje *ed, Edje_Real_Part *ep,
    if (!font) font = "";
 
    /* check if the font is embedded in the .eet */
-   if (ed->file->font_hash)
+   if (ed->file->fonts)
      {
-	Edje_Font_Directory_Entry *fnt = eina_hash_find(ed->file->font_hash, font);
+	Edje_Font_Directory_Entry *fnt = eina_hash_find(ed->file->fonts, font);
 
 	if (fnt)
 	  {
-	     font = fnt->path;
+             int len = strlen(fnt->entry) + sizeof("edje/fonts/") + 1;
+             font = alloca(len);
+             sprintf((char *)font, "edje/fonts/%s", fnt->entry);
 	     inlined_font = 1;
 	  }
      }
@@ -384,7 +392,7 @@ _edje_text_recalc_apply(Edje *ed, Edje_Real_Part *ep,
    if (ep->text.cache.in_str) eina_stringshare_del(ep->text.cache.in_str);
    ep->text.cache.in_str = eina_stringshare_add(text);
    ep->text.cache.in_size = size;
-   if (chosen_desc->text.fit_x)
+   if (chosen_desc->text.fit_x && (ep->text.cache.in_str && eina_stringshare_strlen(ep->text.cache.in_str) > 0))
      {
         if (inlined_font) evas_object_text_font_source_set(ep->object, ed->path);
 	else evas_object_text_font_source_set(ep->object, NULL);
@@ -395,12 +403,9 @@ _edje_text_recalc_apply(Edje *ed, Edje_Real_Part *ep,
 	part_get_geometry(ep, &tw, &th);
 	if (tw > sw)
 	  {
-	     int psize;
-
-	     psize = size;
 	     while ((tw > sw) && (size > 0) && (tw != 0))
 	       {
-		  psize = size;
+		  int psize = size;
 		  size = (size * sw) / tw;
 		  if ((psize - size) <= 0) size = psize - 1;
 		  if (inlined_font) evas_object_text_font_source_set(ep->object, ed->path);
@@ -414,13 +419,11 @@ _edje_text_recalc_apply(Edje *ed, Edje_Real_Part *ep,
 	  }
 	else if (tw < sw)
 	  {
-	     int psize;
-
-	     psize = size;
 	     while ((tw < sw) && (size > 0) && (tw != 0))
 	       {
-		  psize = size;
+		  int psize = size;
 		  size = (size * sw) / tw;
+		  /* fprintf(stderr, "size = %i (%i, %i)\n", size, sw, tw); */
 		  if ((psize - size) >= 0) size = psize + 1;
 		  if (inlined_font) evas_object_text_font_source_set(ep->object, ed->path);
 		  else evas_object_text_font_source_set(ep->object, NULL);
@@ -432,7 +435,7 @@ _edje_text_recalc_apply(Edje *ed, Edje_Real_Part *ep,
 	       }
 	  }
      }
-   if (chosen_desc->text.fit_y)
+   if (chosen_desc->text.fit_y && (ep->text.cache.in_str && eina_stringshare_strlen(ep->text.cache.in_str) > 0))
      {
 	/* if we fit in the x axis, too, size already has a somewhat
 	 * meaningful value, so don't overwrite it with the starting
@@ -485,13 +488,8 @@ _edje_text_recalc_apply(Edje *ed, Edje_Real_Part *ep,
 	       {
 		  int bottom, top;
 
-		  if (th < sh)
-		    bottom = 10;
-		  else if (th > sh)
-		    {
-		       bottom = 1;
-		       top = 10;
-		    }
+		  if (th < sh) bottom = 10;
+		  else if (th > sh) bottom = 1;
 		  else bottom = 0; /* XXX shut up GCC, th == sh is handled before! */
 
 		  top = size;

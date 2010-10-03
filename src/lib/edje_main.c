@@ -1,9 +1,3 @@
-/*
- * vim:ts=8:sw=3:sts=8:noexpandtab:cino=>5n-3f0^-2{2
- */
-
-#include <time.h>
-
 #include "edje_private.h"
 
 static Edje_Version _version = { VMAJ, VMIN, VMIC, VREV };
@@ -93,7 +87,6 @@ edje_init(void)
    _edje_box_init();
    _edje_external_init();
    _edje_module_init();
-   _edje_lua_init();
    _edje_message_init();
 
    _edje_real_part_mp = eina_mempool_add("chained_mempool",
@@ -122,7 +115,6 @@ edje_init(void)
    _edje_real_part_state_mp = NULL;
    _edje_real_part_mp = NULL;
    _edje_message_shutdown();
-   _edje_lua_shutdown();
    _edje_module_shutdown();
    _edje_external_shutdown();
    _edje_box_shutdown();
@@ -181,7 +173,6 @@ edje_shutdown(void)
    _edje_real_part_mp = NULL;
 
    _edje_message_shutdown();
-   _edje_lua_shutdown();
    _edje_module_shutdown();
    _edje_external_shutdown();
    _edje_box_shutdown();

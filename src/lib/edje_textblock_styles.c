@@ -1,15 +1,9 @@
-/*
- * vim:ts=8:sw=3:sts=8:noexpandtab:cino=>5n-3f0^-2{2
- */
-
-#include <string.h>
-
 #include "edje_private.h"
 
 static int
-_edje_font_is_embedded(Edje_File *edf, char *font __UNUSED__)
+_edje_font_is_embedded(Edje_File *edf, char *font)
 {
-   if (!edf->font_dir) return 0;
+   if (!eina_hash_find(edf->fonts, font)) return 0;
    return 1;
 }
 
@@ -119,7 +113,7 @@ _edje_format_reparse(Edje_File *edf, const char *str, Edje_Style_Tag **tag_ret)
 			 {
 			    if (!tmp)
 			      tmp = eina_strbuf_new();
-			    eina_strbuf_append(tmp, "fonts/");
+			    eina_strbuf_append(tmp, "edje/fonts/");
 			    eina_strbuf_append(tmp, val);
 			    (*tag_ret)->font = eina_stringshare_add(eina_strbuf_string_get(tmp));
 			    eina_strbuf_reset(tmp);
