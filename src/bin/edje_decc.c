@@ -1,7 +1,3 @@
-/*
- * vim:ts=8:sw=3:sts=8:noexpandtab:cino=>5n-3f0^-2{2
- */
-
 /* ugly ugly. avert your eyes. */
 
 #ifdef HAVE_CONFIG_H
@@ -138,7 +134,7 @@ decomp(void)
 	eet_close(ef);
 	return 0;
      }
-   edje_file = eet_data_read(ef, _edje_edd_edje_file, "edje_file");
+   edje_file = eet_data_read(ef, _edje_edd_edje_file, "edje/file");
    if (!edje_file)
      {
         ERR("ERROR: %s does not appear to be an edje file", file_in);
@@ -187,9 +183,12 @@ output(void)
    if (edje_file->image_dir)
      {
         Edje_Image_Directory_Entry *ei;
+	unsigned int i;
 
-	EINA_LIST_FOREACH(edje_file->image_dir->entries, l, ei)
+	for (i = 0; i < edje_file->image_dir->entries_count; ++i)
 	  {
+	     ei = &edje_file->image_dir->entries[i];
+
 	     if ((ei->source_type > EDJE_IMAGE_SOURCE_TYPE_NONE) &&
 		 (ei->source_type < EDJE_IMAGE_SOURCE_TYPE_LAST) &&
 		 (ei->source_type != EDJE_IMAGE_SOURCE_TYPE_EXTERNAL) &&
@@ -217,7 +216,7 @@ output(void)
 		       ERR("Cannot create image object for save.");
 		       exit(-1);
 		    }
-		  snprintf(buf, sizeof(buf), "images/%i", ei->id);
+		  snprintf(buf, sizeof(buf), "edje/images/%i", ei->id);
 		  evas_object_image_file_set(im, file_in, buf);
 		  snprintf(out, sizeof(out), "%s/%s", outdir, ei->entry);
 		  printf("Output Image: %s\n", out);
@@ -280,24 +279,28 @@ output(void)
 	if (sf->file) fputs(sf->file, f);
 	fclose(f);
      }
-   if (fontlist)
+   if (edje_file->fonts)
      {
-        Font *fn;
+        Edje_Font_Directory_Entry *fn;
+        Eina_Iterator *it;
 
-	EINA_LIST_FOREACH(fontlist->list, l, fn)
+        it = eina_hash_iterator_data_new(edje_file->fonts);
+	EINA_ITERATOR_FOREACH(it, fn)
 	  {
 	     void *font;
 	     int fontsize;
 	     char out[4096];
-
-	     snprintf(out, sizeof(out), "fonts/%s", fn->name);
+             /* FIXME!!!! */
+                                         /* should be fn->entry -v */
+	     snprintf(out, sizeof(out), "edje/fonts/%s", fn->file);
 	     font = eet_read(ef, out, &fontsize);
 	     if (font)
 	       {
 		  FILE *f;
 		  char *pp;
 
-		  snprintf(out, sizeof(out), "%s/%s", outdir, fn->file);
+                                         /* should be fn->file -v */
+		  snprintf(out, sizeof(out), "%s/%s", outdir, fn->entry);
 		  INF("Output Font: %s", out);
 		  pp = strdup(out);
 		  p = strrchr(pp, '/');
@@ -314,13 +317,15 @@ output(void)
 		       ERR("Potential security violation. attempt to write in parent dir.");
 		       exit (-1);
 		    }
-		  f = fopen(out, "wb");
+		  if (!(f = fopen(out, "wb")))
+                    ERR("Could not open file: %s", out);
 		  if (fwrite(font, fontsize, 1, f) != 1)
 		    ERR("Could not write font: %s", strerror(errno));
-		  fclose(f);
+		  if (f) fclose(f);
 		  free(font);
 	       }
 	  }
+        eina_iterator_free(it);
      }
      {
 	char out[4096];
@@ -365,9 +370,9 @@ output(void)
 static int
 compiler_cmd_is_sane()
 {
-   char *c = edje_file->compiler, *ptr;
+   const char *c = edje_file->compiler, *ptr;
 
-   if (!c || !*c)
+   if ((!c) || (!*c))
      {
 	return 0;
      }
@@ -375,7 +380,7 @@ compiler_cmd_is_sane()
    for (ptr = c; ptr && *ptr; ptr++)
      {
 	/* only allow [a-z][A-Z][0-9]_- */
-	if (!isalnum(*ptr) && *ptr != '_' && *ptr != '-')
+	if ((!isalnum(*ptr)) && (*ptr != '_') && (*ptr != '-'))
 	  {
 	     return 0;
 	  }

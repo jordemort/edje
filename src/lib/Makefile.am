@@ -16,34 +16,36 @@ AM_CPPFLAGS = \
 
 lib_LTLIBRARIES = libedje.la
 
-include_HEADERS = Edje.h Edje_Edit.h
+includes_HEADERS = Edje.h Edje_Edit.h
+includesdir = $(includedir)/edje-@VMAJ@
 
 base_sources = \
+edje_box_layout.c \
+edje_cache.c \
 edje_calc.c \
 edje_callbacks.c \
-edje_data.c \
-edje_embryo.c \
-edje_lua.c \
-edje_lua2.c \
-edje_load.c \
-edje_main.c \
-edje_misc.c \
-edje_program.c \
-edje_smart.c \
-edje_text.c \
-edje_util.c \
-edje_var.c \
 edje_container.c \
-edje_message_queue.c \
-edje_cache.c \
-edje_match.c \
-edje_textblock_styles.c \
+edje_data.c \
 edje_edit.c \
-edje_script_only.c \
-edje_lua_script_only.c \
+edje_embryo.c \
 edje_entry.c \
 edje_external.c \
-edje_module.c
+edje_load.c \
+edje_lua.c \
+edje_lua2.c \
+edje_lua_script_only.c \
+edje_main.c \
+edje_match.c \
+edje_message_queue.c \
+edje_misc.c \
+edje_module.c \
+edje_program.c \
+edje_script_only.c \
+edje_smart.c \
+edje_text.c \
+edje_textblock_styles.c \
+edje_util.c \
+edje_var.c
 
 if EDJE_AMALGAMATION
 nodist_libedje_la_SOURCES = edje_amalgamation.c
@@ -55,9 +57,9 @@ edje_amalgamation.c: $(base_sources) Makefile
 	@echo "# include \"config.h\"" >> edje_amalgamation.c
 	@echo "#endif" >> edje_amalgamation.c
 
-	@echo "#ifndef _WIN32" >> eina_amalgamation.c
-	@echo "#define _GNU_SOURCE" >> eina_amalgamation.c
-	@echo "#endif" >> eina_amalgamation.c
+	@echo "#ifndef _WIN32" >> edje_amalgamation.c
+	@echo "#define _GNU_SOURCE" >> edje_amalgamation.c
+	@echo "#endif" >> edje_amalgamation.c
 
 	@echo "#ifdef HAVE_ALLOCA_H" >> edje_amalgamation.c
 	@echo "# include <alloca.h>" >> edje_amalgamation.c
@@ -128,7 +130,7 @@ endif
 libedje_la_LIBADD = @EDJE_LIBS@ @ECORE_IMF_LIBS@ @EVIL_LIBS@ -lm
 libedje_la_LDFLAGS = -no-undefined @lt_enable_auto_import@ -version-info @version_info@ @release_info@
 
-EXTRA_DIST = edje_private.h edje_container.h
+EXTRA_DIST = edje_private.h edje_container.h edje_convert.h
 
 clean-local:
 	@rm -rf  edje_amalgamation.c

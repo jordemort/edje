@@ -1,7 +1,3 @@
-/*
- * vim:ts=8:sw=3:sts=8:noexpandtab:cino=>5n-3f0^-2{2
- */
-
 #ifdef HAVE_CONFIG_H
 # include "config.h"
 #endif
@@ -209,7 +205,7 @@ _e_prefix_share_hunt(void)
    char buf[4096], buf2[4096], *p;
    struct stat st;
 
-   /* sometimes this isnt the case - so we need to do a more exhaustive search
+   /* sometimes this isn't the case - so we need to do a more exhaustive search
     * through more parent and subdirs. hre is an example i have seen:
     *
     * /blah/whatever/exec/bin/exe
