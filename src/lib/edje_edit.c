@@ -90,6 +90,30 @@ typedef struct _Edje_Edit Edje_Edit;
 struct _Edje_Edit
 {
    Edje base;
+
+   void *bytecode;
+   int bytecode_size;
+
+   char *embryo_source;
+   char *embryo_processed;
+   Eina_Hash *program_scripts;
+
+   Eina_List *errors;
+
+   Eina_Bool bytecode_dirty:1;
+   Eina_Bool embryo_source_dirty:1;
+   Eina_Bool all_dirty:1;
+   Eina_Bool script_need_recompile:1;
+};
+
+typedef struct _Program_Script Program_Script;
+struct _Program_Script
+{
+   int id;
+   char *code;
+   char *processed;
+   Eina_Bool dirty:1;
+   Eina_Bool delete_me:1;
 };
 
 static void _edje_edit_smart_add(Evas_Object *obj);
@@ -134,22 +158,69 @@ _edje_edit_smart_add(Evas_Object *obj)
 }
 
 static void
+_edje_edit_data_clean(Edje_Edit *eed)
+{
+   Edje_Edit_Script_Error *se;
+
+   free(eed->bytecode);
+   free(eed->embryo_source);
+   free(eed->embryo_processed);
+
+   if (eed->program_scripts)
+     eina_hash_free(eed->program_scripts);
+
+   EINA_LIST_FREE(eed->errors, se)
+     {
+        eina_stringshare_del(se->program_name);
+        eina_stringshare_del(se->error_str);
+        free(se);
+     }
+
+   eed->bytecode = NULL;
+   eed->embryo_source = NULL;
+   eed->embryo_processed = NULL;
+   eed->program_scripts = NULL;
+   eed->bytecode_size = 0;
+   eed->bytecode_dirty = EINA_FALSE;
+   eed->embryo_source_dirty = EINA_FALSE;
+   eed->all_dirty = EINA_FALSE;
+   eed->script_need_recompile = EINA_FALSE;
+}
+
+static void
 _edje_edit_smart_del(Evas_Object *obj)
 {
-//   Edje_Edit *eed;
+   Edje_Edit *eed;
 
-//   eed = evas_object_smart_data_get(obj);
+   eed = evas_object_smart_data_get(obj);
+
+   _edje_edit_data_clean(eed);
+
    _edje_edit_parent_sc->base.del(obj);
+}
+
+static void
+_edje_edit_program_script_free(Program_Script *ps)
+{
+   free(ps->code);
+   free(ps->processed);
+   free(ps);
 }
 
 static Eina_Bool
 _edje_edit_smart_file_set(Evas_Object *obj, const char *file, const char *group)
 {
-//   Edje_Edit *eed;
+   Edje_Edit *eed;
+   Eet_File *ef;
+   char **keys, buf[64];
+   int count, i;
+   int len = strlen("edje/scripts/embryo/source/");
 
-//   eed = evas_object_smart_data_get(obj);
-   /* Nothing custom here yet, so we just call the parent function.
-    * TODO and maybes:
+   eed = evas_object_smart_data_get(obj);
+
+   _edje_edit_data_clean(eed);
+
+   /* TODO and maybes:
     *  * The whole point of this thing is keep track of stuff such as
     *    strings to free and who knows what, so we need to take care
     *    of those if the file/group changes.
@@ -162,7 +233,33 @@ _edje_edit_smart_file_set(Evas_Object *obj, const char *file, const char *group)
     *    (GROUP parts or BOX/TABLE items pointing to non-existent/renamed
     *    groups).
     */
-   return _edje_edit_parent_sc->file_set(obj, file, group);
+   if (!_edje_edit_parent_sc->file_set(obj, file, group))
+     return EINA_FALSE;
+
+   eed->program_scripts = eina_hash_int32_new((Eina_Free_Cb)_edje_edit_program_script_free);
+
+   ef = eet_open(file, EET_FILE_MODE_READ);
+
+   snprintf(buf, sizeof(buf), "edje/scripts/embryo/source/%i",
+            eed->base.collection->id);
+   eed->embryo_source = eet_read(ef, buf, &count);
+
+   snprintf(buf, sizeof(buf), "edje/scripts/embryo/source/%i/*",
+            eed->base.collection->id);
+   keys = eet_list(ef, buf, &count);
+   for (i = 0; i < count; i++)
+     {
+        Program_Script *ps;
+        int size;
+
+        ps = calloc(1, sizeof(Program_Script));
+
+        sscanf(keys[i] + len, "%*i/%i", &ps->id);
+        ps->code = eet_read(ef, keys[i], &size);
+        eina_hash_add(eed->program_scripts, &ps->id, ps);
+     }
+   if (keys) free(keys);
+   return EINA_TRUE;
 }
 
 static void
@@ -205,39 +302,36 @@ _edje_part_description_find_byname(Edje_Edit *eed, const char *part, const char 
 }
 
 static int
-_edje_image_id_find(Evas_Object *obj, const char *image_name)
+_edje_image_id_find(Edje_Edit *eed, const char *image_name)
 {
    unsigned int i;
 
-   GET_ED_OR_RETURN(-1);
-
-   if (!ed->file) return -1;
-   if (!ed->file->image_dir) return -1;
+   if (!eed->base.file) return -1;
+   if (!eed->base.file->image_dir) return -1;
 
    //printf("SEARCH IMAGE %s\n", image_name);
 
-   for (i = 0; i < ed->file->image_dir->entries_count; ++i)
-     if (ed->file->image_dir->entries[i].entry
-	 && !strcmp(image_name, ed->file->image_dir->entries[i].entry))
+   for (i = 0; i < eed->base.file->image_dir->entries_count; ++i)
+     if (eed->base.file->image_dir->entries[i].entry
+	 && !strcmp(image_name, eed->base.file->image_dir->entries[i].entry))
        return i;
 
    return -1;
 }
 
 static const char *
-_edje_image_name_find(Evas_Object *obj, int image_id)
+_edje_image_name_find(Edje_Edit *eed, int image_id)
 {
-   GET_ED_OR_RETURN(NULL);
-
-   if (!ed->file) return NULL;
-   if (!ed->file->image_dir) return NULL;
+   if (!eed->base.file) return NULL;
+   if (!eed->base.file->image_dir) return NULL;
 
    /* Special case for external image */
    if (image_id < 0) image_id = -image_id - 1;
 
    //printf("SEARCH IMAGE ID %d\n", image_id);
-   if ((unsigned int) image_id >= ed->file->image_dir->entries_count) return NULL;
-   return ed->file->image_dir->entries[image_id].entry;
+   if ((unsigned int) image_id >= eed->base.file->image_dir->entries_count)
+     return NULL;
+   return eed->base.file->image_dir->entries[image_id].entry;
 }
 
 static void
@@ -277,19 +371,15 @@ _edje_real_part_free(Edje_Real_Part *rp)
    if (rp->custom)
      {
 	_edje_collection_free_part_description_clean(rp->part->type, rp->custom->description, 0);
-	free(rp->custom);
+        if (rp->custom) free(rp->custom->set);
+        eina_mempool_free(_edje_real_part_state_mp, rp->custom);
 	rp->custom = NULL;
      }
 
    free(rp->drag);
 
-   if (rp->param2)
-     free(rp->param2->set);
+   if (rp->param2) free(rp->param2->set);
    eina_mempool_free(_edje_real_part_state_mp, rp->param2);
-
-   if (rp->custom)
-     free(rp->custom->set);
-   eina_mempool_free(_edje_real_part_state_mp, rp->custom);
 
    _edje_unref(rp->edje);
    eina_mempool_free(_edje_real_part_mp, rp);
@@ -819,6 +909,14 @@ _edje_edit_group_references_update(Evas_Object *obj, const char *old_group_name,
    evas_object_del(part_obj);
 }
 
+static void
+_edje_edit_flag_script_dirty(Edje_Edit *eed, Eina_Bool all)
+{
+   eed->script_need_recompile = EINA_TRUE;
+   if (all)
+     eed->all_dirty = EINA_TRUE;
+}
+
 /*****************/
 /*  GENERAL API  */
 /*****************/
@@ -990,7 +1088,8 @@ edje_edit_group_del(Evas_Object *obj, const char *group_name)
    Edje_Part_Collection *g;
    Eina_List *l;
    Eet_File *eetf;
-   char buf[32];
+   char buf[64], **keys;
+   int count;
 
    eina_error_set(0);
 
@@ -1043,8 +1142,24 @@ edje_edit_group_del(Evas_Object *obj, const char *group_name)
 	    "for writing output", ed->file->path);
 	return EINA_FALSE;
      }
-   snprintf(buf, sizeof(buf), "collections/%d", e->id);
+   snprintf(buf, sizeof(buf), "edje/collections/%d", e->id);
    eet_delete(eetf, buf);
+   snprintf(buf, sizeof(buf), "edje/scripts/embryo/compiled/%d", e->id);
+   eet_delete(eetf, buf);
+   snprintf(buf, sizeof(buf), "edje/scripts/embryo/source/%d", e->id);
+   eet_delete(eetf, buf);
+   snprintf(buf, sizeof(buf), "edje/scripts/embryo/source/%d/*", e->id);
+   keys = eet_list(eetf, buf, &count);
+   if (keys)
+     {
+        do
+          {
+             count--;
+             eet_delete(eetf, keys[count]);
+          }
+        while(count);
+        free(keys);
+     }
    eet_close(eetf);
 
    /* Free Group */
@@ -1287,7 +1402,7 @@ edje_edit_data_del(Evas_Object *obj, const char *itemname)
 }
 
 EAPI const char *
-edje_edit_group_data_value_get(Evas_Object * obj, char *key)
+edje_edit_group_data_value_get(Evas_Object * obj, const char *key)
 {
    Edje_String *value;
 
@@ -1306,7 +1421,7 @@ edje_edit_group_data_value_get(Evas_Object * obj, char *key)
 }
 
 EAPI const char *
-edje_edit_data_value_get(Evas_Object * obj, char *itemname)
+edje_edit_data_value_get(Evas_Object * obj, const char *itemname)
 {
    Edje_String *value;
 
@@ -1922,6 +2037,8 @@ edje_edit_part_name_set(Evas_Object *obj, const char* part, const char* new_name
    _edje_if_string_free(ed, rp->part->name);
    rp->part->name = (char *)eina_stringshare_add(new_name);
 
+   _edje_edit_flag_script_dirty(eed, EINA_TRUE);
+
    return EINA_TRUE;
 }
 
@@ -1964,17 +2081,21 @@ _edje_edit_real_part_add(Evas_Object *obj, const char *name, Edje_Part_Type type
    if (_edje_real_part_get(ed, name))
      return EINA_FALSE;
 
+   ce = eina_hash_find(ed->file->collection, ed->group);
+
    /* Alloc Edje_Part or return */
-   ep = _alloc(sizeof(Edje_Part));
+   ep = eina_mempool_malloc(ce->mp.part, sizeof(Edje_Part));
    if (!ep) return EINA_FALSE;
+   memset(ep, 0, sizeof(Edje_Part));
 
    /* Alloc Edje_Real_Part or return */
-   rp = _alloc(sizeof(Edje_Real_Part));
+   rp = eina_mempool_malloc(_edje_real_part_mp, sizeof(Edje_Real_Part));
    if (!rp)
      {
-	free(ep);
+	eina_mempool_free(ce->mp.part, ep);
 	return EINA_FALSE;
      }
+   memset(rp, 0, sizeof(Edje_Real_Part));
 
    /* Init Edje_Part */
    pc = ed->collection;
@@ -1982,8 +2103,8 @@ _edje_edit_real_part_add(Evas_Object *obj, const char *name, Edje_Part_Type type
    tmp = realloc(pc->parts, (pc->parts_count + 1) * sizeof (Edje_Part *));
    if (!tmp)
      {
-	free(ep);
-	free(rp);
+	eina_mempool_free(ce->mp.part, ep);
+	eina_mempool_free(_edje_real_part_mp, rp);
 	return EINA_FALSE;
      }
 
@@ -2088,14 +2209,12 @@ _edje_edit_real_part_add(Evas_Object *obj, const char *name, Edje_Part_Type type
 	_edje_if_string_free(ed, ep->name);
 	if (source)
 	  _edje_if_string_free(ed, ep->source);
-	free(ep);
-	free(rp);
-	free(ed);
+	eina_mempool_free(ce->mp.part, ep);
+	eina_mempool_free(_edje_real_part_mp, rp);
 	return EINA_FALSE;
      }
    edje_edit_part_selected_state_set(obj, name, "default", 0.0);
 
-   ce = eina_hash_find(ed->file->collection, ed->group);
    ce->count.part++;
 
    return EINA_TRUE;
@@ -2222,6 +2341,8 @@ edje_edit_part_del(Evas_Object *obj, const char* part)
 
    ce->count.part--;
 
+   _edje_edit_flag_script_dirty(eed, EINA_TRUE);
+
    return EINA_TRUE;
 }
 
@@ -2295,6 +2416,8 @@ edje_edit_part_restack_below(Evas_Object *obj, const char* part)
    if (rp->swallowed_object)
      evas_object_stack_above(rp->swallowed_object, rp->object);
 
+   _edje_edit_flag_script_dirty(eed, EINA_TRUE);
+
    return EINA_TRUE;
 }
 
@@ -2328,6 +2451,8 @@ edje_edit_part_restack_above(Evas_Object *obj, const char* part)
    evas_object_stack_above(rp->object, next->object);
    if (rp->swallowed_object)
      evas_object_stack_above(rp->swallowed_object, rp->object);
+
+   _edje_edit_flag_script_dirty(eed, EINA_TRUE);
 
    return EINA_TRUE;
 }
@@ -4202,7 +4327,7 @@ edje_edit_font_add(Evas_Object *obj, const char* path, const char* alias)
 
    GET_ED_OR_RETURN(EINA_FALSE);
 
-   INF("ADD FONT: %s\n", path);
+   INF("ADD FONT: %s", path);
 
    if (!path) return EINA_FALSE;
    if (stat(path, &st) || !S_ISREG(st.st_mode)) return EINA_FALSE;
@@ -4268,7 +4393,7 @@ edje_edit_font_del(Evas_Object *obj, const char* alias)
 
    GET_ED_OR_RETURN(EINA_FALSE);
 
-   INF("DEL FONT: %s\n", alias);
+   INF("DEL FONT: %s", alias);
 
    if (!alias) return EINA_FALSE;
    if (!ed->file) return EINA_FALSE;
@@ -4315,6 +4440,34 @@ edje_edit_font_del(Evas_Object *obj, const char* alias)
    eina_hash_del(ed->file->fonts, alias, fnt);
 
    return EINA_TRUE;
+}
+
+EAPI const char *
+edje_edit_font_path_get(Evas_Object *obj, const char *alias)
+{
+   Eina_Iterator *it;
+   Edje_Font_Directory_Entry *f;
+   const char *str = NULL;
+
+   eina_error_set(0);
+
+   if (!alias) return NULL;
+   GET_ED_OR_RETURN(NULL);
+
+   if (!ed->file || !ed->file->fonts) return NULL;
+
+   it = eina_hash_iterator_data_new(ed->file->fonts);
+   if (!it) return NULL;
+
+   EINA_ITERATOR_FOREACH(it, f)
+     if (!strcmp(f->entry, alias))
+       {
+          str = f->file;
+          break;
+       }
+
+   eina_iterator_free(it);
+   return eina_stringshare_add(str);
 }
 
 EAPI const char *
@@ -4544,6 +4697,8 @@ edje_edit_image_del(Evas_Object *obj, const char* name)
    _edje_if_string_free(ed, de->entry);
    de->entry = NULL;
 
+   _edje_edit_flag_script_dirty(eed, EINA_TRUE);
+
    return EINA_TRUE;
 
 invalid_image:
@@ -4588,7 +4743,9 @@ edje_edit_image_id_get(Evas_Object *obj, const char *image_name)
 {
    eina_error_set(0);
 
-   return _edje_image_id_find(obj, image_name);
+   GET_ED_OR_RETURN(-1);
+
+   return _edje_image_id_find(eed, image_name);
 }
 
 EAPI Edje_Edit_Image_Comp
@@ -4663,7 +4820,7 @@ EAPI const char *
 edje_edit_state_image_get(Evas_Object *obj, const char *part, const char *state, double value)
 {
    Edje_Part_Description_Image *img;
-   char *image;
+   const char *image;
 
    eina_error_set(0);
 
@@ -4674,7 +4831,7 @@ edje_edit_state_image_get(Evas_Object *obj, const char *part, const char *state,
 
    img = (Edje_Part_Description_Image *) pd;
 
-   image = (char *)_edje_image_name_find(obj, img->image.id);
+   image = _edje_image_name_find(eed, img->image.id);
    if (!image) return NULL;
 
    //printf("GET IMAGE for %s [%s]\n", state, image);
@@ -4696,7 +4853,7 @@ edje_edit_state_image_set(Evas_Object *obj, const char *part, const char *state,
    if (rp->part->type != EDJE_PART_TYPE_IMAGE)
      return;
 
-   id = _edje_image_id_find(obj, image);
+   id = _edje_image_id_find(eed, image);
    //printf("SET IMAGE for %s [%s]\n", state, image);
 
    img = (Edje_Part_Description_Image *) pd;
@@ -4725,7 +4882,7 @@ edje_edit_state_tweens_list_get(Evas_Object *obj, const char *part, const char *
 
    for (i = 0; i < img->image.tweens_count; ++i)
      {
-	name = _edje_image_name_find(obj, img->image.tweens[i]->id);
+	name = _edje_image_name_find(eed, img->image.tweens[i]->id);
 	//printf("   t: %s\n", name);
 	tweens = eina_list_append(tweens, eina_stringshare_add(name));
      }
@@ -4748,7 +4905,7 @@ edje_edit_state_tween_add(Evas_Object *obj, const char *part, const char *state,
    if (rp->part->type != EDJE_PART_TYPE_IMAGE)
      return EINA_FALSE;
 
-   id = _edje_image_id_find(obj, tween);
+   id = _edje_image_id_find(eed, tween);
    if (id < EINA_FALSE) return 0;
 
    /* alloc Edje_Part_Image_Id */
@@ -4791,7 +4948,7 @@ edje_edit_state_tween_del(Evas_Object *obj, const char *part, const char *state,
 
    if (!img->image.tweens_count) return EINA_FALSE;
 
-   search = _edje_image_id_find(obj, tween);
+   search = _edje_image_id_find(eed, tween);
    if (search < 0) return EINA_FALSE;
 
    for (i = 0; i < img->image.tweens_count; ++i)
@@ -4905,6 +5062,21 @@ edje_edit_state_image_border_fill_set(Evas_Object *obj, const char *part, const 
 /******************/
 /*  PROGRAMS API  */
 /******************/
+static int
+_edje_program_id_find(Edje_Edit *eed, const char *program)
+{
+   Edje_Program *epr;
+   int i;
+
+   for (i = 0; i < eed->base.table_programs_size; i++)
+     {
+        epr = eed->base.table_programs[i];
+        if (epr->name && !strcmp(epr->name, program))
+          return epr->id;
+     }
+   return -1;
+}
+
 static Edje_Program *
 _edje_program_get_byname(Evas_Object *obj, const char *prog_name)
 {
@@ -5019,6 +5191,7 @@ edje_edit_program_del(Evas_Object *obj, const char *prog)
    Edje_Program_After *pa;
    Edje_Part_Collection *pc;
    Edje_Program *p;
+   Program_Script *ps, *old_ps;
    int id, i;
    int old_id = -1;
 
@@ -5041,6 +5214,37 @@ edje_edit_program_del(Evas_Object *obj, const char *prog)
 	ed->table_programs[epr->id] = ed->table_programs[ed->table_programs_size - 1];
 	old_id = ed->table_programs_size - 1;
 	ed->table_programs[epr->id]->id = epr->id;
+     }
+
+   ps = eina_hash_find(eed->program_scripts, &id);
+   old_ps = eina_hash_find(eed->program_scripts, &old_id);
+   if (old_ps)
+     {
+        if (!ps)
+          {
+             ps = _alloc(sizeof(Program_Script));
+             ps->id = id;
+             eina_hash_add(eed->program_scripts, &id, ps);
+          }
+        else
+          {
+             free(ps->code);
+             free(ps->processed);
+             ps->processed = NULL;
+             ps->delete_me = EINA_FALSE;
+          }
+        ps->code = old_ps->code;
+        old_ps->code = NULL;
+        free(old_ps->processed);
+        old_ps->processed = NULL;
+        ps->dirty = EINA_TRUE;
+        old_ps->dirty = EINA_FALSE;
+        old_ps->delete_me = EINA_TRUE;
+     }
+   else if (ps)
+     {
+        ps->dirty = EINA_FALSE;
+        ps->delete_me = EINA_TRUE;
      }
 
    //Free Edje_Program
@@ -5075,7 +5279,10 @@ edje_edit_program_del(Evas_Object *obj, const char *prog)
 	     if (pa->id == old_id)
 	       pa->id = id;
 	     else if (pa->id == id)
-	       p->after = eina_list_remove_list(p->after, l);
+               {
+                  p->after = eina_list_remove_list(p->after, l);
+                  free(pa);
+               }
 	  }
 	/* check in targets */
 	if (p->action == EDJE_ACTION_TYPE_ACTION_STOP)
@@ -5087,10 +5294,15 @@ edje_edit_program_del(Evas_Object *obj, const char *prog)
 		  if (pt->id == old_id)
 		    pt->id = id;
 		  else if (pt->id == id)
-		    p->targets = eina_list_remove_list(p->targets, l);
+                    {
+                       p->targets = eina_list_remove_list(p->targets, l);
+                       free(pt);
+                    }
 	       }
 	  }
      }
+
+   _edje_edit_flag_script_dirty(eed, EINA_TRUE);
 
    return EINA_TRUE;
 }
@@ -5133,6 +5345,8 @@ edje_edit_program_name_set(Evas_Object *obj, const char *prog, const char* new_n
 
    _edje_if_string_free(ed, epr->name);
    epr->name = eina_stringshare_add(new_name);
+
+   _edje_edit_flag_script_dirty(eed, EINA_TRUE);
 
    return EINA_TRUE;
 }
@@ -5473,12 +5687,48 @@ edje_edit_program_action_get(Evas_Object *obj, const char *prog)
 EAPI Eina_Bool
 edje_edit_program_action_set(Evas_Object *obj, const char *prog, Edje_Action_Type action)
 {
+   Program_Script *ps;
+
    eina_error_set(0);
 
+   GET_ED_OR_RETURN(EINA_FALSE);
    GET_EPR_OR_RETURN(EINA_FALSE);
 
    //printf("SET ACTION for program: %s [%d]\n", prog, action);
    if (action >= EDJE_ACTION_TYPE_LAST) return EINA_FALSE;
+
+   if ((Edje_Action_Type)epr->action == action)
+     return EINA_TRUE;
+
+   if (action == EDJE_ACTION_TYPE_SCRIPT)
+     {
+        ps = eina_hash_find(eed->program_scripts, &epr->id);
+        if (!ps)
+          {
+             ps = _alloc(sizeof(Program_Script));
+             if (!ps)
+               return EINA_FALSE;
+          }
+        ps->id = epr->id;
+        ps->code = strdup("");
+        ps->dirty = EINA_TRUE;
+        ps->delete_me = EINA_FALSE;
+        eina_hash_set(eed->program_scripts, &ps->id, ps);
+        _edje_edit_flag_script_dirty(eed, EINA_FALSE);
+     }
+   if (epr->action == EDJE_ACTION_TYPE_SCRIPT)
+     {
+        ps = eina_hash_find(eed->program_scripts, &epr->id);
+        if (ps)
+          {
+             free(ps->code);
+             free(ps->processed);
+             ps->code = ps->processed = NULL;
+             ps->dirty = EINA_FALSE;
+             ps->delete_me = EINA_TRUE;
+             _edje_edit_flag_script_dirty(eed, EINA_FALSE);
+          }
+     }
 
    epr->action = action;
    return EINA_TRUE;
@@ -5767,25 +6017,507 @@ edje_edit_program_api_description_set(Evas_Object *obj, const char *prog, const 
 /*************************/
 /*  EMBRYO SCRIPTS  API  */
 /*************************/
-EAPI const char *
+EAPI char *
 edje_edit_script_get(Evas_Object *obj)
 {
-   Embryo_Program   *script = NULL;
-
    eina_error_set(0);
 
    GET_ED_OR_RETURN(NULL);
 
    if (!ed->collection) return NULL;
-   if (!ed->collection->script) return NULL;
+   if (!eed->embryo_source) return NULL;
 
-   script = ed->collection->script;
-
-   printf("Get Script [%p] %d\n", script, embryo_program_recursion_get(script));
-
-   return "Not yet complete...";
+   return strdup(eed->embryo_source);
 }
 
+EAPI void
+edje_edit_script_set(Evas_Object *obj, const char *code)
+{
+   eina_error_set(0);
+
+   GET_ED_OR_RETURN();
+
+   free(eed->embryo_source);
+   free(eed->embryo_processed);
+
+   if (code)
+     eed->embryo_source = strdup(code);
+   else
+     eed->embryo_source = NULL;
+   eed->embryo_processed = NULL;
+
+   eed->embryo_source_dirty = EINA_TRUE;
+
+   _edje_edit_flag_script_dirty(eed, EINA_FALSE);
+}
+
+EAPI char *
+edje_edit_script_program_get(Evas_Object *obj, const char *prog)
+{
+   Program_Script *ps;
+
+   eina_error_set(0);
+
+   GET_ED_OR_RETURN(NULL);
+   GET_EPR_OR_RETURN(NULL);
+
+   if (epr->action != EDJE_ACTION_TYPE_SCRIPT)
+     return NULL;
+
+   ps = eina_hash_find(eed->program_scripts, prog);
+   if (!ps) /* mmm? it should be there, even if empty */
+     return NULL;
+
+   return ps->code ? strdup(ps->code) : NULL;
+}
+
+EAPI void
+edje_edit_script_program_set(Evas_Object *obj, const char *prog, const char *code)
+{
+   Program_Script *ps;
+
+   eina_error_set(0);
+
+   GET_ED_OR_RETURN();
+   GET_EPR_OR_RETURN();
+
+   if (epr->action != EDJE_ACTION_TYPE_SCRIPT)
+     return;
+
+   ps = eina_hash_find(eed->program_scripts, prog);
+   if (!ps) /* ???? how so? */
+     return;
+
+   free(ps->code);
+   free(ps->processed);
+
+   if (code)
+     ps->code = strdup(code);
+   else
+     ps->code = NULL;
+   ps->processed = NULL;
+   ps->dirty = EINA_TRUE;
+
+   _edje_edit_flag_script_dirty(eed, EINA_FALSE);
+}
+
+static int
+__part_replace(Edje_Edit *eed, char *pcode, char *name)
+{
+   int id;
+
+   id = _edje_part_id_find((Edje *)eed, name);
+   if (id < 0)
+     return 0;
+   return eina_convert_itoa(id, pcode);
+}
+
+static int
+__program_replace(Edje_Edit *eed, char *pcode, char *name)
+{
+   int id;
+
+   id = _edje_program_id_find(eed, name);
+   if (id < 0)
+     return 0;
+   return eina_convert_itoa(id, pcode);
+}
+
+static int
+__group_replace(Edje_Edit *eed __UNUSED__, char *pcode, char *name)
+{
+   strcpy(pcode, name);
+   return strlen(name) + 1;
+}
+
+static int
+__image_replace(Edje_Edit *eed, char *pcode, char *name)
+{
+   int id;
+
+   id = _edje_image_id_find(eed, name);
+   if (id < 0)
+     return 0;
+   return eina_convert_itoa(id, pcode);
+}
+
+static char *
+_edje_edit_script_process(Edje_Edit *eed, const char *progname, char *code)
+{
+   char *pcode, *psrc, *pdst;
+   int codesize, pcodesize;
+   int quoted = 0, escaped = 0;
+   int line = 1;
+   Eina_Bool success = EINA_TRUE;
+
+   codesize = strlen(code);
+   pcode = malloc(codesize + 1);
+   if (!pcode)
+     return NULL;
+
+   pcodesize = 0;
+   psrc = code;
+   pdst = pcode;
+   while (*psrc)
+     {
+        if (!quoted)
+          {
+             char *ptr = NULL;
+             const char *what = NULL;
+             int (*func)(Edje_Edit *, char *, char *);
+
+             if (*psrc == 'P')
+               {
+                  if (!strncmp(psrc, "PART:\"", 6))
+                    {
+                       psrc += 6;
+                       ptr = psrc;
+                       func = __part_replace;
+                       what = "part";
+                    }
+                  else if (!strncmp(psrc, "PROGRAM:\"", 9))
+                    {
+                       psrc += 9;
+                       ptr = psrc;
+                       func = __program_replace;
+                       what = "program";
+                    }
+               }
+             else if (*psrc == 'G')
+               {
+                  if (!strncmp(psrc, "GROUP:\"", 7))
+                    {
+                       psrc += 7;
+                       ptr = psrc;
+                       func = __group_replace;
+                       what = "group";
+                    }
+               }
+             else if (*psrc == 'I')
+               {
+                  if (!strncmp(psrc, "IMAGE:\"", 7))
+                    {
+                       psrc += 7;
+                       ptr = psrc;
+                       func = __image_replace;
+                       what = "image";
+                    }
+               }
+             else if (*psrc == '#')
+               {
+                  while (*psrc)
+                    if (*psrc == '\n')
+                      break;
+                  line++;
+                  continue;
+               }
+             else if (*psrc == '\"')
+               quoted = 1;
+             else if (*psrc == '\n')
+               line++;
+
+             if (ptr)
+               {
+                  int i = 0, inesc = 0;
+                  char *name;
+                  while (*psrc)
+                    {
+                       if (!inesc)
+                         {
+                            if (*psrc == '\\')
+                              inesc = 1;
+                            else if (*psrc == '\"')
+                              {
+                                 /* string concatenation as in "foo""bar" */
+                                 if (*(psrc + 1) != '\"')
+                                   {
+                                      psrc++;
+                                      break;
+                                   }
+                                 else
+                                   psrc++;
+                              }
+                         }
+                       else
+                         inesc = 0;
+                       psrc++;
+                    }
+                  name = alloca(psrc - ptr);
+                  inesc = 0;
+                  while (*ptr)
+                    {
+                       if (!inesc)
+                         {
+                            if (*ptr == '\\')
+                              inesc = 1;
+                            else if (*ptr == '\"')
+                              {
+                                 if (*(ptr + 1) == '\"')
+                                   ptr++;
+                                 else
+                                   {
+                                      name[i] = 0;
+                                      break;
+                                   }
+                              }
+                            else
+                              {
+                                 name[i] = *ptr;
+                                 name[i + 1] = 0;
+                                 i++;
+                              }
+                         }
+                       else
+                         inesc = 0;
+                       ptr++;
+                    }
+                  i = func(eed, pdst, name);
+                  if (!i)
+                    {
+                       Edje_Edit_Script_Error *se;
+                       se = malloc(sizeof(Edje_Edit_Script_Error));
+                       se->program_name = progname ?
+                          eina_stringshare_add(progname) : NULL;
+                       se->line = line;
+                       se->error_str = eina_stringshare_printf(
+                          "Referenced %s '%s' could not be found in object.",
+                          what, name);
+                       eed->errors = eina_list_append(eed->errors, se);
+                       success = EINA_FALSE;
+                    }
+                  else
+                    {
+                       pcodesize += i;
+                       pdst += i;
+                    }
+                  /* replaced reference for the right value, now go
+                   * to the next iteration */
+                  continue;
+               }
+          }
+        else
+          {
+             if (!escaped)
+               {
+                  if (*psrc == '\"')
+                    quoted = 0;
+                  else if (*psrc == '\\')
+                    escaped = 1;
+               }
+             else if (escaped)
+               escaped = 0;
+          }
+        *pdst = *psrc;
+        pdst++;
+        psrc++;
+        pcodesize++;
+     }
+
+   if (!success)
+     {
+        free(pcode);
+        return NULL;
+     }
+
+   if (pcodesize < codesize)
+     pcode = realloc(pcode, pcodesize + 1);
+   pcode[pcodesize] = 0;
+
+   return pcode;
+}
+
+static Eina_Bool
+_edje_edit_embryo_rebuild(Edje_Edit *eed)
+{
+   FILE *f;
+   int fd, size, ret;
+   const char *tmp_dir;
+   char tmp_in[PATH_MAX];
+   char tmp_out[PATH_MAX];
+   char buf[4096];
+   Eina_Iterator *it;
+   Program_Script *ps;
+   Edje_Part_Collection *edc;
+   Eina_Bool success = EINA_TRUE; /* we are optimists! */
+   Edje_Edit_Script_Error *se;
+
+   EINA_LIST_FREE(eed->errors, se)
+     {
+        eina_stringshare_del(se->program_name);
+        eina_stringshare_del(se->error_str);
+        free(se);
+     }
+
+#ifdef HAVE_EVIL
+   tmp_dir = evil_tmpdir_get();
+#else
+   tmp_dir = "/tmp";
+#endif
+
+   snprintf(tmp_in, sizeof(tmp_in), "%s/edje_edit.sma-tmp-XXXXXX", tmp_dir);
+   snprintf(tmp_out, sizeof(tmp_out), "%s/edje_edit.amx-tmp-XXXXXX", tmp_dir);
+
+   fd = mkstemp(tmp_in);
+   if (fd < 0)
+     return EINA_FALSE; /* FIXME: report something */
+
+   f = fdopen(fd, "w");
+   if (!f)
+     {
+        close(fd);
+        unlink(tmp_in);
+        return EINA_FALSE;
+     }
+
+   fprintf(f, "#include <edje>\n");
+   if (eed->embryo_source)
+     {
+        if (eed->all_dirty)
+          {
+             free(eed->embryo_processed);
+             eed->embryo_processed = NULL;
+          }
+        if (!eed->embryo_processed)
+          eed->embryo_processed = _edje_edit_script_process(eed, NULL,
+                                                            eed->embryo_source);
+        if (!eed->embryo_processed)
+          {
+             /* oops.. an error finding references parts or something.
+              * we could flag it and do some lighter processing of the
+              * rest of the scripts, in order to find all the errors of
+              * this kind and report them at once, but knowing already
+              * that the script will not compile we can avoid some work
+              */
+             success = EINA_FALSE;
+          }
+        else
+          fprintf(f, "%s", eed->embryo_processed);
+     }
+
+   it = eina_hash_iterator_data_new(eed->program_scripts);
+   EINA_ITERATOR_FOREACH(it, ps)
+     {
+        Edje_Program *epr;
+
+        if (ps->delete_me)
+          continue;
+        if (eed->all_dirty)
+          {
+             free(ps->processed);
+             ps->processed = NULL;
+          }
+        epr = eed->base.table_programs[ps->id];
+        if (!ps->processed)
+          ps->processed = _edje_edit_script_process(eed, epr->name, ps->code);
+        if (!ps->processed)
+          {
+             /* oops.. an error finding references parts or something.
+              * we could flag it and do some lighter processing of the
+              * rest of the scripts, in order to find all the errors of
+              * this kind and report them at once, but knowing already
+              * that the script will not compile we can avoid some work
+              */
+             success = EINA_FALSE;
+             continue;
+          }
+        fprintf(f, "public _p%i(sig[], src[]) {\n", ps->id);
+        fprintf(f, "%s", ps->processed);
+        fprintf(f, "}\n");
+     }
+   eina_iterator_free(it);
+
+   fclose(f);
+
+   if (!success)
+     goto almost_out;
+
+   fd = mkstemp(tmp_out);
+   if (fd < 0)
+     {
+        success = EINA_FALSE;
+        goto almost_out;
+     }
+
+   snprintf(buf, sizeof(buf), "embryo_cc -i %s/include -o %s %s",
+            PACKAGE_DATA_DIR, tmp_out, tmp_in);
+   ret = system(buf);
+
+   if ((ret < 0) || (ret > 1))
+     {
+        success = EINA_FALSE;
+        close(fd);
+        goto the_doorway;
+     }
+
+   f = fdopen(fd, "rb");
+   if (!f)
+     {
+        success = EINA_FALSE;
+        close(fd);
+        goto the_doorway;
+     }
+
+   fseek(f, 0, SEEK_END);
+   size = ftell(f);
+   rewind(f);
+
+   free(eed->bytecode);
+   if (size > 0)
+     {
+        eed->bytecode = malloc(size);
+        if (!eed->bytecode)
+          {
+             success = EINA_FALSE;
+             goto the_way_out;
+          }
+        if (fread(eed->bytecode, size, 1, f) != 1)
+          {
+             success = EINA_FALSE;
+             goto the_way_out;
+          }
+     }
+   else
+     eed->bytecode = NULL; /* correctness mostly, I don't see why we
+                              would get a 0 sized program */
+
+   eed->bytecode_size = size;
+   eed->bytecode_dirty = EINA_TRUE;
+   eed->script_need_recompile = EINA_FALSE;
+   eed->all_dirty = EINA_FALSE;
+
+   edc = eed->base.collection;
+   embryo_program_free(edc->script);
+   edc->script = embryo_program_new(eed->bytecode, eed->bytecode_size);
+   _edje_embryo_script_init(edc);
+   _edje_var_init((Edje *)eed);
+
+the_way_out:
+   fclose(f);
+the_doorway:
+   unlink(tmp_out);
+almost_out:
+   unlink(tmp_in);
+
+   return success;
+}
+
+EAPI Eina_Bool
+edje_edit_script_compile(Evas_Object *obj)
+{
+   GET_ED_OR_RETURN(EINA_FALSE);
+
+   if (!eed->script_need_recompile)
+     return EINA_TRUE;
+
+   return _edje_edit_embryo_rebuild(eed);
+}
+
+EAPI const Eina_List *
+edje_edit_script_error_list_get(Evas_Object *obj)
+{
+   GET_ED_OR_RETURN(NULL);
+   return eed->errors;
+}
 
 /***************************/
 /*  EDC SOURCE GENERATION  */
@@ -5863,8 +6595,11 @@ _edje_generate_source_of_program(Evas_Object *obj, const char *program, Eina_Str
    char *data;
    Eina_Bool ret = EINA_TRUE;
    const char *api_name, *api_description;
+   Edje_Program *epr;
 
    GET_ED_OR_RETURN(EINA_FALSE);
+
+   epr = _edje_program_get_byname(obj, program);
 
    BUF_APPENDF(I3"program { name: \"%s\";\n", program);
 
@@ -5906,6 +6641,19 @@ _edje_generate_source_of_program(Evas_Object *obj, const char *program, Eina_Str
 		edje_edit_string_free(s2);
 	  }
 	break;
+     case EDJE_ACTION_TYPE_SCRIPT:
+          {
+             Program_Script *ps;
+
+             ps = eina_hash_find(eed->program_scripts, &epr->id);
+             if (ps && !ps->delete_me)
+               {
+                  BUF_APPEND(I4"script {\n");
+                  BUF_APPEND(ps->code);
+                  BUF_APPEND(I4"}\n");
+               }
+          }
+        break;
      //TODO Support Drag
      //~ case EDJE_ACTION_TYPE_DRAG_VAL_SET:
 	//~ eina_strbuf_append(buf, I4"action: DRAG_VAL_SET TODO;\n");
@@ -6104,7 +6852,7 @@ _edje_generate_source_of_state(Evas_Object *obj, const char *part, const char *s
 
 	BUF_APPEND(I5"image {\n");
 
-	image_name = _edje_image_name_find(obj, img->image.id);
+	image_name = _edje_image_name_find(eed, img->image.id);
 	if (image_name)
 	  BUF_APPENDF(I6"normal: \"%s\";\n", image_name);
 
@@ -6345,16 +7093,29 @@ _edje_generate_source_of_part(Evas_Object *obj, Edje_Part *ep, Eina_Strbuf *buf)
 static Eina_Bool
 _edje_generate_source_of_group(Edje *ed, Edje_Part_Collection_Directory_Entry *pce, Eina_Strbuf *buf)
 {
+   Edje_Edit *eed;
+   Eet_File *ef;
    Evas_Object *obj;
    Eina_List *l, *ll;
    unsigned int i;
    int w, h;
    char *data;
    const char *group = pce->entry;
+   Edje_Part_Collection *pc;
    Eina_Bool ret = EINA_TRUE;
 
    obj = edje_edit_object_add(ed->evas);
    if (!edje_object_file_set(obj, ed->file->path, group)) return EINA_FALSE;
+
+   ef = eet_open(ed->file->path, EET_FILE_MODE_READ);
+   if (!ef)
+     {
+        evas_object_del(obj);
+        return EINA_FALSE;
+     }
+
+   eed = evas_object_smart_data_get(obj);
+   pc = eed->base.collection;
 
    BUF_APPENDF(I1"group { name: \"%s\";\n", group);
    //TODO Support alias:
@@ -6368,13 +7129,13 @@ _edje_generate_source_of_group(Edje *ed, Edje_Part_Collection_Directory_Entry *p
       BUF_APPENDF(I2"max: %d %d;\n", w, h);
 
    /* Data */
-   if (pce->ref->data)
+   if (pc->data)
      {
         Eina_Iterator *it;
         Eina_Hash_Tuple *tuple;
         BUF_APPEND(I2"data {\n");
 
-        it = eina_hash_iterator_tuple_new(pce->ref->data);
+        it = eina_hash_iterator_tuple_new(pc->data);
 
         if (!it)
           {
@@ -6390,14 +7151,19 @@ _edje_generate_source_of_group(Edje *ed, Edje_Part_Collection_Directory_Entry *p
         BUF_APPEND(I2"}\n");
      }
 
-   //TODO Support script
+   if (eed->embryo_source)
+     {
+        BUF_APPEND(I2"script {\n");
+        BUF_APPEND(eed->embryo_source);
+        BUF_APPEND(I2"}\n");
+     }
 
    /* Parts */
    BUF_APPEND(I2"parts {\n");
-   for (i = 0; i < pce->ref->parts_count; i++)
+   for (i = 0; i < pc->parts_count; i++)
      {
         Edje_Part *ep;
-        ep = pce->ref->parts[i];
+        ep = pc->parts[i];
         ret &= _edje_generate_source_of_part(obj, ep, buf);
      }
    BUF_APPEND(I2"}\n");//parts
@@ -6417,7 +7183,7 @@ _edje_generate_source_of_group(Edje *ed, Edje_Part_Collection_Directory_Entry *p
 	BUF_APPEND(I2 "}\n");
 	edje_edit_string_list_free(ll);
      }
-   BUF_APPEND("   }\n");//group
+   BUF_APPEND(I1"}\n");//group
 
    if (!ret)
      {
@@ -6426,6 +7192,7 @@ _edje_generate_source_of_group(Edje *ed, Edje_Part_Collection_Directory_Entry *p
         return EINA_FALSE;
      }
 
+   eet_close(ef);
    evas_object_del(obj);
    return ret;
 }
@@ -6837,6 +7604,57 @@ _edje_edit_internal_save(Evas_Object *obj, int current_only)
 	  }
      }
 
+   if (eed->bytecode_dirty || eed->script_need_recompile)
+     {
+        char buf[64];
+        Eina_Iterator *it;
+        Program_Script *ps;
+        Eina_List *deathnote = NULL;
+
+        if (eed->bytecode_dirty)
+          {
+             snprintf(buf, sizeof(buf), "edje/scripts/embryo/compiled/%i",
+                      ed->collection->id);
+             eet_write(eetf, buf, eed->bytecode, eed->bytecode_size, 1);
+             free(eed->bytecode);
+             eed->bytecode = NULL;
+             eed->bytecode_size = 0;
+             eed->bytecode_dirty = EINA_FALSE;
+          }
+
+        if (eed->embryo_source_dirty)
+          {
+             snprintf(buf, sizeof(buf), "edje/scripts/embryo/source/%i",
+                      ed->collection->id);
+             eet_write(eetf, buf, eed->embryo_source,
+                       strlen(eed->embryo_source) +1, 1);
+             eed->embryo_source_dirty = EINA_FALSE;
+          }
+
+        it = eina_hash_iterator_data_new(eed->program_scripts);
+        EINA_ITERATOR_FOREACH(it, ps)
+          {
+             if (ps->dirty)
+               {
+                  snprintf(buf, sizeof(buf), "edje/scripts/embryo/source/%i/%i",
+                           ed->collection->id, ps->id);
+                  eet_write(eetf, buf, ps->code, strlen(ps->code) + 1, 1);
+                  ps->dirty = EINA_FALSE;
+               }
+             else if (ps->delete_me)
+               {
+                  snprintf(buf, sizeof(buf), "edje/scripts/embryo/source/%i/%i",
+                           ed->collection->id, ps->id);
+                  eet_delete(eetf, buf);
+                  deathnote = eina_list_append(deathnote, ps);
+               }
+          }
+        eina_iterator_free(it);
+
+        EINA_LIST_FREE(deathnote, ps)
+           eina_hash_del(eed->program_scripts, &ps->id, ps);
+     }
+
    if (!_edje_edit_source_save(eetf, obj))
      {
 	eet_close(eetf);
@@ -6876,25 +7694,23 @@ edje_edit_save_all(Evas_Object *obj)
 EAPI void
 edje_edit_print_internal_status(Evas_Object *obj)
 {
+/*   
    Edje_Program *epr;
    unsigned int i;
    int j;
-
+*/
    eina_error_set(0);
 
    GET_ED_OR_RETURN();
 
    _edje_generate_source(obj);
-   return;
+/*
+   INF("****** CHECKIN' INTERNAL STRUCTS STATUS *********");
 
-   INF("\n****** CHECKIN' INTERNAL STRUCTS STATUS *********");
+   INF("path: '%s', group: '%s', parent: '%s'",
+       ed->path, ed->group, ed->parent);
 
-   INF("*** Edje\n");
-   INF("    path: '%s'", ed->path);
-   INF("    group: '%s'", ed->group);
-   INF("    parent: '%s'", ed->parent);
-
-   INF("*** Parts [table:%d list:%d]", ed->table_parts_size,
+   INF("Parts [table:%d list:%d]", ed->table_parts_size,
        ed->collection->parts_count);
    for (i = 0; i < ed->collection->parts_count; ++i)
      {
@@ -6904,14 +7720,14 @@ edje_edit_print_internal_status(Evas_Object *obj)
 	p = ed->collection->parts[i];
 
 	rp = ed->table_parts[p->id % ed->table_parts_size];
-	printf("    [%d]%s ", p->id, p->name);
+	printf("part[%d]: '%s' ", p->id, p->name);
 	if (p == rp->part)
-	  printf(" OK!\n");
+	  printf("OK!\n");
 	else
-	  WRN(" WRONG (table[%id]->name = '%s')", p->id, rp->part->name);
+	  printf("WRONG (table[%d]->name = '%s')\n", p->id, rp->part->name);
      }
 
-   INF("*** Programs [table:%d list:%d,%d,%d,%d,%d]", ed->table_programs_size,
+   INF("Programs [table:%d list:%d,%d,%d,%d,%d]", ed->table_programs_size,
        ed->collection->programs.fnmatch_count,
        ed->collection->programs.strcmp_count,
        ed->collection->programs.strncmp_count,
@@ -6920,10 +7736,9 @@ edje_edit_print_internal_status(Evas_Object *obj)
    for(j = 0; j < ed->table_programs_size; ++j)
      {
 	epr = ed->table_programs[i % ed->table_programs_size];
-	printf("     [%d]%s\n", epr->id, epr->name);
+	printf("program[%d]: '%s'\n", epr->id, epr->name);
      }
 
-   printf("\n");
-
-   INF("******************  END  ************************\n");
+   INF("******************  END  ************************");
+ */
 }

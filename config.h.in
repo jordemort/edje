@@ -1,5 +1,10 @@
 /* config.h.in.  Generated from configure.ac by autoheader.  */
 
+
+#ifndef EFL_CONFIG_H__
+#define EFL_CONFIG_H__
+
+
 /* Use Fixed Point instead of FPU */
 #undef BUILD_EDJE_FP
 
@@ -139,3 +144,7 @@
 
 /* Define to empty if `const' does not conform to ANSI C. */
 #undef const
+
+
+#endif /* EFL_CONFIG_H__ */
+

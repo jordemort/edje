@@ -281,7 +281,7 @@ _edje_part_recalc_1(Edje *ed, Edje_Real_Part *ep)
 }
 
 int
-_edje_part_dragable_calc(Edje *ed, Edje_Real_Part *ep, FLOAT_T *x, FLOAT_T *y)
+_edje_part_dragable_calc(Edje *ed __UNUSED__, Edje_Real_Part *ep, FLOAT_T *x, FLOAT_T *y)
 {
    if (ep->drag)
      {
@@ -320,7 +320,6 @@ _edje_part_dragable_calc(Edje *ed, Edje_Real_Part *ep, FLOAT_T *x, FLOAT_T *y)
    if (x) *x = ZERO;
    if (y) *y = ZERO;
    return 0;
-   ed = NULL;
 }
 
 void
@@ -733,11 +732,11 @@ _edje_part_recalc_single_textblock(FLOAT_T sc,
 		  evas_object_textblock_style_insets_get(ep->object, &ins_l, &ins_r, &ins_t, &ins_b);
 		  mw = ins_l + tw + ins_r;
 		  mh = ins_t + th + ins_b;
-//		  if (chosen_desc->text.min_x)
+		  if (chosen_desc->text.min_x)
 		    {
 		       if (mw > *minw) *minw = mw;
 		    }
-//		  if (chosen_desc->text.min_y)
+		  if (chosen_desc->text.min_y)
 		    {
 		       if (mh > *minh) *minh = mh;
 		    }
@@ -761,10 +760,12 @@ _edje_part_recalc_single_textblock(FLOAT_T sc,
 	     if (chosen_desc->text.max_x)
 	       {
 		  if (mw > *maxw) *maxw = mw;
+                  if (*maxw < *minw) *maxw = *minw;
 	       }
 	     if (chosen_desc->text.max_y)
 	       {
 		  if (mh > *maxw) *maxh = mh;
+                  if (*maxh < *minh) *maxh = *minh;
 	       }
 	  }
      }
@@ -845,15 +846,21 @@ _edje_part_recalc_single_text(FLOAT_T sc,
 
 	     if (fnt)
 	       {
-                  int len = strlen(fnt->entry) + sizeof("edje/fonts/") + 1;
-                  font = alloca(len);
-                  sprintf((char *)font, "edje/fonts/%s", fnt->entry);
+                  char *font2;
+                  
+                  size_t len = strlen(font) + sizeof("edje/fonts/") + 1;
+                  font2 = alloca(len);
+                  sprintf(font2, "edje/fonts/%s", font);
+                  font = font2;
 		  inlined_font = 1;
 	       }
 	  }
 	if (ep->part->scale)
 	  evas_object_scale_set(ep->object, TO_DOUBLE(sc));
-	if (inlined_font) evas_object_text_font_source_set(ep->object, ed->path);
+	if (inlined_font)
+          {
+             evas_object_text_font_source_set(ep->object, ed->path);
+          }
 	else evas_object_text_font_source_set(ep->object, NULL);
 
 	if ((_edje_fontset_append) && (font))
@@ -1414,8 +1421,9 @@ _edje_part_recalc_single(Edje *ed,
 	 break;
       case EDJE_PART_TYPE_GRADIENT:
 	 /* FIXME: THIS ONE SHOULD NEVER BE TRIGGERED. */
-	 abort();
 	 break;
+      default:
+        break;
      }
 }
 
@@ -1675,8 +1683,8 @@ _edje_part_recalc(Edje *ed, Edje_Real_Part *ep, int flags)
 	  faxes = "X";
 	else if ((flags & FLAG_Y))
 	  faxes = "Y";
-	ERR("Circular dependency when calculating part \"%s\"\n"
-	    "Already calculating %s [%02x] axes\n"
+	ERR("Circular dependency when calculating part \"%s\". "
+	    "Already calculating %s [%02x] axes. "
 	    "Need to calculate %s [%02x] axes",
 	    ep->part->name,
 	    axes, ep->calculating,

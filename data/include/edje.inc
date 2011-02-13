@@ -1,41 +1,3 @@
-/* ************************** */
-/* This is for script-only objects */
-/* ************************** */
-
-native e_obj_del(obj);
-
-native e_obj_rect_add();
-
-native e_obj_show(obj);
-native e_obj_hide(obj);
-native e_obj_move(obj, x, y);
-native e_obj_resize(obj, w, h);
-native e_obj_geometry_set(obj, x, y, w, h);
-native e_obj_geometry_get(obj, &x, &y, &w, &h);
-native e_obj_color_set(obj, r, g, b, a);
-native e_obj_color_get(obj, &r, &g, &b, &a);
-
-/* threw this in for debug... but need it */
-native e_signal_emit(sig[], src[]);
-
-
-
-
-
-
-
-
-
-
-
-
-
-/* ************************** */
-/* The below is for non-script-only objects. these calls will not work for */
-/* script-only objects. above are for script-only. perhaps this will be */
-/* deprecated sometime? or merged to the above partly? */
-/* ************************** */
-
 /* Edje exported calls */
 
 /************************************************/
@@ -121,6 +83,7 @@ native       cancel_anim(id);
  * run_program(PROGRAM:"program_name");
  */
 native       emit             (sig[], src[]);
+native       get_part_id      (part[]);
 native       set_state        (part_id, state[], Float:state_val);
 native       get_state        (part_id, dst[], maxlen, &Float:val);
 native       set_tween_state  (part_id, Float:tween, state1[], Float:state1_val, state2[], Float:state2_val);

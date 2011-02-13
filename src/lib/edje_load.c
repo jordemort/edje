@@ -181,6 +181,8 @@ edje_file_group_exists(const char *file, const char *glob)
    Edje_File *edf;
    int error_ret = 0;
    Eina_Bool succeed = EINA_FALSE;
+   Eina_Bool is_glob = EINA_FALSE;
+   const char *p;
 
    if ((!file) || (!*file))
       return EINA_FALSE;
@@ -188,25 +190,46 @@ edje_file_group_exists(const char *file, const char *glob)
    edf = _edje_cache_file_coll_open(file, NULL, &error_ret, NULL);
    if (!edf)
       return EINA_FALSE;
-
-   if (!edf->collection_patterns)
+   
+   for (p = glob; *p; p++)
      {
-        Edje_Part_Collection_Directory_Entry *ce;
-        Eina_Iterator *i;
-        Eina_List *l = NULL;
-
-        i = eina_hash_iterator_data_new(edf->collection);
-
-        EINA_ITERATOR_FOREACH(i, ce)
-           l = eina_list_append(l, ce);
-
-        eina_iterator_free(i);
-
-        edf->collection_patterns = edje_match_collection_dir_init(l);
-        eina_list_free(l);
+       if ((*p == '*') || (*p == '?') || (*p == '['))
+         {
+           is_glob = EINA_TRUE;
+           break;
+         }
      }
-
-   succeed = edje_match_collection_dir_exec(edf->collection_patterns, glob);
+  
+   if (is_glob)
+     {
+       if (!edf->collection_patterns)
+         {
+           Edje_Part_Collection_Directory_Entry *ce;
+           Eina_Iterator *i;
+           Eina_List *l = NULL;
+           
+           i = eina_hash_iterator_data_new(edf->collection);
+           
+           EINA_ITERATOR_FOREACH(i, ce)
+             l = eina_list_append(l, ce);
+           
+           eina_iterator_free(i);
+           
+           edf->collection_patterns = edje_match_collection_dir_init(l);
+           eina_list_free(l);
+         }
+       
+       succeed = edje_match_collection_dir_exec(edf->collection_patterns, glob);
+       if (edf->collection_patterns)
+         {
+           edje_match_patterns_free(edf->collection_patterns);
+           edf->collection_patterns = NULL;
+         }
+     }
+   else
+     {
+        if (eina_hash_find(edf->collection, glob)) succeed = EINA_TRUE;
+     }
    _edje_cache_file_unref(edf);
    return succeed;
 }
@@ -461,7 +484,7 @@ _edje_object_file_set_internal(Evas_Object *obj, const char *file, const char *g
 			rp->object = evas_object_table_add(ed->evas);
 			break;
 		     case EDJE_PART_TYPE_GRADIENT:
-			ERR("SPANK ! SPANK ! SPANK !\nYOU ARE USING GRADIENT IN PART %s FROM GROUP %s INSIDE FILE %s !!\n THEY ARE NOW REMOVED !",
+			ERR("SPANK ! SPANK ! SPANK ! YOU ARE USING GRADIENT IN PART %s FROM GROUP %s INSIDE FILE %s !! THEY ARE NOW REMOVED !",
 			    ep->name, group, file);
 		     default:
 			ERR("wrong part type %i!", ep->type);
@@ -1059,6 +1082,7 @@ _edje_file_del(Edje *ed)
    if (ed->table_programs) free(ed->table_programs);
    ed->table_programs = NULL;
    ed->table_programs_size = 0;
+   ed->focused_part = NULL;
 }
 
 void
@@ -1181,6 +1205,10 @@ _edje_collection_free(Edje_File *edf, Edje_Part_Collection *ec, Edje_Part_Collec
 
 	free(ep->other.desc);
 	free(ep->items);
+// technically need this - but we ASSUME we use "one_big" so everything gets
+// freed in one go lower down when we del the mempool... but what if pool goes
+// "over"?
+        eina_mempool_free(ce->mp.part, ep);
      }
    free(ec->parts);
    ec->parts = NULL;
@@ -1346,14 +1374,38 @@ _edje_object_pack_item_hints_set(Evas_Object *obj, Edje_Pack_Element *it)
    evas_object_resize(obj, w, h);
 }
 
+static const char *
+_edje_find_alias(Eina_Hash *aliased, char *src, int *length)
+{
+   const char *alias;
+   char *search;
+
+   *length = strlen(src);
+   if (*length == 0) return NULL;
+
+   alias = eina_hash_find(aliased, src);
+   if (alias) return alias;
+
+   search = strrchr(src, EDJE_PART_PATH_SEPARATOR);
+   if (search == NULL) return NULL;
+
+   *search = '\0';
+   alias = _edje_find_alias(aliased, src, length);
+   *search = EDJE_PART_PATH_SEPARATOR;
+
+   return alias;
+}
+
 static void
 _cb_signal_repeat(void *data, Evas_Object *obj, const char *signal, const char *source)
 {
    Evas_Object	*parent;
    Edje		*ed;
+   Edje         *ed_parent;
    char		 new_src[4096]; /* XXX is this max reasonable? */
    size_t	 length_parent = 0;
    size_t	 length_source;
+   const char   *alias = NULL;
 
    parent = data;
    ed = _edje_fetch(obj);
@@ -1370,5 +1422,36 @@ _cb_signal_repeat(void *data, Evas_Object *obj, const char *signal, const char *
    new_src[length_parent] = EDJE_PART_PATH_SEPARATOR;
    memcpy(new_src + length_parent + 1, source, length_source + 1);
 
-   edje_object_signal_emit(parent, signal, new_src);
+   /* Handle alias renaming */
+   ed_parent = _edje_fetch(parent);
+   if (ed_parent && ed_parent->collection && ed_parent->collection->aliased)
+     {
+        int length;
+
+        alias = _edje_find_alias(ed_parent->collection->aliased, new_src, &length);
+
+        if (alias)
+          {
+             int origin;
+
+             /* Add back the end of the source */
+             origin = strlen(new_src);
+             length ++; /* Remove the trailing ':' from the count */
+             if (origin > length)
+               {
+                  char *tmp;
+                  size_t alias_length;
+
+                  alias_length = strlen(alias);
+                  tmp = alloca(alias_length + origin - length + 2);
+                  memcpy(tmp, alias, alias_length);
+                  tmp[alias_length] = EDJE_PART_PATH_SEPARATOR;
+                  memcpy(tmp + alias_length + 1, new_src + length, origin - length + 1);
+
+                  alias = tmp;
+               }
+          }
+     }
+
+   edje_object_signal_emit(parent, signal, alias ? alias : new_src);
 }

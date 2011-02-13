@@ -37,7 +37,8 @@ static Eina_Bool _edje_text_class_list_foreach(const Eina_Hash *hash, const void
 static void _edje_object_image_preload_cb(void *data, Evas *e, Evas_Object *obj, void *event_info);
 static void _edje_object_signal_preload_cb(void *data, Evas_Object *obj, const char *emission, const char *source);
 
-Edje_Real_Part *_edje_real_part_recursive_get_helper(Edje *ed, char **path);
+Edje_Real_Part *_edje_real_part_recursive_get_helper(const Edje *ed, char **path);
+static Edje *_edje_recursive_get_helper(Edje *ed, char **path, Edje_Real_Part **orp);
 
 /************************** API Routines **************************/
 
@@ -2146,10 +2147,28 @@ edje_object_part_text_cursor_content_get(const Evas_Object *obj, const char *par
 }
 
 /**
- * @brief XX
+ * Add a filter function for newly inserted text.
+ *
+ * Whenever text is inserted (not the same as set) into the given @p part,
+ * the list of filter functions will be called to decide if and how the new
+ * text will be accepted.
+ * There are three types of filters, EDJE_TEXT_FILTER_TEXT,
+ * EDJE_TEXT_FILTER_FORMAT and EDJE_TEXT_FILTER_MARKUP.
+ * The text parameter in the @p func filter can be modified by the user and
+ * it's up to him to free the one passed if he's to change the pointer. If
+ * doing so, the newly set text should be malloc'ed, as once all the filters
+ * are called Edje will free it.
+ * If the text is to be rejected, freeing it and setting the pointer to NULL
+ * will make Edje break out of the filter cycle and reject the inserted
+ * text.
+ *
+ * @see edje_object_text_insert_filter_callback_del
+ * @see edje_object_text_insert_filter_callback_del_full
  *
  * @param obj A valid Evas_Object handle
  * @param part The part name
+ * @param func The callback function that will act as filter
+ * @param data User provided data to pass to the filter function
  */
 EAPI void
 edje_object_text_insert_filter_callback_add(Evas_Object *obj, const char *part, Edje_Text_Filter_Cb func, void *data)
@@ -2168,10 +2187,19 @@ edje_object_text_insert_filter_callback_add(Evas_Object *obj, const char *part, 
 }
 
 /**
- * @brief XX
+ * Delete a function from the filter list.
+ *
+ * Delete the given @p func filter from the list in @p part. Returns
+ * the user data pointer given when added.
+ *
+ * @see edje_object_text_insert_filter_callback_add
+ * @see edje_object_text_insert_filter_callback_del_full
  *
  * @param obj A valid Evas_Object handle
  * @param part The part name
+ * @param func The function callback to remove
+ *
+ * @return The user data pointer if succesful, or NULL otherwise
  */
 EAPI void *
 edje_object_text_insert_filter_callback_del(Evas_Object *obj, const char *part, Edje_Text_Filter_Cb func)
@@ -2185,6 +2213,48 @@ edje_object_text_insert_filter_callback_del(Evas_Object *obj, const char *part, 
    EINA_LIST_FOREACH(ed->text_insert_filter_callbacks, l, cb)
      {
         if ((!strcmp(cb->part, part)) && (cb->func == func))
+          {
+             void *data = cb->data;
+             ed->text_insert_filter_callbacks =
+                eina_list_remove_list(ed->text_insert_filter_callbacks, l);
+             eina_stringshare_del(cb->part);
+             free(cb);
+             return data;
+          }
+     }
+   return NULL;
+}
+
+/**
+ * Delete a function and matching user data from the filter list.
+ *
+ * Delete the given @p func filter and @p data user data from the list
+ * in @p part.
+ * Returns the user data pointer given when added.
+ *
+ * @see edje_object_text_insert_filter_callback_add
+ * @see edje_object_text_insert_filter_callback_del
+ *
+ * @param obj A valid Evas_Object handle
+ * @param part The part name
+ * @param func The function callback to remove
+ * @param data The data passed to the callback function
+ *
+ * @return The same data pointer if succesful, or NULL otherwise
+ */
+EAPI void *
+edje_object_text_insert_filter_callback_del_full(Evas_Object *obj, const char *part, Edje_Text_Filter_Cb func, void *data)
+{
+   Edje *ed;
+   Edje_Text_Insert_Filter_Callback *cb;
+   Eina_List *l;
+
+   ed = _edje_fetch(obj);
+   if ((!ed) || (!part)) return NULL;
+   EINA_LIST_FOREACH(ed->text_insert_filter_callbacks, l, cb)
+     {
+        if ((!strcmp(cb->part, part)) && (cb->func == func) &&
+            (cb->data == data))
           {
              void *data = cb->data;
              ed->text_insert_filter_callbacks =
@@ -2459,7 +2529,7 @@ static Edje_Box_Layout *
 _edje_box_layout_external_new(const char *name, Evas_Object_Box_Layout func, void *(*layout_data_get)(void *), void (*layout_data_free)(void *), void (*free_data)(void *), void *data)
 {
    Edje_Box_Layout *l;
-   int name_len;
+   size_t name_len;
 
    name_len = strlen(name) + 1;
    l = malloc(sizeof(Edje_Box_Layout) + name_len);
@@ -2929,11 +2999,13 @@ edje_object_size_min_restricted_calc(Evas_Object *obj, Evas_Coord *minw, Evas_Co
 	  }
 	if ((ed->w > 4000) || (ed->h > 4000))
 	  {
-	     ERR("file %s, group %s has a non-fixed part. add fixed: 1 1; ???",
-		    ed->path, ed->group);
-	     if (pep)
-	       ERR("  Problem part is: %s", pep->part->name);
-	     ERR("  Will recalc min size not allowing broken parts to affect the result.");
+             if (pep)
+               ERR("file %s, group %s has a non-fixed part '%s'. Adding 'fixed: 1 1;' to source EDC may help. Continuing discarding faulty part.",
+                   ed->path, ed->group, pep->part->name);
+             else
+               ERR("file %s, group %s overflowed 4000x4000 with minimum size of %dx%d. Continuing discarding faulty parts.",
+                   ed->path, ed->group, ed->w, ed->h);
+
 	     if (reset_maxwh)
 	       {
 		  reset_maxwh = 0;
@@ -4286,7 +4358,7 @@ _edje_real_part_table_clear(Edje_Real_Part *rp, Eina_Bool clear)
 }
 
 Edje_Real_Part *
-_edje_real_part_recursive_get(Edje *ed, const char *part)
+_edje_real_part_recursive_get(const Edje *ed, const char *part)
 {
    Edje_Real_Part *rp;
    char **path;
@@ -4300,6 +4372,23 @@ _edje_real_part_recursive_get(Edje *ed, const char *part)
    free(*path);
    free(path);
    return rp;
+}
+
+Edje *
+_edje_recursive_get(Edje *ed, const char *part, Edje_Real_Part **orp)
+{
+   Edje *oed;
+   char **path;
+
+   path = eina_str_split(part, EDJE_PART_PATH_SEPARATOR_STRING, 0);
+   if (!path) return NULL;
+
+   //printf("recursive get: %s\n", part);
+   oed = _edje_recursive_get_helper(ed, path, orp);
+
+   free(*path);
+   free(path);
+   return oed;
 }
 
 Evas_Object *
@@ -4351,16 +4440,22 @@ _edje_children_get(Edje_Real_Part *rp, const char *partid)
 }
 
 Edje_Real_Part *
-_edje_real_part_recursive_get_helper(Edje *ed, char **path)
+_edje_real_part_recursive_get_helper(const Edje *ed, char **path)
 {
    Edje_Real_Part *rp;
    Evas_Object *child;
    const char *alias = NULL;
    char *idx = NULL;
 
+   if (ed->collection && ed->collection->alias)
+     alias = eina_hash_find(ed->collection->alias, path[0]);
+
+   if (!alias)
+     alias = path[0];
+
    //printf("  lookup: %s on %s\n", path[0], ed->parent ? ed->parent : "-");
-   if (path[0])
-     idx = strchr(path[0], EDJE_PART_PATH_SEPARATOR_INDEXL);
+   if (alias)
+     idx = strchr(alias, EDJE_PART_PATH_SEPARATOR_INDEXL);
    if (idx)
      {
 	char *end;
@@ -4374,18 +4469,16 @@ _edje_real_part_recursive_get_helper(Edje *ed, char **path)
 	  }
      }
 
-   if (ed->collection && ed->collection->alias)
-     alias = eina_hash_find(ed->collection->alias, path[0]);
-   if (alias)
+   if (alias != path[0])
      {
 	rp = _edje_real_part_recursive_get(ed, alias);
-	if (!path[1]) return rp;
+	if (!path[1] && !idx) return rp;
 	if (!rp) return NULL;
      }
    else
      {
 	rp = _edje_real_part_get(ed, path[0]);
-	if (!path[1]) return rp;
+	if (!path[1] && !idx) return rp;
 	if (!rp) return NULL;
      }
 
@@ -4407,20 +4500,88 @@ _edje_real_part_recursive_get_helper(Edje *ed, char **path)
 
 	 ed = _edje_fetch(child);
 	 if (!ed) return NULL;
-	 if ((rp = _edje_real_part_recursive_get_helper(ed, path)))
-	   return rp;
-
-	 return NULL;
+	 return _edje_real_part_recursive_get_helper(ed, path);
       default:
 	 return NULL;
      }
 }
 
-
 /* Private Routines */
+static Edje *
+_edje_recursive_get_helper(Edje *ed, char **path, Edje_Real_Part **orp)
+{
+   Evas_Object *child;
+   Edje_Real_Part *rp;
+   const char *alias = NULL;
+   char *idx = NULL;
+
+   if (ed->collection && ed->collection->alias)
+     alias = eina_hash_find(ed->collection->alias, path[0]);
+
+   if (!alias)
+     alias = path[0];
+
+   //printf("  lookup: %s on %s\n", path[0], ed->parent ? ed->parent : "-");
+   if (alias)
+     idx = strchr(alias, EDJE_PART_PATH_SEPARATOR_INDEXL);
+   if (idx)
+     {
+	char *end;
+
+	end = strchr(idx + 1, EDJE_PART_PATH_SEPARATOR_INDEXR);
+	if (end)
+	  {
+	     *end = '\0';
+	     *idx = '\0';
+	     idx++;
+	  }
+     }
+
+   if (alias != path[0])
+     rp = _edje_real_part_recursive_get(ed, alias);
+   else
+     rp = _edje_real_part_get(ed, path[0]);
+
+   if (!rp) return NULL;
+   if (!path[1] && !idx)
+     {
+        *orp = rp;
+        return rp->edje;
+     }
+
+   switch (rp->part->type)
+     {
+      case EDJE_PART_TYPE_GROUP:
+	 if (!rp->swallowed_object) return NULL;
+	 ed = _edje_fetch(rp->swallowed_object);
+	 if (!ed) return NULL;
+	 path++;
+
+         if (!path[0]) return ed;
+	 return _edje_recursive_get_helper(ed, path, orp);
+      case EDJE_PART_TYPE_BOX:
+      case EDJE_PART_TYPE_TABLE:
+      case EDJE_PART_TYPE_EXTERNAL:
+	 if (!idx)
+           {
+              *orp = rp;
+              return NULL;
+           }
+	 path++;
+
+	 child = _edje_children_get(rp, idx);
+
+	 ed = _edje_fetch(child);
+	 if (!ed) return NULL;
+         if (!path[0]) return ed;
+	 return _edje_recursive_get_helper(ed, path, orp);
+      default:
+	 return NULL;
+     }
+}
 
 Edje_Real_Part *
-_edje_real_part_get(Edje *ed, const char *part)
+_edje_real_part_get(const Edje *ed, const char *part)
 {
    unsigned int i;
 
@@ -4696,15 +4857,13 @@ _edje_block_violate(Edje *ed)
 }
 
 void
-_edje_object_part_swallow_free_cb(void *data, Evas *e, Evas_Object *obj, void *event_info)
+_edje_object_part_swallow_free_cb(void *data, Evas *e __UNUSED__, Evas_Object *obj, void *event_info __UNUSED__)
 {
    Evas_Object *edje_obj;
 
    edje_obj = data;
    edje_object_part_unswallow(edje_obj, obj);
    return;
-   e = NULL;
-   event_info = NULL;
 }
 
 static void

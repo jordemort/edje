@@ -29,16 +29,16 @@ void *alloca (size_t);
 #include <time.h>
 #include <sys/time.h>
 #include <errno.h>
-#include <libgen.h>
+
+#ifndef _MSC_VER
+# include <libgen.h>
+# include <unistd.h>
+#endif
 
 #include <lua.h>
 #include <lualib.h>
 #include <lauxlib.h>
 #include <setjmp.h>
-
-#ifndef _MSC_VER
-# include <unistd.h>
-#endif
 
 #ifdef HAVE_LOCALE_H
 # include <locale.h>
@@ -172,7 +172,7 @@ struct _Edje_Smart_Api
 /* increment this when you add new feature to edje file format without
  * breaking backward compatibility.
  */
-#define EDJE_FILE_MINOR 0
+#define EDJE_FILE_MINOR 1
 
 /* FIXME:
  *
@@ -628,6 +628,7 @@ struct _Edje_Part_Collection
    int        id; /* the collection id */
 
    Eina_Hash *alias; /* aliasing part */
+   Eina_Hash *aliased; /* invert match of alias */
 
    struct {
       Edje_Size min, max;
@@ -1492,8 +1493,9 @@ const char *   _edje_text_class_font_get(Edje *ed,
 					 int *size, char **free_later);
 
 
-Edje_Real_Part   *_edje_real_part_get(Edje *ed, const char *part);
-Edje_Real_Part   *_edje_real_part_recursive_get(Edje *ed, const char *part);
+Edje_Real_Part   *_edje_real_part_get(const Edje *ed, const char *part);
+Edje_Real_Part   *_edje_real_part_recursive_get(const Edje *ed, const char *part);
+Edje             *_edje_recursive_get(Edje *ed, const char *part, Edje_Real_Part **orp);
 Edje_Color_Class *_edje_color_class_find(Edje *ed, const char *color_class);
 void              _edje_color_class_member_add(Edje *ed, const char *color_class);
 void              _edje_color_class_member_del(Edje *ed, const char *color_class);
@@ -1769,8 +1771,8 @@ void _edje_external_init();
 void _edje_external_shutdown();
 Evas_Object *_edje_external_type_add(const char *type_name, Evas *evas, Evas_Object *parent, const Eina_List *params, const char *part_name);
 void _edje_external_signal_emit(Evas_Object *obj, const char *emission, const char *source);
-Eina_Bool _edje_external_param_set(Evas_Object *obj, const Edje_External_Param *param) EINA_ARG_NONNULL(1, 2);
-Eina_Bool _edje_external_param_get(const Evas_Object *obj, Edje_External_Param *param) EINA_ARG_NONNULL(1, 2);
+Eina_Bool _edje_external_param_set(Evas_Object *obj, Edje_Real_Part *rp, const Edje_External_Param *param) EINA_ARG_NONNULL(1, 2);
+Eina_Bool _edje_external_param_get(const Evas_Object *obj, Edje_Real_Part *rp, Edje_External_Param *param) EINA_ARG_NONNULL(1, 2);
 Evas_Object *_edje_external_content_get(const Evas_Object *obj, const char *content) EINA_ARG_NONNULL(1, 2);
 void _edje_external_params_free(Eina_List *params, Eina_Bool free_strings);
 void _edje_external_recalc_apply(Edje *ed, Edje_Real_Part *ep,
@@ -1785,7 +1787,7 @@ EAPI void _edje_module_shutdown();
 static inline Eina_Bool
 edje_program_is_strncmp(const char *str)
 {
-   unsigned int length;
+   size_t length;
 
    length = strlen(str);
 

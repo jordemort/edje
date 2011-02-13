@@ -4,7 +4,7 @@
 
 Summary: Complex Graphical Design/Layout Engine
 Name: edje
-Version: 1.0.0.beta
+Version: 1.0.0
 Release: %{_rel}
 License: BSD
 Group: System Environment/Libraries
@@ -86,7 +86,7 @@ test "x$RPM_BUILD_ROOT" != "x/" && rm -rf $RPM_BUILD_ROOT
 %{_libdir}/*.la
 %{_libdir}/*.a
 %{_libdir}/pkgconfig/*
-%{_includedir}/*.h
+%{_includedir}/edje-1/*.h
 
 %files bin
 %defattr(-, root, root)
@@ -94,6 +94,8 @@ test "x$RPM_BUILD_ROOT" != "x/" && rm -rf $RPM_BUILD_ROOT
 %{_bindir}/edje_decc
 %{_bindir}/edje_recc
 %{_bindir}/edje_player
+%{_bindir}/edje_external_inspector
+%{_bindir}/edje_inspector
 %{_bindir}/inkscape2edc
 %{_datadir}/edje/include/edje.inc
 %{_datadir}/mime/packages/edje.xml
