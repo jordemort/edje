@@ -18,16 +18,21 @@ m4_define([lt_age], v_min)
 ##--##--##--##--##--##--##--##--##--##--##--##--##--##--##--##--##
 ##--##--##--##--##--##--##--##--##--##--##--##--##--##--##--##--##
 
-AC_INIT([edje], [v_ver.beta], [enlightenment-devel@lists.sourceforge.net])
+AC_INIT([edje], [v_ver], [enlightenment-devel@lists.sourceforge.net])
 AC_PREREQ([2.52])
 AC_CONFIG_SRCDIR([configure.ac])
 AC_CONFIG_MACRO_DIR([m4])
-AC_CANONICAL_BUILD
-AC_CANONICAL_HOST
-AC_ISC_POSIX
+
+AC_CONFIG_HEADERS([config.h])
+AH_TOP([
+#ifndef EFL_CONFIG_H__
+#define EFL_CONFIG_H__
+])
+AH_BOTTOM([
+#endif /* EFL_CONFIG_H__ */
+])
 
 AM_INIT_AUTOMAKE([1.6 dist-bzip2])
-AM_CONFIG_HEADER([config.h])
 m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])
 
 AC_LIBTOOL_WIN32_DLL
@@ -54,9 +59,9 @@ AC_SUBST(VMAJ)
 
 AC_DEFINE_UNQUOTED([SHARED_LIB_SUFFIX], ["$shrext_cmds"], [Suffix for shared objects])
 
-EFL_CHECK_PATH_MAX
-
 ### Default options with respect to host
+AC_CANONICAL_BUILD
+AC_CANONICAL_HOST
 
 case "$host_os" in
    mingw32ce* | cegcc*)
@@ -94,7 +99,8 @@ EFL_ENABLE_BIN([edje-cc])
 EFL_ENABLE_BIN([edje-decc])
 EFL_ENABLE_BIN([edje-recc])
 EFL_ENABLE_BIN([edje-player])
-EFL_ENABLE_BIN([edje-convert])
+EFL_ENABLE_BIN([edje-inspector])
+EFL_ENABLE_BIN([edje-external-inspector])
 
 # Optional EDJE_PROGRAM_CACHE (use much more ram, but increase speed in some cases)
 want_edje_program_cache="no"
@@ -285,17 +291,31 @@ PKG_CHECK_MODULES([ECORE_IMF],
 # Dependencies for the binaries
 
 if test "x$have_edje_cc" = "xyes"; then
-   PKG_CHECK_MODULES([ECORE_FILE], [ecore-file >= 1.0.0])
-   PKG_CHECK_MODULES([ECORE_EVAS], [ecore-evas >= 1.0.0])
+   PKG_CHECK_MODULES([EDJE_CC], [ecore-file >= 1.0.0 ecore-evas >= 1.0.0 ecore >= 1.0.0 evas >= 1.0.0 eet >= 1.0.0 eina >= 1.0.0])
+   EDJE_CC_LIBS="${EDJE_CC_LIBS} ${LUA_LIBS} ${lua_libs}"
+fi
+
+if test "x$have_edje_decc" = "xyes"; then
+   PKG_CHECK_MODULES([EDJE_DECC], [ecore-file >= 1.0.0 ecore-evas >= 1.0.0 ecore >= 1.0.0 evas >= 1.0.0 eet >= 1.0.0 eina >= 1.0.0])
 fi
 
 if test "x$have_edje_player" = "xyes"; then
-   PKG_CHECK_MODULES([ECORE_EVAS], [ecore-evas >= 1.0.0])
+   PKG_CHECK_MODULES([EDJE_PLAYER], [ecore-evas >= 1.0.0 ecore >= 1.0.0 evas >= 1.0.0 eina >= 1.0.0])
+fi
+
+if test "x$have_edje_inspector" = "xyes"; then
+   PKG_CHECK_MODULES([EDJE_INSPECTOR], [ecore-evas >= 1.0.0 ecore >= 1.0.0 evas >= 1.0.0 eina >= 1.0.0])
+fi
+
+if test "x$have_edje_external_inspector" = "xyes"; then
+   PKG_CHECK_MODULES([EDJE_EXTERNAL_INSPECTOR], [ecore >= 1.0.0 evas >= 1.0.0 eina >= 1.0.0])
 fi
 
 
 ### Checks for header files
 AC_CHECK_HEADERS([locale.h])
+
+EFL_CHECK_PATH_MAX
 
 
 ### Checks for types
@@ -333,6 +353,9 @@ AC_SUBST(lt_enable_auto_import)
 
 
 ### Checks for library functions
+
+AC_ISC_POSIX
+
 AC_FUNC_ALLOCA
 
 case "$host_os" in
@@ -379,13 +402,16 @@ echo "  Ecore IMF............: $have_ecore_imf"
 echo "  EDJE_PROGRAM_CACHE...: $want_edje_program_cache"
 echo "  EDJE_CALC_CACHE......: $want_edje_calc_cache"
 echo "  Fixed point..........: $want_fixed_point"
-echo
-echo "  Build edje_cc........: $have_edje_cc"
-echo "  Build edje_decc......: $have_edje_decc"
-echo "  Build edje_recc......: $have_edje_recc"
-echo "  Build edje_player....: $have_edje_player"
-echo
 echo "  Documentation........: ${build_doc}"
+echo
+echo "Programs:"
+echo
+echo "  Build edje_cc................: $have_edje_cc"
+echo "  Build edje_decc..............: $have_edje_decc"
+echo "  Build edje_recc..............: $have_edje_recc"
+echo "  Build edje_player............: $have_edje_player"
+echo "  Build edje_inspector.........: $have_edje_inspector"
+echo "  Build edje_external_inspector: $have_edje_external_inspector"
 echo
 echo "Compilation............: make (or gmake)"
 echo "  CPPFLAGS.............: $CPPFLAGS"

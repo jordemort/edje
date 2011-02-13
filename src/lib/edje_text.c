@@ -117,8 +117,10 @@ _edje_text_fit_x(Edje *ed, Edje_Real_Part *ep,
 {
    Evas_Coord tw = 0, th = 0, p;
    int l, r;
+   int i;
    char *buf;
-   int c1 = -1, c2 = -1, loop = 0, extra;
+   int uc1 = -1, uc2 = -1, c1 = -1, c2 = -1;
+   int loop = 0, extra;
    size_t orig_len;
    FLOAT_T sc;
 
@@ -142,23 +144,23 @@ _edje_text_fit_x(Edje *ed, Edje_Real_Part *ep,
      {
 	if (params->type.text.elipsis != 0.0)
           /* should be the last in text! not the rightmost */
-          c1 = evas_object_text_last_up_to_pos(ep->object,
+          uc1 = evas_object_text_last_up_to_pos(ep->object,
                 -p + l, th / 2);
 	if (params->type.text.elipsis != 1.0)
           /* should be the last in text! not the rightmost */
-          c2 = evas_object_text_last_up_to_pos(ep->object,
+          uc2 = evas_object_text_last_up_to_pos(ep->object,
                 -p + sw - r, th / 2);
-	if ((c1 < 0) && (c2 < 0))
+	if ((uc1 < 0) && (uc2 < 0))
 	  {
-	     c1 = 0;
-	     c2 = 0;
+	     uc1 = 0;
+	     uc2 = 0;
 	  }
      }
 
-   if (!(((c1 >= 0) || (c2 >= 0)) && (tw > sw)))
+   if (!(((uc1 >= 0) || (uc2 >= 0)) && (tw > sw)))
      return text;
 
-   if ((c1 == 0) && (c2 == 0))
+   if ((uc1 == 0) && (uc2 == 0))
      return text;
 
    orig_len = strlen(text);
@@ -171,6 +173,25 @@ _edje_text_fit_x(Edje *ed, Edje_Real_Part *ep,
 
    if (!(buf = malloc(orig_len + extra)))
      return text;
+
+   /* Convert uc1, uc2 -> c1, c2 */
+   i = 0;
+   if (uc1 > 0)
+     {
+        c1 = 0;
+        for ( ; i < uc1 ; i++)
+          {
+             c1 = evas_string_char_next_get(text, c1, NULL);
+          }
+     }
+   if (uc2 > 0)
+     {
+        c2 = c1;
+        for ( ; i < uc2 ; i++)
+          {
+             c2 = evas_string_char_next_get(text, c2, NULL);
+          }
+     }
 
    while (((c1 >= 0) || (c2 >= 0)) && (tw > sw))
      {
@@ -245,7 +266,7 @@ static const char *
 _edje_text_font_get(const char *base, const char *new, char **free_later)
 {
    const char *base_style, *new_style, *aux;
-   int font_len, style_len;
+   size_t font_len, style_len;
 
    if (base && (!new))
      return base;
@@ -262,7 +283,7 @@ _edje_text_font_get(const char *base, const char *new, char **free_later)
 
    font_len = strlen(new);
    aux = strchr(base_style, ',');
-   style_len = (aux) ? (aux - base_style) : (int) strlen(base_style);
+   style_len = (aux) ? (size_t)(aux - base_style) : strlen(base_style);
 
    *free_later = malloc(font_len + style_len + 1);
    memcpy(*free_later, new, font_len);
@@ -300,7 +321,7 @@ _edje_text_recalc_apply(Edje *ed, Edje_Real_Part *ep,
 			Edje_Calc_Params *params,
 			Edje_Part_Description_Text *chosen_desc)
 {
-   const char	*text;
+   const char	*text, *str;
    const char	*font;
    char		*font2 = NULL;
    char         *sfont = NULL;
@@ -342,9 +363,12 @@ _edje_text_recalc_apply(Edje *ed, Edje_Real_Part *ep,
 
 	if (fnt)
 	  {
-             int len = strlen(fnt->entry) + sizeof("edje/fonts/") + 1;
-             font = alloca(len);
-             sprintf((char *)font, "edje/fonts/%s", fnt->entry);
+             char *font2;
+             
+             size_t len = strlen(font) + sizeof("edje/fonts/") + 1;
+             font2 = alloca(len);
+             sprintf(font2, "edje/fonts/%s", font);
+             font = font2;
 	     inlined_font = 1;
 	  }
      }
@@ -529,8 +553,9 @@ _edje_text_recalc_apply(Edje *ed, Edje_Real_Part *ep,
 	text = _edje_text_fit_x(ed, ep, params, text, font, size, sw, &free_text);
      }
 
+   str = eina_stringshare_add(text);
    if (ep->text.cache.out_str) eina_stringshare_del(ep->text.cache.out_str);
-   ep->text.cache.out_str = eina_stringshare_add(text);
+   ep->text.cache.out_str = str;
    ep->text.cache.in_w = sw;
    ep->text.cache.in_h = sh;
    ep->text.cache.out_size = size;

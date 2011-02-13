@@ -70,6 +70,7 @@
  * cancel_anim(id)
  * emit(sig[], src[])
  * set_state(part_id, state[], Float:state_val)
+ * get_state(part_id, dst[], maxlen, &Float:val)
  * set_tween_state(part_id, Float:tween, state1[], Float:state1_val, state2[], Float:state2_val)
  * run_program(program_id)
  * Direction:get_drag_dir(part_id)
@@ -798,6 +799,29 @@ _edje_embryo_fn_emit(Embryo_Program *ep, Embryo_Cell *params)
    return 0;
 }
 
+/* get_part_id(part[]) */
+static Embryo_Cell
+_edje_embryo_fn_get_part_id(Embryo_Program *ep, Embryo_Cell *params)
+{
+   Edje *ed;
+   Edje_Part_Collection *col;
+   Edje_Part **part;
+   char *p;
+
+   CHKPARAM(1);
+   ed = embryo_program_data_get(ep);
+   GETSTR(p, params[1]);
+   if (!p) return -1;
+   col = ed->collection;
+   if (!col) return -1;
+   for (part = col->parts; *part; part++)
+     {
+        if (!(*part)->name) continue;
+        if (!strcmp((*part)->name, p)) return (*part)->id;
+     }
+   return -1;
+}
+
 /* set_state(part_id, state[], Float:state_val) */
 static Embryo_Cell
 _edje_embryo_fn_set_state(Embryo_Program *ep, Embryo_Cell *params)
@@ -1327,6 +1351,7 @@ _edje_embryo_fn_send_message(Embryo_Program *ep, Embryo_Cell *params)
 
 		  l = embryo_data_string_length_get(ep, cptr);
 		  s = alloca(l + 1);
+                  s[0] = 0;
 		  embryo_data_string_get(ep, cptr, s);
 		  emsg = alloca(sizeof(Edje_Message_String));
 		  emsg->str = s;
@@ -1340,7 +1365,8 @@ _edje_embryo_fn_send_message(Embryo_Program *ep, Embryo_Cell *params)
 
 	     emsg = alloca(sizeof(Edje_Message_Int));
 	     ptr = embryo_data_address_get(ep, params[3]);
-	     emsg->val = (int)*ptr;
+             if (ptr) emsg->val = (int)*ptr;
+             else emsg->val = 0;
 	     _edje_message_send(ed, EDJE_QUEUE_APP, type, id, emsg);
 	  }
 	break;
@@ -1351,8 +1377,13 @@ _edje_embryo_fn_send_message(Embryo_Program *ep, Embryo_Cell *params)
 
 	     emsg = alloca(sizeof(Edje_Message_Float));
 	     ptr = embryo_data_address_get(ep, params[3]);
-	     f = EMBRYO_CELL_TO_FLOAT(*ptr);
-	     emsg->val = (double)f;
+	     if (ptr)
+                {
+                   f = EMBRYO_CELL_TO_FLOAT(*ptr);
+                   emsg->val = (double)f;
+                }
+             else
+                emsg->val = 0.0;
 	     _edje_message_send(ed, EDJE_QUEUE_APP, type, id, emsg);
 	  }
 	break;
@@ -1375,6 +1406,7 @@ _edje_embryo_fn_send_message(Embryo_Program *ep, Embryo_Cell *params)
 
 		       l = embryo_data_string_length_get(ep, cptr);
 		       s = alloca(l + 1);
+                       s[0] = 0;
 		       embryo_data_string_get(ep, cptr, s);
 		       emsg->str[i - 3] = s;
 		    }
@@ -1392,7 +1424,8 @@ _edje_embryo_fn_send_message(Embryo_Program *ep, Embryo_Cell *params)
 	     for (i = 3; i < n; i++)
 	       {
 		  ptr = embryo_data_address_get(ep, params[i]);
-		  emsg->val[i - 3] = (int)*ptr;
+		  if (ptr) emsg->val[i - 3] = (int)*ptr;
+                  else emsg->val[i - 3] = 0;
 	       }
 	     _edje_message_send(ed, EDJE_QUEUE_APP, type, id, emsg);
 	  }
@@ -1409,8 +1442,13 @@ _edje_embryo_fn_send_message(Embryo_Program *ep, Embryo_Cell *params)
 		  float f;
 
 		  ptr = embryo_data_address_get(ep, params[i]);
-		  f = EMBRYO_CELL_TO_FLOAT(*ptr);
-		  emsg->val[i - 3] = (double)f;
+		  if (ptr)
+                     {
+                        f = EMBRYO_CELL_TO_FLOAT(*ptr);
+                        emsg->val[i - 3] = (double)f;
+                     }
+                  else
+                     emsg->val[i - 3] = 0.0;
 	       }
 	     _edje_message_send(ed, EDJE_QUEUE_APP, type, id, emsg);
 	  }
@@ -1428,11 +1466,13 @@ _edje_embryo_fn_send_message(Embryo_Program *ep, Embryo_Cell *params)
 
 		  l = embryo_data_string_length_get(ep, cptr);
 		  s = alloca(l + 1);
+                  s[0] = 0;
 		  embryo_data_string_get(ep, cptr, s);
 		  emsg = alloca(sizeof(Edje_Message_String_Int));
 		  emsg->str = s;
 		  ptr = embryo_data_address_get(ep, params[4]);
-		  emsg->val = (int)*ptr;
+		  if (ptr) emsg->val = (int)*ptr;
+                  else emsg->val = 0;
 		  _edje_message_send(ed, EDJE_QUEUE_APP, type, id, emsg);
 	       }
 	  }
@@ -1451,12 +1491,18 @@ _edje_embryo_fn_send_message(Embryo_Program *ep, Embryo_Cell *params)
 
 		  l = embryo_data_string_length_get(ep, cptr);
 		  s = alloca(l + 1);
+                  s[0] = 0;
 		  embryo_data_string_get(ep, cptr, s);
 		  emsg = alloca(sizeof(Edje_Message_String_Float));
 		  emsg->str = s;
 		  ptr = embryo_data_address_get(ep, params[4]);
-		  f = EMBRYO_CELL_TO_FLOAT(*ptr);
-		  emsg->val = (double)f;
+                  if (ptr)
+                     {
+                        f = EMBRYO_CELL_TO_FLOAT(*ptr);
+                        emsg->val = (double)f;
+                     }
+                  else
+                     emsg->val = 0.0;
 		  _edje_message_send(ed, EDJE_QUEUE_APP, type, id, emsg);
 	       }
 	  }
@@ -1474,6 +1520,7 @@ _edje_embryo_fn_send_message(Embryo_Program *ep, Embryo_Cell *params)
 
 		  l = embryo_data_string_length_get(ep, cptr);
 		  s = alloca(l + 1);
+                  s[0] = 0;
 		  embryo_data_string_get(ep, cptr, s);
 		  n = (params[0] / sizeof(Embryo_Cell)) + 1;
 		  emsg = alloca(sizeof(Edje_Message_String_Int_Set) + ((n - 4 - 1) * sizeof(int)));
@@ -1482,7 +1529,8 @@ _edje_embryo_fn_send_message(Embryo_Program *ep, Embryo_Cell *params)
 		  for (i = 4; i < n; i++)
 		    {
 		       ptr = embryo_data_address_get(ep, params[i]);
-		       emsg->val[i - 4] = (int)*ptr;
+                       if (ptr) emsg->val[i - 4] = (int)*ptr;
+                       else emsg->val[i - 4] = 0;
 		    }
 		  _edje_message_send(ed, EDJE_QUEUE_APP, type, id, emsg);
 	       }
@@ -1501,6 +1549,7 @@ _edje_embryo_fn_send_message(Embryo_Program *ep, Embryo_Cell *params)
 
 		  l = embryo_data_string_length_get(ep, cptr);
 		  s = alloca(l + 1);
+                  s[0] = 0;
 		  embryo_data_string_get(ep, cptr, s);
 		  n = (params[0] / sizeof(Embryo_Cell)) + 1;
 		  emsg = alloca(sizeof(Edje_Message_String_Float_Set) + ((n - 4 - 1) * sizeof(double)));
@@ -1511,8 +1560,13 @@ _edje_embryo_fn_send_message(Embryo_Program *ep, Embryo_Cell *params)
 		       float f;
 
 		       ptr = embryo_data_address_get(ep, params[i]);
-		       f = EMBRYO_CELL_TO_FLOAT(*ptr);
-		       emsg->val[i - 4] = (double)f;
+                       if (ptr)
+                         {
+                            f = EMBRYO_CELL_TO_FLOAT(*ptr);
+                            emsg->val[i - 4] = (double)f;
+                         }
+                       else
+                          emsg->val[i - 4] = 0.0;
 		    }
 		  _edje_message_send(ed, EDJE_QUEUE_APP, type, id, emsg);
 	       }
@@ -2545,7 +2599,7 @@ _edje_embryo_fn_external_param_get_int(Embryo_Program *ep, Embryo_Cell *params)
    eep.name = param_name;
    eep.type = EDJE_EXTERNAL_PARAM_TYPE_INT;
    eep.i = 0;
-   _edje_external_param_get(rp->swallowed_object, &eep);
+   _edje_external_param_get(NULL, rp, &eep);
    return eep.i;
 }
 
@@ -2571,7 +2625,7 @@ _edje_embryo_fn_external_param_set_int(Embryo_Program *ep, Embryo_Cell *params)
    eep.name = param_name;
    eep.type = EDJE_EXTERNAL_PARAM_TYPE_INT;
    eep.i = params[3];
-   return _edje_external_param_set(rp->swallowed_object, &eep);
+   return _edje_external_param_set(NULL, rp, &eep);
 }
 
 /* Float:external_param_get_float(id, param_name[]) */
@@ -2597,7 +2651,7 @@ _edje_embryo_fn_external_param_get_float(Embryo_Program *ep, Embryo_Cell *params
    eep.name = param_name;
    eep.type = EDJE_EXTERNAL_PARAM_TYPE_DOUBLE;
    eep.d = 0.0;
-   _edje_external_param_get(rp->swallowed_object, &eep);
+   _edje_external_param_get(NULL, rp, &eep);
    v = eep.d;
    return EMBRYO_FLOAT_TO_CELL(v);
 }
@@ -2624,7 +2678,7 @@ _edje_embryo_fn_external_param_set_float(Embryo_Program *ep, Embryo_Cell *params
    eep.name = param_name;
    eep.type = EDJE_EXTERNAL_PARAM_TYPE_DOUBLE;
    eep.d = EMBRYO_CELL_TO_FLOAT(params[3]);
-   return _edje_external_param_set(rp->swallowed_object, &eep);
+   return _edje_external_param_set(NULL, rp, &eep);
 }
 
 /* external_param_get_strlen(id, param_name[]) */
@@ -2649,7 +2703,7 @@ _edje_embryo_fn_external_param_get_strlen(Embryo_Program *ep, Embryo_Cell *param
    eep.name = param_name;
    eep.type = EDJE_EXTERNAL_PARAM_TYPE_STRING;
    eep.s = NULL;
-   _edje_external_param_get(rp->swallowed_object, &eep);
+   _edje_external_param_get(NULL, rp, &eep);
    if (!eep.s) return 0;
    return strlen(eep.s);
 }
@@ -2680,7 +2734,7 @@ _edje_embryo_fn_external_param_get_str(Embryo_Program *ep, Embryo_Cell *params)
    eep.name = param_name;
    eep.type = EDJE_EXTERNAL_PARAM_TYPE_STRING;
    eep.s = NULL;
-   _edje_external_param_get(rp->swallowed_object, &eep);
+   _edje_external_param_get(NULL, rp, &eep);
    if (!eep.s) goto error;
    src_len = strlen(eep.s);
    if (src_len < dst_len)
@@ -2725,7 +2779,7 @@ _edje_embryo_fn_external_param_set_str(Embryo_Program *ep, Embryo_Cell *params)
    GETSTR(val, params[3]);
    if (!val) return 0;
    eep.s = val;
-   return _edje_external_param_set(rp->swallowed_object, &eep);
+   return _edje_external_param_set(NULL, rp, &eep);
 }
 
 /* external_param_get_choice_len(id, param_name[]) */
@@ -2750,7 +2804,7 @@ _edje_embryo_fn_external_param_get_choice_len(Embryo_Program *ep, Embryo_Cell *p
    eep.name = param_name;
    eep.type = EDJE_EXTERNAL_PARAM_TYPE_CHOICE;
    eep.s = NULL;
-   _edje_external_param_get(rp->swallowed_object, &eep);
+   _edje_external_param_get(NULL, rp, &eep);
    if (!eep.s) return 0;
    return strlen(eep.s);
 }
@@ -2781,7 +2835,7 @@ _edje_embryo_fn_external_param_get_choice(Embryo_Program *ep, Embryo_Cell *param
    eep.name = param_name;
    eep.type = EDJE_EXTERNAL_PARAM_TYPE_CHOICE;
    eep.s = NULL;
-   _edje_external_param_get(rp->swallowed_object, &eep);
+   _edje_external_param_get(NULL, rp, &eep);
    if (!eep.s) goto error;
    src_len = strlen(eep.s);
    if (src_len < dst_len)
@@ -2826,7 +2880,7 @@ _edje_embryo_fn_external_param_set_choice(Embryo_Program *ep, Embryo_Cell *param
    GETSTR(val, params[3]);
    if (!val) return 0;
    eep.s = val;
-   return _edje_external_param_set(rp->swallowed_object, &eep);
+   return _edje_external_param_set(NULL, rp, &eep);
 }
 
 /* external_param_get_bool(id, param_name[]) */
@@ -2851,7 +2905,7 @@ _edje_embryo_fn_external_param_get_bool(Embryo_Program *ep, Embryo_Cell *params)
    eep.name = param_name;
    eep.type = EDJE_EXTERNAL_PARAM_TYPE_BOOL;
    eep.i = 0;
-   _edje_external_param_get(rp->swallowed_object, &eep);
+   _edje_external_param_get(NULL, rp, &eep);
    return eep.i;
 }
 
@@ -2877,7 +2931,7 @@ _edje_embryo_fn_external_param_set_bool(Embryo_Program *ep, Embryo_Cell *params)
    eep.name = param_name;
    eep.type = EDJE_EXTERNAL_PARAM_TYPE_BOOL;
    eep.i = params[3];
-   return _edje_external_param_set(rp->swallowed_object, &eep);
+   return _edje_external_param_set(NULL, rp, &eep);
 }
 
 void
@@ -2922,6 +2976,7 @@ _edje_embryo_script_init(Edje_Part_Collection *edc)
    embryo_program_native_call_add(ep, "cancel_anim", _edje_embryo_fn_cancel_anim);
 
    embryo_program_native_call_add(ep, "emit", _edje_embryo_fn_emit);
+   embryo_program_native_call_add(ep, "get_part_id", _edje_embryo_fn_get_part_id);
    embryo_program_native_call_add(ep, "set_state", _edje_embryo_fn_set_state);
    embryo_program_native_call_add(ep, "get_state", _edje_embryo_fn_get_state);
    embryo_program_native_call_add(ep, "set_tween_state", _edje_embryo_fn_set_tween_state);
@@ -3031,12 +3086,13 @@ _edje_embryo_test_run(Edje *ed, const char *fname, const char *sig, const char *
 	ret = embryo_program_run(ed->collection->script, fn);
 	if (ret == EMBRYO_PROGRAM_FAIL)
 	  {
- 	     ERR("ERROR with embryo script.\n"
-                 "OBJECT NAME: %s\n"
-                 "OBJECT FILE: %s\n"
-                 "ENTRY POINT: %s\n"
-                 "SIGNAL/SRC:  %s / %s\n"
-		 "ERROR:       %s",
+ 	     ERR("ERROR with embryo script. "
+                 "OBJECT NAME: '%s', "
+                 "OBJECT FILE: '%s', "
+                 "ENTRY POINT: '%s', "
+                 "SIGNAL: '%s', "
+                 "SOURCE: '%s', "
+		 "ERROR: '%s'",
                  ed->collection->part,
                  ed->file->path,
                  fname,
@@ -3045,12 +3101,13 @@ _edje_embryo_test_run(Edje *ed, const char *fname, const char *sig, const char *
 	  }
 	else if (ret == EMBRYO_PROGRAM_TOOLONG)
 	  {
-	     ERR("ERROR with embryo script.\n"
-                 "OBJECT NAME: %s\n"
-                 "OBJECT FILE: %s\n"
-                 "ENTRY POINT: %s\n"
-                 "SIGNAL/SRC:  %s / %s\n"
-		 "ERROR:       Script exceeded maximum allowed cycle count of %i",
+	     ERR("ERROR with embryo script. "
+                 "OBJECT NAME: '%s', "
+                 "OBJECT FILE: '%s', "
+                 "ENTRY POINT: '%s', "
+                 "SIGNAL: '%s', "
+                 "SOURCE: '%s', "
+		 "ERROR: 'Script exceeded maximum allowed cycle count of %i'",
                  ed->collection->part,
                  ed->file->path,
 		 fname,

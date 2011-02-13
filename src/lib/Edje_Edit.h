@@ -42,6 +42,14 @@ typedef enum _Edje_Edit_Image_Comp
    EDJE_EDIT_IMAGE_COMP_LOSSY
 } Edje_Edit_Image_Comp;
 
+struct _Edje_Edit_Script_Error
+{
+   const char *program_name; /* null == group shared script */
+   int line;
+   const char *error_str;
+};
+typedef struct _Edje_Edit_Script_Error Edje_Edit_Script_Error;
+
 /**
  * @file
  * @brief Functions to deal with edje internal object. Don't use in standard
@@ -324,7 +332,7 @@ EAPI Eina_Bool edje_edit_data_del(Evas_Object *obj, const char *itemname);
  *
  * @return Value of the given entry, or NULL if not found.
  */
-EAPI const char * edje_edit_data_value_get(Evas_Object *obj, char *itemname);
+EAPI const char * edje_edit_data_value_get(Evas_Object *obj, const char *itemname);
 
 /** Set the data associated with the given itemname.
  *
@@ -383,7 +391,7 @@ EAPI Eina_Bool edje_edit_group_data_del(Evas_Object *obj, const char *itemname);
  *
  * @return Value of the data entry or NULL if not found.
  */
-EAPI const char * edje_edit_group_data_value_get(Evas_Object *obj, char *itemname);
+EAPI const char * edje_edit_group_data_value_get(Evas_Object *obj, const char *itemname);
 
 /** Set the data associated with the given itemname.
  *
@@ -2316,6 +2324,18 @@ EAPI Eina_Bool edje_edit_font_add(Evas_Object *obj, const char *path, const char
  */
 EAPI Eina_Bool edje_edit_font_del(Evas_Object *obj, const char* alias);
 
+/** Get font path for a given font alias.
+ *
+ * Remember to free the string with edje_edit_string_free()
+ *
+ * @param obj Object being edited.
+ * @param alias The font alias.
+ *
+ * @return The path of the given font alias.
+ */
+EAPI const char *edje_edit_font_path_get(Evas_Object *obj, const char *alias);
+
+
 /** Get font name for a given part state.
  *
  * Remember to free the returned string using edje_edit_string_free().
@@ -3369,14 +3389,90 @@ EAPI Eina_Bool edje_edit_program_filter_part_set(Evas_Object *obj, const char *p
  */ //@{
 
 /**
- * Get the script for the given object,
+ * Get the Embryo script for the group of the given object.
+ *
+ * Get the shared script for the group under edition. Shared script means
+ * the script {} block for the group, not counting what's in each program.
+ * It returns a malloc'd duplicate of the code, so users are free to modify
+ * the contents directly and they should remember to free() it when done.
+ * NULL will be returned if there's no script or an error occurred.
  *
  * @param obj Object being edited.
  *
- * @return The script name.
+ * @return The shared script code for this group.
  */
-EAPI const char * edje_edit_script_get(Evas_Object *obj);
+EAPI char *edje_edit_script_get(Evas_Object *obj);
 
+/**
+ * Set the code for the group script.
+ *
+ * Set the Embryo source code for the shared script of the edited group.
+ * Note that changing the code itself will not update the running VM, you
+ * need to call edje_edit_script_compile for it to get updated.
+ *
+ * @param obj The object being edited
+ * @param code The Embryo source
+ */
+EAPI void edje_edit_script_set(Evas_Object *obj, const char *code);
+
+/**
+ * Get the Embryo script for the given program.
+ *
+ * Get the script code for the given program. Like the group script, this
+ * function returns a duplicate of the code that the user can modify at will
+ * and must free when done using it.
+ * NULL will be returned if the program doesn't exist, doesn't have any
+ * script or is not of type script.
+ *
+ * @param obj Object being edited
+ * @param prog Program name
+ *
+ * @return The program script code
+ */
+EAPI char *edje_edit_script_program_get(Evas_Object *obj, const char *prog);
+
+/**
+ * Set the Embryo script for the given program.
+ *
+ * Set the Embryo source code for the program @p prog. It must be an
+ * existing program of type EDJE_ACTION_TYPE_SCRIPT, or the function
+ * will fail and do nothing.
+ * Note that changing the code itself will not update the running VM, you
+ * need to call edje_edit_script_compile for it to get updated.
+ *
+ * @param obj The object being edited
+ * @param prog The program name.
+ * @param code The Embryo source
+ */
+EAPI void edje_edit_script_program_set(Evas_Object *obj, const char *prog, const char *code);
+
+/**
+ * Compile the Embryo script for the given object
+ *
+ * If required, this function will process all script code for the group and
+ * build the bytecode, updating the running Embryo VM Program if the build
+ * is succesful.
+ *
+ * @param obj The object being edited
+ *
+ */
+EAPI Eina_Bool edje_edit_script_compile(Evas_Object *obj);
+
+/**
+ * Get the list of errors resulting from the last script build
+ *
+ * Get the list of errors that resulted from the last attempt to rebuild
+ * the Embryo script for the edited group. This will be a standard Eina_List
+ * with Edje_Edit_Script_Error pointers as its data.
+ * The user should not do anything else but read the contents of this list.
+ * These errors can be the output of the embryo compiler, or internal errors
+ * generated by Edje_Edit if the preprocessing of the scripts failed.
+ *
+ * @param obj The object being edited
+ *
+ * @return A constant list of Edje_Edit_Script_Error, or NULL if there are none
+ */
+EAPI const Eina_List *edje_edit_script_error_list_get(Evas_Object *obj);
 
 //@}
 /******************************************************************************/

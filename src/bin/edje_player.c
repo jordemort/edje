@@ -36,6 +36,16 @@ struct opts {
    char *title;
 };
 
+static Ecore_Evas *win;
+
+static void
+_win_title_set(const char *group, const char *file)
+{
+   char buf[1024];
+   snprintf(buf, sizeof(buf), "Edje_Player - %s of %s", group, file);
+   ecore_evas_title_set(win, buf);
+}
+
 static char *
 _slave_mode_tok(char **p_arg)
 {
@@ -433,7 +443,10 @@ _edje_load_or_show_error(Evas_Object *edje, const char *file, const char *group)
    int err;
 
    if (edje_object_file_set(edje, file, group))
-     return EINA_TRUE;
+     {
+        evas_object_focus_set(edje, EINA_TRUE);
+        return EINA_TRUE;
+     }
 
    err = edje_object_load_error_get(edje);
    errmsg = edje_load_error_str(err);
@@ -460,6 +473,7 @@ _create_edje(Evas *evas, const struct opts *opts)
 	     evas_object_del(edje);
 	     return NULL;
 	  }
+        if (!opts->title) _win_title_set(opts->group, opts->file);
      }
    else
      {
@@ -470,6 +484,7 @@ _create_edje(Evas *evas, const struct opts *opts)
 		  evas_object_del(edje);
 		  return NULL;
 	       }
+             if (!opts->title) _win_title_set("main", opts->file);
 	  }
 	else
 	  {
@@ -489,6 +504,7 @@ _create_edje(Evas *evas, const struct opts *opts)
 		  evas_object_del(edje);
 		  return NULL;
 	       }
+             if (!opts->title) _win_title_set(group, opts->file);
 	     edje_file_collection_list_free(groups);
 	  }
      }
@@ -575,7 +591,6 @@ const Ecore_Getopt optdesc = {
 
 int main(int argc, char **argv)
 {
-   Ecore_Evas *win;
    Evas *evas;
    Evas_Object *stack, *edje;
    struct opts opts;
@@ -713,13 +728,6 @@ int main(int argc, char **argv)
    ecore_evas_sticky_set(win, opts.sticky);
    if (opts.title)
      ecore_evas_title_set(win, opts.title);
-   else
-     {
-	char buf[1024];
-	snprintf(buf, sizeof(buf), "Edje_Player - %s of %s",
-		 opts.group, opts.file);
-	ecore_evas_title_set(win, buf);
-     }
 
    if (opts.size.w <= 0) opts.size.w = 320;
    if (opts.size.h <= 0) opts.size.h = 240;

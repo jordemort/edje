@@ -70,14 +70,15 @@ struct _Font_List
 
 struct _Font
 {
-   char *file;
    char *name;
+   char *file;
 };
 
 struct _Code
 {
    int       l1, l2;
    char      *shared;
+   char      *original;
    Eina_List *programs;
    int		is_lua;
 };
@@ -87,6 +88,7 @@ struct _Code_Program
    int        l1, l2;
    int        id;
    char      *script;
+   char      *original;
 };
 
 struct _SrcFile

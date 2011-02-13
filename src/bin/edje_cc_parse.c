@@ -722,47 +722,20 @@ compile(void)
                     }
                }
           }
-	/*
-	 * On some BSD based systems (MacOS, OpenBSD), the default cpp
-	 * in the path is a wrapper script that chokes on the -o option.
-	 * If the preprocessor is invoked via gcc -E, it will treat
-	 * file_in as a linker file. The safest route seems to be to
-	 * run cpp with the output as the second non-option argument.
-	 *
-	 * Redirecting the output is required for MacOS 10.3, and works fine
-	 * on other systems.
-	 *
-	 * Also, the MacOS preprocessor is not managing C++ comments, so pass gcc
-	 * preprocessor just after. Linux gcc seems to not like it, so guard the
-	 * code so that it is compiled only on MacOS
-	 *
-	 */
+
+        /* Trying gcc and other syntax */
 	if (ret != 0)
 	  {
-	     snprintf(buf, sizeof(buf), "cat %s | cpp -I%s %s > %s",
-		      file_in, inc, def, tmpn);
+	     snprintf(buf, sizeof(buf), "%s -I%s %s -E -o %s -std=c99 - < %s",
+                      getenv("CC") ? getenv("CC") : "cc",
+		      inc, def, tmpn, file_in);
 	     ret = system(buf);
-#if defined (__MacOSX__) || ( defined (__MACH__) && defined (__APPLE__) ) || defined (__OpenBSD__)
-             if (ret == 0)
-               {
-                  static char tmpn2[4096];
-                  
-                  snprintf (tmpn2, PATH_MAX, "%s/edje_cc.edc-tmp-XXXXXX", tmp_dir);
-                  fd = mkstemp(tmpn2);
-                  if (fd >= 0)
-                    {
-                       close(fd); 
-                       snprintf (buf, 4096, "gcc -xc -I%s %s -E -o %s %s",
-                                 inc, def, tmpn2, tmpn);
-                       ret = system(buf);
-                       snprintf(tmpn, 4096, "%s", tmpn2);
-                    }
-               }
-#endif
 	  }
+        /* Trying suncc syntax */
 	if (ret != 0)
 	  {
-	     snprintf(buf, sizeof(buf), "gcc -I%s %s -E -o %s %s",
+	     snprintf(buf, sizeof(buf), "%s -I%s %s -E -o %s -xc99 - < %s",
+                      getenv("CC") ? getenv("CC") : "cc",
 		      inc, def, tmpn, file_in);
 	     ret = system(buf);
 	  }
@@ -1259,12 +1232,12 @@ _is_numi(char c)
 int
 _is_op1i(char c)
 {
-   switch(c)
+   switch (c)
      {
      case '*':;
      case '%':;
      case '/': return 1;
-     default: return 0;
+     default: break;
      }
    return 0;
 }
@@ -1272,11 +1245,11 @@ _is_op1i(char c)
 int
 _is_op2i(char c)
 {
-   switch(c)
+   switch (c)
      {
      case '+':;
      case '-': return 1;
-     default: return 0;
+     default: break;
      }
    return 0;
 }
@@ -1310,8 +1283,8 @@ _calci(char op, int a, int b)
      default:
 	ERR("%s: Error. %s:%i unexpected character '%c'\n",
 	    progname, file_in, line - 1, op);
-	return a;
      }
+   return a;
 }
 
 /* float set of functoins */
@@ -1349,7 +1322,6 @@ _deltaf(char *s, double *val)
 	s++;
 	s = _alphaf(s, val);
 	s++;
-	return s;
      }
    return s;
 }
@@ -1467,8 +1439,7 @@ _is_numf(char c)
        || ('.' == c)
        || ('+' == c))
      return 1;
-   else
-     return 0;
+   return 0;
 }
 
 static int
@@ -1479,7 +1450,7 @@ _is_op1f(char c)
      case '*':;
      case '%':;
      case '/': return 1;
-     default: return 0;
+     default: break;
      }
    return 0;
 }
@@ -1491,7 +1462,7 @@ _is_op2f(char c)
      {
      case '+':;
      case '-': return 1;
-     default: return 0;
+     default: break;
      }
    return 0;
 }
@@ -1525,8 +1496,8 @@ _calcf(char op, double a, double b)
      default:
 	ERR("%s: Error. %s:%i unexpected character '%c'\n",
 	    progname, file_in, line - 1, op);
-	return a;
      }
+   return a;
 }
 
 static int

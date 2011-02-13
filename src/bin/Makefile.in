@@ -36,7 +36,8 @@ POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
 EXTRA_PROGRAMS = edje_cc$(EXEEXT) edje_decc$(EXEEXT) \
-	edje_player$(EXEEXT) edje_convert$(EXEEXT)
+	edje_player$(EXEEXT) edje_inspector$(EXEEXT) \
+	edje_external_inspector$(EXEEXT)
 subdir = src/bin
 DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
@@ -54,41 +55,48 @@ CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 am__installdirs = "$(DESTDIR)$(bindir)" "$(DESTDIR)$(bindir)"
 PROGRAMS = $(bin_PROGRAMS)
-am_edje_cc_OBJECTS = edje_cc.$(OBJEXT) edje_cc_out.$(OBJEXT) \
-	edje_cc_parse.$(OBJEXT) edje_cc_mem.$(OBJEXT) \
-	edje_cc_handlers.$(OBJEXT) edje_cc_sources.$(OBJEXT) \
-	edje_prefix.$(OBJEXT)
+am_edje_cc_OBJECTS = edje_cc-edje_cc.$(OBJEXT) \
+	edje_cc-edje_cc_out.$(OBJEXT) edje_cc-edje_cc_parse.$(OBJEXT) \
+	edje_cc-edje_cc_mem.$(OBJEXT) \
+	edje_cc-edje_cc_handlers.$(OBJEXT) \
+	edje_cc-edje_cc_sources.$(OBJEXT) \
+	edje_cc-edje_prefix.$(OBJEXT)
 edje_cc_OBJECTS = $(am_edje_cc_OBJECTS)
-am__DEPENDENCIES_1 =
-edje_cc_DEPENDENCIES = $(top_builddir)/src/lib/libedje.la \
-	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
+edje_cc_DEPENDENCIES = $(top_builddir)/src/lib/libedje.la
 AM_V_lt = $(am__v_lt_$(V))
 am__v_lt_ = $(am__v_lt_$(AM_DEFAULT_VERBOSITY))
 am__v_lt_0 = --silent
 edje_cc_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
 	$(edje_cc_LDFLAGS) $(LDFLAGS) -o $@
-am_edje_convert_OBJECTS = edje_convert.$(OBJEXT) \
-	edje_convert_main.$(OBJEXT) edje_data_convert.$(OBJEXT)
-edje_convert_OBJECTS = $(am_edje_convert_OBJECTS)
-edje_convert_DEPENDENCIES = $(top_builddir)/src/lib/libedje.la \
-	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
-	$(am__DEPENDENCIES_1)
-edje_convert_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
-	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
-	$(edje_convert_LDFLAGS) $(LDFLAGS) -o $@
-am_edje_decc_OBJECTS = edje_decc.$(OBJEXT) edje_cc_mem.$(OBJEXT) \
-	edje_cc_sources.$(OBJEXT)
+am_edje_decc_OBJECTS = edje_decc-edje_decc.$(OBJEXT) \
+	edje_decc-edje_cc_mem.$(OBJEXT) \
+	edje_decc-edje_cc_sources.$(OBJEXT)
 edje_decc_OBJECTS = $(am_edje_decc_OBJECTS)
-edje_decc_DEPENDENCIES = $(top_builddir)/src/lib/libedje.la \
-	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
+edje_decc_DEPENDENCIES = $(top_builddir)/src/lib/libedje.la
 edje_decc_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
 	$(edje_decc_LDFLAGS) $(LDFLAGS) -o $@
-am_edje_player_OBJECTS = edje_player.$(OBJEXT)
+am_edje_external_inspector_OBJECTS =  \
+	edje_external_inspector-edje_external_inspector.$(OBJEXT)
+edje_external_inspector_OBJECTS =  \
+	$(am_edje_external_inspector_OBJECTS)
+edje_external_inspector_DEPENDENCIES =  \
+	$(top_builddir)/src/lib/libedje.la
+edje_external_inspector_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
+	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
+	$(AM_CFLAGS) $(CFLAGS) $(edje_external_inspector_LDFLAGS) \
+	$(LDFLAGS) -o $@
+am_edje_inspector_OBJECTS = edje_inspector-edje_inspector.$(OBJEXT)
+edje_inspector_OBJECTS = $(am_edje_inspector_OBJECTS)
+edje_inspector_DEPENDENCIES = $(top_builddir)/src/lib/libedje.la
+edje_inspector_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
+	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
+	$(AM_CFLAGS) $(CFLAGS) $(edje_inspector_LDFLAGS) $(LDFLAGS) -o \
+	$@
+am_edje_player_OBJECTS = edje_player-edje_player.$(OBJEXT)
 edje_player_OBJECTS = $(am_edje_player_OBJECTS)
-edje_player_DEPENDENCIES = $(top_builddir)/src/lib/libedje.la \
-	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
+edje_player_DEPENDENCIES = $(top_builddir)/src/lib/libedje.la
 edje_player_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
 	$(edje_player_LDFLAGS) $(LDFLAGS) -o $@
@@ -140,10 +148,12 @@ am__v_CCLD_0 = @echo "  CCLD  " $@;
 AM_V_GEN = $(am__v_GEN_$(V))
 am__v_GEN_ = $(am__v_GEN_$(AM_DEFAULT_VERBOSITY))
 am__v_GEN_0 = @echo "  GEN   " $@;
-SOURCES = $(edje_cc_SOURCES) $(edje_convert_SOURCES) \
-	$(edje_decc_SOURCES) $(edje_player_SOURCES)
-DIST_SOURCES = $(edje_cc_SOURCES) $(edje_convert_SOURCES) \
-	$(edje_decc_SOURCES) $(edje_player_SOURCES)
+SOURCES = $(edje_cc_SOURCES) $(edje_decc_SOURCES) \
+	$(edje_external_inspector_SOURCES) $(edje_inspector_SOURCES) \
+	$(edje_player_SOURCES)
+DIST_SOURCES = $(edje_cc_SOURCES) $(edje_decc_SOURCES) \
+	$(edje_external_inspector_SOURCES) $(edje_inspector_SOURCES) \
+	$(edje_player_SOURCES)
 ETAGS = etags
 CTAGS = ctags
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
@@ -171,17 +181,24 @@ DUMPBIN = @DUMPBIN@
 ECHO_C = @ECHO_C@
 ECHO_N = @ECHO_N@
 ECHO_T = @ECHO_T@
-ECORE_EVAS_CFLAGS = @ECORE_EVAS_CFLAGS@
-ECORE_EVAS_LIBS = @ECORE_EVAS_LIBS@
-ECORE_FILE_CFLAGS = @ECORE_FILE_CFLAGS@
-ECORE_FILE_LIBS = @ECORE_FILE_LIBS@
 ECORE_IMF_CFLAGS = @ECORE_IMF_CFLAGS@
 ECORE_IMF_LIBS = @ECORE_IMF_LIBS@
+EDJE_CC_CFLAGS = @EDJE_CC_CFLAGS@
+EDJE_CC_LIBS = @EDJE_CC_LIBS@
 EDJE_CC_PRG = @EDJE_CC_PRG@
 EDJE_CFLAGS = @EDJE_CFLAGS@
-EDJE_CONVERT_PRG = @EDJE_CONVERT_PRG@
+EDJE_DECC_CFLAGS = @EDJE_DECC_CFLAGS@
+EDJE_DECC_LIBS = @EDJE_DECC_LIBS@
 EDJE_DECC_PRG = @EDJE_DECC_PRG@
+EDJE_EXTERNAL_INSPECTOR_CFLAGS = @EDJE_EXTERNAL_INSPECTOR_CFLAGS@
+EDJE_EXTERNAL_INSPECTOR_LIBS = @EDJE_EXTERNAL_INSPECTOR_LIBS@
+EDJE_EXTERNAL_INSPECTOR_PRG = @EDJE_EXTERNAL_INSPECTOR_PRG@
+EDJE_INSPECTOR_CFLAGS = @EDJE_INSPECTOR_CFLAGS@
+EDJE_INSPECTOR_LIBS = @EDJE_INSPECTOR_LIBS@
+EDJE_INSPECTOR_PRG = @EDJE_INSPECTOR_PRG@
 EDJE_LIBS = @EDJE_LIBS@
+EDJE_PLAYER_CFLAGS = @EDJE_PLAYER_CFLAGS@
+EDJE_PLAYER_LIBS = @EDJE_PLAYER_LIBS@
 EDJE_PLAYER_PRG = @EDJE_PLAYER_PRG@
 EDJE_RECC_PRG = @EDJE_RECC_PRG@
 EFL_EDJE_BUILD = @EFL_EDJE_BUILD@
@@ -304,20 +321,8 @@ top_srcdir = @top_srcdir@
 version_info = @version_info@
 vimdir = @vimdir@
 MAINTAINERCLEANFILES = Makefile.in
-AM_CPPFLAGS = \
--I$(top_srcdir) \
--I$(top_srcdir)/src/bin \
--I$(top_srcdir)/src/lib \
--DPACKAGE_BIN_DIR=\"$(bindir)\" \
--DPACKAGE_LIB_DIR=\"$(libdir)\" \
--DPACKAGE_DATA_DIR=\"$(datadir)/$(PACKAGE)\" \
-@EDJE_CFLAGS@ \
-@ECORE_EVAS_CFLAGS@ \
-@ECORE_FILE_CFLAGS@ \
-@EVIL_CFLAGS@
-
 bin_SCRIPTS = @EDJE_RECC_PRG@
-bin_PROGRAMS = @EDJE_CC_PRG@ @EDJE_DECC_PRG@ @EDJE_PLAYER_PRG@ @EDJE_CONVERT_PRG@
+bin_PROGRAMS = @EDJE_CC_PRG@ @EDJE_DECC_PRG@ @EDJE_PLAYER_PRG@ @EDJE_INSPECTOR_PRG@ @EDJE_EXTERNAL_INSPECTOR_PRG@
 edje_cc_SOURCES = \
 edje_cc.c \
 edje_cc_out.c \
@@ -327,7 +332,15 @@ edje_cc_handlers.c \
 edje_cc_sources.c \
 edje_prefix.c
 
-edje_cc_LDADD = $(top_builddir)/src/lib/libedje.la $(ECORE_EVAS_LIBS) $(EVIL_LIBS)
+edje_cc_CPPFLAGS = \
+-I$(top_srcdir)/src/bin \
+-I$(top_srcdir)/src/lib \
+-DPACKAGE_BIN_DIR=\"$(bindir)\" \
+-DPACKAGE_LIB_DIR=\"$(libdir)\" \
+-DPACKAGE_DATA_DIR=\"$(datadir)/$(PACKAGE)\" \
+@EDJE_CFLAGS@ @EDJE_CC_CFLAGS@ @EVIL_CFLAGS@
+
+edje_cc_LDADD = $(top_builddir)/src/lib/libedje.la @EDJE_CC_LIBS@ @EVIL_LIBS@ -lm
 edje_cc_LDFLAGS = @lt_enable_auto_import@
 edje_decc_SOURCES = \
 edje_decc.c \
@@ -335,15 +348,38 @@ edje_decc.h \
 edje_cc_mem.c \
 edje_cc_sources.c
 
-edje_decc_LDADD = $(top_builddir)/src/lib/libedje.la $(ECORE_EVAS_LIBS) $(ECORE_FILE_LIBS)
+edje_decc_CPPFLAGS = \
+-I$(top_srcdir)/src/bin \
+-I$(top_srcdir)/src/lib \
+@EDJE_CFLAGS@ @EDJE_DECC_CFLAGS@ @EVIL_CFLAGS@
+
+edje_decc_LDADD = $(top_builddir)/src/lib/libedje.la @EDJE_DECC_LIBS@
 edje_decc_LDFLAGS = @lt_enable_auto_import@
 edje_player_SOURCES = edje_player.c
-edje_player_LDADD = $(top_builddir)/src/lib/libedje.la $(ECORE_EVAS_LIBS) $(EVIL_LIBS)
+edje_player_CPPFLAGS = \
+-I$(top_srcdir)/src/bin \
+-I$(top_srcdir)/src/lib \
+@EDJE_PLAYER_CFLAGS@ @EVIL_CFLAGS@
+
+edje_player_LDADD = $(top_builddir)/src/lib/libedje.la @EDJE_PLAYER_LIBS@ @EVIL_LIBS@
 edje_player_LDFLAGS = @lt_enable_auto_import@
-edje_convert_SOURCES = edje_convert.c edje_convert_main.c edje_data_convert.c
-edje_convert_LDADD = $(top_builddir)/src/lib/libedje.la $(EVIL_LIBS) $(ECORE_EVAS_LIBS) $(EVIL_LIBS)
-edje_convert_LDFLAGS = @lt_enable_auto_import@
-EXTRA_DIST = @EDJE_RECC_PRG@ edje_prefix.h edje_cc.h edje_convert.h
+edje_inspector_SOURCES = edje_inspector.c
+edje_inspector_CPPFLAGS = \
+-I$(top_srcdir)/src/bin \
+-I$(top_srcdir)/src/lib \
+@EDJE_INSPECTOR_CFLAGS@
+
+edje_inspector_LDADD = $(top_builddir)/src/lib/libedje.la @EDJE_INSPECTOR_LIBS@
+edje_inspector_LDFLAGS = @lt_enable_auto_import@
+edje_external_inspector_SOURCES = edje_external_inspector.c
+edje_external_inspector_CPPFLAGS = \
+-I$(top_srcdir)/src/bin \
+-I$(top_srcdir)/src/lib \
+@EDJE_EXTERNAL_INSPECTOR_CFLAGS@
+
+edje_external_inspector_LDADD = $(top_builddir)/src/lib/libedje.la @EDJE_EXTERNAL_INSPECTOR_LIBS@
+edje_external_inspector_LDFLAGS = @lt_enable_auto_import@
+EXTRA_DIST = @EDJE_RECC_PRG@ edje_prefix.h edje_cc.h edje_convert.h edje_convert.c edje_convert_main.c edje_data_convert.c
 EXTRA_SCRIPTS = edje_recc
 all: all-am
 
@@ -425,12 +461,15 @@ clean-binPROGRAMS:
 edje_cc$(EXEEXT): $(edje_cc_OBJECTS) $(edje_cc_DEPENDENCIES) 
 	@rm -f edje_cc$(EXEEXT)
 	$(AM_V_CCLD)$(edje_cc_LINK) $(edje_cc_OBJECTS) $(edje_cc_LDADD) $(LIBS)
-edje_convert$(EXEEXT): $(edje_convert_OBJECTS) $(edje_convert_DEPENDENCIES) 
-	@rm -f edje_convert$(EXEEXT)
-	$(AM_V_CCLD)$(edje_convert_LINK) $(edje_convert_OBJECTS) $(edje_convert_LDADD) $(LIBS)
 edje_decc$(EXEEXT): $(edje_decc_OBJECTS) $(edje_decc_DEPENDENCIES) 
 	@rm -f edje_decc$(EXEEXT)
 	$(AM_V_CCLD)$(edje_decc_LINK) $(edje_decc_OBJECTS) $(edje_decc_LDADD) $(LIBS)
+edje_external_inspector$(EXEEXT): $(edje_external_inspector_OBJECTS) $(edje_external_inspector_DEPENDENCIES) 
+	@rm -f edje_external_inspector$(EXEEXT)
+	$(AM_V_CCLD)$(edje_external_inspector_LINK) $(edje_external_inspector_OBJECTS) $(edje_external_inspector_LDADD) $(LIBS)
+edje_inspector$(EXEEXT): $(edje_inspector_OBJECTS) $(edje_inspector_DEPENDENCIES) 
+	@rm -f edje_inspector$(EXEEXT)
+	$(AM_V_CCLD)$(edje_inspector_LINK) $(edje_inspector_OBJECTS) $(edje_inspector_LDADD) $(LIBS)
 edje_player$(EXEEXT): $(edje_player_OBJECTS) $(edje_player_DEPENDENCIES) 
 	@rm -f edje_player$(EXEEXT)
 	$(AM_V_CCLD)$(edje_player_LINK) $(edje_player_OBJECTS) $(edje_player_LDADD) $(LIBS)
@@ -475,18 +514,19 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/edje_cc.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/edje_cc_handlers.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/edje_cc_mem.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/edje_cc_out.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/edje_cc_parse.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/edje_cc_sources.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/edje_convert.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/edje_convert_main.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/edje_data_convert.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/edje_decc.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/edje_player.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/edje_prefix.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/edje_cc-edje_cc.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/edje_cc-edje_cc_handlers.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/edje_cc-edje_cc_mem.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/edje_cc-edje_cc_out.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/edje_cc-edje_cc_parse.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/edje_cc-edje_cc_sources.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/edje_cc-edje_prefix.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/edje_decc-edje_cc_mem.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/edje_decc-edje_cc_sources.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/edje_decc-edje_decc.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/edje_external_inspector-edje_external_inspector.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/edje_inspector-edje_inspector.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/edje_player-edje_player.Po@am__quote@
 
 .c.o:
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(COMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
@@ -511,6 +551,214 @@ distclean-compile:
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$<' object='$@' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LTCOMPILE) -c -o $@ $<
+
+edje_cc-edje_cc.o: edje_cc.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(edje_cc_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT edje_cc-edje_cc.o -MD -MP -MF $(DEPDIR)/edje_cc-edje_cc.Tpo -c -o edje_cc-edje_cc.o `test -f 'edje_cc.c' || echo '$(srcdir)/'`edje_cc.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/edje_cc-edje_cc.Tpo $(DEPDIR)/edje_cc-edje_cc.Po
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='edje_cc.c' object='edje_cc-edje_cc.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(edje_cc_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o edje_cc-edje_cc.o `test -f 'edje_cc.c' || echo '$(srcdir)/'`edje_cc.c
+
+edje_cc-edje_cc.obj: edje_cc.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(edje_cc_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT edje_cc-edje_cc.obj -MD -MP -MF $(DEPDIR)/edje_cc-edje_cc.Tpo -c -o edje_cc-edje_cc.obj `if test -f 'edje_cc.c'; then $(CYGPATH_W) 'edje_cc.c'; else $(CYGPATH_W) '$(srcdir)/edje_cc.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/edje_cc-edje_cc.Tpo $(DEPDIR)/edje_cc-edje_cc.Po
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='edje_cc.c' object='edje_cc-edje_cc.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(edje_cc_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o edje_cc-edje_cc.obj `if test -f 'edje_cc.c'; then $(CYGPATH_W) 'edje_cc.c'; else $(CYGPATH_W) '$(srcdir)/edje_cc.c'; fi`
+
+edje_cc-edje_cc_out.o: edje_cc_out.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(edje_cc_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT edje_cc-edje_cc_out.o -MD -MP -MF $(DEPDIR)/edje_cc-edje_cc_out.Tpo -c -o edje_cc-edje_cc_out.o `test -f 'edje_cc_out.c' || echo '$(srcdir)/'`edje_cc_out.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/edje_cc-edje_cc_out.Tpo $(DEPDIR)/edje_cc-edje_cc_out.Po
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='edje_cc_out.c' object='edje_cc-edje_cc_out.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(edje_cc_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o edje_cc-edje_cc_out.o `test -f 'edje_cc_out.c' || echo '$(srcdir)/'`edje_cc_out.c
+
+edje_cc-edje_cc_out.obj: edje_cc_out.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(edje_cc_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT edje_cc-edje_cc_out.obj -MD -MP -MF $(DEPDIR)/edje_cc-edje_cc_out.Tpo -c -o edje_cc-edje_cc_out.obj `if test -f 'edje_cc_out.c'; then $(CYGPATH_W) 'edje_cc_out.c'; else $(CYGPATH_W) '$(srcdir)/edje_cc_out.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/edje_cc-edje_cc_out.Tpo $(DEPDIR)/edje_cc-edje_cc_out.Po
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='edje_cc_out.c' object='edje_cc-edje_cc_out.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(edje_cc_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o edje_cc-edje_cc_out.obj `if test -f 'edje_cc_out.c'; then $(CYGPATH_W) 'edje_cc_out.c'; else $(CYGPATH_W) '$(srcdir)/edje_cc_out.c'; fi`
+
+edje_cc-edje_cc_parse.o: edje_cc_parse.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(edje_cc_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT edje_cc-edje_cc_parse.o -MD -MP -MF $(DEPDIR)/edje_cc-edje_cc_parse.Tpo -c -o edje_cc-edje_cc_parse.o `test -f 'edje_cc_parse.c' || echo '$(srcdir)/'`edje_cc_parse.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/edje_cc-edje_cc_parse.Tpo $(DEPDIR)/edje_cc-edje_cc_parse.Po
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='edje_cc_parse.c' object='edje_cc-edje_cc_parse.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(edje_cc_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o edje_cc-edje_cc_parse.o `test -f 'edje_cc_parse.c' || echo '$(srcdir)/'`edje_cc_parse.c
+
+edje_cc-edje_cc_parse.obj: edje_cc_parse.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(edje_cc_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT edje_cc-edje_cc_parse.obj -MD -MP -MF $(DEPDIR)/edje_cc-edje_cc_parse.Tpo -c -o edje_cc-edje_cc_parse.obj `if test -f 'edje_cc_parse.c'; then $(CYGPATH_W) 'edje_cc_parse.c'; else $(CYGPATH_W) '$(srcdir)/edje_cc_parse.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/edje_cc-edje_cc_parse.Tpo $(DEPDIR)/edje_cc-edje_cc_parse.Po
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='edje_cc_parse.c' object='edje_cc-edje_cc_parse.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(edje_cc_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o edje_cc-edje_cc_parse.obj `if test -f 'edje_cc_parse.c'; then $(CYGPATH_W) 'edje_cc_parse.c'; else $(CYGPATH_W) '$(srcdir)/edje_cc_parse.c'; fi`
+
+edje_cc-edje_cc_mem.o: edje_cc_mem.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(edje_cc_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT edje_cc-edje_cc_mem.o -MD -MP -MF $(DEPDIR)/edje_cc-edje_cc_mem.Tpo -c -o edje_cc-edje_cc_mem.o `test -f 'edje_cc_mem.c' || echo '$(srcdir)/'`edje_cc_mem.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/edje_cc-edje_cc_mem.Tpo $(DEPDIR)/edje_cc-edje_cc_mem.Po
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='edje_cc_mem.c' object='edje_cc-edje_cc_mem.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(edje_cc_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o edje_cc-edje_cc_mem.o `test -f 'edje_cc_mem.c' || echo '$(srcdir)/'`edje_cc_mem.c
+
+edje_cc-edje_cc_mem.obj: edje_cc_mem.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(edje_cc_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT edje_cc-edje_cc_mem.obj -MD -MP -MF $(DEPDIR)/edje_cc-edje_cc_mem.Tpo -c -o edje_cc-edje_cc_mem.obj `if test -f 'edje_cc_mem.c'; then $(CYGPATH_W) 'edje_cc_mem.c'; else $(CYGPATH_W) '$(srcdir)/edje_cc_mem.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/edje_cc-edje_cc_mem.Tpo $(DEPDIR)/edje_cc-edje_cc_mem.Po
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='edje_cc_mem.c' object='edje_cc-edje_cc_mem.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(edje_cc_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o edje_cc-edje_cc_mem.obj `if test -f 'edje_cc_mem.c'; then $(CYGPATH_W) 'edje_cc_mem.c'; else $(CYGPATH_W) '$(srcdir)/edje_cc_mem.c'; fi`
+
+edje_cc-edje_cc_handlers.o: edje_cc_handlers.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(edje_cc_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT edje_cc-edje_cc_handlers.o -MD -MP -MF $(DEPDIR)/edje_cc-edje_cc_handlers.Tpo -c -o edje_cc-edje_cc_handlers.o `test -f 'edje_cc_handlers.c' || echo '$(srcdir)/'`edje_cc_handlers.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/edje_cc-edje_cc_handlers.Tpo $(DEPDIR)/edje_cc-edje_cc_handlers.Po
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='edje_cc_handlers.c' object='edje_cc-edje_cc_handlers.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(edje_cc_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o edje_cc-edje_cc_handlers.o `test -f 'edje_cc_handlers.c' || echo '$(srcdir)/'`edje_cc_handlers.c
+
+edje_cc-edje_cc_handlers.obj: edje_cc_handlers.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(edje_cc_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT edje_cc-edje_cc_handlers.obj -MD -MP -MF $(DEPDIR)/edje_cc-edje_cc_handlers.Tpo -c -o edje_cc-edje_cc_handlers.obj `if test -f 'edje_cc_handlers.c'; then $(CYGPATH_W) 'edje_cc_handlers.c'; else $(CYGPATH_W) '$(srcdir)/edje_cc_handlers.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/edje_cc-edje_cc_handlers.Tpo $(DEPDIR)/edje_cc-edje_cc_handlers.Po
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='edje_cc_handlers.c' object='edje_cc-edje_cc_handlers.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(edje_cc_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o edje_cc-edje_cc_handlers.obj `if test -f 'edje_cc_handlers.c'; then $(CYGPATH_W) 'edje_cc_handlers.c'; else $(CYGPATH_W) '$(srcdir)/edje_cc_handlers.c'; fi`
+
+edje_cc-edje_cc_sources.o: edje_cc_sources.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(edje_cc_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT edje_cc-edje_cc_sources.o -MD -MP -MF $(DEPDIR)/edje_cc-edje_cc_sources.Tpo -c -o edje_cc-edje_cc_sources.o `test -f 'edje_cc_sources.c' || echo '$(srcdir)/'`edje_cc_sources.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/edje_cc-edje_cc_sources.Tpo $(DEPDIR)/edje_cc-edje_cc_sources.Po
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='edje_cc_sources.c' object='edje_cc-edje_cc_sources.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(edje_cc_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o edje_cc-edje_cc_sources.o `test -f 'edje_cc_sources.c' || echo '$(srcdir)/'`edje_cc_sources.c
+
+edje_cc-edje_cc_sources.obj: edje_cc_sources.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(edje_cc_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT edje_cc-edje_cc_sources.obj -MD -MP -MF $(DEPDIR)/edje_cc-edje_cc_sources.Tpo -c -o edje_cc-edje_cc_sources.obj `if test -f 'edje_cc_sources.c'; then $(CYGPATH_W) 'edje_cc_sources.c'; else $(CYGPATH_W) '$(srcdir)/edje_cc_sources.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/edje_cc-edje_cc_sources.Tpo $(DEPDIR)/edje_cc-edje_cc_sources.Po
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='edje_cc_sources.c' object='edje_cc-edje_cc_sources.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(edje_cc_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o edje_cc-edje_cc_sources.obj `if test -f 'edje_cc_sources.c'; then $(CYGPATH_W) 'edje_cc_sources.c'; else $(CYGPATH_W) '$(srcdir)/edje_cc_sources.c'; fi`
+
+edje_cc-edje_prefix.o: edje_prefix.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(edje_cc_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT edje_cc-edje_prefix.o -MD -MP -MF $(DEPDIR)/edje_cc-edje_prefix.Tpo -c -o edje_cc-edje_prefix.o `test -f 'edje_prefix.c' || echo '$(srcdir)/'`edje_prefix.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/edje_cc-edje_prefix.Tpo $(DEPDIR)/edje_cc-edje_prefix.Po
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='edje_prefix.c' object='edje_cc-edje_prefix.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(edje_cc_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o edje_cc-edje_prefix.o `test -f 'edje_prefix.c' || echo '$(srcdir)/'`edje_prefix.c
+
+edje_cc-edje_prefix.obj: edje_prefix.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(edje_cc_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT edje_cc-edje_prefix.obj -MD -MP -MF $(DEPDIR)/edje_cc-edje_prefix.Tpo -c -o edje_cc-edje_prefix.obj `if test -f 'edje_prefix.c'; then $(CYGPATH_W) 'edje_prefix.c'; else $(CYGPATH_W) '$(srcdir)/edje_prefix.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/edje_cc-edje_prefix.Tpo $(DEPDIR)/edje_cc-edje_prefix.Po
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='edje_prefix.c' object='edje_cc-edje_prefix.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(edje_cc_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o edje_cc-edje_prefix.obj `if test -f 'edje_prefix.c'; then $(CYGPATH_W) 'edje_prefix.c'; else $(CYGPATH_W) '$(srcdir)/edje_prefix.c'; fi`
+
+edje_decc-edje_decc.o: edje_decc.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(edje_decc_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT edje_decc-edje_decc.o -MD -MP -MF $(DEPDIR)/edje_decc-edje_decc.Tpo -c -o edje_decc-edje_decc.o `test -f 'edje_decc.c' || echo '$(srcdir)/'`edje_decc.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/edje_decc-edje_decc.Tpo $(DEPDIR)/edje_decc-edje_decc.Po
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='edje_decc.c' object='edje_decc-edje_decc.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(edje_decc_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o edje_decc-edje_decc.o `test -f 'edje_decc.c' || echo '$(srcdir)/'`edje_decc.c
+
+edje_decc-edje_decc.obj: edje_decc.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(edje_decc_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT edje_decc-edje_decc.obj -MD -MP -MF $(DEPDIR)/edje_decc-edje_decc.Tpo -c -o edje_decc-edje_decc.obj `if test -f 'edje_decc.c'; then $(CYGPATH_W) 'edje_decc.c'; else $(CYGPATH_W) '$(srcdir)/edje_decc.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/edje_decc-edje_decc.Tpo $(DEPDIR)/edje_decc-edje_decc.Po
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='edje_decc.c' object='edje_decc-edje_decc.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(edje_decc_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o edje_decc-edje_decc.obj `if test -f 'edje_decc.c'; then $(CYGPATH_W) 'edje_decc.c'; else $(CYGPATH_W) '$(srcdir)/edje_decc.c'; fi`
+
+edje_decc-edje_cc_mem.o: edje_cc_mem.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(edje_decc_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT edje_decc-edje_cc_mem.o -MD -MP -MF $(DEPDIR)/edje_decc-edje_cc_mem.Tpo -c -o edje_decc-edje_cc_mem.o `test -f 'edje_cc_mem.c' || echo '$(srcdir)/'`edje_cc_mem.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/edje_decc-edje_cc_mem.Tpo $(DEPDIR)/edje_decc-edje_cc_mem.Po
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='edje_cc_mem.c' object='edje_decc-edje_cc_mem.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(edje_decc_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o edje_decc-edje_cc_mem.o `test -f 'edje_cc_mem.c' || echo '$(srcdir)/'`edje_cc_mem.c
+
+edje_decc-edje_cc_mem.obj: edje_cc_mem.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(edje_decc_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT edje_decc-edje_cc_mem.obj -MD -MP -MF $(DEPDIR)/edje_decc-edje_cc_mem.Tpo -c -o edje_decc-edje_cc_mem.obj `if test -f 'edje_cc_mem.c'; then $(CYGPATH_W) 'edje_cc_mem.c'; else $(CYGPATH_W) '$(srcdir)/edje_cc_mem.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/edje_decc-edje_cc_mem.Tpo $(DEPDIR)/edje_decc-edje_cc_mem.Po
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='edje_cc_mem.c' object='edje_decc-edje_cc_mem.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(edje_decc_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o edje_decc-edje_cc_mem.obj `if test -f 'edje_cc_mem.c'; then $(CYGPATH_W) 'edje_cc_mem.c'; else $(CYGPATH_W) '$(srcdir)/edje_cc_mem.c'; fi`
+
+edje_decc-edje_cc_sources.o: edje_cc_sources.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(edje_decc_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT edje_decc-edje_cc_sources.o -MD -MP -MF $(DEPDIR)/edje_decc-edje_cc_sources.Tpo -c -o edje_decc-edje_cc_sources.o `test -f 'edje_cc_sources.c' || echo '$(srcdir)/'`edje_cc_sources.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/edje_decc-edje_cc_sources.Tpo $(DEPDIR)/edje_decc-edje_cc_sources.Po
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='edje_cc_sources.c' object='edje_decc-edje_cc_sources.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(edje_decc_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o edje_decc-edje_cc_sources.o `test -f 'edje_cc_sources.c' || echo '$(srcdir)/'`edje_cc_sources.c
+
+edje_decc-edje_cc_sources.obj: edje_cc_sources.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(edje_decc_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT edje_decc-edje_cc_sources.obj -MD -MP -MF $(DEPDIR)/edje_decc-edje_cc_sources.Tpo -c -o edje_decc-edje_cc_sources.obj `if test -f 'edje_cc_sources.c'; then $(CYGPATH_W) 'edje_cc_sources.c'; else $(CYGPATH_W) '$(srcdir)/edje_cc_sources.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/edje_decc-edje_cc_sources.Tpo $(DEPDIR)/edje_decc-edje_cc_sources.Po
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='edje_cc_sources.c' object='edje_decc-edje_cc_sources.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(edje_decc_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o edje_decc-edje_cc_sources.obj `if test -f 'edje_cc_sources.c'; then $(CYGPATH_W) 'edje_cc_sources.c'; else $(CYGPATH_W) '$(srcdir)/edje_cc_sources.c'; fi`
+
+edje_external_inspector-edje_external_inspector.o: edje_external_inspector.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(edje_external_inspector_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT edje_external_inspector-edje_external_inspector.o -MD -MP -MF $(DEPDIR)/edje_external_inspector-edje_external_inspector.Tpo -c -o edje_external_inspector-edje_external_inspector.o `test -f 'edje_external_inspector.c' || echo '$(srcdir)/'`edje_external_inspector.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/edje_external_inspector-edje_external_inspector.Tpo $(DEPDIR)/edje_external_inspector-edje_external_inspector.Po
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='edje_external_inspector.c' object='edje_external_inspector-edje_external_inspector.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(edje_external_inspector_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o edje_external_inspector-edje_external_inspector.o `test -f 'edje_external_inspector.c' || echo '$(srcdir)/'`edje_external_inspector.c
+
+edje_external_inspector-edje_external_inspector.obj: edje_external_inspector.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(edje_external_inspector_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT edje_external_inspector-edje_external_inspector.obj -MD -MP -MF $(DEPDIR)/edje_external_inspector-edje_external_inspector.Tpo -c -o edje_external_inspector-edje_external_inspector.obj `if test -f 'edje_external_inspector.c'; then $(CYGPATH_W) 'edje_external_inspector.c'; else $(CYGPATH_W) '$(srcdir)/edje_external_inspector.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/edje_external_inspector-edje_external_inspector.Tpo $(DEPDIR)/edje_external_inspector-edje_external_inspector.Po
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='edje_external_inspector.c' object='edje_external_inspector-edje_external_inspector.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(edje_external_inspector_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o edje_external_inspector-edje_external_inspector.obj `if test -f 'edje_external_inspector.c'; then $(CYGPATH_W) 'edje_external_inspector.c'; else $(CYGPATH_W) '$(srcdir)/edje_external_inspector.c'; fi`
+
+edje_inspector-edje_inspector.o: edje_inspector.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(edje_inspector_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT edje_inspector-edje_inspector.o -MD -MP -MF $(DEPDIR)/edje_inspector-edje_inspector.Tpo -c -o edje_inspector-edje_inspector.o `test -f 'edje_inspector.c' || echo '$(srcdir)/'`edje_inspector.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/edje_inspector-edje_inspector.Tpo $(DEPDIR)/edje_inspector-edje_inspector.Po
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='edje_inspector.c' object='edje_inspector-edje_inspector.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(edje_inspector_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o edje_inspector-edje_inspector.o `test -f 'edje_inspector.c' || echo '$(srcdir)/'`edje_inspector.c
+
+edje_inspector-edje_inspector.obj: edje_inspector.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(edje_inspector_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT edje_inspector-edje_inspector.obj -MD -MP -MF $(DEPDIR)/edje_inspector-edje_inspector.Tpo -c -o edje_inspector-edje_inspector.obj `if test -f 'edje_inspector.c'; then $(CYGPATH_W) 'edje_inspector.c'; else $(CYGPATH_W) '$(srcdir)/edje_inspector.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/edje_inspector-edje_inspector.Tpo $(DEPDIR)/edje_inspector-edje_inspector.Po
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='edje_inspector.c' object='edje_inspector-edje_inspector.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(edje_inspector_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o edje_inspector-edje_inspector.obj `if test -f 'edje_inspector.c'; then $(CYGPATH_W) 'edje_inspector.c'; else $(CYGPATH_W) '$(srcdir)/edje_inspector.c'; fi`
+
+edje_player-edje_player.o: edje_player.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(edje_player_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT edje_player-edje_player.o -MD -MP -MF $(DEPDIR)/edje_player-edje_player.Tpo -c -o edje_player-edje_player.o `test -f 'edje_player.c' || echo '$(srcdir)/'`edje_player.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/edje_player-edje_player.Tpo $(DEPDIR)/edje_player-edje_player.Po
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='edje_player.c' object='edje_player-edje_player.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(edje_player_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o edje_player-edje_player.o `test -f 'edje_player.c' || echo '$(srcdir)/'`edje_player.c
+
+edje_player-edje_player.obj: edje_player.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(edje_player_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT edje_player-edje_player.obj -MD -MP -MF $(DEPDIR)/edje_player-edje_player.Tpo -c -o edje_player-edje_player.obj `if test -f 'edje_player.c'; then $(CYGPATH_W) 'edje_player.c'; else $(CYGPATH_W) '$(srcdir)/edje_player.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/edje_player-edje_player.Tpo $(DEPDIR)/edje_player-edje_player.Po
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='edje_player.c' object='edje_player-edje_player.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(edje_player_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o edje_player-edje_player.obj `if test -f 'edje_player.c'; then $(CYGPATH_W) 'edje_player.c'; else $(CYGPATH_W) '$(srcdir)/edje_player.c'; fi`
 
 mostlyclean-libtool:
 	-rm -f *.lo

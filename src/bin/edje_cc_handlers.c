@@ -1847,7 +1847,7 @@ st_collections_group_alias(void)
         [width] [height]
     @effect
         The minimum size for the container defined by the composition of the
-        parts.
+        parts. It is not enforced.
     @endproperty
 */
 static void
@@ -1870,7 +1870,7 @@ st_collections_group_min(void)
         [width] [height]
     @effect
         The maximum size for the container defined by the totality of the
-        parts.
+        parts. It is not enforced.
     @endproperty
 */
 static void
@@ -1937,6 +1937,7 @@ ob_collections_group_script(void)
 		  exit(-1);
 	       }
 	     cd->shared = s;
+             cd->original = strdup(s);
 	     cd->is_lua = 0;
 	     set_verbatim(NULL, 0, 0);
 	  }
@@ -2015,13 +2016,21 @@ static void
 st_collections_group_parts_alias(void)
 {
    Edje_Part_Collection *pc;
+   const char *alias;
+   const char *aliased;
 
    check_arg_count(2);
 
    pc = eina_list_data_get(eina_list_last(edje_collections));
 
+   alias = parse_str(0);
+   aliased = parse_str(1);
+
    if (!pc->alias) pc->alias = eina_hash_string_small_new(NULL);
-   eina_hash_add(pc->alias, parse_str(0), parse_str(1));
+   eina_hash_add(pc->alias, alias, aliased);
+
+   if (!pc->aliased) pc->aliased = eina_hash_string_small_new(NULL);
+   eina_hash_add(pc->aliased, aliased, alias);
 }
 
 
@@ -4718,13 +4727,13 @@ st_collections_group_parts_part_description_fill_smooth(void)
 static void
 st_collections_group_parts_part_description_fill_spread(void)
 {
+#if 0
    Edje_Part_Collection *pc;
    Edje_Part *ep;
    Edje_Part_Description_Image *ed;
+#endif
 
    check_arg_count(1);
-
-   pc = eina_list_data_get(eina_list_last(edje_collections));
 
    /* XXX this will need to include IMAGES when spread support is added to evas images */
    {
@@ -4733,6 +4742,9 @@ st_collections_group_parts_part_description_fill_spread(void)
 	  progname, file_in, line - 1);
       exit(-1);
    }
+
+#if 0
+   pc = eina_list_data_get(eina_list_last(edje_collections));
 
    ep = pc->parts[pc->parts_count - 1];
 
@@ -4748,6 +4760,7 @@ st_collections_group_parts_part_description_fill_spread(void)
    if (ep->other.desc_count) ed = (Edje_Part_Description_Image*)  ep->other.desc[ep->other.desc_count - 1];
 
    ed->image.fill.spread = parse_int_range(0, 0, 1);
+#endif
 }
 
 /**
@@ -6900,6 +6913,8 @@ st_collections_group_programs_program_target(void)
 	  data_queue_part_lookup(pc, name, &(et->id));
 	else if (ep->action == EDJE_ACTION_TYPE_FOCUS_SET)
 	  data_queue_part_lookup(pc, name, &(et->id));
+	else if (ep->action == EDJE_ACTION_TYPE_FOCUS_OBJECT)
+	  data_queue_part_lookup(pc, name, &(et->id));
 	else
 	  {
 	     ERR("%s: Error. parse error %s:%i. "
@@ -7018,6 +7033,7 @@ ob_collections_group_programs_program_script(void)
 	     cp->l1 = get_verbatim_line1();
 	     cp->l2 = get_verbatim_line2();
 	     cp->script = s;
+             cp->original = strdup(s);
 	     if (cd->shared && cd->is_lua)
 	       {
 		  ERR("%s: Error. parse error %s:%i. You're trying to mix Embryo and Lua scripting in the same group",
