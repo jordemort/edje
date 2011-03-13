@@ -1,8 +1,12 @@
-edje (1.0.0-1) UNRELEASED; urgency=low
+edje (1.0.0-1) unstable; urgency=low
 
   * Upstream release 1.0.0
+  * Add new binaries to libedje-bin: edje_inspector and edje_external_inspector
+  * Add debian/patches/0001_add_edje_convert_back.diff
+    - The edje_convert binary is no longer built by default but we still need
+      it, so put it back in the Makefile
 
- -- Albin Tonnerre <lutin@debian.org>  Sun, 13 Feb 2011 13:09:36 +0100
+ -- Albin Tonnerre <lutin@debian.org>  Sun, 13 Mar 2011 18:16:28 +0100
 
 edje (1.0.0~beta-1) experimental; urgency=low
 
