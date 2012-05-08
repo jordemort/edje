@@ -24,6 +24,9 @@
    of faster program matching */
 #undef EDJE_PROGRAM_CACHE
 
+/* Use Multisense */
+#undef ENABLE_MULTISENSE
+
 /* Define to 1 if you have `alloca', as a function or macro. */
 #undef HAVE_ALLOCA
 
@@ -42,6 +45,18 @@
 
 /* Define to 1 if you have the <inttypes.h> header file. */
 #undef HAVE_INTTYPES_H
+
+/* ALSA support for Edje */
+#undef HAVE_LIBALSA
+
+/* flac support for Edje */
+#undef HAVE_LIBFLAC
+
+/* remix support for Edje */
+#undef HAVE_LIBREMIX
+
+/* sndfile support for Edje */
+#undef HAVE_LIBSNDFILE
 
 /* Define to 1 if you have the <locale.h> header file. */
 #undef HAVE_LOCALE_H
@@ -64,6 +79,9 @@
 /* Define to 1 if you have the <string.h> header file. */
 #undef HAVE_STRING_H
 
+/* Define to 1 if you have the <sys/resource.h> header file. */
+#undef HAVE_SYS_RESOURCE_H
+
 /* Define to 1 if you have the <sys/stat.h> header file. */
 #undef HAVE_SYS_STAT_H
 
@@ -72,6 +90,9 @@
 
 /* Define to 1 if you have the <unistd.h> header file. */
 #undef HAVE_UNISTD_H
+
+/* vorbis support for Edje */
+#undef HAVE_VORBIS
 
 /* Define to 1 if your compiler has __attribute__ */
 #undef HAVE___ATTRIBUTE__
@@ -110,6 +131,9 @@
 /* default value since PATH_MAX is not defined */
 #undef PATH_MAX
 
+/* Set the remix plugin directory */
+#undef REMIX_PLUGIN_DIR
+
 /* Suffix for shared objects */
 #undef SHARED_LIB_SUFFIX
 
@@ -138,6 +162,9 @@
 
 /* Revison */
 #undef VREV
+
+/* "Set to REMIX Plugin type" */
+#undef __REMIX_PLUGIN__
 
 /* Macro declaring a function argument to be unused */
 #undef __UNUSED__

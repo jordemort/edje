@@ -72,6 +72,8 @@
  * set_state(part_id, state[], Float:state_val)
  * get_state(part_id, dst[], maxlen, &Float:val)
  * set_tween_state(part_id, Float:tween, state1[], Float:state1_val, state2[], Float:state2_val)
+ * play_sample(sample_name, speed)
+ * play_tone(tone_name, duration)
  * run_program(program_id)
  * Direction:get_drag_dir(part_id)
  * get_drag(part_id, &Float:dx, &Float:&dy)
@@ -672,6 +674,7 @@ _edje_embryo_fn_set_min_size(Embryo_Program *ep, Embryo_Cell *params)
    if (h < 0.0) h = 0.0;
    ed->collection->prop.min.w = w;
    ed->collection->prop.min.h = h;
+   ed->recalc_call = 1;
    ed->dirty = 1;
 #ifdef EDJE_CALC_CACHE
    ed->all_part_change = 1;
@@ -699,6 +702,7 @@ _edje_embryo_fn_set_max_size(Embryo_Program *ep, Embryo_Cell *params)
    if (h < 0.0) h = 0.0;
    ed->collection->prop.max.w = w;
    ed->collection->prop.max.h = h;
+   ed->recalc_call = 1;
    ed->dirty = 1;
 #ifdef EDJE_CALC_CACHE
    ed->all_part_change = 1;
@@ -764,7 +768,7 @@ _edje_embryo_fn_get_mouse(Embryo_Program *ep, Embryo_Cell *params)
 
    CHKPARAM(2);
    ed = embryo_program_data_get(ep);
-   evas_pointer_canvas_xy_get(ed->evas, &x, &y);
+   evas_pointer_canvas_xy_get(ed->base.evas, &x, &y);
    x -= ed->x;
    y -= ed->y;
    SETINT((int)x, params[1]);
@@ -780,7 +784,7 @@ _edje_embryo_fn_get_mouse_buttons(Embryo_Program *ep, Embryo_Cell *params)
 
    CHKPARAM(0);
    ed = embryo_program_data_get(ep);
-   return evas_pointer_button_down_mask_get(ed->evas);
+   return evas_pointer_button_down_mask_get(ed->base.evas);
 }
 
 /* emit(sig[], src[]) */
@@ -807,6 +811,7 @@ _edje_embryo_fn_get_part_id(Embryo_Program *ep, Embryo_Cell *params)
    Edje_Part_Collection *col;
    Edje_Part **part;
    char *p;
+   unsigned int i;
 
    CHKPARAM(1);
    ed = embryo_program_data_get(ep);
@@ -814,12 +819,45 @@ _edje_embryo_fn_get_part_id(Embryo_Program *ep, Embryo_Cell *params)
    if (!p) return -1;
    col = ed->collection;
    if (!col) return -1;
-   for (part = col->parts; *part; part++)
+   part = col->parts;
+   for (i = 0; i < col->parts_count; i++, part++)
      {
         if (!(*part)->name) continue;
         if (!strcmp((*part)->name, p)) return (*part)->id;
      }
    return -1;
+}
+
+static Embryo_Cell
+_edje_embryo_fn_play_sample(Embryo_Program *ep, Embryo_Cell *params)
+{
+   Edje *ed;
+   char *sample_name = NULL;
+   float speed = 1.0;
+
+   CHKPARAM(1);
+   ed = embryo_program_data_get(ep);
+   GETSTR(sample_name, params[1]);
+   if ((!sample_name)) return 0;
+   speed = EMBRYO_CELL_TO_FLOAT(params[2]);
+   _edje_multisense_internal_sound_sample_play(ed, sample_name, (double)speed);
+   return 0;
+}
+
+static Embryo_Cell
+_edje_embryo_fn_play_tone(Embryo_Program *ep, Embryo_Cell *params)
+{
+   Edje *ed;
+   char *tone_name = NULL;
+   float duration = 0.1;
+
+   CHKPARAM(2);
+   ed = embryo_program_data_get(ep);
+   GETSTR(tone_name, params[1]);
+   if ((!tone_name)) return 0;
+   duration = EMBRYO_CELL_TO_FLOAT(params[2]);
+   _edje_multisense_internal_sound_tone_play(ed, tone_name, (double) duration);
+   return 0;
 }
 
 /* set_state(part_id, state[], Float:state_val) */
@@ -846,7 +884,7 @@ _edje_embryo_fn_set_state(Embryo_Program *ep, Embryo_Cell *params)
      {
 	if (rp->program) _edje_program_end(ed, rp->program);
 	_edje_part_description_apply(ed, rp, state, value, NULL, 0.0);
-	_edje_part_pos_set(ed, rp, EDJE_TWEEN_MODE_LINEAR, ZERO);
+	_edje_part_pos_set(ed, rp, EDJE_TWEEN_MODE_LINEAR, ZERO, ZERO, ZERO);
 	_edje_recalc(ed);
      }
    return 0;
@@ -928,7 +966,7 @@ _edje_embryo_fn_set_tween_state(Embryo_Program *ep, Embryo_Cell *params)
      {
 	if (rp->program) _edje_program_end(ed, rp->program);
 	_edje_part_description_apply(ed, rp, state1, value1, state2, value2);
-	_edje_part_pos_set(ed, rp, EDJE_TWEEN_MODE_LINEAR, FROM_DOUBLE(tween));
+	_edje_part_pos_set(ed, rp, EDJE_TWEEN_MODE_LINEAR, FROM_DOUBLE(tween), ZERO, ZERO);
 	_edje_recalc(ed);
      }
    return 0;
@@ -2564,7 +2602,7 @@ _edje_embryo_fn_part_swallow(Embryo_Program *ep, Embryo_Cell *params)
    rp = ed->table_parts[part_id % ed->table_parts_size];
    if (!rp) return 0;
 
-   new_obj =  edje_object_add(ed->evas);
+   new_obj =  edje_object_add(ed->base.evas);
    if (!new_obj) return 0;
 
    if (!edje_object_file_set(new_obj, ed->file->path, group_name)) 
@@ -2573,6 +2611,7 @@ _edje_embryo_fn_part_swallow(Embryo_Program *ep, Embryo_Cell *params)
         return 0;
      }
    edje_object_part_swallow(ed->obj, rp->part->name, new_obj);
+   _edje_subobj_register(ed, new_obj);
 
    return 0;
 }
@@ -3004,7 +3043,8 @@ _edje_embryo_script_init(Edje_Part_Collection *edc)
    embryo_program_native_call_add(ep, "stop_programs_on", _edje_embryo_fn_stop_programs_on);
    embryo_program_native_call_add(ep, "set_min_size", _edje_embryo_fn_set_min_size);
    embryo_program_native_call_add(ep, "set_max_size", _edje_embryo_fn_set_max_size);
-
+   embryo_program_native_call_add(ep, "play_sample", _edje_embryo_fn_play_sample);
+   embryo_program_native_call_add(ep, "play_tone", _edje_embryo_fn_play_tone);
    embryo_program_native_call_add(ep, "send_message", _edje_embryo_fn_send_message);
    embryo_program_native_call_add(ep, "get_geometry", _edje_embryo_fn_get_geometry);
    embryo_program_native_call_add(ep, "custom_state", _edje_embryo_fn_custom_state);

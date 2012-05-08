@@ -1,6 +1,6 @@
 #include "edje_private.h"
 
-static void _edje_emit_cb(Edje *ed, const char *sig, const char *src);
+static void _edje_emit_cb(Edje *ed, const char *sig, const char *src, Edje_Message_Signal_Data *data, Eina_Bool prop);
 static void _edje_param_copy(Edje_Real_Part *src_part, const char *src_param, Edje_Real_Part *dst_part, const char *dst_param);
 static void _edje_param_set(Edje_Real_Part *part, const char *param, const char *value);
 
@@ -13,100 +13,43 @@ Eina_List      *_edje_animators = NULL;
  *                                   API                                      *
  *============================================================================*/
 
-/**
- * @addtogroup Edje_program_Group Program
- *
- * @brief These functions provide an abstraction layer between the
- * application code and the interface, while allowing extremely
- * flexible dynamic layouts and animations.
- *
- * @{
- */
-
-/**
- * @brief Set edje trasitions' frame time.
- *
- * @param t The frame time, in seconds. Default value is 1/30.
- *
- * This function sets the edje built-in animations' frame time (thus,
- * affecting their resolution) by calling
- * ecore_animator_frametime_set(). This frame time can be retrieved
- * with edje_frametime_get().
- *
- * @see edje_frametime_get()
- *
- */
 EAPI void
 edje_frametime_set(double t)
 {
    ecore_animator_frametime_set(t);
 }
 
-/**
- * @brief Get edje trasitions' frame time.
- *
- * @return The frame time, in seconds.
- *
- * This function returns the edje frame time set by
- * edje_frametime_set().
- *
- * @see edje_frametime_set()
- *
- */
 EAPI double
 edje_frametime_get(void)
 {
    return ecore_animator_frametime_get();
 }
 
-/**
- * @brief Add a callback for a signal emitted by @a obj.
- *
- * @param obj A valid Evas_Object handle.
- * @param emission The signal's name.
- * @param source The signal's source.
- * @param func The callback function to be executed when the signal is
- * emitted.
- * @param data A pointer to data to pass in to the callback function.
- *
- * Connects a callback function to a signal emitted by @a obj.
- * In EDC, a program can emit a signal as follows:
- *
- * @code
- * program {
- *   name: "emit_example";
- *   action: SIGNAL_EMIT "a_signal" "a_source";
- * }
- * @endcode
- *
- * Assuming a function with the following declaration is definded:
- *
- * @code
- * void cb_signal(void *data, Evas_Object *o, const char *emission, const char *source);
- * @endcode
- *
- * a callback is attached using:
- *
- * @code
- * edje_object_signal_callback_add(obj, "a_signal", "a_source", cb_signal, data);
- * @endcode
- *
- * Here, @a data is an arbitrary pointer to be used as desired.  Note
- * that @a emission and @a source correspond respectively to the first
- * and the second parameters at the SIGNAL_EMIT action.
- *
- * Internal edje signals can also be attached to, and globs can occur
- * in either the emission or source name, e.g.
- *
- * @code
- * edje_object_signal_callback_add(obj, "mouse,down,*", "button.*", NULL);
- * @endcode
- *
- * Here, any mouse down events on an edje part whose name begins with
- * "button." will trigger the callback. The actual signal and source
- * names will be passed in to the @a emission and @a source parameters
- * of the callback function (e.g. "mouse,down,2" and "button.close").
- */
+void
+edje_object_propagate_callback_add(Evas_Object *obj, void (*func) (void *data, Evas_Object *o, const char *emission, const char *source), void *data)
+{
+   Edje *ed;
+   Edje_Signal_Callback *escb;
+
+   ed = _edje_fetch(obj);
+   if (!ed) return;
+   if (ed->delete_me) return;
+   escb = calloc(1, sizeof(Edje_Signal_Callback));
+   escb->propagate = EINA_TRUE;
+   escb->signal = eina_stringshare_add("*");
+   escb->source = eina_stringshare_add("*");
+   escb->func = func;
+   escb->data = data;
+   ed->callbacks = eina_list_append(ed->callbacks, escb);
+   if (ed->walking_callbacks)
+     {
+	escb->just_added = 1;
+	ed->just_added_callbacks = 1;
+     }
+   else
+     _edje_callbacks_patterns_clean(ed);
+}
+
 EAPI void
 edje_object_signal_callback_add(Evas_Object *obj, const char *emission, const char *source, void (*func) (void *data, Evas_Object *o, const char *emission, const char *source), void *data)
 {
@@ -134,25 +77,6 @@ edje_object_signal_callback_add(Evas_Object *obj, const char *emission, const ch
      _edje_callbacks_patterns_clean(ed);
 }
 
-/**
- * @brief Remove a signal-triggered callback from an object.
- *
- * @param obj A valid Evas_Object handle.
- * @param emission The emission string.
- * @param source The source string.
- * @param func The callback function.
- * @return The data pointer
- *
- * This function removes a callback, previously attached to the
- * emittion of a signal, from the object @a obj. The parameters @a
- * emission, @a source and @a func must match exactly those passed to
- * a previous call to edje_object_signal_callback_add(). The data
- * pointer that was passed to this call will be returned.
- *
- * @see edje_object_signal_callback_add().
- * @see edje_object_signal_callback_del_full().
- *
- */
 EAPI void *
 edje_object_signal_callback_del(Evas_Object *obj, const char *emission, const char *source, void (*func) (void *data, Evas_Object *o, const char *emission, const char *source))
 {
@@ -195,26 +119,6 @@ edje_object_signal_callback_del(Evas_Object *obj, const char *emission, const ch
    return NULL;
 }
 
-/**
- * @brief Remove a signal-triggered callback from an object.
- *
- * @param obj A valid Evas_Object handle.
- * @param emission The emission string.
- * @param source The source string.
- * @param func The callback function.
- * @param data The user data passed to the callback.
- * @return The data pointer
- *
- * This function removes a callback, previously attached to the
- * emittion of a signal, from the object @a obj. The parameters @a
- * emission, @a sourcei, @a func and @a data must match exactly those
- * passed to a previous call to edje_object_signal_callback_add(). The data
- * pointer that was passed to this call will be returned.
- *
- * @see edje_object_signal_callback_add().
- * @see edje_object_signal_callback_del().
- *
- */
 EAPI void *
 edje_object_signal_callback_del_full(Evas_Object *obj, const char *emission, const char *source, Edje_Signal_Cb func, void *data)
 {
@@ -234,9 +138,9 @@ edje_object_signal_callback_del_full(Evas_Object *obj, const char *emission, con
 	    ((!escb->source && !source[0]) ||
              (escb->source && !strcmp(escb->source, source))))
 	  {
-	     void *data;
+	     void *data2;
 
-	     data = escb->data;
+	     data2 = escb->data;
 	     if (ed->walking_callbacks)
 	       {
 		  escb->delete_me = 1;
@@ -251,40 +155,12 @@ edje_object_signal_callback_del_full(Evas_Object *obj, const char *emission, con
 		  if (escb->source) eina_stringshare_del(escb->source);
 		  free(escb);
 	       }
-	     return data;
+	     return data2;
 	  }
      }
    return NULL;
 }
 
-/**
- * @brief Send a signal to an edje object.
- *
- * @param obj A valid Evas_Object handle.
- * @param emission The signal's name.
- * @param source The signal's source.
- *
- * This function sends a signal to the object @a obj. An edje program
- * can respond to a signal by specifying matching 'signal' and
- * 'source' fields.
- *
- * @code
- * edje_object_signal_emit(obj, "a_signal", "");
- * @endcode
- *
- * will trigger a program whose EDC block is:
- *
- * @code
- * program {
- *  name: "a_program";
- *  signal: "a_signal";
- *  source: "";
- *  action: ...
- * }
- * @endcode
- *
- * FIXME: should this signal be sent to children also?
- */
 EAPI void
 edje_object_signal_emit(Evas_Object *obj, const char *emission, const char *source)
 {
@@ -298,19 +174,6 @@ edje_object_signal_emit(Evas_Object *obj, const char *emission, const char *sour
 }
 
 /* FIXDOC: Verify/Expand */
-/**
- * @brief Set the edje object to playing or paused states.
- *
- * @param obj A valid Evas_Object handle.
- * @param play Object state (1 to playing, 0 to pauseed).
- *
- * This function sets the edje object @a obj to playing or paused
- * states, depending on the parameter @a play.  This has no effect if
- * the object was already at that state.
- *
- * @see edje_object_play_get().
- *
- */
 EAPI void
 edje_object_play_set(Evas_Object *obj, Eina_Bool play)
 {
@@ -347,20 +210,6 @@ edje_object_play_set(Evas_Object *obj, Eina_Bool play)
      }
 }
 
-/**
- * @brief Get the edje object's play/pause state.
- *
- * @param obj A valid Evas_Object handle.
- * @return @c EINA_FALSE if the object is not connected, its @c delete_me flag
- * is set, or it is at paused state; @c EINA_TRUE if the object is at playing
- * state.
- *
- * This function tells if an edje object is playing or not. This state
- * is set by edje_object_play_set().
- *
- * @see edje_object_play_set().
- *
- */
 EAPI Eina_Bool
 edje_object_play_get(const Evas_Object *obj)
 {
@@ -374,19 +223,6 @@ edje_object_play_get(const Evas_Object *obj)
 }
 
 /* FIXDOC: Verify/Expand */
-/**
- * @brief Set the object's animation state.
- *
- * @param obj A valid Evas_Object handle.
- * @param on Animation State.
- *
- * This function starts or stops an edje object's animation. The
- * information if it's runnig can be retrieved by
- * edje_object_animation_get().
- *
- * @see edje_object_animation_get()
- *
- */
 EAPI void
 edje_object_animation_set(Evas_Object *obj, Eina_Bool on)
 {
@@ -444,19 +280,6 @@ edje_object_animation_set(Evas_Object *obj, Eina_Bool on)
    _edje_unblock(ed);
 }
 
-/**
- * @brief Get the edje object's animation state.
- *
- * @param obj A valid Evas_Object handle.
- * @return @c EINA_FALSE on error or if object is not animated;
- * @c EINA_TRUE if animated.
- *
- * This function returns if the animation is playing or not. The
- * animation state is set by edje_object_play_set().
- *
- * @see edje_object_animation_set().
- *
- */
 
 EAPI Eina_Bool
 edje_object_animation_get(const Evas_Object *obj)
@@ -496,7 +319,9 @@ _edje_program_run_iterate(Edje_Running_Program *runp, double tim)
 	  {
 	     rp = ed->table_parts[pt->id % ed->table_parts_size];
 	     if (rp) _edje_part_pos_set(ed, rp,
-					runp->program->tween.mode, t);
+					runp->program->tween.mode, t,
+                                        runp->program->tween.v1,
+                                        runp->program->tween.v2);
 	  }
      }
    if (t >= FROM_INT(1))
@@ -516,7 +341,9 @@ _edje_program_run_iterate(Edje_Running_Program *runp, double tim)
 						    NULL,
 						    0.0);
 		       _edje_part_pos_set(ed, rp,
-					  runp->program->tween.mode, ZERO);
+					  runp->program->tween.mode, ZERO,
+                                          runp->program->tween.v1,
+                                          runp->program->tween.v2);
 		       rp->program = NULL;
 		    }
 	       }
@@ -591,7 +418,9 @@ _edje_program_end(Edje *ed, Edje_Running_Program *runp)
 					       NULL,
 					       0.0);
 		  _edje_part_pos_set(ed, rp,
-				     runp->program->tween.mode, ZERO);
+				     runp->program->tween.mode, ZERO,
+                                     runp->program->tween.v1,
+                                     runp->program->tween.v2);
 		  rp->program = NULL;
 	       }
 	  }
@@ -650,8 +479,8 @@ _edje_program_run(Edje *ed, Edje_Program *pr, Eina_Bool force, const char *ssig,
      }
    if ((recursions >= 64) || (recursion_limit))
      {
-	ERR("Programs recursing up to recursion limit of %i. Disabled.",
-	    64);
+	ERR("Programs recursing up to recursion limit of %i in '%s' with '%s', '%s' from '%s', '%s'. Disabled.",
+	    64, pr->name, ssig, ssrc, ed->path, ed->group);
 	recursion_limit = 1;
 	return;
      }
@@ -674,14 +503,43 @@ _edje_program_run(Edje *ed, Edje_Program *pr, Eina_Bool force, const char *ssig,
 		       rp = ed->table_parts[pt->id % ed->table_parts_size];
 		       if (rp)
 			 {
+                            if ((rp->object) && (pr->tween.mode & EDJE_TWEEN_MODE_OPT_FROM_CURRENT))
+                              {
+                                 Edje_Calc_Params *tmp;
+
+                                 tmp = calloc(1, sizeof(Edje_Calc_Params));
+                                 if (!tmp) goto low_mem_current;
+				 _edje_part_recalc(ed, rp, FLAG_XY, tmp);
+
+                                 if (rp->current) free(rp->current);
+                                 rp->current = tmp;
+
+				 rp->current->x -= ed->x;
+				 rp->current->y -= ed->y;
+				 rp->current->map.center.x -= ed->x;
+				 rp->current->map.center.y -= ed->y;
+				 rp->current->map.light.x -= ed->x;
+				 rp->current->map.light.y -= ed->y;
+				 rp->current->map.persp.x -= ed->x;
+				 rp->current->map.persp.y -= ed->y;
+                              }
+                            else
+                              {
+                              low_mem_current:
+                                 if (rp->current) free(rp->current);
+                                 rp->current = NULL;
+                              }
+
 			    if (rp->program)
-			      _edje_program_end(ed, rp->program);
+                              _edje_program_end(ed, rp->program);
 			    _edje_part_description_apply(ed, rp,
 							 rp->param1.description->state.name,
 							 rp->param1.description->state.value,
 							 pr->state,
 							 pr->value);
-			    _edje_part_pos_set(ed, rp, pr->tween.mode, ZERO);
+			    _edje_part_pos_set(ed, rp, pr->tween.mode, ZERO,
+                                               pr->tween.v1,
+                                               pr->tween.v2);
 			    rp->program = runp;
 			 }
 		    }
@@ -712,13 +570,15 @@ _edje_program_run(Edje *ed, Edje_Program *pr, Eina_Bool force, const char *ssig,
 		       if (rp)
 			 {
 			    if (rp->program)
-			      _edje_program_end(ed, rp->program);
+                              _edje_program_end(ed, rp->program);
 			    _edje_part_description_apply(ed, rp,
 							 pr->state,
 							 pr->value,
 							 NULL,
 							 0.0);
-			    _edje_part_pos_set(ed, rp, pr->tween.mode, ZERO);
+			    _edje_part_pos_set(ed, rp, pr->tween.mode, ZERO,
+                                               pr->tween.v1,
+                                               pr->tween.v2);
 			 }
 		    }
 	       }
@@ -932,6 +792,16 @@ _edje_program_run(Edje *ed, Edje_Program *pr, Eina_Bool force, const char *ssig,
 	       }
 	  }
         break;
+     case EDJE_ACTION_TYPE_SOUND_SAMPLE:
+        if (_edje_block_break(ed))
+          goto break_prog;
+        _edje_multisense_internal_sound_sample_play(ed, pr->sample_name, pr->speed);
+        break;
+     case EDJE_ACTION_TYPE_SOUND_TONE:
+        if (_edje_block_break(ed))
+          goto break_prog;
+        _edje_multisense_internal_sound_tone_play(ed, pr->tone_name, pr->duration);
+        break;
      case EDJE_ACTION_TYPE_PARAM_COPY:
           {
              Edje_Real_Part *src_part, *dst_part;
@@ -994,14 +864,22 @@ _edje_program_run(Edje *ed, Edje_Program *pr, Eina_Bool force, const char *ssig,
 void
 _edje_emit(Edje *ed, const char *sig, const char *src)
 {
+   _edje_emit_full(ed, sig, src, NULL, NULL);
+}
+
+/* data should either be NULL or a malloc allocated data */
+void
+_edje_emit_full(Edje *ed, const char *sig, const char *src, void *data, void (*free_func)(void *))
+{
    Edje_Message_Signal emsg;
-   Eina_List *l;
-   Evas_Object *obj;
    const char *sep;
+   Eina_Bool broadcast;
 
+   if (!ed->collection) return;
    if (ed->delete_me) return;
+   broadcast = ed->collection->broadcast_signal;
 
-   sep = strrchr(sig, EDJE_PART_PATH_SEPARATOR);
+   sep = strchr(sig, EDJE_PART_PATH_SEPARATOR);
 
    /* If we are not sending the signal to a part of the child, the
     * signal if for ourself
@@ -1009,67 +887,142 @@ _edje_emit(Edje *ed, const char *sig, const char *src)
    if (sep)
      {
         Edje_Real_Part *rp = NULL;
+        const char *newsig;
         Edje *ed2;
-        char *newsig;
-        size_t length;
         char *part;
+        char *idx;
+        size_t length;
 
-        /* the signal contains a colon, split the signal into "parts:signal",
-         * use _edje_real_part_recursive_get_helper to find the real part.
-         */
-        length = strlen(sig) + 1;
+        /* the signal contains a colon, split the signal into "parts:signal" */
+        length = sep - sig + 1;
         part = alloca(length);
-        memcpy(part, sig, length);
+        memcpy(part, sig, length - 1);
+        part[length - 1] = '\0';
 
-        newsig = part + (sep - sig);
+        newsig = sep + 1;
 
-        *newsig = '\0';
-        newsig++;
-
-        ed2 = _edje_recursive_get(ed, part, &rp);
-        if (ed2 && ed2 != ed)
+        /* lookup for alias */
+        if (ed->collection && ed->collection->alias)
           {
-             _edje_emit(ed2, newsig, src);
-             return; /* stop processing.
-                      * XXX maybe let signal be processed anyway?
-                      * XXX in this case, just comment this line
-                      */
+             char *alias;
+
+             alias = eina_hash_find(ed->collection->alias, part);
+             if (alias) {
+                char *aliased;
+                int alien;
+                int nslen;
+
+                alien = strlen(alias);
+                nslen = strlen(newsig);
+                length = alien + nslen + 2;
+
+                aliased = alloca(length);
+                memcpy(aliased, alias, alien);
+                aliased[alien] = EDJE_PART_PATH_SEPARATOR;
+                memcpy(aliased + alien + 1, newsig, nslen + 1);
+
+                _edje_emit(ed, aliased, src);
+                return;
+             }
           }
 
-        if (rp)
+        /* search for the index if present and remove it from the part */
+        idx = strchr(part, EDJE_PART_PATH_SEPARATOR_INDEXL);
+        if (idx)
           {
-             switch (rp->part->type)
+             char *end;
+
+             end = strchr(idx + 1, EDJE_PART_PATH_SEPARATOR_INDEXR);
+             if (end && end != idx + 1)
                {
-                case EDJE_PART_TYPE_EXTERNAL:
-                  {
-                     if (!rp->swallowed_object) break ;
+                  char *tmp;
 
-                     _edje_external_signal_emit(rp->swallowed_object, newsig, src);
-                     return;
-                  }
-                case EDJE_PART_TYPE_BOX:
-                case EDJE_PART_TYPE_TABLE:
-                  {
-                     _edje_emit(rp->edje, newsig, src);
-                     return;
-                  }
-                case EDJE_PART_TYPE_GROUP:
-                   if (!rp->swallowed_object) break;
-
-                   ed2 = _edje_fetch(rp->swallowed_object);
-                   if (!ed2) break;
-
-                   _edje_emit(ed2, newsig, src);
-                   return;
-                default:
-                   fprintf(stderr, "SPANK SPANK SPANK !!!\nYou should never be here !\n");
-                   break;
+                  tmp = alloca(end - idx - 1);
+                  memcpy(tmp, idx + 1, end - idx - 1);
+                  tmp[end - idx - 1] = '\0';
+                  *idx = '\0';
+                  idx = tmp;
                }
+             else
+               {
+                  idx = NULL;
+               }
+          }
+
+        /* search for the right part now */
+        rp = _edje_real_part_get(ed, part);
+        if (!rp) goto end;
+
+        switch (rp->part->type)
+          {
+           case EDJE_PART_TYPE_GROUP:
+              if (!rp->swallowed_object) goto end;
+              ed2 = _edje_fetch(rp->swallowed_object);
+              if (!ed2) goto end;
+
+              _edje_emit(ed2, newsig, src);
+	      broadcast = EINA_FALSE;
+              break;
+
+           case EDJE_PART_TYPE_EXTERNAL:
+              if (!rp->swallowed_object) break ;
+
+              if (!idx)
+                {
+                   _edje_external_signal_emit(rp->swallowed_object, newsig, src);
+                }
+              else
+                {
+                   Evas_Object *child;
+
+                   child = _edje_children_get(rp, idx);
+                   ed2 = _edje_fetch(child);
+                   if (!ed2) goto end;
+                   _edje_emit(ed2, newsig, src);
+                }
+	      broadcast = EINA_FALSE;
+              break ;
+
+           case EDJE_PART_TYPE_BOX:
+           case EDJE_PART_TYPE_TABLE:
+              if (idx)
+                {
+                   Evas_Object *child;
+
+                   child = _edje_children_get(rp, idx);
+                   ed2 = _edje_fetch(child);
+                   if (!ed2) goto end;
+                   _edje_emit(ed2, newsig, src);
+		   broadcast = EINA_FALSE;
+                }
+              break ;
+
+           default:
+              ERR("SPANK SPANK SPANK !!!\nYou should never be here !");
+              break;
           }
      }
 
+ end:
    emsg.sig = sig;
    emsg.src = src;
+   if (data)
+     {
+        emsg.data = calloc(1, sizeof(*(emsg.data)));
+        emsg.data->ref = 1;
+        emsg.data->data = data;
+        emsg.data->free_func = free_func;
+     }
+   else
+     {
+        emsg.data = NULL;
+     }
+/* new sends code */
+   if (broadcast)
+     edje_object_message_send(ed->obj, EDJE_MESSAGE_SIGNAL, 0, &emsg);
+   else
+     _edje_message_send(ed, EDJE_QUEUE_SCRIPT, EDJE_MESSAGE_SIGNAL, 0, &emsg);
+/* old send code - use api now
    _edje_message_send(ed, EDJE_QUEUE_SCRIPT, EDJE_MESSAGE_SIGNAL, 0, &emsg);
    EINA_LIST_FOREACH(ed->subobjs, l, obj)
      {
@@ -1080,16 +1033,21 @@ _edje_emit(Edje *ed, const char *sig, const char *src)
         if (ed2->delete_me) continue;
         _edje_message_send(ed2, EDJE_QUEUE_SCRIPT, EDJE_MESSAGE_SIGNAL, 0, &emsg);
      }
+ */
+   if (emsg.data && (--(emsg.data->ref) == 0))
+     {
+        if (emsg.data->free_func)
+          {
+             emsg.data->free_func(emsg.data->data);
+          }
+        free(emsg.data);
+     }
 }
 
 struct _Edje_Program_Data
 {
-#ifdef EDJE_PROGRAM_CACHE
   Eina_List     *matches;
-  int            matched;
-#endif
   Edje          *ed;
-  const char    *signal;
   const char    *source;
 };
 
@@ -1099,36 +1057,19 @@ static Eina_Bool _edje_glob_callback(Edje_Program *pr, void *dt)
    Edje_Real_Part *rp = NULL;
    Eina_Bool exec = EINA_TRUE;
 
-#ifdef EDJE_PROGRAM_CACHE
-   data->matched++;
-#endif
-
    if (pr->filter.state)
      {
 	rp = _edje_real_part_get(data->ed, pr->filter.part ? pr->filter.part : data->source);
 	if (rp)
-	  exec = (rp->chosen_description->state.name == pr->filter.state);
+          exec = (rp->chosen_description->state.name == pr->filter.state);
      }
 
-   if (exec)
-     _edje_program_run(data->ed, pr, 0, data->signal, data->source);
+   pr->exec = exec;
 
-   if (_edje_block_break(data->ed))
-     {
-#ifdef EDJE_PROGRAM_CACHE
-        eina_list_free(data->matches);
-        data->matches = NULL;
-#endif
-        return EINA_TRUE;
-     }
-
-#ifdef EDJE_PROGRAM_CACHE
    data->matches = eina_list_append(data->matches, pr);
-#endif
 
    return EINA_FALSE;
 }
-
 
 void
 _edje_callbacks_patterns_clean(Edje *ed)
@@ -1161,7 +1102,8 @@ _edje_callbacks_patterns_init(Edje *ed)
 
 /* FIXME: what if we delete the evas object??? */
 void
-_edje_emit_handle(Edje *ed, const char *sig, const char *src)
+_edje_emit_handle(Edje *ed, const char *sig, const char *src,
+                  Edje_Message_Signal_Data *sdata, Eina_Bool prop)
 {
    if (ed->delete_me) return;
    if (!sig) sig = "";
@@ -1173,7 +1115,7 @@ _edje_emit_handle(Edje *ed, const char *sig, const char *src)
    
    if (ed->collection && ed->L)
      _edje_lua2_script_func_signal(ed, sig, src);
-   
+
    if (ed->collection)
      {
 #ifdef EDJE_PROGRAM_CACHE
@@ -1202,18 +1144,46 @@ _edje_emit_handle(Edje *ed, const char *sig, const char *src)
 
 	     if (eina_hash_find(ec->prog_cache.no_matches, tmps))
 	       {
-		  done = 1;
+ 		  done = 1;
 	       }
 	     else if ((matches = eina_hash_find(ec->prog_cache.matches, tmps)))
 	       {
-		 EINA_LIST_FOREACH(matches, l, pr)
+                  EINA_LIST_FOREACH(matches, l, pr)
 		    {
-		       _edje_program_run(ed, pr, 0, sig, src);
-		       if (_edje_block_break(ed))
-			 {
-			    goto break_prog;
-			 }
+                       Eina_Bool exec = EINA_TRUE;
+
+                       if (pr->filter.state)
+                         {
+                            Edje_Real_Part *rp;
+
+                            rp = _edje_real_part_get(ed, pr->filter.part ? pr->filter.part : src);
+                            if (rp && !rp->program)
+                              exec = (rp->chosen_description->state.name == pr->filter.state);
+                         }
+
+                       pr->exec = exec;
+#if 0
+                       if (exec)
+                         {
+                            _edje_program_run(ed, pr, 0, sig, src);
+                            if (_edje_block_break(ed))
+                              {
+                                 goto break_prog;
+                              }
+                         }
+#endif
 		    }
+
+                  EINA_LIST_FOREACH(matches, l, pr)
+                    if (pr->exec)
+                      {
+                         _edje_program_run(ed, pr, 0, sig, src);
+                         if (_edje_block_break(ed))
+                           {
+                              goto break_prog;
+                           }
+                      }
+
 		  done = 1;
 	       }
 	  }
@@ -1224,11 +1194,8 @@ _edje_emit_handle(Edje *ed, const char *sig, const char *src)
 
              data.ed = ed;
              data.source = src;
-             data.signal = sig;
-#ifdef EDJE_PROGRAM_CACHE
-	     data.matched = 0;
 	     data.matches = NULL;
-#endif
+
              if (ed->table_programs_size > 0)
                {
 		  const Eina_List *match;
@@ -1242,19 +1209,37 @@ _edje_emit_handle(Edje *ed, const char *sig, const char *src)
 						 src,
 						 ed->patterns.programs.u.programs.globing,
 						 _edje_glob_callback,
-						 &data) == 0)
+						 &data,
+                                                 prop) == 0)
 		      goto break_prog;
 
 		  match = edje_match_signal_source_hash_get(sig, src,
 							    ed->patterns.programs.exact_match);
 		  EINA_LIST_FOREACH(match, l, pr)
 		    _edje_glob_callback(pr, &data);
+
+#ifdef EDJE_PROGRAM_CACHE
+                  EINA_LIST_FOREACH(data.matches, l, pr)
+#else
+                  EINA_LIST_FREE(data.matches, pr)
+#endif
+                    {
+                       if (pr->exec)
+                         _edje_program_run(ed, pr, 0, sig, src);
+
+                       if (_edje_block_break(ed))
+                         {
+                            eina_list_free(data.matches);
+                            data.matches = NULL;
+                            goto break_prog;
+                         }
+                    }
                }
 
 #ifdef EDJE_PROGRAM_CACHE
 	     if (tmps)
 	       {
-		  if (data.matched == 0)
+		  if (data.matches == NULL)
 		    {
 		      if (!ec->prog_cache.no_matches)
 			ec->prog_cache.no_matches = eina_hash_string_superfast_new(NULL);
@@ -1269,7 +1254,7 @@ _edje_emit_handle(Edje *ed, const char *sig, const char *src)
 	       }
 #endif
 	  }
-	_edje_emit_cb(ed, sig, src);
+	_edje_emit_cb(ed, sig, src, sdata, prop);
 	if (_edje_block_break(ed))
 	  {
 	     goto break_prog;
@@ -1281,9 +1266,18 @@ _edje_emit_handle(Edje *ed, const char *sig, const char *src)
    _edje_unblock(ed);
 }
 
+/* Extra data for callbacks */
+static void *callback_extra_data = NULL;
+
+EAPI void *
+edje_object_signal_callback_extra_data_get(void)
+{
+   return callback_extra_data;
+}
+
 /* FIXME: what if we delete the evas object??? */
 static void
-_edje_emit_cb(Edje *ed, const char *sig, const char *src)
+_edje_emit_cb(Edje *ed, const char *sig, const char *src, Edje_Message_Signal_Data *data, Eina_Bool prop)
 {
    Eina_List            *l;
 
@@ -1301,8 +1295,9 @@ _edje_emit_cb(Edje *ed, const char *sig, const char *src)
      {
 	Edje_Signal_Callback *escb;
 	const Eina_List *match;
-	const Eina_List *l;
+	const Eina_List *l2;
         int r = 1;
+        callback_extra_data = (data) ? data->data : NULL;
 
 	_edje_callbacks_patterns_init(ed);
 	if (ed->patterns.callbacks.u.callbacks.globing)
@@ -1311,20 +1306,24 @@ _edje_emit_cb(Edje *ed, const char *sig, const char *src)
 				       sig,
 				       src,
 				       ed->patterns.callbacks.u.callbacks.globing,
-				       ed);
+				       ed,
+                                       prop);
 
         if (!r)
           goto break_prog;
 
 	match = edje_match_signal_source_hash_get(sig, src,
 						  ed->patterns.callbacks.exact_match);
-	EINA_LIST_FOREACH(match, l, escb)
-	  if ((!escb->just_added) && (!escb->delete_me))
-	    {
-	       escb->func(escb->data, ed->obj, sig, src);
-	       if (_edje_block_break(ed))
-		 goto break_prog;
-	    }
+	EINA_LIST_FOREACH(match, l2, escb)
+          {
+             if ((prop) && (escb->propagate)) continue;
+             if ((!escb->just_added) && (!escb->delete_me))
+               {
+                  escb->func(escb->data, ed->obj, sig, src);
+                  if (_edje_block_break(ed))
+                    goto break_prog;
+               }
+          }
      }
    break_prog:
 
@@ -1638,6 +1637,7 @@ _edje_param_native_set(Edje_Real_Part *rp, const char *name, const Edje_External
 		  if (param->type != EDJE_EXTERNAL_PARAM_TYPE_DOUBLE)
 		    return EINA_FALSE;
 		  rp->drag->size.x = FROM_DOUBLE(CLAMP(param->d, 0.0, 1.0));
+                  rp->edje->recalc_call = 1;
 		  rp->edje->dirty = 1;
 #ifdef EDJE_CALC_CACHE
 		  rp->invalidate = 1;
@@ -1650,6 +1650,7 @@ _edje_param_native_set(Edje_Real_Part *rp, const char *name, const Edje_External
 		  if (param->type != EDJE_EXTERNAL_PARAM_TYPE_DOUBLE)
 		    return EINA_FALSE;
 		  rp->drag->size.y = FROM_DOUBLE(CLAMP(param->d, 0.0, 1.0));
+                  rp->edje->recalc_call = 1;
 		  rp->edje->dirty = 1;
 #ifdef EDJE_CALC_CACHE
 		  rp->invalidate = 1;
@@ -2105,8 +2106,3 @@ _edje_param_set(Edje_Real_Part *part, const char *param, const char *value)
 	  }
      }
 }
-
-/**
- *
- * @}
- */

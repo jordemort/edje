@@ -34,20 +34,22 @@ POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
 subdir = doc
-DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in \
-	$(srcdir)/edje.dox.in
+DIST_COMMON = $(srcdir)/Doxyfile.in $(srcdir)/Makefile.am \
+	$(srcdir)/Makefile.in
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/ac_attribute.m4 \
-	$(top_srcdir)/m4/efl_binary.m4 $(top_srcdir)/m4/efl_doxygen.m4 \
-	$(top_srcdir)/m4/efl_path_max.m4 $(top_srcdir)/m4/libtool.m4 \
-	$(top_srcdir)/m4/ltoptions.m4 $(top_srcdir)/m4/ltsugar.m4 \
-	$(top_srcdir)/m4/ltversion.m4 $(top_srcdir)/m4/lt~obsolete.m4 \
-	$(top_srcdir)/configure.ac
+	$(top_srcdir)/m4/efl_binary.m4 \
+	$(top_srcdir)/m4/efl_coverage.m4 \
+	$(top_srcdir)/m4/efl_doxygen.m4 \
+	$(top_srcdir)/m4/efl_path_max.m4 $(top_srcdir)/m4/efl_tests.m4 \
+	$(top_srcdir)/m4/libtool.m4 $(top_srcdir)/m4/ltoptions.m4 \
+	$(top_srcdir)/m4/ltsugar.m4 $(top_srcdir)/m4/ltversion.m4 \
+	$(top_srcdir)/m4/lt~obsolete.m4 $(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 mkinstalldirs = $(install_sh) -d
 CONFIG_HEADER = $(top_builddir)/config.h
-CONFIG_CLEAN_FILES = edje.dox
+CONFIG_CLEAN_FILES = Doxyfile
 CONFIG_CLEAN_VPATH_FILES =
 AM_V_GEN = $(am__v_GEN_$(V))
 am__v_GEN_ = $(am__v_GEN_$(AM_DEFAULT_VERBOSITY))
@@ -60,6 +62,8 @@ DIST_SOURCES =
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
 ACLOCAL = @ACLOCAL@
 ALLOCA = @ALLOCA@
+ALSA_CFLAGS = @ALSA_CFLAGS@
+ALSA_LIBS = @ALSA_LIBS@
 AMTAR = @AMTAR@
 AM_DEFAULT_VERBOSITY = @AM_DEFAULT_VERBOSITY@
 AR = @AR@
@@ -71,6 +75,8 @@ AWK = @AWK@
 CC = @CC@
 CCDEPMODE = @CCDEPMODE@
 CFLAGS = @CFLAGS@
+CHECK_CFLAGS = @CHECK_CFLAGS@
+CHECK_LIBS = @CHECK_LIBS@
 CPP = @CPP@
 CPPFLAGS = @CPPFLAGS@
 CYGPATH_W = @CYGPATH_W@
@@ -102,12 +108,16 @@ EDJE_PLAYER_CFLAGS = @EDJE_PLAYER_CFLAGS@
 EDJE_PLAYER_LIBS = @EDJE_PLAYER_LIBS@
 EDJE_PLAYER_PRG = @EDJE_PLAYER_PRG@
 EDJE_RECC_PRG = @EDJE_RECC_PRG@
+EFL_COVERAGE_CFLAGS = @EFL_COVERAGE_CFLAGS@
+EFL_COVERAGE_LIBS = @EFL_COVERAGE_LIBS@
 EFL_EDJE_BUILD = @EFL_EDJE_BUILD@
 EGREP = @EGREP@
 EVIL_CFLAGS = @EVIL_CFLAGS@
 EVIL_LIBS = @EVIL_LIBS@
 EXEEXT = @EXEEXT@
 FGREP = @FGREP@
+FLAC_CFLAGS = @FLAC_CFLAGS@
+FLAC_LIBS = @FLAC_LIBS@
 GREP = @GREP@
 INSTALL = @INSTALL@
 INSTALL_DATA = @INSTALL_DATA@
@@ -144,18 +154,27 @@ PACKAGE_URL = @PACKAGE_URL@
 PACKAGE_VERSION = @PACKAGE_VERSION@
 PATH_SEPARATOR = @PATH_SEPARATOR@
 PKG_CONFIG = @PKG_CONFIG@
+PKG_CONFIG_LIBDIR = @PKG_CONFIG_LIBDIR@
+PKG_CONFIG_PATH = @PKG_CONFIG_PATH@
 PYTHON = @PYTHON@
 PYTHON_EXEC_PREFIX = @PYTHON_EXEC_PREFIX@
 PYTHON_PLATFORM = @PYTHON_PLATFORM@
 PYTHON_PREFIX = @PYTHON_PREFIX@
 PYTHON_VERSION = @PYTHON_VERSION@
 RANLIB = @RANLIB@
+REMIX_CFLAGS = @REMIX_CFLAGS@
+REMIX_LIBS = @REMIX_LIBS@
+REMIX_PLUGIN_DIR = @REMIX_PLUGIN_DIR@
 SED = @SED@
 SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
+SNDFILE_CFLAGS = @SNDFILE_CFLAGS@
+SNDFILE_LIBS = @SNDFILE_LIBS@
 STRIP = @STRIP@
 VERSION = @VERSION@
 VMAJ = @VMAJ@
+VORBISENC_CFLAGS = @VORBISENC_CFLAGS@
+VORBISENC_LIBS = @VORBISENC_LIBS@
 abs_builddir = @abs_builddir@
 abs_srcdir = @abs_srcdir@
 abs_top_builddir = @abs_top_builddir@
@@ -178,9 +197,11 @@ datadir = @datadir@
 datarootdir = @datarootdir@
 docdir = @docdir@
 dvidir = @dvidir@
+edje_cc = @edje_cc@
 efl_doxygen = @efl_doxygen@
 efl_have_doxygen = @efl_have_doxygen@
 exec_prefix = @exec_prefix@
+have_lcov = @have_lcov@
 host = @host@
 host_alias = @host_alias@
 host_cpu = @host_cpu@
@@ -221,10 +242,10 @@ top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 version_info = @version_info@
 vimdir = @vimdir@
-MAINTAINERCLEANFILES = Makefile.in edje.dox
+MAINTAINERCLEANFILES = Makefile.in
 PACKAGE_DOCNAME = $(PACKAGE_TARNAME)-$(PACKAGE_VERSION)-doc
 EXTRA_DIST = Doxyfile e.css foot.html head.html $(wildcard img/*.*) \
-             edje.dox.in $(wildcard examples/*.*)
+             $(wildcard examples/*.*)
 
 all: all-am
 
@@ -259,7 +280,7 @@ $(top_srcdir)/configure:  $(am__configure_deps)
 $(ACLOCAL_M4):  $(am__aclocal_m4_deps)
 	cd $(top_builddir) && $(MAKE) $(AM_MAKEFLAGS) am--refresh
 $(am__aclocal_m4_deps):
-edje.dox: $(top_builddir)/config.status $(srcdir)/edje.dox.in
+Doxyfile: $(top_builddir)/config.status $(srcdir)/Doxyfile.in
 	cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@
 
 mostlyclean-libtool:
@@ -419,18 +440,19 @@ uninstall-am:
 .PHONY: doc
 
 @EFL_BUILD_DOC_TRUE@doc-clean:
-@EFL_BUILD_DOC_TRUE@	rm -rf html/ latex/ man/ xml/ $(PACKAGE_DOCNAME).tar*
+@EFL_BUILD_DOC_TRUE@	rm -rf html/ latex/ man/ xml/ $(top_builddir)/$(PACKAGE_DOCNAME).tar*
 
 @EFL_BUILD_DOC_TRUE@doc: all doc-clean
 @EFL_BUILD_DOC_TRUE@	$(efl_doxygen)
-@EFL_BUILD_DOC_TRUE@	cp img/* html/
+@EFL_BUILD_DOC_TRUE@	cp $(srcdir)/img/* html/
+@EFL_BUILD_DOC_TRUE@	cp $(srcdir)/img/* latex/
 @EFL_BUILD_DOC_TRUE@	rm -rf $(PACKAGE_DOCNAME).tar*
 @EFL_BUILD_DOC_TRUE@	mkdir -p $(PACKAGE_DOCNAME)/doc
 @EFL_BUILD_DOC_TRUE@	cp -R html/ latex/ man/ $(PACKAGE_DOCNAME)/doc
 @EFL_BUILD_DOC_TRUE@	tar cf $(PACKAGE_DOCNAME).tar $(PACKAGE_DOCNAME)/
 @EFL_BUILD_DOC_TRUE@	bzip2 -9 $(PACKAGE_DOCNAME).tar
 @EFL_BUILD_DOC_TRUE@	rm -rf $(PACKAGE_DOCNAME)/
-@EFL_BUILD_DOC_TRUE@	mv $(PACKAGE_DOCNAME).tar.bz2 $(top_srcdir)
+@EFL_BUILD_DOC_TRUE@	mv $(PACKAGE_DOCNAME).tar.bz2 $(top_builddir)
 
 @EFL_BUILD_DOC_TRUE@clean-local: doc-clean
 

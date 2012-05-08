@@ -1,5 +1,7 @@
 #include "edje_private.h"
 
+static void _edje_object_message_popornot_send(Evas_Object *obj, Edje_Message_Type type, int id, void *msg, Eina_Bool prop);
+
 static int _injob = 0;
 static Ecore_Job *_job = NULL;
 static Ecore_Timer *_job_loss_timer = NULL;
@@ -13,64 +15,28 @@ static int tmp_msgq_restart = 0;
  *                                   API                                      *
  *============================================================================*/
 
-/**
- * @addtogroup Edje_message_queue_Group Message_Queue
- *
- * @brief These functions provide an abstraction layer between the
- * application code and the interface, while allowing extremely
- * flexible dynamic layouts and animations.
- *
- * @{
- */
+static void
+_edje_object_message_popornot_send(Evas_Object *obj, Edje_Message_Type type, int id, void *msg, Eina_Bool prop)
+{
+   Edje *ed;
+   Eina_List *l;
+   Evas_Object *o;
 
-/**
- * @brief Send message to object.
- *
- * @param obj The edje object reference.
- * @param type The type of message to send.
- * @param id A identification number for the message.
- * @param msg The message to be send.
- *
- *
- * This function sends messages to this object and to all of its child
- * objects, if applicable. The function that handles messages arriving
- * at this edje object is is set with
- * edje_object_message_handler_set().
- *
- * @see edje_object_message_handler_set()
- *
- */
+   ed = _edje_fetch(obj);
+   if (!ed) return;
+   _edje_message_propornot_send(ed, EDJE_QUEUE_SCRIPT, type, id, msg, prop);
+   EINA_LIST_FOREACH(ed->subobjs, l, o)
+     {
+        _edje_object_message_popornot_send(o, type, id, msg, EINA_TRUE);
+     }
+}
 
 EAPI void
 edje_object_message_send(Evas_Object *obj, Edje_Message_Type type, int id, void *msg)
 {
-   Edje *ed;
-   unsigned int i;
-
-   ed = _edje_fetch(obj);
-   if (!ed) return;
-   _edje_message_send(ed, EDJE_QUEUE_SCRIPT, type, id, msg);
-
-   for (i = 0; i < ed->table_parts_size; i++)
-     {
-	Edje_Real_Part *rp = ed->table_parts[i];
-	if ((rp->part->type == EDJE_PART_TYPE_GROUP) && (rp->swallowed_object))
-	  edje_object_message_send(rp->swallowed_object, type, id, msg);
-     }
+   _edje_object_message_popornot_send(obj, type, id, msg, EINA_FALSE);
 }
 
-/**
- * @brief Set the message handler function for this an object.
- *
- * @param obj The edje object reference.
- * @param func The function to handle messages.
- * @param data The data to be associated to the message handler.
- *
- *
- * This function associates a message handler function and data to the
- * edje object.
- *
- */
 
 EAPI void
 edje_object_message_handler_set(Evas_Object *obj, Edje_Message_Handler_Cb func, void *data)
@@ -82,16 +48,6 @@ edje_object_message_handler_set(Evas_Object *obj, Edje_Message_Handler_Cb func, 
    _edje_message_cb_set(ed, func, data);
 }
 
-/**
- * @brief Process an object's message queue.
- *
- * @param obj The edje object reference.
- *
- * This function goes through the object message queue processing the
- * pending messages for *this* specific edje object. Normally they'd
- * be processed only at idle time.
- *
- */
 
 EAPI void
 edje_object_message_signal_process(Evas_Object *obj)
@@ -130,24 +86,6 @@ edje_object_message_signal_process(Evas_Object *obj)
 	tmpq = NULL;
      }
 
-#if 0   
-   while (tmp_msgq)
-     {
-	Edje_Message *em;
-
-	em = tmp_msgq->data;
-	tmp_msgq = eina_list_remove_list(tmp_msgq, tmp_msgq);
-        if (!ed->delete_me)
-          {
-             ed->processing_messages++;
-             _edje_message_process(em);
-             _edje_message_free(em);
-             ed->processing_messages--;
-          }
-        else
-           _edje_message_free(em);
-     }
-#else
    tmp_msgq_processing++;
 again:
    EINA_LIST_FOREACH_SAFE(tmp_msgq, l, ln, em)
@@ -193,16 +131,8 @@ end:
       tmp_msgq_restart = 0;
    else
       tmp_msgq_restart = 1;
-#endif
 }
 
-/**
- * @brief Process all queued up edje messages.
- *
- * This function triggers the processing of messages addressed to any
- * (alive) edje objects.
- *
- */
 
 EAPI void
 edje_message_signal_process(void)
@@ -266,19 +196,17 @@ _edje_message_shutdown(void)
 void
 _edje_message_cb_set(Edje *ed, void (*func) (void *data, Evas_Object *obj, Edje_Message_Type type, int id, void *msg), void *data)
 {
-   unsigned int i;
+   Eina_List *l;
+   Evas_Object *o;
 
    ed->message.func = func;
    ed->message.data = data;
-   for (i = 0 ; i < ed->table_parts_size ; i++) {
-      Edje_Real_Part *rp;
-      rp = ed->table_parts[i];
-      if (rp->part->type == EDJE_PART_TYPE_GROUP && rp->swallowed_object) {
-         Edje *edj2 = _edje_fetch(rp->swallowed_object);
-         if (!edj2) continue;
-	 _edje_message_cb_set(edj2, func, data);
-      }
-   }
+   EINA_LIST_FOREACH(ed->subobjs, l, o)
+     {
+        Edje *edj2 = _edje_fetch(o);
+        if (!edj2) continue;
+        _edje_message_cb_set(edj2, func, data);
+     }
 }
 
 Edje_Message *
@@ -389,6 +317,14 @@ _edje_message_free(Edje_Message *em)
 		  emsg = (Edje_Message_Signal *)em->msg;
 		  if (emsg->sig) eina_stringshare_del(emsg->sig);
 		  if (emsg->src) eina_stringshare_del(emsg->src);
+                  if (emsg->data && (--(emsg->data->ref) == 0))
+                    {
+                       if (emsg->data->free_func)
+                         {
+                            emsg->data->free_func(emsg->data->data);
+                         }
+                       free(emsg->data);
+                    }
 		  free(emsg);
 	       }
 	     break;
@@ -411,7 +347,7 @@ _edje_message_free(Edje_Message *em)
 }
 
 void
-_edje_message_send(Edje *ed, Edje_Queue queue, Edje_Message_Type type, int id, void *emsg)
+_edje_message_propornot_send(Edje *ed, Edje_Queue queue, Edje_Message_Type type, int id, void *emsg, Eina_Bool prop)
 {
    /* FIXME: check all malloc & strdup fails and gracefully unroll and exit */
    Edje_Message *em;
@@ -420,6 +356,7 @@ _edje_message_send(Edje *ed, Edje_Queue queue, Edje_Message_Type type, int id, v
 
    em = _edje_message_new(ed, queue, type, id);
    if (!em) return;
+   em->propagated = prop;
    if (_job)
      {
         ecore_job_del(_job);
@@ -427,7 +364,8 @@ _edje_message_send(Edje *ed, Edje_Queue queue, Edje_Message_Type type, int id, v
      }
    if (_injob > 0)
      {
-        _job_loss_timer = ecore_timer_add(0.01, _edje_job_loss_timer, NULL);
+        if (!_job_loss_timer)
+          _job_loss_timer = ecore_timer_add(0.001, _edje_job_loss_timer, NULL);
      }
    else
      {
@@ -453,6 +391,11 @@ _edje_message_send(Edje *ed, Edje_Queue queue, Edje_Message_Type type, int id, v
 	     emsg3 = calloc(1, sizeof(Edje_Message_Signal));
 	     if (emsg2->sig) emsg3->sig = eina_stringshare_add(emsg2->sig);
 	     if (emsg2->src) emsg3->src = eina_stringshare_add(emsg2->src);
+	     if (emsg2->data)
+               {
+                  emsg3->data = emsg2->data;
+                  emsg3->data->ref++;
+               }
 	     msg = (unsigned char *)emsg3;
 	  }
 	break;
@@ -577,6 +520,12 @@ _edje_message_send(Edje *ed, Edje_Queue queue, Edje_Message_Type type, int id, v
 
    em->msg = msg;
    msgq = eina_list_append(msgq, em);
+}
+
+void
+_edje_message_send(Edje *ed, Edje_Queue queue, Edje_Message_Type type, int id, void *emsg)
+{
+   _edje_message_propornot_send(ed, queue, type, id, emsg, EINA_FALSE);
 }
 
 void
@@ -706,7 +655,9 @@ _edje_message_process(Edje_Message *em)
      {
 	_edje_emit_handle(em->edje,
 			  ((Edje_Message_Signal *)em->msg)->sig,
-			  ((Edje_Message_Signal *)em->msg)->src);
+			  ((Edje_Message_Signal *)em->msg)->src,
+			  ((Edje_Message_Signal *)em->msg)->data,
+			  em->propagated);
 	return;
      }
    /* if this has been queued up for the app then just call the callback */
@@ -912,8 +863,3 @@ _edje_message_del(Edje *ed)
 	if (ed->message.num <= 0) return;
      }
 }
-
-/**
- *
- * @}
- */

@@ -8,10 +8,11 @@
 #include <sys/stat.h>
 
 #include "edje_cc.h"
-#include "edje_prefix.h"
 int _edje_cc_log_dom = -1;
 static void main_help(void);
 
+Eina_Prefix  *pfx = NULL;
+Eina_List *snd_dirs = NULL;
 Eina_List *img_dirs = NULL;
 Eina_List *fnt_dirs = NULL;
 Eina_List *defines = NULL;
@@ -24,6 +25,7 @@ int        verbose = 0;
 int        no_lossy = 0;
 int        no_comp = 0;
 int        no_raw = 0;
+int        no_save = 0;
 int        min_quality = 0;
 int        max_quality = 100;
 
@@ -38,11 +40,13 @@ main_help(void)
       "\n"
       "-id image/directory      Add a directory to look in for relative path images\n"
       "-fd font/directory       Add a directory to look in for relative path fonts\n"
+      "-sd sound/directory      Add a directory to look in for relative path sounds samples\n"
       "-td temp/directory       Directory to store temporary files\n"
       "-v                       Verbose output\n"
       "-no-lossy                Do NOT allow images to be lossy\n"
       "-no-comp                 Do NOT allow images to be stored with lossless compression\n"
       "-no-raw                  Do NOT allow images to be stored with zero compression (raw)\n"
+      "-no-save                 Do NOT store the input EDC file in the EDJ file\n"
       "-min-quality VAL         Do NOT allow lossy images with quality < VAL (0-100)\n"
       "-max-quality VAL         Do NOT allow lossy images with quality > VAL (0-100)\n"
       "-Ddefine_val=to          CPP style define to define input macro definitions to the .edc source\n"
@@ -71,6 +75,9 @@ main(int argc, char **argv)
    tmp_dir = getenv("TMPDIR");
 
    img_dirs = eina_list_append(img_dirs, ".");
+   
+   /* add defines to epp so edc files can detect edje_cc version */
+   defines = eina_list_append(defines, mem_strdup("-DEDJE_VERSION_12=12"));
 
    progname = argv[0];
    for (i = 1; i < argc; i++)
@@ -96,6 +103,10 @@ main(int argc, char **argv)
 	  {
 	     no_raw = 1;
 	  }
+	else if (!strcmp(argv[i], "-no-save"))
+	  {
+	     no_save = 1;
+	  }
 	else if ((!strcmp(argv[i], "-id") || !strcmp(argv[i], "--image_dir")) && (i < (argc - 1)))
 	  {
 	     i++;
@@ -106,6 +117,11 @@ main(int argc, char **argv)
 	     i++;
 	     fnt_dirs = eina_list_append(fnt_dirs, argv[i]);
 	  }
+        else if ((!strcmp(argv[i], "-sd") || !strcmp(argv[i], "--sound_dir")) && (i < (argc - 1)))
+          {
+             i++;
+             snd_dirs = eina_list_append(snd_dirs, argv[i]);
+          }
 	else if ((!strcmp(argv[i], "-td") || !strcmp(argv[i], "--tmp_dir")) && (i < (argc - 1)))
 	  {
 	     i++;
@@ -147,7 +163,16 @@ main(int argc, char **argv)
 	exit(-1);
      }
 
-   e_prefix_determine(argv[0]);
+   pfx = eina_prefix_new(argv[0],            /* argv[0] value (optional) */
+                         main,               /* an optional symbol to check path of */
+                         "EDJE",             /* env var prefix to use (XXX_PREFIX, XXX_BIN_DIR etc. */
+                         "edje",             /* dir to add after "share" (PREFIX/share/DIRNAME) */
+                         "include/edje.inc", /* a magic file to check for in PREFIX/share/DIRNAME for success */
+                         PACKAGE_BIN_DIR,    /* package bin dir @ compile time */
+                         PACKAGE_LIB_DIR,    /* package lib dir @ compile time */
+                         PACKAGE_DATA_DIR,   /* package data dir @ compile time */
+                         PACKAGE_DATA_DIR    /* if locale needed  use LOCALE_DIR */
+                        );
 
    /* check whether file_in exists */
 #ifdef HAVE_REALPATH
@@ -211,11 +236,15 @@ main(int argc, char **argv)
 
    data_setup();
    compile();
+   reorder_parts();
    data_process_scripts();
    data_process_lookups();
    data_process_script_lookups();
    data_write();
 
+   eina_prefix_free(pfx);
+   pfx = NULL;
+   
    edje_shutdown();
    eina_log_domain_unregister(_edje_cc_log_dom);
    eina_shutdown();

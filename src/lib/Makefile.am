@@ -12,7 +12,9 @@ AM_CPPFLAGS = \
 @EVIL_CFLAGS@ \
 @EDJE_CFLAGS@ \
 @ECORE_IMF_CFLAGS@ \
-@EFL_EDJE_BUILD@
+@EFL_EDJE_BUILD@ \
+@REMIX_CFLAGS@ \
+@SNDFILE_CFLAGS@ 
 
 lib_LTLIBRARIES = libedje.la
 
@@ -39,6 +41,7 @@ edje_match.c \
 edje_message_queue.c \
 edje_misc.c \
 edje_module.c \
+edje_multisense.c \
 edje_program.c \
 edje_script_only.c \
 edje_smart.c \
@@ -84,6 +87,7 @@ edje_amalgamation.c: $(base_sources) Makefile
 	@echo "#include <limits.h>" >> edje_amalgamation.c
 	@echo "#include <errno.h>" >> edje_amalgamation.c
 	@echo "#include <sys/stat.h>" >> edje_amalgamation.c
+	@echo "#include <fcntl.h>" >> edje_amalgamation.c
 
 	@echo "#ifndef _MSC_VER" >> edje_amalgamation.c
 	@echo "# include <unistd.h>" >> edje_amalgamation.c
@@ -127,10 +131,10 @@ else
 libedje_la_SOURCES = $(base_sources)
 endif
 
-libedje_la_LIBADD = @EDJE_LIBS@ @ECORE_IMF_LIBS@ @EVIL_LIBS@ -lm
+libedje_la_LIBADD = @EDJE_LIBS@ @ECORE_IMF_LIBS@ @EVIL_LIBS@ @REMIX_LIBS@ @SNDFILE_LIBS@ -lm
 libedje_la_LDFLAGS = -no-undefined @lt_enable_auto_import@ -version-info @version_info@ @release_info@
 
 EXTRA_DIST = edje_private.h edje_container.h edje_convert.h
 
 clean-local:
-	@rm -rf  edje_amalgamation.c
+	@rm -rf *.gcno edje_amalgamation.c

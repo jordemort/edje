@@ -39,16 +39,18 @@ subdir = .
 DIST_COMMON = README $(am__configure_deps) $(srcdir)/Makefile.am \
 	$(srcdir)/Makefile.in $(srcdir)/config.h.in \
 	$(srcdir)/edje.pc.in $(srcdir)/edje.spec.in \
-	$(top_srcdir)/configure AUTHORS COPYING ChangeLog INSTALL NEWS \
-	compile config.guess config.sub depcomp install-sh ltmain.sh \
-	missing
+	$(top_srcdir)/configure ABOUT-NLS AUTHORS COPYING ChangeLog \
+	INSTALL NEWS compile config.guess config.sub depcomp \
+	install-sh ltmain.sh missing
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/ac_attribute.m4 \
-	$(top_srcdir)/m4/efl_binary.m4 $(top_srcdir)/m4/efl_doxygen.m4 \
-	$(top_srcdir)/m4/efl_path_max.m4 $(top_srcdir)/m4/libtool.m4 \
-	$(top_srcdir)/m4/ltoptions.m4 $(top_srcdir)/m4/ltsugar.m4 \
-	$(top_srcdir)/m4/ltversion.m4 $(top_srcdir)/m4/lt~obsolete.m4 \
-	$(top_srcdir)/configure.ac
+	$(top_srcdir)/m4/efl_binary.m4 \
+	$(top_srcdir)/m4/efl_coverage.m4 \
+	$(top_srcdir)/m4/efl_doxygen.m4 \
+	$(top_srcdir)/m4/efl_path_max.m4 $(top_srcdir)/m4/efl_tests.m4 \
+	$(top_srcdir)/m4/libtool.m4 $(top_srcdir)/m4/ltoptions.m4 \
+	$(top_srcdir)/m4/ltsugar.m4 $(top_srcdir)/m4/ltversion.m4 \
+	$(top_srcdir)/m4/lt~obsolete.m4 $(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 am__CONFIG_DISTCLEAN_FILES = config.status config.cache config.log \
@@ -142,6 +144,8 @@ distuninstallcheck_listfiles = find . -type f -print
 distcleancheck_listfiles = find . -type f -print
 ACLOCAL = @ACLOCAL@
 ALLOCA = @ALLOCA@
+ALSA_CFLAGS = @ALSA_CFLAGS@
+ALSA_LIBS = @ALSA_LIBS@
 AMTAR = @AMTAR@
 AM_DEFAULT_VERBOSITY = @AM_DEFAULT_VERBOSITY@
 AR = @AR@
@@ -153,6 +157,8 @@ AWK = @AWK@
 CC = @CC@
 CCDEPMODE = @CCDEPMODE@
 CFLAGS = @CFLAGS@
+CHECK_CFLAGS = @CHECK_CFLAGS@
+CHECK_LIBS = @CHECK_LIBS@
 CPP = @CPP@
 CPPFLAGS = @CPPFLAGS@
 CYGPATH_W = @CYGPATH_W@
@@ -184,12 +190,16 @@ EDJE_PLAYER_CFLAGS = @EDJE_PLAYER_CFLAGS@
 EDJE_PLAYER_LIBS = @EDJE_PLAYER_LIBS@
 EDJE_PLAYER_PRG = @EDJE_PLAYER_PRG@
 EDJE_RECC_PRG = @EDJE_RECC_PRG@
+EFL_COVERAGE_CFLAGS = @EFL_COVERAGE_CFLAGS@
+EFL_COVERAGE_LIBS = @EFL_COVERAGE_LIBS@
 EFL_EDJE_BUILD = @EFL_EDJE_BUILD@
 EGREP = @EGREP@
 EVIL_CFLAGS = @EVIL_CFLAGS@
 EVIL_LIBS = @EVIL_LIBS@
 EXEEXT = @EXEEXT@
 FGREP = @FGREP@
+FLAC_CFLAGS = @FLAC_CFLAGS@
+FLAC_LIBS = @FLAC_LIBS@
 GREP = @GREP@
 INSTALL = @INSTALL@
 INSTALL_DATA = @INSTALL_DATA@
@@ -226,18 +236,27 @@ PACKAGE_URL = @PACKAGE_URL@
 PACKAGE_VERSION = @PACKAGE_VERSION@
 PATH_SEPARATOR = @PATH_SEPARATOR@
 PKG_CONFIG = @PKG_CONFIG@
+PKG_CONFIG_LIBDIR = @PKG_CONFIG_LIBDIR@
+PKG_CONFIG_PATH = @PKG_CONFIG_PATH@
 PYTHON = @PYTHON@
 PYTHON_EXEC_PREFIX = @PYTHON_EXEC_PREFIX@
 PYTHON_PLATFORM = @PYTHON_PLATFORM@
 PYTHON_PREFIX = @PYTHON_PREFIX@
 PYTHON_VERSION = @PYTHON_VERSION@
 RANLIB = @RANLIB@
+REMIX_CFLAGS = @REMIX_CFLAGS@
+REMIX_LIBS = @REMIX_LIBS@
+REMIX_PLUGIN_DIR = @REMIX_PLUGIN_DIR@
 SED = @SED@
 SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
+SNDFILE_CFLAGS = @SNDFILE_CFLAGS@
+SNDFILE_LIBS = @SNDFILE_LIBS@
 STRIP = @STRIP@
 VERSION = @VERSION@
 VMAJ = @VMAJ@
+VORBISENC_CFLAGS = @VORBISENC_CFLAGS@
+VORBISENC_LIBS = @VORBISENC_LIBS@
 abs_builddir = @abs_builddir@
 abs_srcdir = @abs_srcdir@
 abs_top_builddir = @abs_top_builddir@
@@ -260,9 +279,11 @@ datadir = @datadir@
 datarootdir = @datarootdir@
 docdir = @docdir@
 dvidir = @dvidir@
+edje_cc = @edje_cc@
 efl_doxygen = @efl_doxygen@
 efl_have_doxygen = @efl_have_doxygen@
 exec_prefix = @exec_prefix@
+have_lcov = @have_lcov@
 host = @host@
 host_alias = @host_alias@
 host_cpu = @host_cpu@
@@ -781,6 +802,7 @@ distcleancheck: distclean
 	       $(distcleancheck_listfiles) ; \
 	       exit 1; } >&2
 check-am: all-am
+	$(MAKE) $(AM_MAKEFLAGS) check-local
 check: check-recursive
 all-am: Makefile $(SCRIPTS) $(DATA) config.h
 installdirs: installdirs-recursive
@@ -884,17 +906,17 @@ ps-am:
 
 uninstall-am: uninstall-binSCRIPTS uninstall-pkgconfigDATA
 
-.MAKE: $(RECURSIVE_CLEAN_TARGETS) $(RECURSIVE_TARGETS) all \
+.MAKE: $(RECURSIVE_CLEAN_TARGETS) $(RECURSIVE_TARGETS) all check-am \
 	ctags-recursive install-am install-strip tags-recursive
 
 .PHONY: $(RECURSIVE_CLEAN_TARGETS) $(RECURSIVE_TARGETS) CTAGS GTAGS \
-	all all-am am--refresh check check-am clean clean-generic \
-	clean-libtool ctags ctags-recursive dist dist-all dist-bzip2 \
-	dist-gzip dist-lzma dist-shar dist-tarZ dist-xz dist-zip \
-	distcheck distclean distclean-generic distclean-hdr \
-	distclean-libtool distclean-tags distcleancheck distdir \
-	distuninstallcheck dvi dvi-am html html-am info info-am \
-	install install-am install-binSCRIPTS install-data \
+	all all-am am--refresh check check-am check-local clean \
+	clean-generic clean-libtool ctags ctags-recursive dist \
+	dist-all dist-bzip2 dist-gzip dist-lzma dist-shar dist-tarZ \
+	dist-xz dist-zip distcheck distclean distclean-generic \
+	distclean-hdr distclean-libtool distclean-tags distcleancheck \
+	distdir distuninstallcheck dvi dvi-am html html-am info \
+	info-am install install-am install-binSCRIPTS install-data \
 	install-data-am install-dvi install-dvi-am install-exec \
 	install-exec-am install-html install-html-am install-info \
 	install-info-am install-man install-pdf install-pdf-am \
@@ -906,13 +928,50 @@ uninstall-am: uninstall-binSCRIPTS uninstall-pkgconfigDATA
 	uninstall-binSCRIPTS uninstall-pkgconfigDATA
 
 
-.PHONY: doc
+.PHONY: doc coverage
 
 # Documentation
 
 doc:
 	@echo "entering doc/"
 	make -C doc doc
+
+# Unit tests
+
+@EFL_ENABLE_TESTS_TRUE@check-local:
+@EFL_ENABLE_TESTS_TRUE@	@./src/tests/edje_suite
+
+@EFL_ENABLE_TESTS_FALSE@check-local:
+@EFL_ENABLE_TESTS_FALSE@	@echo "reconfigure with --enable-tests"
+
+# Coverage report
+
+@EFL_ENABLE_COVERAGE_TRUE@lcov-reset:
+@EFL_ENABLE_COVERAGE_TRUE@	@rm -rf coverage
+@EFL_ENABLE_COVERAGE_TRUE@	@find . -name "*.gcda" -exec rm {} \;
+@EFL_ENABLE_COVERAGE_TRUE@	@lcov --directory . --zerocounters
+
+@EFL_ENABLE_COVERAGE_TRUE@lcov-report:
+@EFL_ENABLE_COVERAGE_TRUE@	@mkdir coverage
+@EFL_ENABLE_COVERAGE_TRUE@	@lcov --compat-libtool --directory $(top_srcdir)/src --capture --output-file coverage/coverage.info
+@EFL_ENABLE_COVERAGE_TRUE@	@lcov -l coverage/coverage.info |grep "\\.h"  |cut -d " " -f 2 > coverage/remove
+@EFL_ENABLE_COVERAGE_TRUE@	@lcov -r coverage/coverage.info `cat coverage/remove` > coverage/coverage.cleaned.info
+@EFL_ENABLE_COVERAGE_TRUE@	@rm coverage/remove
+@EFL_ENABLE_COVERAGE_TRUE@	@mv coverage/coverage.cleaned.info coverage/coverage.info
+@EFL_ENABLE_COVERAGE_TRUE@	@genhtml -t "$(PACKAGE_STRING)" -o coverage coverage/coverage.info
+
+@EFL_ENABLE_COVERAGE_TRUE@coverage:
+@EFL_ENABLE_COVERAGE_TRUE@	@make lcov-reset
+@EFL_ENABLE_COVERAGE_TRUE@	@make check
+@EFL_ENABLE_COVERAGE_TRUE@	@make lcov-report
+@EFL_ENABLE_COVERAGE_FALSE@lcov-reset:
+@EFL_ENABLE_COVERAGE_FALSE@	@echo "reconfigure with --enable-coverage"
+
+@EFL_ENABLE_COVERAGE_FALSE@lcov-report:
+@EFL_ENABLE_COVERAGE_FALSE@	@echo "reconfigure with --enable-coverage"
+
+@EFL_ENABLE_COVERAGE_FALSE@coverage:
+@EFL_ENABLE_COVERAGE_FALSE@	@echo "reconfigure with --enable-tests --enable-coverage"
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

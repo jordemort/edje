@@ -40,11 +40,13 @@ DIST_COMMON = $(includes_HEADERS) $(srcdir)/Makefile.am \
 	$(srcdir)/Makefile.in
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/ac_attribute.m4 \
-	$(top_srcdir)/m4/efl_binary.m4 $(top_srcdir)/m4/efl_doxygen.m4 \
-	$(top_srcdir)/m4/efl_path_max.m4 $(top_srcdir)/m4/libtool.m4 \
-	$(top_srcdir)/m4/ltoptions.m4 $(top_srcdir)/m4/ltsugar.m4 \
-	$(top_srcdir)/m4/ltversion.m4 $(top_srcdir)/m4/lt~obsolete.m4 \
-	$(top_srcdir)/configure.ac
+	$(top_srcdir)/m4/efl_binary.m4 \
+	$(top_srcdir)/m4/efl_coverage.m4 \
+	$(top_srcdir)/m4/efl_doxygen.m4 \
+	$(top_srcdir)/m4/efl_path_max.m4 $(top_srcdir)/m4/efl_tests.m4 \
+	$(top_srcdir)/m4/libtool.m4 $(top_srcdir)/m4/ltoptions.m4 \
+	$(top_srcdir)/m4/ltsugar.m4 $(top_srcdir)/m4/ltversion.m4 \
+	$(top_srcdir)/m4/lt~obsolete.m4 $(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 mkinstalldirs = $(install_sh) -d
@@ -80,16 +82,17 @@ am__libedje_la_SOURCES_DIST = edje_box_layout.c edje_cache.c \
 	edje_edit.c edje_embryo.c edje_entry.c edje_external.c \
 	edje_load.c edje_lua.c edje_lua2.c edje_lua_script_only.c \
 	edje_main.c edje_match.c edje_message_queue.c edje_misc.c \
-	edje_module.c edje_program.c edje_script_only.c edje_smart.c \
-	edje_text.c edje_textblock_styles.c edje_util.c edje_var.c
+	edje_module.c edje_multisense.c edje_program.c \
+	edje_script_only.c edje_smart.c edje_text.c \
+	edje_textblock_styles.c edje_util.c edje_var.c
 am__objects_1 = edje_box_layout.lo edje_cache.lo edje_calc.lo \
 	edje_callbacks.lo edje_container.lo edje_data.lo edje_edit.lo \
 	edje_embryo.lo edje_entry.lo edje_external.lo edje_load.lo \
 	edje_lua.lo edje_lua2.lo edje_lua_script_only.lo edje_main.lo \
 	edje_match.lo edje_message_queue.lo edje_misc.lo \
-	edje_module.lo edje_program.lo edje_script_only.lo \
-	edje_smart.lo edje_text.lo edje_textblock_styles.lo \
-	edje_util.lo edje_var.lo
+	edje_module.lo edje_multisense.lo edje_program.lo \
+	edje_script_only.lo edje_smart.lo edje_text.lo \
+	edje_textblock_styles.lo edje_util.lo edje_var.lo
 @EDJE_AMALGAMATION_FALSE@am_libedje_la_OBJECTS = $(am__objects_1)
 @EDJE_AMALGAMATION_TRUE@nodist_libedje_la_OBJECTS =  \
 @EDJE_AMALGAMATION_TRUE@	edje_amalgamation.lo
@@ -135,6 +138,8 @@ CTAGS = ctags
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
 ACLOCAL = @ACLOCAL@
 ALLOCA = @ALLOCA@
+ALSA_CFLAGS = @ALSA_CFLAGS@
+ALSA_LIBS = @ALSA_LIBS@
 AMTAR = @AMTAR@
 AM_DEFAULT_VERBOSITY = @AM_DEFAULT_VERBOSITY@
 AR = @AR@
@@ -146,6 +151,8 @@ AWK = @AWK@
 CC = @CC@
 CCDEPMODE = @CCDEPMODE@
 CFLAGS = @CFLAGS@
+CHECK_CFLAGS = @CHECK_CFLAGS@
+CHECK_LIBS = @CHECK_LIBS@
 CPP = @CPP@
 CPPFLAGS = @CPPFLAGS@
 CYGPATH_W = @CYGPATH_W@
@@ -177,12 +184,16 @@ EDJE_PLAYER_CFLAGS = @EDJE_PLAYER_CFLAGS@
 EDJE_PLAYER_LIBS = @EDJE_PLAYER_LIBS@
 EDJE_PLAYER_PRG = @EDJE_PLAYER_PRG@
 EDJE_RECC_PRG = @EDJE_RECC_PRG@
+EFL_COVERAGE_CFLAGS = @EFL_COVERAGE_CFLAGS@
+EFL_COVERAGE_LIBS = @EFL_COVERAGE_LIBS@
 EFL_EDJE_BUILD = @EFL_EDJE_BUILD@
 EGREP = @EGREP@
 EVIL_CFLAGS = @EVIL_CFLAGS@
 EVIL_LIBS = @EVIL_LIBS@
 EXEEXT = @EXEEXT@
 FGREP = @FGREP@
+FLAC_CFLAGS = @FLAC_CFLAGS@
+FLAC_LIBS = @FLAC_LIBS@
 GREP = @GREP@
 INSTALL = @INSTALL@
 INSTALL_DATA = @INSTALL_DATA@
@@ -219,18 +230,27 @@ PACKAGE_URL = @PACKAGE_URL@
 PACKAGE_VERSION = @PACKAGE_VERSION@
 PATH_SEPARATOR = @PATH_SEPARATOR@
 PKG_CONFIG = @PKG_CONFIG@
+PKG_CONFIG_LIBDIR = @PKG_CONFIG_LIBDIR@
+PKG_CONFIG_PATH = @PKG_CONFIG_PATH@
 PYTHON = @PYTHON@
 PYTHON_EXEC_PREFIX = @PYTHON_EXEC_PREFIX@
 PYTHON_PLATFORM = @PYTHON_PLATFORM@
 PYTHON_PREFIX = @PYTHON_PREFIX@
 PYTHON_VERSION = @PYTHON_VERSION@
 RANLIB = @RANLIB@
+REMIX_CFLAGS = @REMIX_CFLAGS@
+REMIX_LIBS = @REMIX_LIBS@
+REMIX_PLUGIN_DIR = @REMIX_PLUGIN_DIR@
 SED = @SED@
 SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
+SNDFILE_CFLAGS = @SNDFILE_CFLAGS@
+SNDFILE_LIBS = @SNDFILE_LIBS@
 STRIP = @STRIP@
 VERSION = @VERSION@
 VMAJ = @VMAJ@
+VORBISENC_CFLAGS = @VORBISENC_CFLAGS@
+VORBISENC_LIBS = @VORBISENC_LIBS@
 abs_builddir = @abs_builddir@
 abs_srcdir = @abs_srcdir@
 abs_top_builddir = @abs_top_builddir@
@@ -253,9 +273,11 @@ datadir = @datadir@
 datarootdir = @datarootdir@
 docdir = @docdir@
 dvidir = @dvidir@
+edje_cc = @edje_cc@
 efl_doxygen = @efl_doxygen@
 efl_have_doxygen = @efl_have_doxygen@
 exec_prefix = @exec_prefix@
+have_lcov = @have_lcov@
 host = @host@
 host_alias = @host_alias@
 host_cpu = @host_cpu@
@@ -308,7 +330,9 @@ AM_CPPFLAGS = \
 @EVIL_CFLAGS@ \
 @EDJE_CFLAGS@ \
 @ECORE_IMF_CFLAGS@ \
-@EFL_EDJE_BUILD@
+@EFL_EDJE_BUILD@ \
+@REMIX_CFLAGS@ \
+@SNDFILE_CFLAGS@ 
 
 lib_LTLIBRARIES = libedje.la
 includes_HEADERS = Edje.h Edje_Edit.h
@@ -333,6 +357,7 @@ edje_match.c \
 edje_message_queue.c \
 edje_misc.c \
 edje_module.c \
+edje_multisense.c \
 edje_program.c \
 edje_script_only.c \
 edje_smart.c \
@@ -343,7 +368,7 @@ edje_var.c
 
 @EDJE_AMALGAMATION_TRUE@nodist_libedje_la_SOURCES = edje_amalgamation.c
 @EDJE_AMALGAMATION_FALSE@libedje_la_SOURCES = $(base_sources)
-libedje_la_LIBADD = @EDJE_LIBS@ @ECORE_IMF_LIBS@ @EVIL_LIBS@ -lm
+libedje_la_LIBADD = @EDJE_LIBS@ @ECORE_IMF_LIBS@ @EVIL_LIBS@ @REMIX_LIBS@ @SNDFILE_LIBS@ -lm
 libedje_la_LDFLAGS = -no-undefined @lt_enable_auto_import@ -version-info @version_info@ @release_info@
 EXTRA_DIST = edje_private.h edje_container.h edje_convert.h
 all: all-am
@@ -440,6 +465,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/edje_message_queue.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/edje_misc.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/edje_module.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/edje_multisense.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/edje_program.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/edje_script_only.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/edje_smart.Plo@am__quote@
@@ -736,6 +762,7 @@ uninstall-am: uninstall-includesHEADERS uninstall-libLTLIBRARIES
 @EDJE_AMALGAMATION_TRUE@	@echo "#include <limits.h>" >> edje_amalgamation.c
 @EDJE_AMALGAMATION_TRUE@	@echo "#include <errno.h>" >> edje_amalgamation.c
 @EDJE_AMALGAMATION_TRUE@	@echo "#include <sys/stat.h>" >> edje_amalgamation.c
+@EDJE_AMALGAMATION_TRUE@	@echo "#include <fcntl.h>" >> edje_amalgamation.c
 
 @EDJE_AMALGAMATION_TRUE@	@echo "#ifndef _MSC_VER" >> edje_amalgamation.c
 @EDJE_AMALGAMATION_TRUE@	@echo "# include <unistd.h>" >> edje_amalgamation.c
@@ -776,7 +803,7 @@ uninstall-am: uninstall-includesHEADERS uninstall-libLTLIBRARIES
 @EDJE_AMALGAMATION_TRUE@	@echo "edje_amalgamation.c generated"
 
 clean-local:
-	@rm -rf  edje_amalgamation.c
+	@rm -rf *.gcno edje_amalgamation.c
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
