@@ -69,7 +69,6 @@ main(int argc, char **argv)
        eina_shutdown();
        exit(-1);
      }
-   eina_log_level_set(EINA_LOG_LEVEL_INFO);
    progname = argv[0];
    for (i = 1; i < argc; i++)
      {
@@ -104,6 +103,9 @@ main(int argc, char **argv)
    if (!decomp()) return -1;
    output();
 
+   fprintf(stderr, "WARNING! If any Image or audio data was encoded in a LOSSY way, then\n"
+          "re-encoding will drop quality even more. You need access to the original\n"
+          "data to ensure no loss of quality.\n");
    eet_close(ef);
    edje_shutdown();
    eina_log_domain_unregister(_edje_cc_log_dom);
@@ -142,6 +144,8 @@ decomp(void)
 	eet_close(ef);
 	return 0;
      }
+   /* force compiler to be edje_cc */
+   edje_file->compiler = strdup("edje_cc");
    if (!edje_file->compiler)
      {
 	edje_file->compiler = strdup("edje_cc");
@@ -160,7 +164,7 @@ void
 output(void)
 {
    Eina_List *l;
-   Eet_File *ef;
+   Eet_File *tef;
    SrcFile *sf;
    char *outdir, *p;
 
@@ -179,7 +183,7 @@ output(void)
      }
 
 
-   ef = eet_open(file_in, EET_FILE_MODE_READ);
+   tef = eet_open(file_in, EET_FILE_MODE_READ);
 
    if (edje_file->image_dir)
      {
@@ -294,7 +298,7 @@ output(void)
              /* FIXME!!!! */
                                          /* should be fn->entry -v */
 	     snprintf(out, sizeof(out), "edje/fonts/%s", fn->file);
-	     font = eet_read(ef, out, &fontsize);
+	     font = eet_read(tef, out, &fontsize);
 	     if (font)
 	       {
 		  FILE *f;
@@ -334,7 +338,7 @@ output(void)
      {
 	char out[4096];
 	FILE *f;
-	SrcFile *sf = eina_list_data_get(srcfiles->list);
+	sf = eina_list_data_get(srcfiles->list);
 
 
 	if (build_sh)
@@ -359,7 +363,7 @@ output(void)
 	if (file_out)
 	  {
 	     snprintf(out, sizeof(out), "%s/%s", outdir, file_out);
-	     if (symlink(sf->name, out) != 0)
+	     if (ecore_file_symlink(sf->name, out) != EINA_TRUE)
                {
                   ERR("symlink %s -> %s failed\n", sf->name, out);
                }
@@ -368,7 +372,52 @@ output(void)
 	chmod(out, S_IRUSR | S_IWUSR | S_IXUSR | S_IRGRP | S_IWGRP | S_IXGRP);
 
      }
-   eet_close(ef);
+
+   if (edje_file->sound_dir)
+     {
+        Edje_Sound_Sample *sample;
+        void *sound_data;
+        char out[PATH_MAX];
+        char out1[PATH_MAX];
+        char *pp;
+        int sound_data_size;
+        FILE *f;
+        int i;
+
+        for (i = 0; i < (int)edje_file->sound_dir->samples_count; i++)
+          {
+             sample = &edje_file->sound_dir->samples[i];
+             if ((!sample) || (!sample->name)) continue;
+             snprintf(out, sizeof(out), "edje/sounds/%i", sample->id);
+             sound_data = (void *)eet_read_direct(tef, out, &sound_data_size);
+             if (sound_data)
+               {
+                  snprintf(out1, sizeof(out1), "%s/%s", outdir, sample->name);
+                  pp = strdup(out1);
+                  p = strrchr(pp, '/');
+                  *p = 0;
+                  if (strstr(pp, "../"))
+                    {
+                       ERR("Potential security violation. attempt to write in parent dir.");
+                       exit(-1);
+                    }
+                  ecore_file_mkpath(pp);
+                  free(pp);
+                  if (strstr(out, "../"))
+                    {
+                       ERR("Potential security violation. attempt to write in parent dir.");
+                       exit(-1);
+                    }
+                  f = fopen(out1, "wb");
+                  if (fwrite(sound_data, sound_data_size, 1, f) != 1)
+                    ERR("Could not write sound: %s", strerror(errno));
+                  fclose(f);
+                  free(sound_data);
+              }
+          }
+
+     }
+   eet_close(tef);
 }
 
 static int

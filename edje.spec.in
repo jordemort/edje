@@ -1,6 +1,6 @@
 %define _missing_doc_files_terminate_build 0
 
-%{!?_rel:%{expand:%%global _rel 0.r%(svnversion | sed 's/[^0-9].*$//' || echo 0000)}}
+%{!?_rel:%{expand:%%global _rel 0.enl%{?dist}}}
 
 Summary: Complex Graphical Design/Layout Engine
 Name: @PACKAGE@
@@ -14,7 +14,7 @@ Packager: %{?_packager:%{_packager}}%{!?_packager:Michael Jennings <mej@eterm.or
 Vendor: %{?_vendorinfo:%{_vendorinfo}}%{!?_vendorinfo:The Enlightenment Project (http://www.enlightenment.org/)}
 Distribution: %{?_distribution:%{_distribution}}%{!?_distribution:%{_vendor}}
 #BuildSuggests: xorg-x11-devel, vim-enhanced
-BuildRequires: eet-devel, embryo-devel, evas-devel, ecore-devel
+BuildRequires: eet-devel, embryo-devel, evas-devel, ecore-devel, lua-devel
 Requires:  evas-module_loader_eet
 BuildRoot: %{_tmppath}/%{name}-%{version}-root
 
@@ -38,7 +38,7 @@ configure parts of the display.
 Summary: Edje headers, static libraries, documentation and test programs
 Group: System Environment/Libraries
 Requires: %{name} = %{version}, %{name}-bin = %{version}
-Requires: eet-devel embryo-devel evas-devel ecore-devel
+Requires: eet-devel embryo-devel evas-devel ecore-devel lua-devel
 
 %description devel
 Headers, static libraries, test programs and documentation for Edje
@@ -81,12 +81,14 @@ test "x$RPM_BUILD_ROOT" != "x/" && rm -rf $RPM_BUILD_ROOT
 
 %files devel
 %defattr(-, root, root)
-%doc doc/html
 %{_libdir}/*.so
+%{_libdir}/edje/modules/multisense_factory/*/module.*
 %{_libdir}/*.la
 %{_libdir}/*.a
 %{_libdir}/pkgconfig/*
 %{_includedir}/edje-1/*.h
+%{_libdir}/edje/utils/epp
+%{_datadir}/edje/examples
 
 %files bin
 %defattr(-, root, root)

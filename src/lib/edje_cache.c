@@ -1,10 +1,6 @@
 #include "edje_private.h"
 
 
-/**
- * @cond
- */
-
 static Eina_Hash   *_edje_file_hash = NULL;
 static int          _edje_file_cache_size = 16;
 static Eina_List   *_edje_file_cache = NULL;
@@ -46,21 +42,27 @@ _edje_file_coll_open(Edje_File *edf, const char *coll)
    id = ce->id;
    if (id < 0) return NULL;
 
-#define INIT_EMP(Tp, Sz, Ce)						\
-   buffer = alloca(strlen(ce->entry) + strlen(#Tp) + 2);		\
-   sprintf(buffer, "%s/%s", ce->entry, #Tp);				\
+#define INIT_EMP(Tp, Sz, Ce)                                           \
+   buffer = alloca(strlen(ce->entry) + strlen(#Tp) + 2);               \
+   sprintf(buffer, "%s/%s", ce->entry, #Tp);                           \
    Ce->mp.Tp = eina_mempool_add("one_big", buffer, NULL, sizeof (Sz), Ce->count.Tp); \
    _emp_##Tp = Ce->mp.Tp;
 
-   INIT_EMP(RECTANGLE, Edje_Part_Description_Common, ce);
-   INIT_EMP(TEXT, Edje_Part_Description_Text, ce);
-   INIT_EMP(IMAGE, Edje_Part_Description_Image, ce);
-   INIT_EMP(SWALLOW, Edje_Part_Description_Common, ce);
-   INIT_EMP(TEXTBLOCK, Edje_Part_Description_Text, ce);
-   INIT_EMP(GROUP, Edje_Part_Description_Common, ce);
-   INIT_EMP(BOX, Edje_Part_Description_Box, ce);
-   INIT_EMP(TABLE, Edje_Part_Description_Table, ce);
-   INIT_EMP(EXTERNAL, Edje_Part_Description_External, ce);
+#define INIT_EMP_BOTH(Tp, Sz, Ce)                                       \
+   INIT_EMP(Tp, Sz, Ce)                                                 \
+   Ce->mp_rtl.Tp = eina_mempool_add("one_big", buffer, NULL,            \
+         sizeof (Sz), Ce->count.Tp);
+
+   INIT_EMP_BOTH(RECTANGLE, Edje_Part_Description_Common, ce);
+   INIT_EMP_BOTH(TEXT, Edje_Part_Description_Text, ce);
+   INIT_EMP_BOTH(IMAGE, Edje_Part_Description_Image, ce);
+   INIT_EMP_BOTH(PROXY, Edje_Part_Description_Proxy, ce);
+   INIT_EMP_BOTH(SWALLOW, Edje_Part_Description_Common, ce);
+   INIT_EMP_BOTH(TEXTBLOCK, Edje_Part_Description_Text, ce);
+   INIT_EMP_BOTH(GROUP, Edje_Part_Description_Common, ce);
+   INIT_EMP_BOTH(BOX, Edje_Part_Description_Box, ce);
+   INIT_EMP_BOTH(TABLE, Edje_Part_Description_Table, ce);
+   INIT_EMP_BOTH(EXTERNAL, Edje_Part_Description_External, ce);
    INIT_EMP(part, Edje_Part, ce);
 
    snprintf(buf, sizeof(buf), "edje/collections/%i", id);
@@ -69,6 +71,37 @@ _edje_file_coll_open(Edje_File *edf, const char *coll)
 
    edc->references = 1;
    edc->part = ce->entry;
+
+   /* For Edje file build with Edje 1.0 */
+   if (edf->version <= 3 && edf->minor <= 1)
+     {
+        /* This will preserve previous rendering */
+        unsigned int i;
+
+	/* people expect signal to not be broadcasted */
+	edc->broadcast_signal = EINA_FALSE;
+
+	/* people expect text.align to be 0.0 0.0 */
+        for (i = 0; i < edc->parts_count; ++i)
+          {
+             if (edc->parts[i]->type == EDJE_PART_TYPE_TEXTBLOCK)
+               {
+                  Edje_Part_Description_Text *text;
+                  unsigned int j;
+
+                  text = (Edje_Part_Description_Text*) edc->parts[i]->default_desc;
+                  text->text.align.x = TO_DOUBLE(0.0);
+                  text->text.align.y = TO_DOUBLE(0.0);
+
+                  for (j = 0; j < edc->parts[i]->other.desc_count; ++j)
+                    {
+                       text =  (Edje_Part_Description_Text*) edc->parts[i]->other.desc[j];
+                       text->text.align.x = TO_DOUBLE(0.0);
+                       text->text.align.y = TO_DOUBLE(0.0);
+                    }
+               }
+          }
+     }
 
    snprintf(buf, sizeof(buf), "edje/scripts/embryo/compiled/%i", id);
    data = eet_read(edf->ef, buf, &size);
@@ -95,18 +128,11 @@ _edje_file_coll_open(Edje_File *edf, const char *coll)
 }
 
 static Edje_File *
-_edje_file_open(const char *file, const char *coll, int *error_ret, Edje_Part_Collection **edc_ret)
+_edje_file_open(const char *file, const char *coll, int *error_ret, Edje_Part_Collection **edc_ret, time_t mtime)
 {
    Edje_File *edf;
    Edje_Part_Collection *edc;
    Eet_File *ef;
-   struct stat st;
-
-   if (stat(file, &st) != 0)
-     {
-	*error_ret = EDJE_LOAD_ERROR_DOES_NOT_EXIST;
-	return NULL;
-     }
 
    ef = eet_open(file, EET_FILE_MODE_READ);
    if (!ef)
@@ -123,7 +149,7 @@ _edje_file_open(const char *file, const char *coll, int *error_ret, Edje_Part_Co
      }
 
    edf->ef = ef;
-   edf->mtime = st.st_mtime;
+   edf->mtime = mtime;
 
    if (edf->version != EDJE_FILE_VERSION)
      {
@@ -229,7 +255,7 @@ open_new:
    if (!_edje_file_hash)
       _edje_file_hash = eina_hash_string_small_new(NULL);
 
-   edf = _edje_file_open(file, coll, error_ret, edc_ret);
+   edf = _edje_file_open(file, coll, error_ret, edc_ret, st.st_mtime);
    if (!edf)
       return NULL;
 
@@ -458,11 +484,6 @@ _edje_file_cache_shutdown(void)
 }
 
 
-
-/**
- * @endcond
- */
-
 /*============================================================================*
  *                                 Global                                     *
  *============================================================================*/
@@ -471,29 +492,6 @@ _edje_file_cache_shutdown(void)
  *                                   API                                      *
  *============================================================================*/
 
-/**
- * @addtogroup Edje_cache_Group Cache
- *
- * @brief These functions provide an abstraction layer between the
- * application code and the interface, while allowing extremely
- * flexible dynamic layouts and animations.
- *
- * @{
- */
-
-/**
- * @brief Set the file cache size.
- *
- * @param count The file cache size in edje file units. Default is 16.
- *
- * This function sets the file cache size. Edje keeps this cache in
- * order to prevent duplicates of edje file entries in memory. The
- * file cache size can be retrieved with edje_file_cache_get().
- *
- * @see edje_file_cache_get()
- * @see edje_file_cache_flush()
- *
- */
 
 EAPI void
 edje_file_cache_set(int count)
@@ -503,18 +501,6 @@ edje_file_cache_set(int count)
    _edje_cache_file_clean();
 }
 
-/**
- * @brief Return the file cache size.
- *
- * @return The file cache size in edje file units. Default is 16.
- *
- * This function returns the file cache size set by
- * edje_file_cache_set().
- *
- * @see edje_file_cache_set()
- * @see edje_file_cache_flush()
- *
- */
 
 EAPI int
 edje_file_cache_get(void)
@@ -522,16 +508,6 @@ edje_file_cache_get(void)
    return _edje_file_cache_size;
 }
 
-/**
- * @brief Clean the file cache.
- *
- * This function cleans the file cache entries, but keeps this cache's
- * size to the last value set.
- *
- * @see edje_file_cache_set()
- * @see edje_file_cache_get()
- *
- */
 
 EAPI void
 edje_file_cache_flush(void)
@@ -544,20 +520,6 @@ edje_file_cache_flush(void)
    _edje_file_cache_size = ps;
 }
 
-/**
- * @brief Set the collection cache size.
- *
- * @param count The collection cache size, in edje object units. Default is 16.
- *
- * This function sets the collection cache size. Edje keeps this cache
- * in order to prevent duplicates of edje {collection,group,part}
- * entries in memory. The collection cache size can be retrieved with
- * edje_collection_cache_get().
- *
- * @see edje_collection_cache_get()
- * @see edje_collection_cache_flush()
- *
- */
 
 EAPI void
 edje_collection_cache_set(int count)
@@ -572,18 +534,6 @@ edje_collection_cache_set(int count)
    /* FIXME: freach in file hash too! */
 }
 
-/**
- * @brief Return the collection cache size.
- *
- * @return The collection cache size, in edje object units. Default is 16.
- *
- * This function returns the collection cache size set by
- * edje_collection_cache_set().
- *
- * @see edje_collection_cache_set()
- * @see edje_collection_cache_flush()
- *
- */
 
 EAPI int
 edje_collection_cache_get(void)
@@ -591,16 +541,6 @@ edje_collection_cache_get(void)
    return _edje_collection_cache_size;
 }
 
-/**
- * @brief Clean the collection cache.
- *
- * This function cleans the collection cache, but keeps this cache's
- * size to the last value set.
- *
- * @see edje_collection_cache_set()
- * @see edje_collection_cache_get()
- *
- */
 
 EAPI void
 edje_collection_cache_flush(void)
@@ -616,8 +556,3 @@ edje_collection_cache_flush(void)
    /* FIXME: freach in file hash too! */
    _edje_collection_cache_size = ps;
 }
-
-/**
- *
- * @}
- */

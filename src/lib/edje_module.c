@@ -17,38 +17,44 @@ Eina_List *_modules_found = NULL;
 EAPI Eina_Bool
 edje_module_load(const char *module)
 {
+   if (_edje_module_handle_load(module)) return EINA_TRUE;
+   return EINA_FALSE;
+}
+
+Eina_Module *
+_edje_module_handle_load(const char *module)
+{
    const char *path;
    Eina_List *l;
+   Eina_Module *em = NULL;
 
-   EINA_SAFETY_ON_NULL_RETURN_VAL(module, EINA_FALSE);
+   EINA_SAFETY_ON_NULL_RETURN_VAL(module, NULL);
 
-   if (eina_hash_find(_registered_modules, module))
-     return EINA_TRUE;
+   em =  (Eina_Module *)eina_hash_find(_registered_modules, module);
+   if (em) return em;
 
    EINA_LIST_FOREACH(_modules_paths, l, path)
      {
-	Eina_Module *em;
-	char tmp[PATH_MAX];
+        char tmp[PATH_MAX];
 
-	snprintf(tmp, sizeof (tmp), "%s/%s/%s/" EDJE_MODULE_NAME, path, module, MODULE_ARCH
-#ifdef EDJE_EXTRA_MODULE_NAME                 
+        snprintf(tmp, sizeof (tmp), "%s/%s/%s/" EDJE_MODULE_NAME, path, module, MODULE_ARCH
+#ifdef EDJE_EXTRA_MODULE_NAME
                  , module
-#endif                 
+#endif
                 );
-	em = eina_module_new(tmp);
-	if (!em) continue ;
+        em = eina_module_new(tmp);
+        if (!em) continue;
 
-	if (!eina_module_load(em))
-	  {
-	     eina_module_free(em);
-	     continue ;
-	  }
-
-	return !!eina_hash_add(_registered_modules, module, em);
+        if (!eina_module_load(em))
+          {
+             eina_module_free(em);
+             continue;
+          }
+        if (eina_hash_add(_registered_modules, module, em))
+          return em;
      }
 
-   ERR("Could not find the module %s", module);
-   return EINA_FALSE;
+   return NULL;
 }
 
 void
@@ -129,13 +135,13 @@ edje_available_modules_get(void)
 		  char tmp[PATH_MAX];
 
 		  snprintf(tmp, sizeof (tmp), "%s/%s/" EDJE_MODULE_NAME, info->path, MODULE_ARCH
-#ifdef EDJE_EXTRA_MODULE_NAME                 
-                           , ecore_file_file_get(info->path)
+#ifdef EDJE_EXTRA_MODULE_NAME
+                           , info->path + info->name_start
 #endif
                            );
 
 		  if (ecore_file_exists(tmp))
-		    result = eina_list_append(result, eina_stringshare_add(ecore_file_file_get(info->path)));
+		    result = eina_list_append(result, eina_stringshare_add(info->path + info->name_start));
 	       }
 
 	     eina_iterator_free(it);
