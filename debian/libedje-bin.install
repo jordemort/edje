@@ -1,5 +1,4 @@
 debian/tmp/usr/bin/edje_cc
-debian/tmp/usr/bin/edje_convert
 debian/tmp/usr/bin/edje_decc
 debian/tmp/usr/bin/edje_external_inspector
 debian/tmp/usr/bin/edje_inspector
