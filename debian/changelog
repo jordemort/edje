@@ -1,8 +1,10 @@
-edje (1.2.0-1) UNRELEASED; urgency=low
+edje (1.2.0-1) unstable; urgency=low
 
   * New upstream release
+  * drop debian/patches/0001_add_edje_convert_back, not needed anymore
+  * debian/libedje-bin.install: add new helper binary 'epp'
 
- -- Albin Tonnerre <lutin@debian.org>  Tue, 08 May 2012 18:25:54 +0200
+ -- Albin Tonnerre <lutin@debian.org>  Sun, 13 May 2012 16:14:59 +0200
 
 edje (1.0.0-1) unstable; urgency=low
 
