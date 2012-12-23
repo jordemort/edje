@@ -66,8 +66,7 @@ source_fetch_file(const char *fil, const char *filname)
    f = fopen(fil, "rb");
    if (!f)
      {
-	ERR("%s: Warning. Cannot open file '%s'",
-	    progname, fil);
+	ERR("Cannot open file '%s'", fil);
 	exit(-1);
      }
 
@@ -82,8 +81,7 @@ source_fetch_file(const char *fil, const char *filname)
 	tmp = fread(sf->file, sz, 1, f);
 	if (tmp != 1)
 	  {
-	     ERR("%s: Warning file length for (%s) doesn't match !",
-		     progname, filname);
+	     ERR("file length for (%s) doesn't match!", filname);
 	     exit(-1);
 	  }
      }
@@ -228,7 +226,8 @@ source_fetch(void)
 int
 source_append(Eet_File *ef)
 {
-   return eet_data_write(ef, _srcfile_list_edd, "edje_sources", &srcfiles, 1);
+   return eet_data_write(ef, _srcfile_list_edd, "edje_sources", &srcfiles,
+                         compress_mode);
 }
 
 SrcFile_List *
@@ -246,7 +245,8 @@ source_fontmap_save(Eet_File *ef, Eina_List *font_list)
    Font_List fl;
 
    fl.list = font_list;
-   return eet_data_write(ef, _font_list_edd, "edje_source_fontmap", &fl, 1);
+   return eet_data_write(ef, _font_list_edd, "edje_source_fontmap", &fl,
+                         compress_mode);
 }
 
 Font_List *

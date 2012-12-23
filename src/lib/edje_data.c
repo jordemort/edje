@@ -30,6 +30,7 @@ Eet_Data_Descriptor *_edje_edd_edje_part = NULL;
 Eet_Data_Descriptor *_edje_edd_edje_part_pointer = NULL;
 Eet_Data_Descriptor *_edje_edd_edje_part_description_variant = NULL;
 Eet_Data_Descriptor *_edje_edd_edje_part_description_rectangle = NULL;
+Eet_Data_Descriptor *_edje_edd_edje_part_description_spacer = NULL;
 Eet_Data_Descriptor *_edje_edd_edje_part_description_swallow = NULL;
 Eet_Data_Descriptor *_edje_edd_edje_part_description_group = NULL;
 Eet_Data_Descriptor *_edje_edd_edje_part_description_image = NULL;
@@ -41,6 +42,7 @@ Eet_Data_Descriptor *_edje_edd_edje_part_description_table = NULL;
 Eet_Data_Descriptor *_edje_edd_edje_part_description_external = NULL;
 Eet_Data_Descriptor *_edje_edd_edje_part_description_variant_list = NULL;
 Eet_Data_Descriptor *_edje_edd_edje_part_description_rectangle_pointer = NULL;
+Eet_Data_Descriptor *_edje_edd_edje_part_description_spacer_pointer = NULL;
 Eet_Data_Descriptor *_edje_edd_edje_part_description_swallow_pointer = NULL;
 Eet_Data_Descriptor *_edje_edd_edje_part_description_group_pointer = NULL;
 Eet_Data_Descriptor *_edje_edd_edje_part_description_image_pointer = NULL;
@@ -53,6 +55,7 @@ Eet_Data_Descriptor *_edje_edd_edje_part_description_external_pointer = NULL;
 Eet_Data_Descriptor *_edje_edd_edje_part_image_id = NULL;
 Eet_Data_Descriptor *_edje_edd_edje_part_image_id_pointer = NULL;
 Eet_Data_Descriptor *_edje_edd_edje_external_param = NULL;
+Eet_Data_Descriptor *_edje_edd_edje_part_limit = NULL;
 
 #define EMP(Type, Minus)				\
   Eina_Mempool *_emp_##Type = NULL;			\
@@ -83,6 +86,7 @@ EMP(GROUP, group);
 EMP(BOX, box);
 EMP(TABLE, table);
 EMP(EXTERNAL, external);
+EMP(SPACER, spacer);
 EMP(part, part);
 
 #define FREED(eed) \
@@ -105,7 +109,8 @@ struct {
   { EDJE_PART_TYPE_BOX,       "box" },
   { EDJE_PART_TYPE_TABLE,     "table" },
   { EDJE_PART_TYPE_EXTERNAL,  "external" },
-  { EDJE_PART_TYPE_PROXY,     "proxy" }
+  { EDJE_PART_TYPE_PROXY,     "proxy" },
+  { EDJE_PART_TYPE_SPACER,    "spacer" }
 };
 
 static const char *
@@ -187,6 +192,7 @@ _edje_edd_shutdown(void)
    FREED(_edje_edd_edje_part_pointer);
    FREED(_edje_edd_edje_part_description_variant);
    FREED(_edje_edd_edje_part_description_rectangle);
+   FREED(_edje_edd_edje_part_description_spacer);
    FREED(_edje_edd_edje_part_description_swallow);
    FREED(_edje_edd_edje_part_description_group);
    FREED(_edje_edd_edje_part_description_image);
@@ -198,6 +204,7 @@ _edje_edd_shutdown(void)
    FREED(_edje_edd_edje_part_description_external);
    FREED(_edje_edd_edje_part_description_variant_list);
    FREED(_edje_edd_edje_part_description_rectangle_pointer);
+   FREED(_edje_edd_edje_part_description_spacer_pointer);
    FREED(_edje_edd_edje_part_description_swallow_pointer);
    FREED(_edje_edd_edje_part_description_group_pointer);
    FREED(_edje_edd_edje_part_description_image_pointer);
@@ -212,6 +219,7 @@ _edje_edd_shutdown(void)
    FREED(_edje_edd_edje_external_param);
    FREED(_edje_edd_edje_image_directory_set);
    FREED(_edje_edd_edje_image_directory_set_entry);
+   FREED(_edje_edd_edje_part_limit);
 }
 
 #define EDJE_DEFINE_POINTER_TYPE(Type, Name)				\
@@ -329,6 +337,7 @@ _edje_edd_init(void)
    EET_DATA_DESCRIPTOR_ADD_BASIC(_edje_edd_edje_part_collection_directory_entry, Edje_Part_Collection_Directory_Entry, "count.BOX", count.BOX, EET_T_INT);
    EET_DATA_DESCRIPTOR_ADD_BASIC(_edje_edd_edje_part_collection_directory_entry, Edje_Part_Collection_Directory_Entry, "count.TABLE", count.TABLE, EET_T_INT);
    EET_DATA_DESCRIPTOR_ADD_BASIC(_edje_edd_edje_part_collection_directory_entry, Edje_Part_Collection_Directory_Entry, "count.EXTERNAL", count.EXTERNAL, EET_T_INT);
+   EET_DATA_DESCRIPTOR_ADD_BASIC(_edje_edd_edje_part_collection_directory_entry, Edje_Part_Collection_Directory_Entry, "count.SPACER", count.SPACER, EET_T_INT);
    EET_DATA_DESCRIPTOR_ADD_BASIC(_edje_edd_edje_part_collection_directory_entry, Edje_Part_Collection_Directory_Entry, "count.part", count.part, EET_T_INT);
 
    EET_EINA_FILE_DATA_DESCRIPTOR_CLASS_SET(&eddc, Edje_Style_Tag);
@@ -447,6 +456,7 @@ _edje_edd_init(void)
       EET_DATA_DESCRIPTOR_ADD_BASIC(Edd, Type, "state.name", state.name, EET_T_STRING); \
       EET_DATA_DESCRIPTOR_ADD_BASIC(Edd, Type, "state.value", state.value, EET_T_DOUBLE); \
       EET_DATA_DESCRIPTOR_ADD_BASIC(Edd, Type, "visible", visible, EET_T_CHAR); \
+      EET_DATA_DESCRIPTOR_ADD_BASIC(Edd, Type, "limit", limit, EET_T_CHAR); \
       EET_DATA_DESCRIPTOR_ADD_BASIC(Edd, Type, "align.x", align.x, EDJE_T_FLOAT); \
       EET_DATA_DESCRIPTOR_ADD_BASIC(Edd, Type, "align.y", align.y, EDJE_T_FLOAT); \
       EET_DATA_DESCRIPTOR_ADD_BASIC(Edd, Type, "fixed.w", fixed.w, EET_T_UCHAR); \
@@ -561,6 +571,13 @@ _edje_edd_init(void)
    _edje_edd_edje_part_description_rectangle =
      eet_data_descriptor_file_new(&eddc);
    EDJE_DATA_DESCRIPTOR_DESCRIPTION_COMMON(_edje_edd_edje_part_description_rectangle, Edje_Part_Description_Common);
+
+   EET_EINA_FILE_DATA_DESCRIPTOR_CLASS_SET(&eddc, Edje_Part_Description_Common);
+   eddc.func.mem_free = mem_free_spacer;
+   eddc.func.mem_alloc = mem_alloc_spacer;
+   _edje_edd_edje_part_description_spacer =
+     eet_data_descriptor_file_new(&eddc);
+   EDJE_DATA_DESCRIPTOR_DESCRIPTION_COMMON(_edje_edd_edje_part_description_spacer, Edje_Part_Description_Common);
 
    EET_EINA_FILE_DATA_DESCRIPTOR_CLASS_SET(&eddc, Edje_Part_Description_Common);
    eddc.func.mem_free = mem_free_swallow;
@@ -726,6 +743,7 @@ _edje_edd_init(void)
    EDJE_DATA_DESCRIPTOR_DESCRIPTION_COMMON_SUB(_edje_edd_edje_part_description_external, Edje_Part_Description_External, common);
    EET_DATA_DESCRIPTOR_ADD_LIST(_edje_edd_edje_part_description_external, Edje_Part_Description_External, "external_params", external_params, _edje_edd_edje_external_param);
 
+   EDJE_DEFINE_POINTER_TYPE(Part_Description_Common, part_description_spacer);
    EDJE_DEFINE_POINTER_TYPE(Part_Description_Common, part_description_rectangle);
    EDJE_DEFINE_POINTER_TYPE(Part_Description_Common, part_description_swallow);
    EDJE_DEFINE_POINTER_TYPE(Part_Description_Common, part_description_group);
@@ -742,6 +760,7 @@ _edje_edd_init(void)
    eddc.func.type_set = _edje_description_variant_type_set;
    _edje_edd_edje_part_description_variant = eet_data_descriptor_file_new(&eddc);
 
+   EET_DATA_DESCRIPTOR_ADD_MAPPING(_edje_edd_edje_part_description_variant, "spacer",    _edje_edd_edje_part_description_spacer);
    EET_DATA_DESCRIPTOR_ADD_MAPPING(_edje_edd_edje_part_description_variant, "rectangle", _edje_edd_edje_part_description_rectangle);
    EET_DATA_DESCRIPTOR_ADD_MAPPING(_edje_edd_edje_part_description_variant, "swallow",   _edje_edd_edje_part_description_swallow);
    EET_DATA_DESCRIPTOR_ADD_MAPPING(_edje_edd_edje_part_description_variant, "group",     _edje_edd_edje_part_description_group);
@@ -767,6 +786,7 @@ _edje_edd_init(void)
    _edje_edd_edje_part_description_variant_list = eet_data_descriptor_file_new(&eddc);
 
    EDJE_ADD_ARRAY_MAPPING(_edje_edd_edje_part_description_variant_list, "rectangle", rectangle);
+   EDJE_ADD_ARRAY_MAPPING(_edje_edd_edje_part_description_variant_list, "spacer",    spacer);
    EDJE_ADD_ARRAY_MAPPING(_edje_edd_edje_part_description_variant_list, "swallow",   swallow);
    EDJE_ADD_ARRAY_MAPPING(_edje_edd_edje_part_description_variant_list, "group",     group);
    EDJE_ADD_ARRAY_MAPPING(_edje_edd_edje_part_description_variant_list, "image",     image);
@@ -846,8 +866,14 @@ _edje_edd_init(void)
    EET_DATA_DESCRIPTOR_ADD_BASIC(_edje_edd_edje_part, Edje_Part, "select_mode", select_mode, EET_T_UCHAR);
    EET_DATA_DESCRIPTOR_ADD_BASIC(_edje_edd_edje_part, Edje_Part, "cursor_mode", cursor_mode, EET_T_UCHAR);
    EET_DATA_DESCRIPTOR_ADD_BASIC(_edje_edd_edje_part, Edje_Part, "multiline", multiline, EET_T_UCHAR);
+   EET_DATA_DESCRIPTOR_ADD_BASIC(_edje_edd_edje_part, Edje_Part, "access", access, EET_T_UCHAR);
    EET_DATA_DESCRIPTOR_ADD_BASIC(_edje_edd_edje_part, Edje_Part, "api.name", api.name, EET_T_STRING);
    EET_DATA_DESCRIPTOR_ADD_BASIC(_edje_edd_edje_part, Edje_Part, "api.description", api.description, EET_T_STRING);
+
+   EET_EINA_FILE_DATA_DESCRIPTOR_CLASS_SET(&eddc, Edje_Part_Limit);
+   _edje_edd_edje_part_limit = eet_data_descriptor_file_new(&eddc);
+
+   EET_DATA_DESCRIPTOR_ADD_BASIC(_edje_edd_edje_part_limit, Edje_Part_Limit, "part", part, EET_T_INT);
 
    EET_EINA_FILE_DATA_DESCRIPTOR_CLASS_SET(&eddc, Edje_Part_Collection);
    _edje_edd_edje_part_collection  =
@@ -866,6 +892,7 @@ _edje_edd_init(void)
    EDJE_DEFINE_POINTER_TYPE(Limit, limit);
    EET_DATA_DESCRIPTOR_ADD_VAR_ARRAY(_edje_edd_edje_part_collection, Edje_Part_Collection, "limits.vertical", limits.vertical, _edje_edd_edje_limit_pointer);
    EET_DATA_DESCRIPTOR_ADD_VAR_ARRAY(_edje_edd_edje_part_collection, Edje_Part_Collection, "limits.horizontal", limits.horizontal, _edje_edd_edje_limit_pointer);
+   EET_DATA_DESCRIPTOR_ADD_VAR_ARRAY(_edje_edd_edje_part_collection, Edje_Part_Collection, "limits.parts", limits.parts, _edje_edd_edje_part_limit);
 
    EET_DATA_DESCRIPTOR_ADD_HASH(_edje_edd_edje_part_collection, Edje_Part_Collection, "data", data, _edje_edd_edje_string);
    EET_DATA_DESCRIPTOR_ADD_BASIC(_edje_edd_edje_part_collection, Edje_Part_Collection, "id", id, EET_T_INT);

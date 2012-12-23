@@ -91,11 +91,11 @@ err_show_stack(void)
    s = stack_id();
    if (s)
      {
-        printf("PARSE STACK:\n%s\n", s);
+        ERR("PARSE STACK:\n%s", s);
         free(s);
      }
    else
-      printf("NO PARSE STACK\n");
+      ERR("NO PARSE STACK");
 }
 
 static void
@@ -104,12 +104,11 @@ err_show_params(void)
    Eina_List *l;
    char *p;
 
-   printf("PARAMS:");
+   ERR("PARAMS:");
    EINA_LIST_FOREACH(params, l, p)
      {
-        printf(" %s", p);
+        ERR("  %s", p);
      }
-   printf("\n");
 }
 
 static void
@@ -119,44 +118,57 @@ err_show(void)
    err_show_params();
 }
 
+static Eina_Hash *_new_object_hash = NULL;
+static Eina_Hash *_new_statement_hash = NULL;
+static void
+fill_object_statement_hashes(void)
+{
+   int i, n;
+
+   if (_new_object_hash) return;
+   
+   _new_object_hash = eina_hash_string_superfast_new(NULL);
+   _new_statement_hash = eina_hash_string_superfast_new(NULL);
+   
+   n = object_handler_num();
+   for (i = 0; i < n; i++)
+     {
+        eina_hash_add(_new_object_hash, object_handlers[i].type,
+                      &(object_handlers[i]));
+     }
+   n = statement_handler_num();
+   for (i = 0; i < n; i++)
+     {
+        eina_hash_add(_new_statement_hash, statement_handlers[i].type,
+                      &(statement_handlers[i]));
+     }
+}
+
 static void
 new_object(void)
 {
    char *id;
-   int i;
-   int handled = 0;
+   New_Object_Handler *oh;
+   New_Statement_Handler *sh;
 
+   fill_object_statement_hashes();
    id = stack_id();
-   for (i = 0; i < object_handler_num(); i++)
+   oh = eina_hash_find(_new_object_hash, id);
+   if (oh)
      {
-	if (!strcmp(object_handlers[i].type, id))
-	  {
-	     handled = 1;
-	     if (object_handlers[i].func)
-	       {
-		  object_handlers[i].func();
-	       }
-	     break;
-	  }
+        if (oh->func) oh->func();
      }
-   if (!handled)
+   else
      {
-	for (i = 0; i < statement_handler_num(); i++)
-	  {
-	     if (!strcmp(statement_handlers[i].type, id))
-	       {
-		  free(id);
-		  return;
-	       }
-	  }
-     }
-   if (!handled)
-     {
-	ERR("%s: Error. %s:%i unhandled keyword %s",
-	    progname, file_in, line - 1,
-	    (char *)eina_list_data_get(eina_list_last(stack)));
-        err_show();
-	exit(-1);
+        sh = eina_hash_find(_new_statement_hash, id);
+        if (!sh)
+          {
+             ERR("%s:%i unhandled keyword %s",
+                 file_in, line - 1,
+                 (char *)eina_list_data_get(eina_list_last(stack)));
+             err_show();
+             exit(-1);
+          }
      }
    free(id);
 }
@@ -165,29 +177,22 @@ static void
 new_statement(void)
 {
    char *id;
-   int i;
-   int handled = 0;
+   New_Statement_Handler *sh;
 
+   fill_object_statement_hashes();
    id = stack_id();
-   for (i = 0; i < statement_handler_num(); i++)
+   sh = eina_hash_find(_new_statement_hash, id);
+   if (sh)
      {
-	if (!strcmp(statement_handlers[i].type, id))
-	  {
-	     handled = 1;
-	     if (statement_handlers[i].func)
-	       {
-		  statement_handlers[i].func();
-	       }
-	     break;
-	  }
+        if (sh->func) sh->func();
      }
-   if (!handled)
+   else
      {
-	ERR("%s: Error. %s:%i unhandled keyword %s",
-	    progname, file_in, line - 1,
-	    (char *)eina_list_data_get(eina_list_last(stack)));
+        ERR("%s:%i unhandled keyword %s",
+            file_in, line - 1,
+            (char *)eina_list_data_get(eina_list_last(stack)));
         err_show();
-	exit(-1);
+        exit(-1);
      }
    free(id);
 }
@@ -281,8 +286,8 @@ next_token(char *p, char *end, char **new_p, int *delim)
 	     tmpstr = alloca(l + 1);
 	     if (!tmpstr)
 	       {
-		  ERR("%s: Error. %s:%i malloc %i bytes failed",
-		      progname, file_in, line - 1, l + 1);
+		  ERR("%s:%i malloc %i bytes failed",
+		      file_in, line - 1, l + 1);
 		  exit(-1);
 	       }
 	     strncpy(tmpstr, p, l);
@@ -462,8 +467,8 @@ stack_chop_top(void)
      }
    else
      {
-	ERR("%s: Error. parse error %s:%i. } marker without matching { marker",
-	    progname, file_in, line - 1);
+	ERR("parse error %s:%i. } marker without matching { marker",
+	    file_in, line - 1);
         err_show();
 	exit(-1);
      }
@@ -476,11 +481,8 @@ parse(char *data, off_t size)
    int delim = 0;
    int do_params = 0;
 
-   if (verbose)
-     {
-	INF("%s: Parsing input file",
-	    progname);
-     }
+   DBG("Parsing input file");
+
    p = data;
    end = data + size;
    line = 1;
@@ -491,8 +493,8 @@ parse(char *data, off_t size)
 	 */
 	if (do_params && delim && *token != ';')
 	  {
-	     ERR("%s: Error. parse error %s:%i. %c marker before ; marker",
-		 progname, file_in, line - 1, *token);
+	     ERR("parse error %s:%i. %c marker before ; marker",
+		 file_in, line - 1, *token);
              err_show();
 	     exit(-1);
 	  }
@@ -503,9 +505,9 @@ parse(char *data, off_t size)
 	       {
 		  if (do_params)
 		    {
-		       ERR("%s: Error. parse error %s:%i. } marker before ; marker",
-			       progname, file_in, line - 1);
-                       err_show();
+		       ERR("Parse error %s:%i. } marker before ; marker",
+		           file_in, line - 1);
+		       err_show();
 		       exit(-1);
 		    }
 		  else
@@ -531,8 +533,8 @@ parse(char *data, off_t size)
 	       {
 		  if (do_params)
 		    {
-		       ERR("%s: Error. parse error %s:%i. { marker before ; marker",
-			   progname, file_in, line - 1);
+		       ERR("parse error %s:%i. { marker before ; marker",
+			   file_in, line - 1);
                        err_show();
 		       exit(-1);
 		    }
@@ -615,8 +617,8 @@ parse(char *data, off_t size)
 			 }
 		       else
 			 {
-			    ERR("%s: Error. parse error %s:%i. { marker does not have matching } marker",
-				progname, file_in, line - 1);
+			    ERR("Parse error %s:%i. { marker does not have matching } marker",
+				file_in, line - 1);
                             err_show();
 			    exit(-1);
 			 }
@@ -626,11 +628,8 @@ parse(char *data, off_t size)
 	       }
 	  }
      }
-   if (verbose)
-     {
-	INF("%s: Parsing done",
-	       progname);
-     }
+
+   DBG("Parsing done");
 }
 
 static char *clean_file = NULL;
@@ -739,20 +738,20 @@ compile(void)
                  eina_prefix_lib_get(pfx));
         if (ecore_file_exists(buf2))
           {
-             snprintf(buf, sizeof(buf), "%s %s -I%s %s -o %s",
-                      buf2, file_in, inc, def, tmpn);
+             snprintf(buf, sizeof(buf), "%s -a %s %s -I%s %s -o %s",
+                      buf2, watchfile ? watchfile : "/dev/null", file_in, inc, def, tmpn);
              ret = system(buf);
           }
         else
           {
-             ERR("Error. Cannot run epp: %s", buf2);
+             ERR("Cannot run epp: %s", buf2);
              exit(-1);
           }
 	if (ret == EXIT_SUCCESS)
 	  file_in = tmpn;
         else
           {
-             ERR("Error. Exit code of epp not clean: %i", ret);
+             ERR("Exit code of epp not clean: %i", ret);
              exit(-1);
           }
 	free(def);
@@ -760,14 +759,11 @@ compile(void)
    fd = open(file_in, O_RDONLY | O_BINARY, S_IRUSR | S_IWUSR);
    if (fd < 0)
      {
-	ERR("%s: Error. cannot open file \"%s\" for input. %s",
-	    progname, file_in, strerror(errno));
+	ERR("Cannot open file \"%s\" for input. %s",
+	    file_in, strerror(errno));
 	exit(-1);
      }
-   if (verbose)
-     {
-	INF("%s: Opening \"%s\" for input", progname, file_in);
-     }
+   DBG("Opening \"%s\" for input", file_in);
 
    size = lseek(fd, 0, SEEK_END);
    lseek(fd, 0, SEEK_SET);
@@ -776,8 +772,7 @@ compile(void)
       parse(data, size);
    else
      {
-	ERR("%s: Error. cannot read file \"%s\". %s",
-	    progname, file_in, strerror(errno));
+	ERR("Cannot read file \"%s\". %s", file_in, strerror(errno));
 	exit(-1);
      }
    free(data);
@@ -787,7 +782,7 @@ compile(void)
      {
         if (!stl->name)
           {
-             ERR("%s: Error. style must have a name.", progname);
+             ERR("style must have a name.");
              exit(-1);
           }
      }
@@ -813,8 +808,8 @@ is_num(int n)
    str = eina_list_nth(params, n);
    if (!str)
      {
-	ERR("%s: Error. %s:%i no parameter supplied as argument %i",
-		progname, file_in, line - 1, n + 1);
+	ERR("%s:%i no parameter supplied as argument %i",
+		file_in, line - 1, n + 1);
         err_show();
 	exit(-1);
      }
@@ -838,8 +833,8 @@ parse_str(int n)
    str = eina_list_nth(params, n);
    if (!str)
      {
-	ERR("%s: Error. %s:%i no parameter supplied as argument %i",
-	    progname, file_in, line - 1, n + 1);
+	ERR("%s:%i no parameter supplied as argument %i",
+	    file_in, line - 1, n + 1);
         err_show();
 	exit(-1);
      }
@@ -863,8 +858,7 @@ _parse_enum(char *str, va_list va)
 	/* End of the list, nothing matched. */
 	if (!s)
 	  {
- 	     fprintf(stderr, "%s: Error. %s:%i token %s not one of:",
-	 	     progname, file_in, line - 1, str);
+ 	     ERR("%s:%i token %s not one of:", file_in, line - 1, str);
 	     s = va_arg(va2, char *);
 	     while (s)
 	       {
@@ -903,8 +897,8 @@ parse_enum(int n, ...)
    str = eina_list_nth(params, n);
    if (!str)
      {
-	ERR("%s: Error. %s:%i no parameter supplied as argument %i",
-		progname, file_in, line - 1, n + 1);
+	ERR("%s:%i no parameter supplied as argument %i",
+	    file_in, line - 1, n + 1);
         err_show();
 	exit(-1);
      }
@@ -941,8 +935,8 @@ parse_int(int n)
    str = eina_list_nth(params, n);
    if (!str)
      {
-	ERR("%s: Error. %s:%i no parameter supplied as argument %i",
-	    progname, file_in, line - 1, n + 1);
+	ERR("%s:%i no parameter supplied as argument %i",
+	    file_in, line - 1, n + 1);
         err_show();
 	exit(-1);
      }
@@ -959,16 +953,16 @@ parse_int_range(int n, int f, int t)
    str = eina_list_nth(params, n);
    if (!str)
      {
-	ERR("%s: Error. %s:%i no parameter supplied as argument %i",
-	    progname, file_in, line - 1, n + 1);
+	ERR("%s:%i no parameter supplied as argument %i",
+	    file_in, line - 1, n + 1);
         err_show();
 	exit(-1);
      }
    i = my_atoi(str);
    if ((i < f) || (i > t))
      {
-	ERR("%s: Error. %s:%i integer %i out of range of %i to %i inclusive",
-	    progname, file_in, line - 1, i, f, t);
+	ERR("%s:%i integer %i out of range of %i to %i inclusive",
+	    file_in, line - 1, i, f, t);
         err_show();
 	exit(-1);
      }
@@ -984,16 +978,16 @@ parse_bool(int n)
    str = eina_list_nth(params, n);
    if (!str)
      {
-	ERR("%s: Error. %s:%i no parameter supplied as argument %i",
-	    progname, file_in, line - 1, n + 1);
+	ERR("%s:%i no parameter supplied as argument %i",
+	    file_in, line - 1, n + 1);
         err_show();
 	exit(-1);
      }
 
    if (!strstrip(str, buf, sizeof (buf)))
      {
-	ERR("%s: Error. %s:%i expression is too long",
-	    progname, file_in, line - 1);
+	ERR("%s:%i expression is too long",
+	    file_in, line - 1);
 	return 0;
      }
 
@@ -1005,8 +999,8 @@ parse_bool(int n)
    i = my_atoi(str);
    if ((i < 0) || (i > 1))
      {
-	ERR("%s: Error. %s:%i integer %i out of range of 0 to 1 inclusive",
-	    progname, file_in, line - 1, i);
+	ERR("%s:%i integer %i out of range of 0 to 1 inclusive",
+	    file_in, line - 1, i);
         err_show();
 	exit(-1);
      }
@@ -1022,8 +1016,8 @@ parse_float(int n)
    str = eina_list_nth(params, n);
    if (!str)
      {
-	ERR("%s: Error. %s:%i no parameter supplied as argument %i",
-	    progname, file_in, line - 1, n + 1);
+	ERR("%s:%i no parameter supplied as argument %i",
+	    file_in, line - 1, n + 1);
         err_show();
 	exit(-1);
      }
@@ -1040,16 +1034,16 @@ parse_float_range(int n, double f, double t)
    str = eina_list_nth(params, n);
    if (!str)
      {
-	ERR("%s: Error. %s:%i no parameter supplied as argument %i",
-	    progname, file_in, line - 1, n + 1);
+	ERR("%s:%i no parameter supplied as argument %i",
+	    file_in, line - 1, n + 1);
         err_show();
 	exit(-1);
      }
    i = my_atof(str);
    if ((i < f) || (i > t))
      {
-	ERR("%s: Error. %s:%i float %3.3f out of range of %3.3f to %3.3f inclusive",
-	    progname, file_in, line - 1, i, f, t);
+	ERR("%s:%i float %3.3f out of range of %3.3f to %3.3f inclusive",
+	    file_in, line - 1, i, f, t);
         err_show();
 	exit(-1);
      }
@@ -1069,8 +1063,8 @@ check_arg_count(int required_args)
 
    if (num_args != required_args)
      {
-        ERR("%s: Error. %s:%i got %i arguments, but expected %i",
-            progname, file_in, line - 1, num_args, required_args);
+        ERR("%s:%i got %i arguments, but expected %i",
+            file_in, line - 1, num_args, required_args);
         err_show();
 	exit(-1);
      }
@@ -1083,9 +1077,8 @@ check_min_arg_count(int min_required_args)
 
    if (num_args < min_required_args)
      {
-	ERR("%s: Error. %s:%i got %i arguments, "
-		"but expected at least %i",
-	    progname, file_in, line - 1, num_args, min_required_args);
+	ERR("%s:%i got %i arguments, but expected at least %i",
+	    file_in, line - 1, num_args, min_required_args);
         err_show();
 	exit(-1);
      }
@@ -1112,8 +1105,8 @@ my_atoi(const char *s)
    if (!s) return 0;
    if (!strstrip(s, buf, sizeof(buf)))
      {
-	ERR("%s: Error. %s:%i expression is too long\n",
-	    progname, file_in, line - 1);
+	ERR("%s:%i expression is too long",
+	    file_in, line - 1);
 	return 0;
      }
    _alphai(buf, &res);
@@ -1126,8 +1119,8 @@ _deltai(char *s, int *val)
    if (!val) return NULL;
    if ('(' != s[0])
      {
-	ERR("%s: Error. %s:%i unexpected character at %s\n",
-	    progname, file_in, line - 1, s);
+	ERR("%s:%i unexpected character at %s",
+	    file_in, line - 1, s);
 	return s;
      }
    else
@@ -1157,8 +1150,8 @@ _funci(char *s, int *val)
      }
    else
      {
-        ERR("%s: Error. %s:%i unexpected character at %s\n",
-	    progname, file_in, line - 1, s);
+        ERR("%s:%i unexpected character at %s",
+	    file_in, line - 1, s);
      }
    return s;
 }
@@ -1180,7 +1173,7 @@ _gammai(char *s, int *val)
    else
      {
         s = _funci(s, val);
-//        ERR("%s: Error. %s:%i unexpected character at %s\n",
+//        ERR("%s:%i unexpected character at %s",
 //                progname, file_in, line - 1, s);
      }
    return s;
@@ -1290,8 +1283,7 @@ _calci(char op, int a, int b)
      case '/':
 	if (0 != b) a /= b;
 	else
-	  ERR("%s: Error. %s:%i divide by zero\n",
-	      progname, file_in, line - 1);
+	  ERR("%s:%i divide by zero", file_in, line - 1);
 	return a;
      case '*':
 	a *= b;
@@ -1299,12 +1291,10 @@ _calci(char op, int a, int b)
      case '%':
 	if (0 != b) a = a % b;
 	else
-	  ERR("%s: Error. %s:%i modula by zero\n",
-	      progname, file_in, line - 1);
+	  ERR("%s:%i modula by zero", file_in, line - 1);
 	return a;
      default:
-	ERR("%s: Error. %s:%i unexpected character '%c'\n",
-	    progname, file_in, line - 1, op);
+	ERR("%s:%i unexpected character '%c'", file_in, line - 1, op);
      }
    return a;
 }
@@ -1321,8 +1311,7 @@ my_atof(const char *s)
 
    if (!strstrip(s, buf, sizeof (buf)))
      {
-	ERR("%s: Error. %s:%i expression is too long",
-	    progname, file_in, line - 1);
+	ERR("%s:%i expression is too long", file_in, line - 1);
 	return 0;
      }
    _alphaf(buf, &res);
@@ -1335,8 +1324,7 @@ _deltaf(char *s, double *val)
    if (!val) return NULL;
    if ('(' != s[0])
      {
-	ERR("%s: Error. %s:%i unexpected character at %s",
-	    progname, file_in, line - 1, s);
+	ERR("%s:%i unexpected character at %s", file_in, line - 1, s);
 	return s;
      }
    else
@@ -1365,8 +1353,7 @@ _funcf(char *s, double *val)
      }
    else
      {
-        ERR("%s: Error. %s:%i unexpected character at %s\n",
-	    progname, file_in, line - 1, s);
+        ERR("%s:%i unexpected character at %s", file_in, line - 1, s);
      }
    return s;
 }
@@ -1389,7 +1376,7 @@ _gammaf(char *s, double *val)
    else
      {
         s = _funcf(s, val);
-//        ERR("%s: Error. %s:%i unexpected character at %s\n",
+//        ERR("%s:%i unexpected character at %s",
 //                progname, file_in, line - 1, s);
      }
    return s;
@@ -1503,8 +1490,7 @@ _calcf(char op, double a, double b)
      case '/':
 	if (b != 0) a /= b;
 	else
-	  ERR("%s: Error. %s:%i divide by zero\n",
-	      progname, file_in, line - 1);
+	  ERR("%s:%i divide by zero", file_in, line - 1);
 	return a;
      case '*':
 	a *= b;
@@ -1512,12 +1498,10 @@ _calcf(char op, double a, double b)
      case '%':
 	if (0 != b) a = (double)((int)a % (int)b);
 	else
-	  ERR("%s: Error. %s:%i modula by zero\n",
-	      progname, file_in, line - 1);
+	  ERR("%s:%i modula by zero", file_in, line - 1);
 	return a;
      default:
-	ERR("%s: Error. %s:%i unexpected character '%c'\n",
-	    progname, file_in, line - 1, op);
+	ERR("%s:%i unexpected character '%c'", file_in, line - 1, op);
      }
    return a;
 }
@@ -1527,8 +1511,7 @@ strstrip(const char *in, char *out, size_t size)
 {
    if ((size -1 ) < strlen(in))
      {
-	ERR("%s: Error. %s:%i expression is too long",
-		progname, file_in, line - 1);
+	ERR("%s:%i expression is too long", file_in, line - 1);
 	return 0;
      }
    /* remove spaces and tabs */

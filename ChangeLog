@@ -1,3 +1,7 @@
+2012-06-06  Leandro Pereira
+
+        * Made state index optional (defaulting to 0.0).
+
 2011-01-29  Carsten Haitzler (The Rasterman)
 
         1.0.0 release
@@ -411,4 +415,239 @@
         * To work through a bug in Elementary, add
         edje_object_part_text_escaped_set() that converts escapes to
         plain UTF8 if the part is TEXT.
+
+2012-04-26 Carsten Haitzler (The Rasterman)
+
+        1.2.0 release
+
+2012-04-30  Jérôme Pinot
+
+	* Add missing files in the tarballs.
+
+2012-05-02  Cedric Bail
+
+	* Doing less allocation and reuse Evas_Map does help.
+
+2012-05-08  Cedric Bail
+
+	* Add edje_watch tools to automatically rebuild edc.
+
+2012-05-09  Cedric Bail
+
+	* Fix bug in case of nesting edje_object_signal_emit and edje_object_signal_callback_{add,del}
+	* Check that the file changed on disk when trying to reopen it.
+	* Emit ['edje,change,file', 'edje'] when the file change on disk.
+	* Automatically reload edje file when it change in edje_player.
+
+2012-05-10  Cedric Bail
+
+	* Preserve user box and table items during call of edje_object_file_set.
+
+2012-05-12  Rajeev Ranjan (Rajeev)
+
+	* Add edje_cc optimization to remove alpha channel flag from images
+        with absolutely no alpha in them if marked as havin alpha in the
+        originals
+
+2012-05-14  Cedric Bail
+
+	* Preserve drag informations during call of edje_object_file_set.
+
+2012-05-15  Carsten Haitzler (The Rasterman)
+
+        * Optimize edje_cc to be multi-threaded and compress in parallel
+        * Remove O(n2) algorithms for O(1) in the parser in edje_cc
+        * Add options for the new compression modes in Eet. (fastcomp
+        and fastdecomp - LZ4 and LZ4HC).
+        * Overall sped up edje_cc by 4x faster (if you use fastcomp)
+        and about 4.5x faster with old zlib compression.
+
+2012-05-16  Cedric Bail
+
+	* Fix table and text when fixed point is turned on.
+	* Clamp image tween to never underflow also.
+
+2012-05-20  Cedric Bail
+
+	* Use Eina_File instead of fopen when possible in edje_cc.
+
+2012-05-21  Shilpa Onkar Singh
+
+        * Fix patch for edje draggable jump issue when external event
+        area is used for the dragable.
+
+2012-06-04  Cedric Bail
+
+	* Add SPACER part to reduce the load on the canvas (lighter and faster theme).
+
+2012-06-04  Prince Kumar Dubey
+
+	* Fix decompile of sound samples to use sound source file, not name
+	* Fix decompile of sound samples not double-free
+        * Fix alsa configure option to be alsa, not flac.
+
+2012-06-06  Jihoon Kim
+
+	* edje_entry: display preedit string even though there is no attribute
+
+2012-06-20  Kim Shinwoo
+
+	* Add edje_object_access_part_list_get and acess flags in edc file.
+
+2012-06-21  Carsten Haitzler (The Rasterman)
+
+        * Improve edje_cc slightly to use prefix for full path to
+        embryo_cc. this still like before requires embryo and edje to share
+        the same install prefix for edje_cc to work.
+
+2012-06-12  Michael Bouchaud (yoz)
+
+	* The aliases are now inherited from the targeted group
+	* Aliases can be usable with edje programs, if the part is in the
+	group
+
+2012-06-24  Cedric Bail
+
+	* Emit signal for flagged part when their size get to zero.
+
+2012-07-03  Tom Hacohen (TAsn)
+
+	* Entry: Update anchors from user_insert as well.
+
+2012-07-12  Tom Hacohen (TAsn)
+
+	* Textblock: Fixed issue with updating only the font size using text
+	classes.
+	* Textblock: Fixed updating textblock text_class with
+	edje_text_class_set.
+	* Text classes: Fixed edje_text_class_set to behave like
+	edje_object_text_class_set (and as expected) wrt NULL fonts.
+
+2012-07-12  Cedric Bail
+
+	* Warn at compile time about forgotten image definition.
+	* Stop compilation when clipping to a non RECT part.
+
+2012-07-14  Cedric Bail
+
+	* Fix Edje_Multisense shutdown.
+
+2012-07-24  Carsten Haitzler (The Rasterman)
+
+        * Fix edje entry to extend selection to char pos/word or line
+        when holding shift + mouse click.
+
+2012-07-29  Cedric Bail
+
+	* Reduce potential reentrant issue when using edje_object_signal_emit.
+
+2012-08-06  Cedric Bail
+
+	* Call edje_object_message_signal_process also on GROUP part Edje object.
+
+2012-08-07  Cedric Bail
+
+	* Fix memory leak when Edje file have alias defined.
+
+2012-08-09  Cedric Bail
+
+	* Improve speed of color_class lookup by using an Eina_Hash.
+
+2012-08-14  Hermet
+
+	* Fix the uv mapping correctly in case of image swallowed.
+
+2012-08-21  Guilherme Silveira
+
+	* Fix password timeout with fixed point.
+
+2012-08-24  Cedric Bail
+
+	* Properly destroy color_class and text_class on an Edje_Object.
+
+2012-08-27  Tom Hacohen (TAsn)
+
+	* Textblock: Fixed issue with textblock fit not sizing correctly. This
+	fix is not perfect.
+
+2012-08-29  Cedric Bail
+
+	* Don't leak memory on edje block error during signal emit.
+
+2012-08-30  Carsten Haitzler (The Rasterman)
+
+        1.7.0 release
+
+2012-09-27  Michael Bouchaud (yoz)
+
+	* Fix scale_set in sub group
+
+2012-10-20  Cedric Bail
+
+	1.7.1 release
+
+2012-10-26  Michael Bouchaud (yoz)
+
+        * fix edje_object_scale_set with edje containing boxes and/or tables
+
+2012-10-31  Carsten Haitzler (The Rasterman)
+
+        * Fix edje_cc to use max compression, not default compression.
+
+2012-10-31  ChunEon Park (Hermet)
+
+        * Fix to update the text classes when text classes are changed.
+
+2012-11-02  ChunEon Park (Hermet)
+
+        * Fix to not update map uv for proxy
+
+2012-11-21  Carsten Haitzler (The Rasterman)
+
+        * Backport fix for null name strcmp with group inheritance
+        from 76449 in trunk.
+
+2012-11-23 Luis Felipe Strano Moraes
+
+        1.7.2 release
+
+2012-12-05  Robert David
+
+	* Fix Solaris 11 build.
+
+2012-12-07  Luis Felipe Strano Moraes
+
+	* 1.7.3 release
+
+2012-12-05  Tae-Hwan Kim (Bluezery)
+
+        * Fix inheriting groups with programs that have after programs where
+        after programs are duplicated in the list.
+
+2012-12-13  Doug Newgard
+
+	* Enforce compilation with Lua 5.1 only.
+
+2012-12-17 Vincent Torri
+
+	* Add XML output to doc
+	* Add installation rule for doc
+
+2012-12-18  WooHyun Jung
+
+	* Before cursor is moved by mouse_down, imf_context_reset should be called with current cursor position.
+
+2012-12-20  David Seikel (onefang)
+
+	* Lua: Backport from 76883 in trunk, and revert 80791 - Lua 5.2 support added.
+
+2012-12-20  Tom Hacohen (TAsn)
+
+	* Backport from 78587 in trunk.
+	Edje entry: Fix update of cursor with IMF and user_insert.
+	Was missing, now cursor updates like it should.
+
+2012-12-21  Luis Felipe Strano Moraes
+
+	* 1.7.4 release
 
