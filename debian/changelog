@@ -1,8 +1,9 @@
-edje (1.7.4-1) UNRELEASED; urgency=low
+edje (1.7.4-1) experimental; urgency=low
 
   * New upstream release
+  * Update build-deps to use the latest version of EFL
 
- -- Albin Tonnerre <lutin@debian.org>  Sun, 23 Dec 2012 15:08:17 +0100
+ -- Albin Tonnerre <lutin@debian.org>  Sun, 23 Dec 2012 17:23:08 +0100
 
 edje (1.2.0-1) unstable; urgency=low
 
