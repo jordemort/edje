@@ -1,3 +1,79 @@
+Edje 1.7.4
+
+Changes since Edje 1.7.3:
+-------------------------
+
+Fixes:
+    * Lua 5.2 support added, still works fine with 5.1.
+    * Before cursor is moved by mouse_down, imf_context_reset should be called with current cursor position.
+    * Backport from 78587 in trunk.
+    * Fix inheriting groups with programs that have after programs where after programs are duplicated in the list.
+
+Edje 1.7.3
+
+Changes since Edje 1.7.2:
+-------------------------
+
+Fixes:
+    * fix compilation on Solaris 11
+    * fix duplicate after programs in group inheritance.
+
+Changes since Edje 1.7.1:
+-------------------------
+
+Fixes:
+    * fix scale_set with edje containing boxes and/or tables
+    * fix edje_cc to use max, not default compression
+    * fix edje_text_class_set to update the text classes correctly.
+    * fix to not update map uv for proxy
+    * fix to not segv on inheriting group lookups
+    * fix build on Solaris 11
+    
+Edje 1.7.1
+
+Changes since Edje 1.7.0:
+-------------------------
+
+Fixes:
+    * Fix edje_*scale_set() on sub-group.
+
+Edje 1.7.0
+
+Changes since Edje 1.2.0:
+-------------------------
+
+Additions:
+    * Add edje_watch to monitore change on edje source.
+    * Emit ['edje,change,file', 'edje'] when the file change on disk.
+    * edje_player will automatically reload the file when it change on disk.
+    * Add SPACER part. This part are not putting anything into the canvas. So lighter and faster to
+    process (Use it to replace RECT part that are never visible and never catch any event).
+    * Add accessibility flags and API to retrieve the relevant part.
+    * Emit signal when flagged part size get to zero.
+    * Warn at compile time about forgotten image.
+    * Stop compilation when clipping to a non RECT part.
+
+Improvements:
+    * Allocate once and reuse Evas_Map.
+    * Make edje_cc faster by improving the parser, mapping file in memory and using threads.
+    * Made state index optional in EDC files and Embryo scripts.
+    * Improve speed of color_class lookup by using an Eina_Hash.
+
+Fixes:
+    * Add missing files in the tarballs.
+    * Prevent crash when running nested edje_object_signal_emit with edje_object_signal_callback_{add,del}.
+    * Do actually verify that the file on disk is different from the file we have loaded.
+    * Preserve user drag, box and table information during call of edje_object_file_set.
+    * Fix table and text when fixed point is turned on.
+    * Clamp image tween to never underflow also.
+    * [entry] display preedit string even though there is no attribute
+    * Fix shutdown of Edje_Multisense.
+    * Reduce potential reentrant issue when using edje_object_signal_emit.
+    * Call edje_object_message_signal_process also on GROUP part Edje object.
+    * Remove memory leak when alias are present in the edj file.
+    * Properly destroy color_class and text_class on an Edje_Object.
+    * Stop leaking memory on edje block error during signal emit.
+
 Edje 1.2.0
 
 Changes since Edje 1.1.0:

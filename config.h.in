@@ -40,6 +40,9 @@
 /* Input Method Support for Edje Entry */
 #undef HAVE_ECORE_IMF
 
+/* Eio is available for monitoring file assynchronously */
+#undef HAVE_EIO
+
 /* Set to 1 if Evil library is installed */
 #undef HAVE_EVIL
 
@@ -171,6 +174,9 @@
 
 /* Define to empty if `const' does not conform to ANSI C. */
 #undef const
+
+/* Define to `unsigned int' if <sys/types.h> does not define. */
+#undef size_t
 
 
 #endif /* EFL_CONFIG_H__ */

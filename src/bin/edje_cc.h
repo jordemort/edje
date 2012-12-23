@@ -17,6 +17,7 @@ extern Eina_Prefix *pfx;
 /* logging variables */
 extern int _edje_cc_log_dom ;
 #define EDJE_CC_DEFAULT_LOG_COLOR EINA_COLOR_CYAN
+
 #ifdef ERR
 # undef ERR
 #endif
@@ -29,7 +30,14 @@ extern int _edje_cc_log_dom ;
 # undef WRN
 #endif
 #define WRN(...) EINA_LOG_DOM_WARN(_edje_cc_log_dom, __VA_ARGS__)
-
+#ifdef CRIT
+# undef CRIT
+#endif
+#define CRIT(...) EINA_LOG_DOM_CRIT(_edje_cc_log_dom, __VA_ARGS__)
+#ifdef DBG
+# undef DBG
+#endif
+#define DBG(...) EINA_LOG_DOM_DBG(_edje_cc_log_dom, __VA_ARGS__)
 
 /* types */
 typedef struct _New_Object_Handler    New_Object_Handler;
@@ -194,6 +202,8 @@ void   *mem_alloc(size_t size);
 char   *mem_strdup(const char *s);
 #define SZ sizeof
 
+void    using_file(const char *filename);
+
 void    error_and_abort(Eet_File *ef, const char *fmt, ...);
 
 /* global vars */
@@ -204,8 +214,7 @@ extern Eina_List             *snd_dirs;
 extern char                  *file_in;
 extern char                  *tmp_dir;
 extern char                  *file_out;
-extern char                  *progname;
-extern int                    verbose;
+extern char                  *watchfile;
 extern int                    no_lossy;
 extern int                    no_comp;
 extern int                    no_raw;
@@ -224,6 +233,7 @@ extern Eina_List             *defines;
 extern Eina_List             *aliases;
 extern New_Object_Handler     object_handlers[];
 extern New_Statement_Handler  statement_handlers[];
-
+extern int                    compress_mode;
+extern int                    threads;
 
 #endif

@@ -50,6 +50,14 @@ edje_init(void)
 	goto shutdown_embryo;
      }
 
+#ifdef HAVE_EIO
+   if (!eio_init())
+     {
+        ERR("Eio init failed");
+        goto shutdown_eet;
+     }
+#endif
+
    _edje_scale = FROM_DOUBLE(1.0);
 
    _edje_edd_init();
@@ -62,25 +70,25 @@ edje_init(void)
 
    _edje_real_part_mp = eina_mempool_add("chained_mempool",
 					 "Edje_Real_Part", NULL,
-					 sizeof (Edje_Real_Part), 128);
+					 sizeof (Edje_Real_Part), 32);
    if (!_edje_real_part_mp)
      {
 	ERR("Mempool for Edje_Real_Part cannot be allocated.");
-	goto shutdown_eet;
+	goto shutdown_all;
      }
 
    _edje_real_part_state_mp = eina_mempool_add("chained_mempool",
 					       "Edje_Real_Part_State", NULL,
-					       sizeof (Edje_Real_Part_State), 256);
+					       sizeof (Edje_Real_Part_State), 32);
    if (!_edje_real_part_state_mp)
      {
 	ERR("Mempool for Edje_Real_Part_State cannot be allocated.");
-	goto shutdown_eet;
+	goto shutdown_all;
      }
 
    return _edje_init_count;
 
- shutdown_eet:
+ shutdown_all:
    eina_mempool_del(_edje_real_part_state_mp);
    eina_mempool_del(_edje_real_part_mp);
    _edje_real_part_state_mp = NULL;
@@ -92,6 +100,10 @@ edje_init(void)
    _edje_text_class_members_free();
    _edje_text_class_hash_free();
    _edje_edd_shutdown();
+#ifdef HAVE_EIO
+   eio_shutdown();
+ shutdown_eet:
+#endif
    eet_shutdown();
  shutdown_embryo:
    embryo_shutdown();
@@ -130,6 +142,9 @@ _edje_shutdown_core(void)
    _edje_text_class_hash_free();
    _edje_edd_shutdown();
 
+#ifdef HAVE_EIO
+   eio_shutdown();
+#endif
    eet_shutdown();
    embryo_shutdown();
    ecore_shutdown();
@@ -155,6 +170,11 @@ _edje_lib_unref(void)
 EAPI int
 edje_shutdown(void)
 {
+   if (_edje_init_count <= 0)
+     {
+        ERR("Init count not greater than 0 in shutdown.");
+        return 0;
+     }
    if (--_edje_init_count != 0)
      return _edje_init_count;
 
@@ -168,16 +188,29 @@ edje_shutdown(void)
 }
 
 /* Private Routines */
-static Eina_Bool
-_class_member_free(const Eina_Hash *hash __UNUSED__,
-                   const void *key,
-                   void *data,
-                   void *fdata)
+static void
+_class_member_free(Eina_Hash *hash,
+                   void (*_edje_class_member_direct_del)(const char *class, void *l))
 {
-   void (*_edje_class_member_direct_del)(const char *class, void *l) = fdata;
+   const char *color_class;
+   Eina_Iterator *it;
+   Eina_List *class_kill = NULL;
 
-   _edje_class_member_direct_del(key, data);
-   return EINA_TRUE;
+   if (hash)
+     {
+        it = eina_hash_iterator_key_new(hash);
+        EINA_ITERATOR_FOREACH(it, color_class)
+          class_kill = eina_list_append(class_kill, color_class);
+        eina_iterator_free(it);
+        EINA_LIST_FREE(class_kill, color_class)
+          {
+             void *l;
+
+             l = eina_hash_find(hash, color_class);
+             _edje_class_member_direct_del(color_class, l);
+          }
+        eina_hash_free(hash);
+     }
 }
 
 void
@@ -186,7 +219,6 @@ _edje_del(Edje *ed)
    Edje_Running_Program *runp;
    Edje_Pending_Program *pp;
    Edje_Signal_Callback *escb;
-   Edje_Color_Class *cc;
    Edje_Text_Class *tc;
    Edje_Text_Insert_Filter_Callback *cb;
 
@@ -217,11 +249,7 @@ _edje_del(Edje *ed)
 	if (escb->source) eina_stringshare_del(escb->source);
 	free(escb);
      }
-   EINA_LIST_FREE(ed->color_classes, cc)
-     {
-	if (cc->name) eina_stringshare_del(cc->name);
-	free(cc);
-     }
+   eina_hash_free(ed->color_classes);
    EINA_LIST_FREE(ed->text_classes, tc)
      {
 	if (tc->name) eina_stringshare_del(tc->name);
@@ -239,16 +267,8 @@ _edje_del(Edje *ed)
         free(cb);
      }
 
-   if (ed->members.text_class)
-     {
-        eina_hash_foreach(ed->members.text_class, _class_member_free, _edje_text_class_member_direct_del);
-        eina_hash_free(ed->members.text_class);
-     }
-   if (ed->members.color_class)
-     {
-        eina_hash_foreach(ed->members.color_class, _class_member_free, _edje_color_class_member_direct_del);
-        eina_hash_free(ed->members.color_class);
-     }
+   _class_member_free(ed->members.text_class, _edje_text_class_member_direct_del);
+   _class_member_free(ed->members.color_class, _edje_color_class_member_direct_del);
    free(ed);
 }
 

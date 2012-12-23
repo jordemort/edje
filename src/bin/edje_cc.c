@@ -19,8 +19,9 @@ Eina_List *defines = NULL;
 char      *file_in = NULL;
 char      *tmp_dir = NULL;
 char      *file_out = NULL;
-char      *progname = NULL;
-int        verbose = 0;
+char      *watchfile = NULL;
+
+static const char *progname = NULL;
 
 int        no_lossy = 0;
 int        no_comp = 0;
@@ -28,6 +29,48 @@ int        no_raw = 0;
 int        no_save = 0;
 int        min_quality = 0;
 int        max_quality = 100;
+int        compress_mode = EET_COMPRESSION_HI;
+int        threads = 0;
+
+static void
+_edje_cc_log_cb(const Eina_Log_Domain *d,
+                Eina_Log_Level level,
+                const char *file,
+                const char *fnc,
+                int line,
+                const char *fmt,
+                __UNUSED__ void *data,
+                va_list args)
+{
+   if ((d->name) && (d->namelen == sizeof("edje_cc") - 1) &&
+       (memcmp(d->name, "edje_cc", sizeof("edje_cc") - 1) == 0))
+     {
+        const char *prefix;
+
+        eina_log_console_color_set(stderr, eina_log_level_color_get(level));
+        switch (level)
+          {
+           case EINA_LOG_LEVEL_CRITICAL:
+              prefix = "Critical. ";
+              break;
+           case EINA_LOG_LEVEL_ERR:
+              prefix = "Error. ";
+              break;
+           case EINA_LOG_LEVEL_WARN:
+              prefix = "Warning. ";
+              break;
+           default:
+              prefix = "";
+          }
+        fprintf(stderr, "%s: %s", progname, prefix);
+        eina_log_console_color_set(stderr, EINA_COLOR_RESET);
+
+        vfprintf(stderr, fmt, args);
+        putc('\n', stderr);
+     }
+   else
+     eina_log_print_cb_stderr(d, level, file, fnc, line, fmt, NULL, args);
+}
 
 static void
 main_help(void)
@@ -38,6 +81,7 @@ main_help(void)
       "\n"
       "Where OPTIONS is one or more of:\n"
       "\n"
+      "-w files.txt             Dump all sources files path into files.txt\n"
       "-id image/directory      Add a directory to look in for relative path images\n"
       "-fd font/directory       Add a directory to look in for relative path fonts\n"
       "-sd sound/directory      Add a directory to look in for relative path sounds samples\n"
@@ -50,6 +94,10 @@ main_help(void)
       "-min-quality VAL         Do NOT allow lossy images with quality < VAL (0-100)\n"
       "-max-quality VAL         Do NOT allow lossy images with quality > VAL (0-100)\n"
       "-Ddefine_val=to          CPP style define to define input macro definitions to the .edc source\n"
+      "-fastcomp                Use a faster compression algorithm (LZ4) (mutually exclusive with -fastdecomp)\n"
+      "-fastdecomp              Use a faster decompression algorithm (LZ4HC) (mutually exclusive with -fastcomp)\n"
+      "-threads                 Compile the edje file using multiple parallel threads (by default)\n"
+      "-nothreads               Compile the edje file using only the main loop\n"
       ,progname);
 }
 
@@ -72,6 +120,12 @@ main(int argc, char **argv)
        EINA_LOG_ERR("Enable to create a log domain.");
        exit(-1);
      }
+   if (!eina_log_domain_level_check(_edje_cc_log_dom, EINA_LOG_LEVEL_WARN))
+     eina_log_domain_level_set("edje_cc", EINA_LOG_LEVEL_WARN);
+
+   progname = ecore_file_file_get(argv[0]);
+   eina_log_print_cb_set(_edje_cc_log_cb, NULL);
+
    tmp_dir = getenv("TMPDIR");
 
    img_dirs = eina_list_append(img_dirs, ".");
@@ -79,7 +133,6 @@ main(int argc, char **argv)
    /* add defines to epp so edc files can detect edje_cc version */
    defines = eina_list_append(defines, mem_strdup("-DEDJE_VERSION_12=12"));
 
-   progname = argv[0];
    for (i = 1; i < argc; i++)
      {
 	if (!strcmp(argv[i], "-h"))
@@ -89,7 +142,7 @@ main(int argc, char **argv)
 	  }
 	else if (!strcmp(argv[i], "-v"))
 	  {
-	     verbose = 1;
+	     eina_log_domain_level_set("edje_cc", EINA_LOG_LEVEL_INFO);
 	  }
 	else if (!strcmp(argv[i], "-no-lossy"))
 	  {
@@ -142,6 +195,22 @@ main(int argc, char **argv)
 	     if (max_quality < 0) max_quality = 0;
 	     if (max_quality > 100) max_quality = 100;
 	  }
+	else if (!strcmp(argv[i], "-fastcomp"))
+	  {
+             compress_mode = EET_COMPRESSION_SUPERFAST;
+	  }
+	else if (!strcmp(argv[i], "-fastdecomp"))
+	  {
+             compress_mode = EET_COMPRESSION_VERYFAST;
+	  }
+	else if (!strcmp(argv[i], "-threads"))
+	  {
+             threads = 1;
+	  }
+	else if (!strcmp(argv[i], "-nothreads"))
+	  {
+             threads = 0;
+	  }
 	else if (!strncmp(argv[i], "-D", 2))
 	  {
 	     defines = eina_list_append(defines, mem_strdup(argv[i]));
@@ -151,17 +220,26 @@ main(int argc, char **argv)
 	     i++;
 	     file_out = argv[i];
 	  }
+	else if ((!strcmp(argv[i], "-w")) && (i < (argc - 1)))
+	  {
+             i++;
+             watchfile = argv[i];
+             unlink(watchfile);
+	  }
 	else if (!file_in)
 	  file_in = argv[i];
 	else if (!file_out)
 	  file_out = argv[i];
      }
+
    if (!file_in)
      {
-	fprintf(stderr, "%s: Error: no input file specified.\n", progname);
+	ERR("no input file specified.");
 	main_help();
 	exit(-1);
      }
+
+   
 
    pfx = eina_prefix_new(argv[0],            /* argv[0] value (optional) */
                          main,               /* an optional symbol to check path of */
@@ -181,7 +259,7 @@ main(int argc, char **argv)
    if (stat(file_in, &st) || !S_ISREG(st.st_mode))
 #endif
      {
-	fprintf(stderr, "%s: Error: file not found: %s.\n", progname, file_in);
+	ERR("file not found: %s.", file_in);
 	main_help();
 	exit(-1);
      }
@@ -202,7 +280,7 @@ main(int argc, char **argv)
       }
    if (!file_out)
      {
-	fprintf(stderr, "%s: Error: no output file specified.\n", progname);
+	ERR("no output file specified.");
 	main_help();
 	exit(-1);
      }
@@ -213,10 +291,12 @@ main(int argc, char **argv)
    if (!strcmp (file_in, file_out))
 #endif
      {
-	fprintf(stderr, "%s: Error: input file equals output file.\n", progname);
+	ERR("input file equals output file.");
 	main_help();
 	exit(-1);
      }
+
+   using_file(file_in);
 
    if (!edje_init())
      exit(-1);
