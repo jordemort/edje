@@ -1,3 +1,12 @@
+edje (1.7.4-2) experimental; urgency=low
+
+  * debian/control: libedje-dev should depend on EFL >= 1.7.4
+  * debian/rules: drop long-unused rule refresh-patches
+  * debian/rules: compile with -fvisiblity=hidden
+  * Add a symbols file for libedje1
+
+ -- Albin Tonnerre <lutin@debian.org>  Sun, 10 Mar 2013 20:17:07 +0100
+
 edje (1.7.4-1) experimental; urgency=low
 
   * New upstream release
