@@ -1,3 +1,9 @@
+edje (1.7.7-1) experimental; urgency=low
+
+  * Imported Upstream version 1.7.7
+
+ -- Jordan Webb <jordan.webb@gmail.com>  Wed, 24 Jul 2013 04:56:40 +0000
+
 edje (1.7.4-3) unstable; urgency=low
 
   * Upload to unstable
