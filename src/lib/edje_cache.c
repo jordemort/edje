@@ -63,6 +63,7 @@ _edje_file_coll_open(Edje_File *edf, const char *coll)
    INIT_EMP_BOTH(BOX, Edje_Part_Description_Box, ce);
    INIT_EMP_BOTH(TABLE, Edje_Part_Description_Table, ce);
    INIT_EMP_BOTH(EXTERNAL, Edje_Part_Description_External, ce);
+   INIT_EMP_BOTH(SPACER, Edje_Part_Description_Common, ce);
    INIT_EMP(part, Edje_Part, ce);
 
    snprintf(buf, sizeof(buf), "edje/collections/%i", id);
@@ -127,12 +128,59 @@ _edje_file_coll_open(Edje_File *edf, const char *coll)
    return edc;
 }
 
+#ifdef HAVE_EIO
+static Eina_Bool
+_edje_file_warn(void *data)
+{
+   Edje_File *edf = data;
+   Eina_List *l, *ll;
+   Edje *ed;
+
+   edf->references++;
+
+   EINA_LIST_FOREACH(edf->edjes, l, ed)
+     _edje_ref(ed);
+
+   EINA_LIST_FOREACH(edf->edjes, l, ed)
+     {
+        _edje_emit(ed, "edje,change,file", "edje");
+     }
+
+   EINA_LIST_FOREACH_SAFE(edf->edjes, l, ll, ed)
+     _edje_unref(ed);
+
+   edf->references--;
+
+   edf->timeout = NULL;
+   return EINA_FALSE;
+}
+
+static Eina_Bool
+_edje_file_change(void *data, int ev_type __UNUSED__, void *event)
+{
+   Edje_File *edf = data;
+   Eio_Monitor_Event *ev = event;
+
+   if (ev->monitor == edf->monitor)
+     {
+        if (edf->timeout) ecore_timer_del(edf->timeout);
+        edf->timeout = ecore_timer_add(0.5, _edje_file_warn, edf);
+     }
+   return ECORE_CALLBACK_PASS_ON;
+}
+#endif
+
 static Edje_File *
 _edje_file_open(const char *file, const char *coll, int *error_ret, Edje_Part_Collection **edc_ret, time_t mtime)
 {
+   Edje_Color_Class *cc;
    Edje_File *edf;
+   Eina_List *l;
    Edje_Part_Collection *edc;
    Eet_File *ef;
+#ifdef HAVE_EIO
+   Ecore_Event_Handler *ev;
+#endif
 
    ef = eet_open(file, EET_FILE_MODE_READ);
    if (!ef)
@@ -150,6 +198,17 @@ _edje_file_open(const char *file, const char *coll, int *error_ret, Edje_Part_Co
 
    edf->ef = ef;
    edf->mtime = mtime;
+#ifdef HAVE_EIO
+   edf->monitor = eio_monitor_add(file);
+   ev = ecore_event_handler_add(EIO_MONITOR_FILE_DELETED, _edje_file_change, edf);
+   edf->handlers = eina_list_append(edf->handlers, ev);
+   ev = ecore_event_handler_add(EIO_MONITOR_FILE_MODIFIED, _edje_file_change, edf);
+   edf->handlers = eina_list_append(edf->handlers, ev);
+   ev = ecore_event_handler_add(EIO_MONITOR_FILE_CREATED, _edje_file_change, edf);
+   edf->handlers = eina_list_append(edf->handlers, ev);
+   ev = ecore_event_handler_add(EIO_MONITOR_SELF_DELETED, _edje_file_change, edf);
+   edf->handlers = eina_list_append(edf->handlers, ev);
+#endif
 
    if (edf->version != EDJE_FILE_VERSION)
      {
@@ -174,6 +233,10 @@ _edje_file_open(const char *file, const char *coll, int *error_ret, Edje_Part_Co
 
    /* This should be done at edje generation time */
    _edje_textblock_style_parse_and_fix(edf);
+   edf->color_hash = eina_hash_string_small_new(NULL);
+   EINA_LIST_FOREACH(edf->color_classes, l, cc)
+     if (cc->name)
+       eina_hash_direct_add(edf->color_hash, cc->name, cc);
 
    if (coll)
      {
@@ -203,7 +266,7 @@ _edje_file_dangling(Edje_File *edf)
 }
 
 Edje_File *
-_edje_cache_file_coll_open(const char *file, const char *coll, int *error_ret, Edje_Part_Collection **edc_ret)
+_edje_cache_file_coll_open(const char *file, const char *coll, int *error_ret, Edje_Part_Collection **edc_ret, Edje *ed)
 {
    Edje_File *edf;
    Eina_List *l, *hist;
@@ -212,12 +275,15 @@ _edje_cache_file_coll_open(const char *file, const char *coll, int *error_ret, E
    struct stat st;
 
    if (stat(file, &st) != 0)
-      return NULL;
+     {
+        *error_ret = EDJE_LOAD_ERROR_DOES_NOT_EXIST;
+        return NULL;
+     }
 
    if (!_edje_file_hash)
      {
 	_edje_file_hash = eina_hash_string_small_new(NULL);
-	goto open_new;
+	goto find_list;
      }
 
    edf = eina_hash_find(_edje_file_hash, file);
@@ -232,7 +298,8 @@ _edje_cache_file_coll_open(const char *file, const char *coll, int *error_ret, E
 	edf->references++;
 	goto open;
      }
-
+   
+find_list:
    EINA_LIST_FOREACH(_edje_file_cache, l, edf)
      {
 	if (!strcmp(edf->path, file))
@@ -258,6 +325,12 @@ open_new:
    edf = _edje_file_open(file, coll, error_ret, edc_ret, st.st_mtime);
    if (!edf)
       return NULL;
+
+#ifdef HAVE_EIO
+   if (ed) edf->edjes = eina_list_append(edf->edjes, ed);
+#else
+   (void) ed;
+#endif
 
    eina_hash_add(_edje_file_hash, file, edf);
    return edf;
@@ -364,6 +437,12 @@ open:
 	    edc->checked = 1;
 	  }
      }
+#ifdef HAVE_EIO
+   if (edc && ed) edf->edjes = eina_list_append(edf->edjes, ed);
+#else
+   (void) ed;
+#endif
+
    if (edc_ret) *edc_ret = edc;
 
    return edf;

@@ -871,14 +871,20 @@ _edje_embryo_fn_set_state(Embryo_Program *ep, Embryo_Cell *params)
    double value = 0.0;
    Edje_Real_Part *rp;
 
-   CHKPARAM(3);
+   if (!(HASNPARAMS(2) || HASNPARAMS(3))) return -1;
+
    ed = embryo_program_data_get(ep);
    GETSTR(state, params[2]);
    if ((!state)) return 0;
    part_id = params[1];
    if (part_id < 0) return 0;
-   f = EMBRYO_CELL_TO_FLOAT(params[3]);
-   value = (double)f;
+   if (HASNPARAMS(3))
+     {
+	f = EMBRYO_CELL_TO_FLOAT(params[3]);
+	value = (double)f;
+     }
+   else
+     value = 0.0;
    rp = ed->table_parts[part_id % ed->table_parts_size];
    if (rp)
      {
@@ -1668,10 +1674,12 @@ _edje_embryo_fn_custom_state(Embryo_Program *ep, Embryo_Cell *params)
 	  }
 
 	ALLOC_DESC(RECTANGLE, Common, d);
+	ALLOC_DESC(SPACER, Common, d);
 	ALLOC_DESC(SWALLOW, Common, d);
 	ALLOC_DESC(GROUP, Common, d);
 
 	ALLOC_COPY_DESC(IMAGE, Image, d, image);
+	ALLOC_COPY_DESC(PROXY, Proxy, d, proxy);
 	ALLOC_COPY_DESC(TEXT, Text, d, text);
 	ALLOC_COPY_DESC(TEXTBLOCK, Text, d, text);
 	ALLOC_COPY_DESC(BOX, Box, d, box);
@@ -2784,7 +2792,7 @@ _edje_embryo_fn_external_param_get_str(Embryo_Program *ep, Embryo_Cell *params)
      {
 	char *tmp = alloca(dst_len);
 	memcpy(tmp, eep.s, dst_len - 1);
-	tmp[dst_len] = '\0';
+	tmp[dst_len-1] = '\0';
 	SETSTR(tmp, params[3]);
      }
    return 1;
@@ -2885,7 +2893,7 @@ _edje_embryo_fn_external_param_get_choice(Embryo_Program *ep, Embryo_Cell *param
      {
 	char *tmp = alloca(dst_len);
 	memcpy(tmp, eep.s, dst_len - 1);
-	tmp[dst_len] = '\0';
+	tmp[dst_len-1] = '\0';
 	SETSTR(tmp, params[3]);
      }
    return 1;

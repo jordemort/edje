@@ -1,10 +1,9 @@
 ##--##--##--##--##--##--##--##--##--##--##--##--##--##--##--##--##
 ##--##--##--##--##--##--##--##--##--##--##--##--##--##--##--##--##
 m4_define([v_maj], [1])
-m4_define([v_min], [2])
-m4_define([v_mic], [0])
-m4_define([v_rev], m4_esyscmd([(svnversion "${SVN_REPO_PATH:-.}" | grep -v '\(export\|Unversioned directory\)' || echo 0) | awk -F : '{printf("%s\n", $1);}' | tr -d ' :MSP\n']))
-m4_if(v_rev, [0], [m4_define([v_rev], m4_esyscmd([git log 2> /dev/null | (grep -m1 git-svn-id || echo 0) | sed -e 's/.*@\([0-9]*\).*/\1/' | tr -d '\n']))])
+m4_define([v_min], [7])
+m4_define([v_mic], [7])
+m4_define([v_rev], m4_esyscmd([(git rev-list --count HEAD 2>/dev/null || echo 0) | tr -d '\n']))dnl
 ##--   When released, remove the dnl on the below line
 m4_undefine([v_rev])
 ##--   When doing snapshots - change soname. remove dnl on below line
@@ -65,7 +64,7 @@ AC_CANONICAL_HOST
 
 
 case "$host_os" in
-   mingw32ce* | cegcc*)
+   mingw32ce*)
       MODULE_ARCH="$host_os-$host_cpu"
       install_vim="no"
       have_edje_cc="no"
@@ -104,6 +103,7 @@ EFL_ENABLE_BIN([edje-recc])
 EFL_ENABLE_BIN([edje-player])
 EFL_ENABLE_BIN([edje-inspector])
 EFL_ENABLE_BIN([edje-external-inspector])
+EFL_ENABLE_BIN([edje-watch])
 
 # Optional EDJE_PROGRAM_CACHE (use much more ram, but increase speed in some cases)
 want_edje_program_cache="no"
@@ -220,7 +220,7 @@ AC_SUBST(pkgconfig_requires_private)
 EFL_EDJE_BUILD=""
 case "$host_os" in
    mingw*)
-      PKG_CHECK_MODULES([EVIL], [evil >= 1.0.0])
+      PKG_CHECK_MODULES([EVIL], [evil >= 1.7.7])
       AC_DEFINE([HAVE_EVIL], [1], [Set to 1 if Evil library is installed])
       requirement_edje="evil ${requirement_edje}"
       EFL_EDJE_BUILD="-DEFL_EDJE_BUILD"
@@ -258,49 +258,59 @@ fi
 
 PKG_CHECK_MODULES([MINIMAL],
    [
-    eina >= 1.2.0
-    eet >= 1.6.0
+    eina >= 1.7.7
+    eet >= 1.7.7
    ])
 
 PKG_CHECK_MODULES([EDJE],
    [
-    eina >= 1.2.0
-    eet >= 1.6.0
-    evas >= 1.2.0
-    ecore >= 1.2.0
-    ecore-evas >= 1.2.0
-    ecore-file >= 1.2.0
-    embryo >= 1.2.0
+    eina >= 1.7.7
+    eet >= 1.7.7
+    evas >= 1.7.7
+    ecore >= 1.7.7
+    ecore-evas >= 1.7.7
+    ecore-file >= 1.7.7
+    ecore-input >= 1.7.7
+    embryo >= 1.7.7
    ])
 
 EDJE_LIBS="${EDJE_LIBS} ${LUA_LIBS} ${lua_libs}"
 EDJE_CFLAGS="${EDJE_CFLAGS} ${LUA_CFLAGS}"
 
-requirement_edje="embryo >= 1.2.0 ecore-evas >= 1.2.0 ecore >= 1.2.0 evas >= 1.2.0 eet >= 1.6.0 eina >= 1.2.0 ${requirement_edje}"
+requirement_edje="embryo >= 1.7.7 ecore-evas >= 1.7.7 ecore >= 1.7.7 evas >= 1.7.7 eet >= 1.7.7 eina >= 1.7.7 ${requirement_edje}"
 requirement_edje="${requirement_lua} ${requirement_edje}"
 
 have_ecore_imf="no"
 PKG_CHECK_MODULES([ECORE_IMF],
    [
-    ecore-imf >= 1.2.0
-    ecore-imf-evas >= 1.2.0
+    ecore-imf >= 1.7.7
+    ecore-imf-evas >= 1.7.7
    ],
    [
     AC_DEFINE([HAVE_ECORE_IMF], [1], [Input Method Support for Edje Entry])
     have_ecore_imf="yes"
-    requirement_edje="ecore-imf-evas >= 1.2.0 ecore-imf >= 1.2.0 ${requirement_edje}"
+    requirement_edje="ecore-imf-evas >= 1.7.7 ecore-imf >= 1.7.7 ${requirement_edje}"
    ],
    [have_ecore_imf="no"])
 
+PKG_CHECK_MODULES([EIO],
+   [eio >= 1.7.7],
+   [
+    AC_DEFINE([HAVE_EIO], [1], [Eio is available for monitoring file assynchronously])
+    have_eio="yes"
+    requirement_edje="eio >= 1.7.7 ${requirement_edje}"
+   ],
+   [have_eio="no"])
+
 # Enable Multisense use
-want_multisense="yes"
-AC_ARG_ENABLE([multisense],
-   [AC_HELP_STRING(
-       [--enable-multisense],
-       [multisense provides sound. tone and haptic effects support, [[default=disabled]]]
-    )],
-    [want_multisense=$enableval]
-)
+want_multisense="no"
+dnl AC_ARG_ENABLE([multisense],
+dnl    [AC_HELP_STRING(
+dnl        [--enable-multisense],
+dnl        [multisense provides sound. tone and haptic effects support, [[default=disabled]]]
+dnl     )],
+dnl     [want_multisense=$enableval]
+dnl )
 AM_CONDITIONAL([ENABLE_MULTISENSE], [test "x${want_multisense}" = "xyes"])
 
 ##sndfile library
@@ -321,7 +331,7 @@ if test "x${want_multisense}" = "xyes" -a  "x$want_sndfile" != "xno"; then
 	       ],
 	      [have_sndfile="no"; want_multisense="no"]
 	   )
-	
+
 	if test "x$want_sndfile" = "xyes" -a "x$have_sndfile" = "xno"; then
 	    AC_MSG_ERROR([sndfile support requested, but not found by pkg-config.])
 	fi
@@ -386,7 +396,7 @@ fi
 ##alsa library
 have_alsa_lib="no"
 want_alsa_lib="auto"
-AC_ARG_ENABLE([flac],
+AC_ARG_ENABLE([alsa],
    [AC_HELP_STRING([--disable-alsa], [disable alsa support. @<:@default=detect@:>@])],
    [want_alsa_lib=$enableval], [])
 
@@ -406,7 +416,7 @@ if test "x${want_multisense}" = "xyes" -a "x$want_alsa_lib" != "xno"; then
 	if test "x$want_alsa_lib" = "xyes" -a "x$have_alsa_lib" = "xno"; then
 	    AC_MSG_ERROR([alsa support requested, but not found by pkg-config.])
 	fi
-fi	
+fi
 AM_CONDITIONAL([HAVE_LIBALSA], [test "x${have_alsa_lib}" = "xyes"])
 
 
@@ -441,32 +451,46 @@ fi
 if test "x${want_multisense}" = "xyes" ; then
    AC_DEFINE([ENABLE_MULTISENSE], [1], [Use Multisense])
 fi
+AC_SUBST([want_multisense])
 
 # Dependencies for the binaries
 
-if test "x$have_edje_cc" = "xyes"; then
-   PKG_CHECK_MODULES([EDJE_CC], [ecore-file >= 1.2.0 ecore-evas >= 1.2.0 ecore >= 1.2.0 evas >= 1.2.0 eet >= 1.6.0 eina >= 1.2.0])
+if test "x${have_edje_cc}" = "xyes" ; then
+   PKG_CHECK_MODULES([EDJE_CC],
+      [ecore-file >= 1.7.7 ecore-evas >= 1.7.7 ecore >= 1.7.7 evas >= 1.7.7 eet >= 1.6.0 eina >= 1.7.7])
    EDJE_CC_LIBS="${EDJE_CC_LIBS} ${LUA_LIBS} ${lua_libs}"
 fi
 
-AM_CONDITIONAL([BUILD_EPP], [test "x$have_edje_cc" = "xyes"])
+AM_CONDITIONAL([BUILD_EPP], [test "x${have_edje_cc}" = "xyes"])
 
-if test "x$have_edje_decc" = "xyes"; then
-   PKG_CHECK_MODULES([EDJE_DECC], [ecore-file >= 1.2.0 ecore-evas >= 1.2.0 ecore >= 1.2.0 evas >= 1.2.0 eet >= 1.6.0 eina >= 1.2.0])
+if test "x${have_edje_decc}" = "xyes" ; then
+   PKG_CHECK_MODULES([EDJE_DECC],
+      [ecore-file >= 1.7.7 ecore-evas >= 1.7.7 ecore >= 1.7.7 evas >= 1.7.7 eet >= 1.7.7 eina >= 1.7.7])
 fi
 
-if test "x$have_edje_player" = "xyes"; then
-   PKG_CHECK_MODULES([EDJE_PLAYER], [ecore-evas >= 1.2.0 ecore >= 1.2.0 evas >= 1.2.0 eina >= 1.2.0])
+if test "x${have_edje_player}" = "xyes" ; then
+   PKG_CHECK_MODULES([EDJE_PLAYER],
+      [ecore-evas >= 1.7.7 ecore >= 1.7.7 evas >= 1.7.7 eina >= 1.7.7])
 fi
 
-if test "x$have_edje_inspector" = "xyes"; then
-   PKG_CHECK_MODULES([EDJE_INSPECTOR], [ecore-evas >= 1.2.0 ecore >= 1.2.0 evas >= 1.2.0 eina >= 1.2.0])
+if test "x${have_edje_inspector}" = "xyes" ; then
+   PKG_CHECK_MODULES([EDJE_INSPECTOR],
+      [ecore-evas >= 1.7.7 ecore >= 1.7.7 evas >= 1.7.7 eina >= 1.7.7])
 fi
 
-if test "x$have_edje_external_inspector" = "xyes"; then
-   PKG_CHECK_MODULES([EDJE_EXTERNAL_INSPECTOR], [ecore >= 1.2.0 evas >= 1.2.0 eina >= 1.2.0])
+if test "x${have_edje_external_inspector}" = "xyes" ; then
+   PKG_CHECK_MODULES([EDJE_EXTERNAL_INSPECTOR],
+      [ecore >= 1.7.7 evas >= 1.7.7 eina >= 1.7.7])
 fi
 
+if test "x${have_edje_watch}" = "xyes" ; then
+   PKG_CHECK_MODULES([EDJE_WATCH],
+      [ecore >= 1.7.7 eina >= 1.7.7 eio >= 1.7.7],
+      [have_edje_watch="yes"],
+      [have_edje_watch="no"])
+fi
+
+AM_CONDITIONAL([BUILD_EDJE_WATCH], [test "x${have_edje_watch}" = "xyes"])
 
 ### Checks for header files
 AC_CHECK_HEADERS([locale.h sys/resource.h])
@@ -491,9 +515,6 @@ case "$host_os" in
    mingw32ce*)
       EDJE_CFLAGS="${EDJE_CFLAGS} -D_WIN32_WCE=0x0420"
       ;;
-   cegcc*)
-      EDJE_CFLAGS="${EDJE_CFLAGS} -mwin32 -D_WIN32_WCE=0x0420"
-      ;;
 esac
 
 
@@ -501,7 +522,7 @@ esac
 
 lt_enable_auto_import=""
 case "$host_os" in
-   mingw* | cegcc*)
+   mingw*)
       lt_enable_auto_import="-Wl,--enable-auto-import"
       ;;
 esac
@@ -515,7 +536,7 @@ AC_ISC_POSIX
 AC_FUNC_ALLOCA
 
 case "$host_os" in
-   mingw* | cegcc*)
+   mingw*)
       AC_DEFINE([HAVE_REALPATH], [1], [Define to 1 if you have the `realpath' function.])
       ;;
    *)
@@ -539,7 +560,7 @@ fi
 build_examples="no"
 AC_ARG_ENABLE([build-examples],
    AC_HELP_STRING([--enable-build-examples],
-                  [Enable building examples. This requires extra denpendencies. If you don't have them installed yet, don't build with this option or it will fail. Build again when you have it, overriding the previous installation). @<:@default==disabled@:>@]),
+                  [Enable building examples. This requires extra dependencies. If you don't have them installed yet, don't build with this option or it will fail. Build again when you have it, overriding the previous installation). @<:@default==disabled@:>@]),
    [
     if test "x${enableval}" = "xyes" ; then
        build_examples="yes"
@@ -588,7 +609,7 @@ echo "Configuration Options Summary:"
 echo
 echo "  Amalgamation.........: ${do_amalgamation}"
 echo "  Ecore IMF............: $have_ecore_imf"
-echo "  Multisense...........: $want_multisense"
+dnl echo "  Multisense...........: $want_multisense"
 
 if test "x${want_multisense}" = "xyes" ; then
 echo "  LibRemix.............: $have_libremix"
@@ -602,6 +623,9 @@ echo "  EDJE_PROGRAM_CACHE...: $want_edje_program_cache"
 echo "  EDJE_CALC_CACHE......: $want_edje_calc_cache"
 echo "  Fixed point..........: $want_fixed_point"
 echo "  Documentation........: ${build_doc}"
+if test "x${build_doc}" = "xyes" ; then
+echo "    Installation.......: make install-doc"
+fi
 echo "  Tests................: ${enable_tests}"
 echo "  Coverage.............: ${enable_coverage}"
 echo "  Examples.............: install:${install_examples} build:${build_examples}"
@@ -614,6 +638,7 @@ echo "  Build edje_recc..............: $have_edje_recc"
 echo "  Build edje_player............: $have_edje_player"
 echo "  Build edje_inspector.........: $have_edje_inspector"
 echo "  Build edje_external_inspector: $have_edje_external_inspector"
+echo "  Build edje_watch.............: $have_edje_watch"
 echo
 echo "Compilation............: make (or gmake)"
 echo "  CPPFLAGS.............: $CPPFLAGS"

@@ -1,3 +1,4 @@
+PACKAGE_TARNAME=@PACKAGE_TARNAME@
 prefix=@prefix@
 exec_prefix=@exec_prefix@
 libdir=@libdir@
@@ -6,6 +7,8 @@ includedir=@includedir@
 datarootdir=@datarootdir@
 datadir=@datadir@/edje
 vmaj=@VMAJ@
+multisense=@want_multisense@
+docdir=@docdir@
 
 Name: edje
 Description: Enlightened graphical design and layout engine.
