@@ -1674,10 +1674,12 @@ _edje_embryo_fn_custom_state(Embryo_Program *ep, Embryo_Cell *params)
 	  }
 
 	ALLOC_DESC(RECTANGLE, Common, d);
+	ALLOC_DESC(SPACER, Common, d);
 	ALLOC_DESC(SWALLOW, Common, d);
 	ALLOC_DESC(GROUP, Common, d);
 
 	ALLOC_COPY_DESC(IMAGE, Image, d, image);
+	ALLOC_COPY_DESC(PROXY, Proxy, d, proxy);
 	ALLOC_COPY_DESC(TEXT, Text, d, text);
 	ALLOC_COPY_DESC(TEXTBLOCK, Text, d, text);
 	ALLOC_COPY_DESC(BOX, Box, d, box);
@@ -2790,7 +2792,7 @@ _edje_embryo_fn_external_param_get_str(Embryo_Program *ep, Embryo_Cell *params)
      {
 	char *tmp = alloca(dst_len);
 	memcpy(tmp, eep.s, dst_len - 1);
-	tmp[dst_len] = '\0';
+	tmp[dst_len-1] = '\0';
 	SETSTR(tmp, params[3]);
      }
    return 1;
@@ -2891,7 +2893,7 @@ _edje_embryo_fn_external_param_get_choice(Embryo_Program *ep, Embryo_Cell *param
      {
 	char *tmp = alloca(dst_len);
 	memcpy(tmp, eep.s, dst_len - 1);
-	tmp[dst_len] = '\0';
+	tmp[dst_len-1] = '\0';
 	SETSTR(tmp, params[3]);
      }
    return 1;

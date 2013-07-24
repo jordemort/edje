@@ -651,3 +651,54 @@
 
 	* 1.7.4 release
 
+2013-01-04  Luis Felipe Strano Moraes
+
+	* 1.7.5 release
+
+2013-01-14  Daniel Willmann
+
+	* Backport r82767, r82770
+	* edje: Fix off-by-one errors when using alloca in various functions
+
+2013-01-29  Carsten Haitzler (The Rasterman)
+
+        * Fix cache miss bug when edje cache hash is null, but cache
+        list may have entries.
+
+2013-02-07  WooHyun Jung.
+
+	* Backport from r83700 in trunk. Checking walking_callbacks for not removing patterns which are still used.
+
+2013-02-17  Mike Blumenkrantz
+
+        * fix anchor clicked mouse signals for selection-enabled entries
+
+2013-02-18  Carsten Haitzler (The Rasterman)
+
+        * Fix edje edje_color_class_list() and edje_text_class_list() to
+        look at the correct hashes when returning.
+
+2013-02-18  Jihoon Kim (jihoon)
+
+        * edje entry : Fix bug candidate word couldn't be selected with up/down key in the preedit status
+
+2013-02-20  Cedric Bail
+
+	* report file not found properly.
+
+2013-02-28  Mike Blumenkrantz
+
+        * fix custom states for SPACER parts
+        * fix program filters
+
+2013-03-22  Jonas Gastal
+
+        * Fix CURRENT for moving objects.
+
+2013-04-04  Rafael Antognolli
+
+        * 1.7.6 release
+
+2013-05-08  Mike Blumenkrantz
+
+        * Edje: fix custom states for proxy parts

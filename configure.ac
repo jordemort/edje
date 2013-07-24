@@ -2,9 +2,8 @@
 ##--##--##--##--##--##--##--##--##--##--##--##--##--##--##--##--##
 m4_define([v_maj], [1])
 m4_define([v_min], [7])
-m4_define([v_mic], [4])
-m4_define([v_rev], m4_esyscmd([(svnversion "${SVN_REPO_PATH:-.}" | grep -v '\(export\|Unversioned directory\)' || echo 0) | awk -F : '{printf("%s\n", $1);}' | tr -d ' :MSP\n']))
-m4_if(v_rev, [0], [m4_define([v_rev], m4_esyscmd([git log 2> /dev/null | (grep -m1 git-svn-id || echo 0) | sed -e 's/.*@\([0-9]*\).*/\1/' | tr -d '\n']))])
+m4_define([v_mic], [7])
+m4_define([v_rev], m4_esyscmd([(git rev-list --count HEAD 2>/dev/null || echo 0) | tr -d '\n']))dnl
 ##--   When released, remove the dnl on the below line
 m4_undefine([v_rev])
 ##--   When doing snapshots - change soname. remove dnl on below line
@@ -221,7 +220,7 @@ AC_SUBST(pkgconfig_requires_private)
 EFL_EDJE_BUILD=""
 case "$host_os" in
    mingw*)
-      PKG_CHECK_MODULES([EVIL], [evil >= 1.6.99])
+      PKG_CHECK_MODULES([EVIL], [evil >= 1.7.7])
       AC_DEFINE([HAVE_EVIL], [1], [Set to 1 if Evil library is installed])
       requirement_edje="evil ${requirement_edje}"
       EFL_EDJE_BUILD="-DEFL_EDJE_BUILD"
@@ -259,47 +258,47 @@ fi
 
 PKG_CHECK_MODULES([MINIMAL],
    [
-    eina >= 1.6.99
-    eet >= 1.6.99
+    eina >= 1.7.7
+    eet >= 1.7.7
    ])
 
 PKG_CHECK_MODULES([EDJE],
    [
-    eina >= 1.6.99
-    eet >= 1.6.99
-    evas >= 1.6.99
-    ecore >= 1.6.99
-    ecore-evas >= 1.6.99
-    ecore-file >= 1.6.99
-    ecore-input >= 1.6.99
-    embryo >= 1.6.99
+    eina >= 1.7.7
+    eet >= 1.7.7
+    evas >= 1.7.7
+    ecore >= 1.7.7
+    ecore-evas >= 1.7.7
+    ecore-file >= 1.7.7
+    ecore-input >= 1.7.7
+    embryo >= 1.7.7
    ])
 
 EDJE_LIBS="${EDJE_LIBS} ${LUA_LIBS} ${lua_libs}"
 EDJE_CFLAGS="${EDJE_CFLAGS} ${LUA_CFLAGS}"
 
-requirement_edje="embryo >= 1.6.99 ecore-evas >= 1.6.99 ecore >= 1.6.99 evas >= 1.6.99 eet >= 1.6.99 eina >= 1.6.99 ${requirement_edje}"
+requirement_edje="embryo >= 1.7.7 ecore-evas >= 1.7.7 ecore >= 1.7.7 evas >= 1.7.7 eet >= 1.7.7 eina >= 1.7.7 ${requirement_edje}"
 requirement_edje="${requirement_lua} ${requirement_edje}"
 
 have_ecore_imf="no"
 PKG_CHECK_MODULES([ECORE_IMF],
    [
-    ecore-imf >= 1.6.99
-    ecore-imf-evas >= 1.6.99
+    ecore-imf >= 1.7.7
+    ecore-imf-evas >= 1.7.7
    ],
    [
     AC_DEFINE([HAVE_ECORE_IMF], [1], [Input Method Support for Edje Entry])
     have_ecore_imf="yes"
-    requirement_edje="ecore-imf-evas >= 1.6.99 ecore-imf >= 1.6.99 ${requirement_edje}"
+    requirement_edje="ecore-imf-evas >= 1.7.7 ecore-imf >= 1.7.7 ${requirement_edje}"
    ],
    [have_ecore_imf="no"])
 
 PKG_CHECK_MODULES([EIO],
-   [eio >= 1.6.99],
+   [eio >= 1.7.7],
    [
     AC_DEFINE([HAVE_EIO], [1], [Eio is available for monitoring file assynchronously])
     have_eio="yes"
-    requirement_edje="eio >= 1.6.99 ${requirement_edje}"
+    requirement_edje="eio >= 1.7.7 ${requirement_edje}"
    ],
    [have_eio="no"])
 
@@ -458,7 +457,7 @@ AC_SUBST([want_multisense])
 
 if test "x${have_edje_cc}" = "xyes" ; then
    PKG_CHECK_MODULES([EDJE_CC],
-      [ecore-file >= 1.6.99 ecore-evas >= 1.6.99 ecore >= 1.6.99 evas >= 1.6.99 eet >= 1.6.0 eina >= 1.6.99])
+      [ecore-file >= 1.7.7 ecore-evas >= 1.7.7 ecore >= 1.7.7 evas >= 1.7.7 eet >= 1.6.0 eina >= 1.7.7])
    EDJE_CC_LIBS="${EDJE_CC_LIBS} ${LUA_LIBS} ${lua_libs}"
 fi
 
@@ -466,27 +465,27 @@ AM_CONDITIONAL([BUILD_EPP], [test "x${have_edje_cc}" = "xyes"])
 
 if test "x${have_edje_decc}" = "xyes" ; then
    PKG_CHECK_MODULES([EDJE_DECC],
-      [ecore-file >= 1.6.99 ecore-evas >= 1.6.99 ecore >= 1.6.99 evas >= 1.6.99 eet >= 1.6.99 eina >= 1.6.99])
+      [ecore-file >= 1.7.7 ecore-evas >= 1.7.7 ecore >= 1.7.7 evas >= 1.7.7 eet >= 1.7.7 eina >= 1.7.7])
 fi
 
 if test "x${have_edje_player}" = "xyes" ; then
    PKG_CHECK_MODULES([EDJE_PLAYER],
-      [ecore-evas >= 1.6.99 ecore >= 1.6.99 evas >= 1.6.99 eina >= 1.6.99])
+      [ecore-evas >= 1.7.7 ecore >= 1.7.7 evas >= 1.7.7 eina >= 1.7.7])
 fi
 
 if test "x${have_edje_inspector}" = "xyes" ; then
    PKG_CHECK_MODULES([EDJE_INSPECTOR],
-      [ecore-evas >= 1.6.99 ecore >= 1.6.99 evas >= 1.6.99 eina >= 1.6.99])
+      [ecore-evas >= 1.7.7 ecore >= 1.7.7 evas >= 1.7.7 eina >= 1.7.7])
 fi
 
 if test "x${have_edje_external_inspector}" = "xyes" ; then
    PKG_CHECK_MODULES([EDJE_EXTERNAL_INSPECTOR],
-      [ecore >= 1.6.99 evas >= 1.6.99 eina >= 1.6.99])
+      [ecore >= 1.7.7 evas >= 1.7.7 eina >= 1.7.7])
 fi
 
 if test "x${have_edje_watch}" = "xyes" ; then
    PKG_CHECK_MODULES([EDJE_WATCH],
-      [ecore >= 1.6.99 eina >= 1.6.99 eio >= 1.6.99],
+      [ecore >= 1.7.7 eina >= 1.7.7 eio >= 1.7.7],
       [have_edje_watch="yes"],
       [have_edje_watch="no"])
 fi

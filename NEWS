@@ -1,4 +1,31 @@
-Edje 1.7.4
+Edje 1.7.7
+
+Changes since Edje 1.7.6:
+-------------------------
+
+Fixes:
+    * fix custom states for proxy parts
+
+Edje 1.7.6
+
+Changes since Edje 1.7.5:
+-------------------------
+
+Fixes:
+    * Fix cache miss when active edje hash is empty.
+    * Checking walking_callbacks for not removing patterns which are still used.
+    * fix anchor clicked mouse signals for selection-enabled entries
+    * Fix edje_color_class_list() and edje_text_class_list() to look at right hashes.
+    * Fix bug candidate word couldn't be selected with up/down key in the preedit status
+    * Report file not found properly.
+    * fix custom states for SPACER parts
+    * fix program filters
+    * Fix CURRENT for moving objects.
+
+Changes since Edje 1.7.4:
+-------------------------
+
+    * No visible changes, bumping to sync with new minor release.
 
 Changes since Edje 1.7.3:
 -------------------------
@@ -8,8 +35,6 @@ Fixes:
     * Before cursor is moved by mouse_down, imf_context_reset should be called with current cursor position.
     * Backport from 78587 in trunk.
     * Fix inheriting groups with programs that have after programs where after programs are duplicated in the list.
-
-Edje 1.7.3
 
 Changes since Edje 1.7.2:
 -------------------------
@@ -29,15 +54,11 @@ Fixes:
     * fix to not segv on inheriting group lookups
     * fix build on Solaris 11
     
-Edje 1.7.1
-
 Changes since Edje 1.7.0:
 -------------------------
 
 Fixes:
     * Fix edje_*scale_set() on sub-group.
-
-Edje 1.7.0
 
 Changes since Edje 1.2.0:
 -------------------------
@@ -73,8 +94,6 @@ Fixes:
     * Remove memory leak when alias are present in the edj file.
     * Properly destroy color_class and text_class on an Edje_Object.
     * Stop leaking memory on edje block error during signal emit.
-
-Edje 1.2.0
 
 Changes since Edje 1.1.0:
 -------------------------

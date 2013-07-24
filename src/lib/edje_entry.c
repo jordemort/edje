@@ -669,17 +669,18 @@ _edje_anchor_mouse_up_cb(void *data, Evas *e __UNUSED__, Evas_Object *obj __UNUS
 
    en = rp->entry_data;
    ignored = rp->part->ignore_flags & ev->event_flags;
-   if ((rp->part->select_mode == EDJE_ENTRY_SELECTION_MODE_EXPLICIT) &&
-       (en->select_allow))
-     return;
    n = an->name;
    if (!n) n = "";
    len = 200 + strlen(n);
    buf = alloca(len);
-   if ((!ev->event_flags) || (!ignored))
+   if ((rp->part->select_mode != EDJE_ENTRY_SELECTION_MODE_EXPLICIT) ||
+       (!en->select_allow))
      {
-        snprintf(buf, len, "anchor,mouse,up,%i,%s", ev->button, n);
-        _edje_emit(rp->edje, buf, rp->part->name);
+        if ((!ev->event_flags) || (!ignored))
+          {
+             snprintf(buf, len, "anchor,mouse,up,%i,%s", ev->button, n);
+             _edje_emit(rp->edje, buf, rp->part->name);
+          }
      }
    if ((rp->still_in) && (rp->clicked_button == ev->button) && (!ignored))
      {
@@ -1192,12 +1193,24 @@ _edje_key_down_cb(void *data, Evas *e __UNUSED__, Evas_Object *obj __UNUSED__, v
    if (en->imf_context)
      {
         Ecore_IMF_Event_Key_Down ecore_ev;
+        Eina_Bool filter_ret;
         ecore_imf_evas_event_key_down_wrap(ev, &ecore_ev);
         if (!en->composing)
           {
-             if (ecore_imf_context_filter_event(en->imf_context,
-                                                ECORE_IMF_EVENT_KEY_DOWN,
-                                                (Ecore_IMF_Event *)&ecore_ev))
+             filter_ret = ecore_imf_context_filter_event(en->imf_context,
+                                                         ECORE_IMF_EVENT_KEY_DOWN,
+                                                         (Ecore_IMF_Event *)&ecore_ev);
+
+             if (!strcmp(ev->keyname, "Down") ||
+                 (!strcmp(ev->keyname, "KP_Down") && !ev->string) ||
+                 !strcmp(ev->keyname, "Up") ||
+                 (!strcmp(ev->keyname, "KP_Up") && !ev->string))
+               {
+                  if (en->have_preedit)
+                    ev->event_flags |= EVAS_EVENT_FLAG_ON_HOLD;
+               }
+
+             if (filter_ret)
                return;
           }
      }

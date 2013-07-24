@@ -275,12 +275,15 @@ _edje_cache_file_coll_open(const char *file, const char *coll, int *error_ret, E
    struct stat st;
 
    if (stat(file, &st) != 0)
-      return NULL;
+     {
+        *error_ret = EDJE_LOAD_ERROR_DOES_NOT_EXIST;
+        return NULL;
+     }
 
    if (!_edje_file_hash)
      {
 	_edje_file_hash = eina_hash_string_small_new(NULL);
-	goto open_new;
+	goto find_list;
      }
 
    edf = eina_hash_find(_edje_file_hash, file);
@@ -295,7 +298,8 @@ _edje_cache_file_coll_open(const char *file, const char *coll, int *error_ret, E
 	edf->references++;
 	goto open;
      }
-
+   
+find_list:
    EINA_LIST_FOREACH(_edje_file_cache, l, edf)
      {
 	if (!strcmp(edf->path, file))
